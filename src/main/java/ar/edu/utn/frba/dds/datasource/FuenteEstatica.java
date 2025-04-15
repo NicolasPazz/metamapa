@@ -1,13 +1,14 @@
-package ar.edu.utn.frba.dds.datasource.dataset;
+package ar.edu.utn.frba.dds.datasource;
 
-import ar.edu.utn.frba.dds.datasource.FuenteDeDato;
-import ar.edu.utn.frba.dds.datasource.dynamic.Hecho;
+import ar.edu.utn.frba.dds.model.domain.hecho.Hecho;
 import java.util.List;
 
-public class FuenteEstatica extends FuenteDeDato {
+public class FuenteEstatica extends Fuente {
+  private String archivo;
 
   public List<Hecho> importarHechos() {
     //TODO
+    return null;
   }
 
   public void abrirFuente() {
