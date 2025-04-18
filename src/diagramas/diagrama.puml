@@ -9,9 +9,10 @@ class Hecho {
     -fecha: LocalDateTime
     -origen: OrigenHecho
     -estado: EstadoHecho
+    -contribuyente: Contribuyente
 
-    -esDuplicadoDe(hecho: Hecho): Boolean
-    -marcarComoOculto(): void
+    +esDuplicadoDe(hecho: Hecho): Boolean
+    +marcarComoOculto(): void
 }
 
 class Categoria {
@@ -67,7 +68,6 @@ class SolicitudDeEliminacion {
     -hecho: Hecho
     -textoFundamentos: String
     -fecha: LocalDateTime
-    -contribuyente: Contribuyente
     -estado: EstadoSolicitud
 
     +aceptar(): void
@@ -95,6 +95,7 @@ class Administrador {
     +rechazarSolicitud(solicitud: SolicitudDeEliminacion): void
 }
 
+Hecho --> Contribuyente
 Hecho --> OrigenHecho
 Hecho --> Categoria
 Hecho --> EstadoHecho
@@ -111,13 +112,10 @@ Criterio <|.. CriterioFecha
 Coleccion --> Fuente
 Coleccion --> Criterio
 
-SolicitudDeEliminacion --> Contribuyente
 SolicitudDeEliminacion --> Hecho
 SolicitudDeEliminacion --> EstadoSolicitud
 
 Administrador ..> Coleccion
 Administrador ..> SolicitudDeEliminacion
-
-Contribuyente ..> Hecho
 
 @enduml
