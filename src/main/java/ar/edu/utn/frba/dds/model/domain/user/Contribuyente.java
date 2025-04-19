@@ -2,11 +2,14 @@ package ar.edu.utn.frba.dds.model.domain.user;
 
 import ar.edu.utn.frba.dds.model.domain.hecho.Hecho;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ar.edu.utn.frba.dds.model.domain.request.SolicitudDeEliminacion;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class Contribuyente {
   private String nombre;
   private String apellido;
@@ -23,7 +26,6 @@ public class Contribuyente {
   }
 
   public SolicitudDeEliminacion solicitarEliminacion(Hecho hecho, String fundamentos) {
-    // TODO
-    return null;
+    return new SolicitudDeEliminacion(hecho, fundamentos);
   }
 }
