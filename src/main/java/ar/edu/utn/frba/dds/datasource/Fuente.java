@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.datasource;
 
+import ar.edu.utn.frba.dds.model.domain.hecho.DataHecho;
 import ar.edu.utn.frba.dds.model.domain.hecho.Hecho;
 import java.util.List;
 
@@ -8,6 +9,6 @@ public abstract class Fuente {
 
   public abstract List<Hecho> importarHechos();
   public abstract void abrirFuente();
-  public abstract void leerHechos();
+  public abstract List<DataHecho> leerHechos() throws Exception;
   public abstract void cerrarFuente();
 }
