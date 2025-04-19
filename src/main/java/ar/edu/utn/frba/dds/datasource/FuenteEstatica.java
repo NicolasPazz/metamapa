@@ -16,6 +16,10 @@ import java.io.FileReader;
 public class FuenteEstatica extends Fuente {
   private String archivo;
 
+  public FuenteEstatica(String archivo) {
+    this.archivo = archivo;
+  }
+
   public List<Hecho> importarHechos() throws Exception {
     List<Hecho> hechos = new ArrayList<>();
 

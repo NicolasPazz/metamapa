@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import com.opencsv.bean.CsvBindByName;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -16,7 +17,7 @@ public class DataHecho {
     @CsvBindByName(column = "Categoría")
     private String categoria;
     @CsvBindByName(column = "Fecha")
-    private LocalDateTime fecha;
+    private LocalDate fecha;
     @CsvBindByName(column = "Latitud")
     private Double latitud;
     @CsvBindByName(column = "Longitud")

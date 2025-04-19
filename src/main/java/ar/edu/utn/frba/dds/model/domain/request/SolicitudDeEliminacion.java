@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ar.edu.utn.frba.dds.model.domain.user.Contribuyente;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
@@ -13,7 +15,7 @@ import java.time.LocalDateTime;
 public class SolicitudDeEliminacion {
   private Hecho hecho;
   private String textoFundamentos;
-  private LocalDateTime fecha;
+  private LocalDate fecha;
   private EstadoSolicitud estado;
 
   public SolicitudDeEliminacion(Hecho hecho, String textoFundamentos) {
@@ -22,7 +24,7 @@ public class SolicitudDeEliminacion {
     }
     this.hecho = hecho;
     this.textoFundamentos = textoFundamentos;
-    this.fecha = LocalDateTime.now();
+    this.fecha = LocalDate.now();
     this.estado = EstadoSolicitud.PENDIENTE;
   }
 

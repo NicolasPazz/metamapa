@@ -9,8 +9,8 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public class Administrador {
-  public void crearColeccion(String titulo, String descripcion, FuenteEstatica fuente, Criterio criterioDePertenencia) {
-    Coleccion nuevaColeccion = new Coleccion(titulo, descripcion, fuente, criterioDePertenencia);
+  public Coleccion crearColeccion(String titulo, String descripcion, FuenteEstatica fuente, String criterioDePertenencia) {
+    return new Coleccion(titulo, descripcion, fuente, criterioDePertenencia);
   }
 
   public void aceptarSolicitud(SolicitudDeEliminacion solicitud) {

@@ -14,9 +14,9 @@ public class Coleccion {
   private String titulo;
   private String descripcion;
   private FuenteEstatica fuente;
-  private Criterio criterioDePertenencia;
+  private String criterioDePertenencia;
 
-  public Coleccion(String titulo, String descripcion, FuenteEstatica fuente, Criterio criterioDePertenencia) {
+  public Coleccion(String titulo, String descripcion, FuenteEstatica fuente, String criterioDePertenencia) {
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.fuente = fuente;

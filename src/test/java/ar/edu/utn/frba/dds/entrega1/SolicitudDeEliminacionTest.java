@@ -1,5 +1,6 @@
 package ar.edu.utn.frba.dds.entrega1;
 
+import ar.edu.utn.frba.dds.model.domain.hecho.DataHecho;
 import ar.edu.utn.frba.dds.model.domain.hecho.EstadoHecho;
 import ar.edu.utn.frba.dds.model.domain.hecho.Hecho;
 import ar.edu.utn.frba.dds.model.domain.hecho.OrigenHecho;
@@ -11,6 +12,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 public class SolicitudDeEliminacionTest {
@@ -24,8 +27,15 @@ public class SolicitudDeEliminacionTest {
   void init() {
     String titulo = "Brote de enfermedad contagiosa causa estragos en San Lorenzo, Santa Fe";
     String descripcion = "Grave brote de enfermedad contagiosa ocurrió en las inmediaciones de San Lorenzo, Santa Fe. El incidente dejó varios heridos y daños materiales. Se ha declarado estado de emergencia en la región para facilitar la asistencia.";
+    DataHecho dataHecho = new DataHecho();
+    dataHecho.setDescripcion(descripcion);
+    dataHecho.setTitulo(titulo);
+    dataHecho.setCategoria("Evento sanitario");
+    dataHecho.setLatitud(-32.786098);
+    dataHecho.setLongitud(-60.741543);
+    dataHecho.setFecha(LocalDate.of(2005, 7, 5));
 
-    hecho = new Hecho(titulo, descripcion, "Evento sanitario", -32.786098, -60.741543, LocalDateTime.of(2005, 7, 5, 0, 0), OrigenHecho.MANUAL);
+    hecho = new Hecho(dataHecho, OrigenHecho.MANUAL);
     contribuyente = new Contribuyente();
     administrador = new Administrador();
     textoLargo = "a".repeat(501); // Tiene mas de 500 caracteres
