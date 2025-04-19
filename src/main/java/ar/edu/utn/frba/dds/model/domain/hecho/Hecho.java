@@ -2,10 +2,12 @@ package ar.edu.utn.frba.dds.model.domain.hecho;
 
 import java.time.LocalDateTime;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor
 public class Hecho {
   private String titulo;
   private String descripcion;
@@ -34,7 +36,6 @@ public class Hecho {
   }
 
   public void marcarComoOculto() {
-    // TODO
+    this.estado = EstadoHecho.OCULTO;
   }
-
 }
