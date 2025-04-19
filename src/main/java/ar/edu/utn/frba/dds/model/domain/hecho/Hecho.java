@@ -9,25 +9,17 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Hecho {
-  private String titulo;
-  private String descripcion;
-  private String categoria;
-  private Double latitud;
-  private Double longitud;
-  private LocalDateTime fecha;
+
+  private DataHecho data;
+  private UbicacionHecho ubicacion;
   private OrigenHecho origen;
   private EstadoHecho estado;
 
-  public Hecho(String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDateTime fecha, OrigenHecho origen) {
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.categoria = categoria;
-    this.latitud = latitud;
-    this.longitud = longitud;
-    this.fecha = fecha;
+  public Hecho(DataHecho data, UbicacionHecho ubicacion, OrigenHecho origen, EstadoHecho estado) {
+    this.data = data;
+    this.ubicacion = ubicacion;
     this.origen = origen;
     this.estado = EstadoHecho.VISIBLE;
-    // Muchos atributos --> verificar --> Code smells
   }
 
   public boolean esDuplicadoDe(Hecho otroHecho) {
