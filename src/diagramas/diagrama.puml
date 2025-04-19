@@ -3,7 +3,7 @@
 class Hecho {
     -titulo: String
     -descripcion: String
-    -categoria: Categoria
+    -categoria: String
     -latitud: Double
     -longitud: Double
     -fecha: LocalDateTime
@@ -13,10 +13,6 @@ class Hecho {
 
     +esDuplicadoDe(hecho: Hecho): Boolean
     +marcarComoOculto(): void
-}
-
-class Categoria {
-    -nombre: String
 }
 
 enum OrigenHecho {
@@ -43,7 +39,7 @@ interface Criterio {
     +cumple(hecho: Hecho): Boolean
 }
 class CriterioCategoria {
-    -categoria: Categoria
+    -categoria: String
 }
 class CriterioPais {
     -pais: String
@@ -97,7 +93,6 @@ class Administrador {
 
 Hecho --> Contribuyente
 Hecho --> OrigenHecho
-Hecho --> Categoria
 Hecho --> EstadoHecho
 
 Fuente -->"*" Hecho
