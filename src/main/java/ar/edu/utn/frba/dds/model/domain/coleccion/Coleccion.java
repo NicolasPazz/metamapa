@@ -22,8 +22,7 @@ public class Coleccion {
     this.criterioDePertenencia = criterioDePertenencia;
   }
 
-  public List<Hecho> obtenerHechos() {
-    // TODO
-    return null;
+  public List<Hecho> obtenerHechos() throws Exception {
+    return this.fuente.importarHechos();
   }
 }

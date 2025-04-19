@@ -9,16 +9,16 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class DataHecho {
-    @CsvBindByName
+    @CsvBindByName(column = "Título")
     private String titulo;
-    @CsvBindByName
+    @CsvBindByName(column = "Descripción")
     private String descripcion;
-    @CsvBindByName
+    @CsvBindByName(column = "Categoría")
     private String categoria;
-    @CsvBindByName
+    @CsvBindByName(column = "Fecha")
     private LocalDateTime fecha;
-    @CsvBindByName
+    @CsvBindByName(column = "Latitud")
     private Double latitud;
-    @CsvBindByName
+    @CsvBindByName(column = "Longitud")
     private Double longitud;
 }

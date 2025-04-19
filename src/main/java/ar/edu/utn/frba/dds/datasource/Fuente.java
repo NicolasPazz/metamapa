@@ -7,7 +7,7 @@ import java.util.List;
 public abstract class Fuente {
   private List<Hecho> hechos;
 
-  public abstract List<Hecho> importarHechos();
+  public abstract List<Hecho> importarHechos() throws Exception;
   public abstract void abrirFuente();
   public abstract List<DataHecho> leerHechos() throws Exception;
   public abstract void cerrarFuente();
