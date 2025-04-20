@@ -40,13 +40,24 @@ interface Criterio {
 }
 class CriterioCategoria {
     -categoria: String
+    +cumple(hecho: Hecho): Boolean
 }
-class CriterioPais {
-    -pais: String
+class CriterioDesdeFecha {
+    -fecha: LocalDate
+    +cumple(hecho: Hecho): Boolean
 }
-class CriterioFecha {
-    -fechaDesde: LocalDateTime
-    -fechaHasta: LocalDateTime
+class CriterioHastaFecha {
+    -fecha: LocalDate
+    +cumple(hecho: Hecho): Boolean
+}
+class CriterioEntreFechas {
+    -fechaInicial: LocalDate
+    -fechaFinal: LocalDate
+    +cumple(hecho: Hecho): Boolean
+}
+class CriterioTitulo {
+    -titulo: String
+    +cumple(hecho: Hecho): Boolean
 }
 
 abstract Fuente {
@@ -93,6 +104,7 @@ class Administrador {
 
 Hecho --> Contribuyente
 Hecho --> OrigenHecho
+
 Hecho --> EstadoHecho
 
 Fuente -->"*" Hecho
@@ -101,8 +113,11 @@ Fuente <|-- FuenteDinamica
 Fuente <|-- FuenteProxy
 
 Criterio <|.. CriterioCategoria
-Criterio <|.. CriterioPais
-Criterio <|.. CriterioFecha
+Criterio <|.. CriterioTitulo
+Criterio <|.. CriterioDesdeFecha
+Criterio <|.. CriterioHastaFecha
+Criterio <|.. CriterioEntreFechas
+
 
 Coleccion --> Fuente
 Coleccion --> Criterio
