@@ -1,20 +1,19 @@
 package ar.edu.utn.frba.dds.entrega1;
 
-import ar.edu.utn.frba.dds.model.domain.hecho.DataHecho;
-import ar.edu.utn.frba.dds.model.domain.hecho.EstadoHecho;
-import ar.edu.utn.frba.dds.model.domain.hecho.Hecho;
-import ar.edu.utn.frba.dds.model.domain.hecho.OrigenHecho;
-import ar.edu.utn.frba.dds.model.domain.request.EstadoSolicitud;
-import ar.edu.utn.frba.dds.model.domain.request.SolicitudDeEliminacion;
-import ar.edu.utn.frba.dds.model.domain.user.Administrador;
-import ar.edu.utn.frba.dds.model.domain.user.Contribuyente;
+import ar.edu.utn.frba.dds.domain.model.hecho.DataHecho;
+import ar.edu.utn.frba.dds.domain.model.hecho.EstadoHecho;
+import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
+import ar.edu.utn.frba.dds.domain.model.hecho.OrigenHecho;
+import ar.edu.utn.frba.dds.domain.model.request.EstadoSolicitud;
+import ar.edu.utn.frba.dds.domain.model.request.SolicitudDeEliminacion;
+import ar.edu.utn.frba.dds.domain.model.user.Administrador;
+import ar.edu.utn.frba.dds.domain.model.user.Contribuyente;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class SolicitudDeEliminacionTest {
   private Hecho hecho;
@@ -72,5 +71,13 @@ public class SolicitudDeEliminacionTest {
     Assertions.assertThrows(IllegalArgumentException.class, () -> {
       contribuyente.solicitarEliminacion(hecho, textoCorto);
     });
+  }
+
+  @Test
+  @DisplayName("Una solicitud con exactamente 500 caracteres también es válida")
+  void solicitudConTextoExacto500() {
+    String texto500 = "a".repeat(500);
+    SolicitudDeEliminacion solicitud = contribuyente.solicitarEliminacion(hecho, texto500);
+    Assertions.assertEquals(EstadoSolicitud.PENDIENTE, solicitud.getEstado());
   }
 }
