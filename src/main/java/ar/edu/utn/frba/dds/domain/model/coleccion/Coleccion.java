@@ -24,8 +24,12 @@ public class Coleccion {
   }
 
   public List<Hecho> obtenerHechos() throws Exception {
+    if (criterioDePertenencia == null) {
+      return this.fuente.importarHechos();
+    }
+    // Si hay criterioDePertenencia, lo aplicamos como filtro
     return this.fuente.importarHechos().stream()
-        .filter(criterioDePertenencia::cumple)
-        .toList();
+            .filter(criterioDePertenencia::cumple)
+            .toList();
   }
 }

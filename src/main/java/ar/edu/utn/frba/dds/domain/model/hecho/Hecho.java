@@ -20,6 +20,21 @@ public class Hecho {
     this.estado = EstadoHecho.VISIBLE;
   }
 
+  public Hecho(String titulo, String descripcion, String categoria, LocalDate fecha, double latitud, double longitud) {
+    DataHecho dataHecho = new DataHecho();
+    dataHecho.setTitulo(titulo);
+    dataHecho.setDescripcion(descripcion);
+    dataHecho.setCategoria(categoria);
+    dataHecho.setFecha(fecha);
+    dataHecho.setLatitud(latitud);
+    dataHecho.setLongitud(longitud);
+
+    this.data = dataHecho;
+    this.origen = OrigenHecho.MANUAL;
+    this.estado = EstadoHecho.VISIBLE;
+  }
+
+
   public boolean esDuplicadoDe(Hecho otroHecho) {
     return this.getTitulo().equalsIgnoreCase(otroHecho.getTitulo());
   }
