@@ -9,7 +9,6 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class CriterioCombinado implements Criterio{
     private List<Criterio> criterios;
 
