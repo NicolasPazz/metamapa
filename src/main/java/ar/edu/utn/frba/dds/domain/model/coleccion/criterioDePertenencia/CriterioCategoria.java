@@ -11,6 +11,6 @@ public class CriterioCategoria implements Criterio {
 
     @Override
     public boolean cumple(Hecho hecho){
-        return hecho.getCategoria().toLowerCase().contains(categoria.toLowerCase());
+        return hecho.getCategoria().equalsIgnoreCase(categoria);
     }
 }
