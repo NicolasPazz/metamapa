@@ -7,10 +7,13 @@ class Hecho {
     -origen: OrigenHecho
     -estado: EstadoHecho
     -contribuyente: Contribuyente
+    -etiquetas:Set<String>
 
     +esDuplicadoDe(otroHecho: Hecho): Boolean
     +marcarComoOculto(): void
     +esVisible(): Boolean
+    +agregarEtiqueta(String etiqueta): void
+    +contieneEtiqueta(String etiqueta): boolean
 }
 
 class DataHecho {
@@ -76,6 +79,10 @@ class CriterioTitulo {
 }
 class CriterioOrigen {
     -origen: OrigenHecho
+    +cumple(hecho: Hecho): Boolean
+}
+class CriterioEtiqueta {
+    -etiqueta: String
     +cumple(hecho: Hecho): Boolean
 }
 
@@ -146,6 +153,7 @@ Criterio <|.. CriterioFechas
 Criterio <|.. CriterioLugar
 Criterio <|.. CriterioTitulo
 Criterio <|.. CriterioOrigen
+Criterio <|.. CriterioEtiqueta
 
 CriterioFechas --> TipoFecha
 

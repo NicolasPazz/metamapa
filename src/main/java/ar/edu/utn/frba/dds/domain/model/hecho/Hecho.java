@@ -2,6 +2,8 @@ package ar.edu.utn.frba.dds.domain.model.hecho;
 
 import java.time.LocalDate;
 import ar.edu.utn.frba.dds.domain.model.user.Contribuyente;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,6 +17,7 @@ public class Hecho {
   private OrigenHecho origen;
   private EstadoHecho estado;
   private Contribuyente contribuyente;
+  private Set<String> etiquetas = new HashSet<>();
 
   public Hecho(DataHecho data, OrigenHecho origen) {
     this.data = data;
@@ -34,7 +37,7 @@ public class Hecho {
     this.data = dataHecho;
     this.origen = OrigenHecho.MANUAL;
     this.estado = EstadoHecho.VISIBLE;
-    // TODO --> proximas entregas
+    // TODO: asignar contribuyente si no es anonimo
     this.contribuyente = null;
   }
 
@@ -50,6 +53,17 @@ public class Hecho {
     // TODO: verificar que no haya una solicitud de eliminacion aceptada
     return this.estado == EstadoHecho.VISIBLE;
   }
+
+  public void agregarEtiqueta(String etiqueta) {
+    if (etiqueta != null && !etiqueta.isBlank()) {
+      this.etiquetas.add(etiqueta.trim().toLowerCase());
+    }
+  }
+
+  public boolean contieneEtiqueta(String etiqueta) {
+    return this.etiquetas.contains(etiqueta.trim().toLowerCase());
+  }
+
 
   public String getTitulo() {
     return data.getTitulo();
