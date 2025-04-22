@@ -1,6 +1,7 @@
 package ar.edu.utn.frba.dds.domain.model.hecho;
 
 import java.time.LocalDate;
+import ar.edu.utn.frba.dds.domain.model.user.Contribuyente;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ public class Hecho {
   private DataHecho data;
   private OrigenHecho origen;
   private EstadoHecho estado;
+  private Contribuyente contribuyente;
 
   public Hecho(DataHecho data, OrigenHecho origen) {
     this.data = data;
@@ -32,6 +34,8 @@ public class Hecho {
     this.data = dataHecho;
     this.origen = OrigenHecho.MANUAL;
     this.estado = EstadoHecho.VISIBLE;
+    // TODO --> proximas entregas
+    this.contribuyente = null;
   }
 
   public boolean esDuplicadoDe(Hecho otroHecho) {

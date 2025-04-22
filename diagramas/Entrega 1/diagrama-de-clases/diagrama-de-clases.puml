@@ -3,18 +3,24 @@
 @startuml
 
 class Hecho {
+    -data: DataHecho
+    -origen: OrigenHecho
+    -estado: EstadoHecho
+    -contribuyente: Contribuyente
+
+    +esDuplicadoDe(otroHecho: Hecho): Boolean
+    +marcarComoOculto(): void
+    +esVisible(): Boolean
+}
+
+class DataHecho {
     -titulo: String
     -descripcion: String
     -categoria: String
     -latitud: Double
     -longitud: Double
-    -fecha: LocalDateTime
-    -origen: OrigenHecho
-    -estado: EstadoHecho
-    -contribuyente: Contribuyente
-
-    +esDuplicadoDe(hecho: Hecho): Boolean
-    +marcarComoOculto(): void
+    -fechaDeAcontecimiento: LocalDate
+    -fechaDeCarga: LocalDate
 }
 
 enum OrigenHecho {
@@ -34,6 +40,7 @@ class Coleccion {
     -fuente: Fuente
     -criterioDePertenencia: Criterio
 
+    +importarHechosVisibles(): List<Hecho>
     +obtenerHechos(): List<Hecho>
 }
 
@@ -44,39 +51,57 @@ class CriterioCategoria {
     -categoria: String
     +cumple(hecho: Hecho): Boolean
 }
-class CriterioDesdeFecha {
-    -fecha: LocalDate
+class CriterioCombinado {
+    -criterios: List<Criterio>
     +cumple(hecho: Hecho): Boolean
 }
-class CriterioHastaFecha {
-    -fecha: LocalDate
+class CriterioDescripcion {
+    -descripcion: String
     +cumple(hecho: Hecho): Boolean
 }
 class CriterioEntreFechas {
     -fechaInicial: LocalDate
     -fechaFinal: LocalDate
+    -tipoFecha: TipoFecha
+    +cumple(hecho: Hecho): Boolean
+}
+class CriterioLugarLatLng {
+    -lat: Double
+    -lng: Double
     +cumple(hecho: Hecho): Boolean
 }
 class CriterioTitulo {
     -titulo: String
     +cumple(hecho: Hecho): Boolean
 }
+class CriterioOrigen {
+    -origen: OrigenHecho
+    +cumple(hecho: Hecho): Boolean
+}
+
+enum TipoFecha {
+    CARGA
+    ACONTECIMIENTO
+}
 
 abstract Fuente {
-    -hechos: List<Hecho>
-
     +importarHechos(): List<Hecho>
+    +abrirFuente(): void
+    +cerrarFuente(): void
 }
 class FuenteEstatica {
-    -archivo: String
+    -rutaArchivo: String
+    -lector: FileReader
 }
-class FuenteDinamica
+class FuenteDinamica {
+    -hechos: List<Hecho>
+}
 class FuenteProxy
 
 class SolicitudDeEliminacion {
     -hecho: Hecho
     -textoFundamentos: String
-    -fecha: LocalDateTime
+    -fecha: LocalDate
     -estado: EstadoSolicitud
 
     +aceptar(): void
@@ -94,32 +119,35 @@ class Contribuyente {
     -apellido: String
     -edad: Integer
 
+    +esAnonimo(): Boolean
     +subir(hecho: Hecho): void
     +solicitarEliminacion(hecho: Hecho, fundamentos: String): SolicitudDeEliminacion
 }
 
 class Administrador {
-    +crearColeccion(coleccion: Coleccion): void
+    +crearColeccion(titulo: String, descripcion: String, fuente: Fuente, criterioDePertenencia: Criterio): Coleccion
     +aceptarSolicitud(solicitud: SolicitudDeEliminacion): void
     +rechazarSolicitud(solicitud: SolicitudDeEliminacion): void
 }
 
+Hecho --> DataHecho
 Hecho --> Contribuyente
 Hecho --> OrigenHecho
-
 Hecho --> EstadoHecho
 
-Fuente -->"*" Hecho
 Fuente <|-- FuenteEstatica
 Fuente <|-- FuenteDinamica
 Fuente <|-- FuenteProxy
 
 Criterio <|.. CriterioCategoria
-Criterio <|.. CriterioTitulo
-Criterio <|.. CriterioDesdeFecha
-Criterio <|.. CriterioHastaFecha
+Criterio <|.. CriterioCombinado
+Criterio <|.. CriterioDescripcion
 Criterio <|.. CriterioEntreFechas
+Criterio <|.. CriterioLugarLatLng
+Criterio <|.. CriterioTitulo
+Criterio <|.. CriterioOrigen
 
+CriterioEntreFechas --> TipoFecha
 
 Coleccion --> Fuente
 Coleccion --> Criterio
