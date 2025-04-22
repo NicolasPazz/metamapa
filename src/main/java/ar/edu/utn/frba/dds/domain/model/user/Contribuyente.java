@@ -15,7 +15,7 @@ public class Contribuyente {
   private Integer edad;
 
   public Contribuyente(String nombre, String apellido, Integer edad) {
-    if (nombre == null || nombre.isBlank()) {
+    if (nombre == null) {
       throw new IllegalArgumentException("El nombre del contribuyente es obligatorio.");
     }
     this.nombre = nombre;
@@ -23,15 +23,18 @@ public class Contribuyente {
     this.edad = edad;
   }
 
-  public boolean esAnonimo() {
-    return this.nombre == null;
-  }
-
-  public void subir(Hecho hecho) {
-    // TODO
-  }
-
   public SolicitudDeEliminacion solicitarEliminacion(Hecho hecho, String fundamentos) {
     return new SolicitudDeEliminacion(hecho, fundamentos);
+  }
+
+  public boolean esAnonimo() {
+    return this.nombre != null;
+  }
+
+  public void subirHecho(Hecho hecho) {
+    // TODO
+    if (!this.esAnonimo()) {
+      // TODO: almacenar datos personales y poner a disposicion de administradores
+    }
   }
 }

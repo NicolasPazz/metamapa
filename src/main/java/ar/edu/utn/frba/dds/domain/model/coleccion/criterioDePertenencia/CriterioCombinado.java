@@ -3,12 +3,22 @@ package ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia;
 import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
 
 import java.util.List;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
+@NoArgsConstructor
 public class CriterioCombinado implements Criterio{
     private List<Criterio> criterios;
 
     public CriterioCombinado(List<Criterio> criterios) {
         this.criterios = criterios;
+    }
+
+    public void agregarCriterio(Criterio criterio){
+        this.criterios.add(criterio);
     }
 
     @Override

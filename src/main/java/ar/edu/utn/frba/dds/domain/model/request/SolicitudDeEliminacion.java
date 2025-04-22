@@ -28,7 +28,7 @@ public class SolicitudDeEliminacion {
 
   public void aceptar() {
     this.estado = EstadoSolicitud.ACEPTADA;
-    hecho.marcarComoOculto();
+    hecho.ocultar();
   }
 
   public void rechazar() {

@@ -10,11 +10,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FuenteEstatica extends Fuente {
 
-  private final String rutaArchivo;
+  private String rutaArchivo;
   private FileReader lector;
 
   public FuenteEstatica(String rutaArchivo) {
@@ -36,15 +38,18 @@ public class FuenteEstatica extends Fuente {
         .build();
 
     Iterator<DataHecho> iterator = csvToBean.iterator();
-    List<Hecho> hechos = new ArrayList<>();
+    Map<String, Hecho> hechosPorTitulo = new LinkedHashMap<>();
 
     while (iterator.hasNext()) {
       DataHecho data = iterator.next();
-      hechos.add(new Hecho(data, OrigenHecho.DATASET));
+      Hecho nuevoHecho = new Hecho(data, OrigenHecho.DATASET);
+      String titulo = nuevoHecho.getTitulo();
+
+      hechosPorTitulo.put(titulo, nuevoHecho);
     }
 
     this.cerrarFuente();
-    return hechos;
+    return new ArrayList<>(hechosPorTitulo.values());
   }
 
   @Override

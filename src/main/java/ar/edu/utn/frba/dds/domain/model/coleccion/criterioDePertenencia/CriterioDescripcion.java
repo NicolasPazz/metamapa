@@ -7,11 +7,11 @@ public class CriterioDescripcion implements Criterio {
 
 
     public CriterioDescripcion(String descripcion) {
-        this.descripcion = descripcion;
+        this.descripcion = descripcion.toLowerCase();
     }
 
     @Override
     public boolean cumple(Hecho hecho){
-        return hecho.getDescripcion().equalsIgnoreCase(descripcion);
+        return hecho.getDescripcion().toLowerCase().contains(descripcion);
     }
 }

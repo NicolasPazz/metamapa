@@ -25,7 +25,7 @@ public class Hecho {
     dataHecho.setTitulo(titulo);
     dataHecho.setDescripcion(descripcion);
     dataHecho.setCategoria(categoria);
-    dataHecho.setFecha(fecha);
+    dataHecho.setFechaDeAcontecimiento(fecha);
     dataHecho.setLatitud(latitud);
     dataHecho.setLongitud(longitud);
 
@@ -34,19 +34,18 @@ public class Hecho {
     this.estado = EstadoHecho.VISIBLE;
   }
 
-
   public boolean esDuplicadoDe(Hecho otroHecho) {
     return this.getTitulo().equalsIgnoreCase(otroHecho.getTitulo());
   }
 
-  public void marcarComoOculto() {
+  public void ocultar() {
     this.estado = EstadoHecho.OCULTO;
   }
 
   public boolean esVisible() {
+    // TODO: verificar que no haya una solicitud de eliminacion aceptada
     return this.estado == EstadoHecho.VISIBLE;
   }
-
 
   public String getTitulo() {
     return data.getTitulo();
@@ -68,7 +67,11 @@ public class Hecho {
     return data.getLongitud();
   }
 
-  public LocalDate getFecha() {
-    return data.getFecha();
+  public LocalDate getFechaDeAcontecimiento() {
+    return data.getFechaDeAcontecimiento();
+  }
+
+  public LocalDate getFechaDeCarga() {
+    return data.getFechaDeCarga();
   }
 }

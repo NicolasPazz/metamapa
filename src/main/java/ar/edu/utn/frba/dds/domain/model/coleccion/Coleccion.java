@@ -4,9 +4,7 @@ import ar.edu.utn.frba.dds.domain.datasource.Fuente;
 import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.Criterio;
 import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -26,7 +24,9 @@ public class Coleccion {
   }
 
   public List<Hecho> importarHechosVisibles() throws Exception {
-    return this.fuente.importarHechos().stream().filter(Hecho::esVisible).collect(Collectors.toList());
+    return this.fuente.importarHechos().stream()
+        .filter(Hecho::esVisible)
+        .toList();
   }
 
   public List<Hecho> obtenerHechos() throws Exception {
@@ -35,9 +35,9 @@ public class Coleccion {
     if (criterioDePertenencia == null) {
       return hechosVisibles;
     }
-    // Si hay criterioDePertenencia, lo aplicamos como filtro
+
     return hechosVisibles.stream()
-            .filter(criterioDePertenencia::cumple)
-            .toList();
+        .filter(criterioDePertenencia::cumple)
+        .toList();
   }
 }

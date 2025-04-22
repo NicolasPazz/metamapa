@@ -1,23 +1,30 @@
 package ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia;
+
 import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
+
 import java.time.LocalDate;
 
-public class CriterioEntreFechas implements Criterio {
+public class CriterioFechas implements Criterio {
     private LocalDate fechaInicial;
     private LocalDate fechaFinal;
+    private TipoFecha tipoFecha;
 
-    public CriterioEntreFechas(LocalDate fechaDeInicio, LocalDate fechaDeFin) {
+    public CriterioFechas(LocalDate fechaDeInicio, LocalDate fechaDeFin, TipoFecha tipoFecha) {
         if (fechaDeInicio != null && fechaDeFin != null && fechaDeInicio.isAfter(fechaDeFin)) {
             throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin.");
         }
 
         this.fechaInicial = fechaDeInicio;
         this.fechaFinal = fechaDeFin;
+        this.tipoFecha = tipoFecha;
     }
 
     @Override
     public boolean cumple(Hecho hecho) {
-        LocalDate fecha = hecho.getFecha();
+        LocalDate fecha = switch (tipoFecha) {
+            case CARGA -> hecho.getFechaDeCarga();
+            case ACONTECIMIENTO -> hecho.getFechaDeAcontecimiento();
+        };
 
         boolean cumpleDesde = (fechaInicial == null || !fecha.isBefore(fechaInicial));
         boolean cumpleHasta = (fechaFinal == null || !fecha.isAfter(fechaFinal));

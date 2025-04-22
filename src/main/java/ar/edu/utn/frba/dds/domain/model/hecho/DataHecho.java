@@ -2,10 +2,9 @@ package ar.edu.utn.frba.dds.domain.model.hecho;
 
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvDate;
+import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -28,5 +27,7 @@ public class DataHecho {
 
     @CsvDate("dd/MM/yyyy")
     @CsvBindByName(column = "Fecha del hecho")
-    private LocalDate fecha;
+    private LocalDate fechaDeAcontecimiento;
+
+    private LocalDate fechaDeCarga = LocalDate.now();
 }

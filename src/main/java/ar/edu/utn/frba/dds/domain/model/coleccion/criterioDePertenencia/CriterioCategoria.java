@@ -6,11 +6,11 @@ public class CriterioCategoria implements Criterio {
     private String categoria;
 
     public CriterioCategoria(String categoria) {
-        this.categoria = categoria;
+        this.categoria = categoria.toLowerCase();
     }
 
     @Override
     public boolean cumple(Hecho hecho){
-        return hecho.getCategoria().equalsIgnoreCase(categoria);
+        return hecho.getCategoria().toLowerCase().contains(categoria);
     }
 }

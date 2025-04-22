@@ -3,7 +3,6 @@ package ar.edu.utn.frba.dds.entrega1;
 
 import ar.edu.utn.frba.dds.domain.datasource.Fuente;
 import ar.edu.utn.frba.dds.domain.datasource.FuenteDinamica;
-import ar.edu.utn.frba.dds.domain.datasource.FuenteEstatica;
 import ar.edu.utn.frba.dds.domain.model.coleccion.Coleccion;
 import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.*;
 import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
@@ -71,7 +70,7 @@ class CrearColeccionMedianteCargaManualTest {
     void testCriterioPertenencia() throws Exception {
         LocalDate fechaInicial = LocalDate.of(2000, 1, 1);
         LocalDate fechaFinal = LocalDate.of(2010, 1, 1);
-        Criterio nuevoCriterio = new CriterioEntreFechas(fechaInicial, fechaFinal);
+        Criterio nuevoCriterio = new CriterioFechas(fechaInicial, fechaFinal, TipoFecha.ACONTECIMIENTO);
         coleccion.setCriterioDePertenencia(nuevoCriterio);
 
         List<Hecho> hechosFiltrados = coleccion.obtenerHechos();
@@ -79,9 +78,9 @@ class CrearColeccionMedianteCargaManualTest {
         Assertions.assertEquals(3, hechosFiltrados.size(), "La colección debe contener solo tres hechos.");
 
         // Verificar que los hechos son los tres primeros que cumplen con la condición de fecha
-        Assertions.assertTrue(hechosFiltrados.get(0).getFecha().isBefore(LocalDate.of(2010, 1, 1)), "El primer hecho debe estar antes de 01/01/2010.");
-        Assertions.assertTrue(hechosFiltrados.get(1).getFecha().isBefore(LocalDate.of(2010, 1, 1)), "El segundo hecho debe estar antes de 01/01/2010.");
-        Assertions.assertTrue(hechosFiltrados.get(2).getFecha().isBefore(LocalDate.of(2010, 1, 1)), "El tercer hecho debe estar antes de 01/01/2010.");
+        Assertions.assertTrue(hechosFiltrados.get(0).getFechaDeAcontecimiento().isBefore(LocalDate.of(2010, 1, 1)), "El primer hecho debe estar antes de 01/01/2010.");
+        Assertions.assertTrue(hechosFiltrados.get(1).getFechaDeAcontecimiento().isBefore(LocalDate.of(2010, 1, 1)), "El segundo hecho debe estar antes de 01/01/2010.");
+        Assertions.assertTrue(hechosFiltrados.get(2).getFechaDeAcontecimiento().isBefore(LocalDate.of(2010, 1, 1)), "El tercer hecho debe estar antes de 01/01/2010.");
     }
 
     @Test
@@ -89,7 +88,7 @@ class CrearColeccionMedianteCargaManualTest {
     void testDobleCriterioPertenencia() throws Exception {
         LocalDate fechaInicial = LocalDate.of(2000, 1, 1);
         LocalDate fechaFinal = LocalDate.of(2010, 1, 1);
-        Criterio nuevoCriterio = new CriterioEntreFechas(fechaInicial, fechaFinal);
+        Criterio nuevoCriterio = new CriterioFechas(fechaInicial, fechaFinal, TipoFecha.ACONTECIMIENTO);
 
         Criterio otroCriterio = new CriterioCategoria("Caída de aeronave");
 

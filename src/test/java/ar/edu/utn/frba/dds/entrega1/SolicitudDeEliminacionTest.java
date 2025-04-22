@@ -35,7 +35,7 @@ public class SolicitudDeEliminacionTest {
     dataHecho.setCategoria("Evento sanitario");
     dataHecho.setLatitud(-32.786098);
     dataHecho.setLongitud(-60.741543);
-    dataHecho.setFecha(LocalDate.of(2005, 7, 5));
+    dataHecho.setFechaDeAcontecimiento(LocalDate.of(2005, 7, 5));
 
     hecho = new Hecho(dataHecho, OrigenHecho.MANUAL);
     contribuyente = new Contribuyente();
