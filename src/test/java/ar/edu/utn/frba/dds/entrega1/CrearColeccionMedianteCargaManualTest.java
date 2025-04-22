@@ -2,7 +2,6 @@ package ar.edu.utn.frba.dds.entrega1;
 
 
 import ar.edu.utn.frba.dds.domain.datasource.Fuente;
-import ar.edu.utn.frba.dds.domain.datasource.FuenteDinamica;
 import ar.edu.utn.frba.dds.domain.model.coleccion.Coleccion;
 import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.*;
 import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
@@ -11,6 +10,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -55,8 +57,14 @@ class CrearColeccionMedianteCargaManualTest {
                 -26.780008, -60.458782);
         administrador = new Administrador();
         List<Hecho> hechos = List.of(hecho1, hecho2, hecho3, hecho4, hecho5);
-        fuente = new FuenteDinamica(hechos);
+        fuente = mock(Fuente.class);
+        try {
+        when(fuente.importarHechos()).thenReturn(hechos);
         coleccion = administrador.crearColeccion("Colección prueba", "Esto es una prueba", fuente, null);
+
+        } catch (Exception e) {
+            fail("No se esperaba una excepción: " + e.getMessage());
+        }
     }
     @Test
     @DisplayName("Escenario 1:  Creación de colección mediante carga manual")
