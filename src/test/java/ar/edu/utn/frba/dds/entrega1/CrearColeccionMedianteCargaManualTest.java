@@ -5,8 +5,7 @@ import ar.edu.utn.frba.dds.domain.datasource.Fuente;
 import ar.edu.utn.frba.dds.domain.datasource.FuenteDinamica;
 import ar.edu.utn.frba.dds.domain.datasource.FuenteEstatica;
 import ar.edu.utn.frba.dds.domain.model.coleccion.Coleccion;
-import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.Criterio;
-import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.CriterioEntreFechas;
+import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.*;
 import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
 import ar.edu.utn.frba.dds.domain.model.user.Administrador;
 import org.junit.jupiter.api.Assertions;
@@ -85,4 +84,43 @@ class CrearColeccionMedianteCargaManualTest {
         Assertions.assertTrue(hechosFiltrados.get(2).getFecha().isBefore(LocalDate.of(2010, 1, 1)), "El tercer hecho debe estar antes de 01/01/2010.");
     }
 
+    @Test
+    @DisplayName("Escenario 1.2: Doble criterio de pertenencia.")
+    void testDobleCriterioPertenencia() throws Exception {
+        LocalDate fechaInicial = LocalDate.of(2000, 1, 1);
+        LocalDate fechaFinal = LocalDate.of(2010, 1, 1);
+        Criterio nuevoCriterio = new CriterioEntreFechas(fechaInicial, fechaFinal);
+
+        Criterio otroCriterio = new CriterioCategoria("Caída de aeronave");
+
+        List<Criterio> criterios = List.of(nuevoCriterio, otroCriterio);
+        Criterio criterioCombinado = new CriterioCombinado(criterios);
+
+        coleccion.setCriterioDePertenencia(criterioCombinado);
+
+        List<Hecho> hechosFiltrados = coleccion.obtenerHechos();
+
+        Assertions.assertEquals(2, hechosFiltrados.size(), "La colección debe contener solo tres hechos.");
+
+        // Verificar que los hechos son los tres primeros que cumplen con la condición de fecha
+        Assertions.assertEquals(-36.868375, hechosFiltrados.get(0).getLatitud());
+        Assertions.assertEquals(-33.768051, hechosFiltrados.get(1).getLatitud());
+    }
+
+    @Test
+    @DisplayName("Escenario 1.3: Filtros del visualizador")
+    void testFiltroVisualizador() throws Exception{
+        Criterio unCriterio = new CriterioCategoria("Caída de Aeronave");
+        Criterio otroCriterio = new CriterioTitulo("un título");
+
+        List<Criterio> criterios = List.of(unCriterio, otroCriterio);
+        Criterio criterioCombinado = new CriterioCombinado(criterios);
+
+        coleccion.setCriterioDePertenencia(criterioCombinado);
+
+        List<Hecho> hechosFiltrados = coleccion.obtenerHechos();
+
+        Assertions.assertTrue(hechosFiltrados.isEmpty(), "La lista deberia estar vacia");
+
+    }
 }

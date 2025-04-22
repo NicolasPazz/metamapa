@@ -43,6 +43,11 @@ public class Hecho {
     this.estado = EstadoHecho.OCULTO;
   }
 
+  public boolean esVisible() {
+    return this.estado == EstadoHecho.VISIBLE;
+  }
+
+
   public String getTitulo() {
     return data.getTitulo();
   }

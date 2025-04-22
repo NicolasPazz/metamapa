@@ -3,6 +3,8 @@ package ar.edu.utn.frba.dds.domain.model.coleccion;
 import ar.edu.utn.frba.dds.domain.datasource.Fuente;
 import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.Criterio;
 import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
+
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.Getter;
@@ -23,12 +25,18 @@ public class Coleccion {
     this.criterioDePertenencia = criterioDePertenencia;
   }
 
+  public List<Hecho> importarHechosVisibles() throws Exception {
+    return this.fuente.importarHechos().stream().filter(Hecho::esVisible).collect(Collectors.toList());
+  }
+
   public List<Hecho> obtenerHechos() throws Exception {
+    List<Hecho> hechosVisibles = this.importarHechosVisibles();
+
     if (criterioDePertenencia == null) {
-      return this.fuente.importarHechos();
+      return hechosVisibles;
     }
     // Si hay criterioDePertenencia, lo aplicamos como filtro
-    return this.fuente.importarHechos().stream()
+    return hechosVisibles.stream()
             .filter(criterioDePertenencia::cumple)
             .toList();
   }
