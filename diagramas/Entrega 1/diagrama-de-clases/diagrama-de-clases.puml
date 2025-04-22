@@ -59,13 +59,13 @@ class CriterioDescripcion {
     -descripcion: String
     +cumple(hecho: Hecho): Boolean
 }
-class CriterioEntreFechas {
+class CriterioFechas {
     -fechaInicial: LocalDate
     -fechaFinal: LocalDate
     -tipoFecha: TipoFecha
     +cumple(hecho: Hecho): Boolean
 }
-class CriterioLugarLatLng {
+class CriterioLugar {
     -lat: Double
     -lng: Double
     +cumple(hecho: Hecho): Boolean
@@ -142,12 +142,12 @@ Fuente <|-- FuenteProxy
 Criterio <|.. CriterioCategoria
 Criterio <|.. CriterioCombinado
 Criterio <|.. CriterioDescripcion
-Criterio <|.. CriterioEntreFechas
-Criterio <|.. CriterioLugarLatLng
+Criterio <|.. CriterioFechas
+Criterio <|.. CriterioLugar
 Criterio <|.. CriterioTitulo
 Criterio <|.. CriterioOrigen
 
-CriterioEntreFechas --> TipoFecha
+CriterioFechas --> TipoFecha
 
 Coleccion --> Fuente
 Coleccion --> Criterio
