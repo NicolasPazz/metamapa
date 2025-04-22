@@ -1,5 +1,7 @@
 package ar.edu.utn.frba.dds.entrega1;
 
+import ar.edu.utn.frba.dds.domain.datasource.FuenteDinamica;
+import ar.edu.utn.frba.dds.domain.model.coleccion.Coleccion;
 import ar.edu.utn.frba.dds.domain.model.hecho.DataHecho;
 import ar.edu.utn.frba.dds.domain.model.hecho.EstadoHecho;
 import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public class SolicitudDeEliminacionTest {
   private Hecho hecho;
@@ -57,12 +60,18 @@ public class SolicitudDeEliminacionTest {
   }
 
   @Test
-  @DisplayName("Un administrador puede aceptar una solicitud de eliminacion y esta quedara en estado aceptada")
-  void administradorAceptaSolicitud() {
+  @DisplayName("Un administrador puede aceptar una solicitud de eliminacion, esta quedara en estado aceptada y no permite que el hecho se agregue a una coleccion")
+  void administradorAceptaSolicitud() throws Exception {
     SolicitudDeEliminacion solicitud = contribuyente.solicitarEliminacion(hecho, textoLargo);
     administrador.aceptarSolicitud(solicitud);
+
+    FuenteDinamica fuente = new FuenteDinamica(List.of(hecho));
+    Coleccion coleccion = new Coleccion("Coleccion de prueba", "Test para hechos ocultos", fuente, null);
+    List<Hecho> hechosVisibles = coleccion.obtenerHechos();
+
     Assertions.assertEquals(EstadoSolicitud.ACEPTADA, solicitud.getEstado());
     Assertions.assertEquals(EstadoHecho.OCULTO, hecho.getEstado());
+    Assertions.assertFalse(hechosVisibles.contains(hecho));
   }
 
   @Test
