@@ -1,4 +1,4 @@
-package ar.edu.utn.frba.dds.model.domain.hecho;
+package ar.edu.utn.frba.dds.domain.model.hecho;
 
 public enum OrigenHecho {
   DATASET,

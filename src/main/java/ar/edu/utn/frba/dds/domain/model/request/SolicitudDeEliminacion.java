@@ -1,11 +1,11 @@
-package ar.edu.utn.frba.dds.model.domain.request;
+package ar.edu.utn.frba.dds.domain.model.request;
 
-import ar.edu.utn.frba.dds.model.domain.hecho.Hecho;
+import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import ar.edu.utn.frba.dds.model.domain.user.Contribuyente;
-import java.time.LocalDateTime;
+
+import java.time.LocalDate;
 
 @Getter
 @Setter
@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 public class SolicitudDeEliminacion {
   private Hecho hecho;
   private String textoFundamentos;
-  private LocalDateTime fecha;
+  private LocalDate fecha;
   private EstadoSolicitud estado;
 
   public SolicitudDeEliminacion(Hecho hecho, String textoFundamentos) {
@@ -22,13 +22,13 @@ public class SolicitudDeEliminacion {
     }
     this.hecho = hecho;
     this.textoFundamentos = textoFundamentos;
-    this.fecha = LocalDateTime.now();
+    this.fecha = LocalDate.now();
     this.estado = EstadoSolicitud.PENDIENTE;
   }
 
   public void aceptar() {
     this.estado = EstadoSolicitud.ACEPTADA;
-    hecho.marcarComoOculto();
+    hecho.ocultar();
   }
 
   public void rechazar() {
