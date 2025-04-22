@@ -55,6 +55,8 @@ public class SolicitudDeEliminacionTest {
   @DisplayName("Un administrador puede rechazar una solicitud de eliminacion y esta quedara en estado rechazada")
   void administradorRechazaSolicitud() {
     SolicitudDeEliminacion solicitud = contribuyente.solicitarEliminacion(hecho, textoLargo);
+    solicitud.setFecha(solicitud.getFecha().minusDays(1));
+    Assertions.assertEquals(EstadoSolicitud.PENDIENTE, solicitud.getEstado());
     administrador.rechazarSolicitud(solicitud);
     Assertions.assertEquals(EstadoSolicitud.RECHAZADA, solicitud.getEstado());
   }

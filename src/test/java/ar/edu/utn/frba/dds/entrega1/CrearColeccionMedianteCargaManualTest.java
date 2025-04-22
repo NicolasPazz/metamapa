@@ -125,13 +125,13 @@ class CrearColeccionMedianteCargaManualTest {
     @Test
     @DisplayName("Escenario 1.4: Etiquetas")
     void testEtiquetas() throws Exception {
+        hecho1.agregarEtiqueta("Olavarría");
+        hecho1.agregarEtiqueta("Grave");
+
         Hecho hechoOlavarria = coleccion.obtenerHechos().stream()
             .filter(h -> h.getTitulo().equals("Caída de aeronave impacta en Olavarría"))
             .findFirst()
             .orElseThrow(() -> new RuntimeException("No se encontró el hecho esperado"));
-
-        hechoOlavarria.agregarEtiqueta("Olavarría");
-        hechoOlavarria.agregarEtiqueta("Grave");
 
         Assertions.assertTrue(hechoOlavarria.contieneEtiqueta("Olavarría"), "El hecho debe tener la etiqueta 'Olavarría'");
         Assertions.assertTrue(hechoOlavarria.contieneEtiqueta("Grave"), "El hecho debe tener la etiqueta 'Grave'");
