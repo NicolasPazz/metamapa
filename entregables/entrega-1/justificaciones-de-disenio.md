@@ -2,7 +2,7 @@
 ## MetaMapa: Sistema de gestión de mapeos colaborativos
 ---
 ## Justificación de diseño iniciales
-Esta primera implementación tiene un diseño estructurado que emplea una serie de patrones de diseño y principios orientados a objetos para abordar el problema de forma modular, escalable y flexible. A continuación se detallan las principales decisiones de diseño:
+Esta primera implementación tiene un diseño estructurado que emplea una serie de patrones de diseño y principios orientados a objetos para abordar el problema de forma modular y flexible. A continuación se detallan las principales decisiones de diseño:
 > ## Principios SOLID
 > Buscamos respetar todos los principios `SOLID` de la siguiente manera:
 > - **Single Responsibility**  
@@ -33,7 +33,9 @@ Esta primera implementación tiene un diseño estructurado que emplea una serie 
 > - El origen de un `hecho`.
 > - El `tipo de fecha`.
 > 
-> Esto simplifica la implementación y evita sobreingeniería (por ejemplo, no se utiliza una jerarquía de clases abstractas cuando no es necesario).
+> Esto `simplifica` la implementación y evita sobreingeniería (por ejemplo, no se utiliza una jerarquía de clases abstractas cuando no es necesario).
+> Mejora la `reusabilidad` de ciertos componentes para distintos contextos.
+> 
 > 
 > Ejemplo:  
 Utilizamos un enum para el `origen de un hecho` en vez de una clase abstracta de la cual puedan `heredar` otras clases, como `OrigenContribuyente`, `OrigenDataset`, etc., ya que pensamos que este atributo solo va a funcionar para filtrar diferente hechos según su origen, y no para poder asociarlos a sus diferentes orígenes.
@@ -70,9 +72,9 @@ Utilizamos un enum para el `origen de un hecho` en vez de una clase abstracta de
 > Ventajas:
 > - Permite tratar criterios simples y combinados de forma `polimorfica`.
 > - Aporta `flexibilidad` para componer lógicas complejas de filtrado.
-> - Mejora la `testeabilidad`.
+> - Mejora la `testeabilidad` ya que se puede testear cada criterio por separado, y combinados.
 
-> ## Acoplamiento
+> ## Modularidad
 > Se mantiene el `acoplamiento` al minimo, por ejemplo con la clase `Colección` que depende de la interfaz `Fuente`, sin conocer si proviene de un CSV, una carga manual o una API externa. Tampoco sabe si su criterio de pertenencia es simple o combinado.
 
 > ## DataHecho

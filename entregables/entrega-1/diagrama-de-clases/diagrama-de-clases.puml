@@ -168,7 +168,8 @@ CriterioFechas --> TipoFecha
 Coleccion --> Fuente
 Coleccion --> Criterio
 
-FuenteDinamica --> Hecho
+FuenteDinamica --> " * " Hecho
+FuenteEstatica ..> Hecho
 
 SolicitudDeEliminacion --> Hecho
 SolicitudDeEliminacion --> EstadoSolicitud
