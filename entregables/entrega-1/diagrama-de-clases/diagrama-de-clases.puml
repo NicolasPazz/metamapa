@@ -6,14 +6,25 @@ class Hecho {
     -origen: OrigenHecho
     -estado: EstadoHecho
     -contribuyente: Contribuyente
-    -etiquetas: Set<String>
-    -contenidoMultimedia: ContenidoMultimedia
+    -etiquetas: Set<Etiqueta>
+    -contenidoMultimedia: List<ContenidoMultimedia>
+    -transicionesDeEstado: List<Transicion>
 
     +esDuplicadoDe(otroHecho: Hecho): Boolean
-    +ocultar(): void
+    +ocultar(): Void
     +esVisible(): Boolean
-    +agregarEtiqueta(etiqueta: String): void
-    +contieneEtiqueta(etiqueta: String): Boolean
+    +agregarEtiqueta(unaEtiqueta: Etiqueta): Void
+    +contieneEtiqueta(unaEtiqueta: Etiqueta): Boolean
+}
+
+class Transicion {
+    -fecha: LocalDate
+    -estadoFinal: EstadoHecho
+    -solicitud: SolicitudDeEliminacion
+}
+
+class Etiqueta {
+    -nombre: String
 }
 
 class ContenidoMultimedia{
@@ -24,16 +35,21 @@ class ContenidoMultimedia{
 enum TipoContenido{
    IMAGEN
    VIDEO
+   AUDIO
 }
 
 class DataHecho {
     -titulo: String
     -descripcion: String
-    -categoria: String
+    -categoria: Categoria
     -latitud: Double
     -longitud: Double
     -fechaDeAcontecimiento: LocalDate
     -fechaDeCarga: LocalDate
+}
+
+class Categoria {
+    -categoria: String
 }
 
 enum OrigenHecho {
@@ -61,18 +77,25 @@ interface Criterio {
     +cumple(hecho: Hecho): Boolean
 }
 class CriterioCategoria {
-    -categoria: String
+    -categoria: Categoria
     +cumple(hecho: Hecho): Boolean
 }
 class CriterioCombinado {
     -criterios: List<Criterio>
     +cumple(hecho: Hecho): Boolean
-    +agregarCriterio(criterio: Criterio): void
+    +agregarCriterio(criterio: Criterio): Void
 }
-class CriterioDescripcion {
-    -descripcion: String
+class CriterioIgualdad {
+    -cadenaAComparar: String
+    -tipoDeDato: TipoDato
     +cumple(hecho: Hecho): Boolean
 }
+
+enum TipoDato {
+    TITULO
+    DESCRIPCION
+}
+
 class CriterioFechas {
     -fechaInicial: LocalDate
     -fechaFinal: LocalDate
@@ -84,10 +107,7 @@ class CriterioLugar {
     -lng: Double
     +cumple(hecho: Hecho): Boolean
 }
-class CriterioTitulo {
-    -titulo: String
-    +cumple(hecho: Hecho): Boolean
-}
+
 class CriterioOrigen {
     -origen: OrigenHecho
     +cumple(hecho: Hecho): Boolean
@@ -100,26 +120,34 @@ enum TipoFecha {
 
 abstract Fuente {
     +importarHechos(): List<Hecho>
-    +abrirFuente(): void
-    +cerrarFuente(): void
+    +abrirFuente(): Void
+    +cerrarFuente(): Void
 }
 class FuenteEstatica {
     -rutaArchivo: String
     -lector: FileReader
 }
-class FuenteDinamica {
-    -hechos: List<Hecho>
-}
-class FuenteProxy
 
 class SolicitudDeEliminacion {
     -hecho: Hecho
     -textoFundamentos: String
     -fecha: LocalDate
     -estado: EstadoSolicitud
+    -contribuyente: Contribuyente
+    -validaciones: Set<Validacion>
 
-    +aceptar(): void
-    +rechazar(): void
+    +aceptar(): Void
+    +rechazar(): Void
+}
+
+interface Validacion {
+    +cumple(solicitud: SolicitudDeEliminacion): Boolean
+}
+
+class ValidacionLongitud {
+    -int longitud
+
+    +cumple(solicitud: SolicitudDeEliminacion): Boolean
 }
 
 enum EstadoSolicitud {
@@ -131,51 +159,47 @@ enum EstadoSolicitud {
 class Contribuyente {
     -nombre: String
     -apellido: String
-    -edad: Integer
+    -fechaDeNacimiento: LocalDate
 
+    +edad(): Int
     +esAnonimo(): Boolean
-    +subir(hecho: Hecho): void
+    +subir(hecho: Hecho): Void
     +solicitarEliminacion(hecho: Hecho, fundamentos: String): SolicitudDeEliminacion
 }
-
-class Administrador {
-    +crearColeccion(titulo: String, descripcion: String, fuente: Fuente, criterioDePertenencia: Criterio): Coleccion
-    +aceptarSolicitud(solicitud: SolicitudDeEliminacion): void
-    +rechazarSolicitud(solicitud: SolicitudDeEliminacion): void
-}
-
 
 Hecho --> DataHecho
 Hecho --> Contribuyente
 Hecho --> OrigenHecho
 Hecho --> EstadoHecho
-Hecho --> ContenidoMultimedia
+Hecho --> " * " ContenidoMultimedia
+Hecho --> " * "  Etiqueta
+Hecho --> " * " Transicion
 
 Fuente <|-- FuenteEstatica
-Fuente <|-- FuenteDinamica
-Fuente <|-- FuenteProxy
 
 Criterio <|.. CriterioCategoria
 Criterio <|.. CriterioCombinado
-Criterio <|.. CriterioDescripcion
+Criterio <|.. CriterioIgualdad
 Criterio <|.. CriterioFechas
 Criterio <|.. CriterioLugar
-Criterio <|.. CriterioTitulo
 Criterio <|.. CriterioOrigen
 
 CriterioFechas --> TipoFecha
+Criterio <-- CriterioCombinado
+CriterioCategoria --> Categoria
+CriterioIgualdad --> TipoDato
+DataHecho --> Categoria
 
 Coleccion --> Fuente
 Coleccion --> Criterio
 
-FuenteDinamica --> " * " Hecho
 FuenteEstatica ..> Hecho
 
 SolicitudDeEliminacion --> Hecho
 SolicitudDeEliminacion --> EstadoSolicitud
-
-Administrador ..> Coleccion
-Administrador ..> SolicitudDeEliminacion
+SolicitudDeEliminacion --> Contribuyente
+SolicitudDeEliminacion --> " * " Validacion
+Validacion <|.. ValidacionLongitud
 
 ContenidoMultimedia --> TipoContenido
 
