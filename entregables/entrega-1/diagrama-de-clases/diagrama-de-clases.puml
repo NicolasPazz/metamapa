@@ -1,210 +1,226 @@
-// IMPORTANTE: actualizar la url en la previsualizacion si se modifica el .puml
-
 @startuml
-class Hecho {
-    -data: DataHecho
-    -origen: OrigenHecho
-    -estado: EstadoHecho
-    -contribuyente: Contribuyente
-    -etiquetas: Set<Etiqueta>
-    -contenidoMultimedia: List<ContenidoMultimedia>
-    -transicionesDeEstado: List<Transicion>
+' IMPORTANTE: actualizar la url en la previsualización si se modifica el .puml
 
-    +esDuplicadoDe(otroHecho: Hecho): Boolean
-    +ocultar(): Void
-    +esVisible(): Boolean
-    +agregarEtiqueta(unaEtiqueta: Etiqueta): Void
-    +contieneEtiqueta(unaEtiqueta: Etiqueta): Boolean
-}
-
-class Transicion {
-    -fecha: LocalDate
-    -estadoFinal: EstadoHecho
-    -solicitud: SolicitudDeEliminacion
-}
-
-class Etiqueta {
-    -nombre: String
-}
-
-class ContenidoMultimedia{
-   -tipoContenido: TipoContenido
-   -rutaAcceso: String
-}
-
-enum TipoContenido{
-   IMAGEN
-   VIDEO
-   AUDIO
-}
-
-class DataHecho {
-    -titulo: String
-    -descripcion: String
-    -categoria: Categoria
-    -latitud: Double
-    -longitud: Double
-    -fechaDeAcontecimiento: LocalDate
-    -fechaDeCarga: LocalDate
-}
-
-class Categoria {
-    -categoria: String
-}
-
-enum OrigenHecho {
-    DATASET
-    MANUAL
-    CONTRIBUYENTE
-}
-
-enum EstadoHecho{
-    VISIBLE
-    OCULTO
-}
-
-class Coleccion {
-    -titulo: String
-    -descripcion: String
-    -fuente: Fuente
-    -criterioDePertenencia: Criterio
-
-    +importarHechosVisibles(): List<Hecho>
-    +obtenerHechos(): List<Hecho>
-}
+' ==== INTERFACES ====
 
 interface Criterio {
-    +cumple(hecho: Hecho): Boolean
-}
-class CriterioCategoria {
-    -categoria: Categoria
-    +cumple(hecho: Hecho): Boolean
-}
-class CriterioCombinado {
-    -criterios: List<Criterio>
-    +cumple(hecho: Hecho): Boolean
-    +agregarCriterio(criterio: Criterio): Void
-}
-class CriterioIgualdad {
-    -cadenaAComparar: String
-    -tipoDeDato: TipoDato
-    +cumple(hecho: Hecho): Boolean
-}
-
-enum TipoDato {
-    TITULO
-    DESCRIPCION
-}
-
-class CriterioFechas {
-    -fechaInicial: LocalDate
-    -fechaFinal: LocalDate
-    -tipoFecha: TipoFecha
-    +cumple(hecho: Hecho): Boolean
-}
-class CriterioLugar {
-    -lat: Double
-    -lng: Double
-    +cumple(hecho: Hecho): Boolean
-}
-
-class CriterioOrigen {
-    -origen: OrigenHecho
-    +cumple(hecho: Hecho): Boolean
-}
-
-enum TipoFecha {
-    CARGA
-    ACONTECIMIENTO
-}
-
-abstract Fuente {
-    +importarHechos(): List<Hecho>
-    +abrirFuente(): Void
-    +cerrarFuente(): Void
-}
-class FuenteEstatica {
-    -rutaArchivo: String
-    -lector: FileReader
-}
-
-class SolicitudDeEliminacion {
-    -hecho: Hecho
-    -textoFundamentos: String
-    -fecha: LocalDate
-    -estado: EstadoSolicitud
-    -contribuyente: Contribuyente
-    -validaciones: Set<Validacion>
-
-    +aceptar(): Void
-    +rechazar(): Void
+    + cumple(hecho: Hecho): Boolean
 }
 
 interface Validacion {
-    +cumple(solicitud: SolicitudDeEliminacion): Boolean
+    + cumple(solicitud: SolicitudDeEliminacion): Boolean
 }
 
-class ValidacionLongitud {
-    -int longitud
+' ==== CLASES ====
 
-    +cumple(solicitud: SolicitudDeEliminacion): Boolean
+class Categoria {
+    - categoria: String
 }
 
-enum EstadoSolicitud {
-    PENDIENTE
-    ACEPTADA
-    RECHAZADA
+class Coleccion {
+    - criterioDePertenencia: Criterio
+    - descripcion: String
+    - fuente: Fuente
+    - titulo: String
+
+    + importarHechosVisibles(): List<Hecho>
+    + obtenerHechos(): List<Hecho>
 }
 
-class Contribuyente {
-    -nombre: String
-    -apellido: String
-    -fechaDeNacimiento: LocalDate
-
-    +edad(): Int
-    +esAnonimo(): Boolean
-    +subir(hecho: Hecho): Void
-    +solicitarEliminacion(hecho: Hecho, fundamentos: String): SolicitudDeEliminacion
-}
-
-Hecho --> DataHecho
-Hecho --> Contribuyente
-Hecho --> OrigenHecho
-Hecho --> EstadoHecho
-Hecho --> " * " ContenidoMultimedia
-Hecho --> " * "  Etiqueta
-Hecho --> " * " Transicion
-
-Fuente <|-- FuenteEstatica
-
-Criterio <|.. CriterioCategoria
-Criterio <|.. CriterioCombinado
-Criterio <|.. CriterioIgualdad
-Criterio <|.. CriterioFechas
-Criterio <|.. CriterioLugar
-Criterio <|.. CriterioOrigen
-
-CriterioFechas --> TipoFecha
-Criterio <-- CriterioCombinado
-CriterioCategoria --> Categoria
-CriterioIgualdad --> TipoDato
-DataHecho --> Categoria
-
-Coleccion --> Fuente
 Coleccion --> Criterio
+Coleccion --> Fuente
 
-FuenteEstatica ..> Hecho
-
-SolicitudDeEliminacion --> Hecho
-SolicitudDeEliminacion --> EstadoSolicitud
-SolicitudDeEliminacion --> Contribuyente
-SolicitudDeEliminacion --> " * " Validacion
-Validacion <|.. ValidacionLongitud
+class ContenidoMultimedia {
+    - pathArchivo: String
+    - tipoContenido: TipoContenido
+}
 
 ContenidoMultimedia --> TipoContenido
 
+class Contribuyente {
+    - apellido: String
+    - fechaDeNacimiento: LocalDate
+    - nombre: String
+
+    + edad(): Int
+    + esAnonimo(): Boolean
+    + solicitarEliminacion(hecho: Hecho, fundamentos: String): SolicitudDeEliminacion
+    + subir(hecho: Hecho): Void
+}
+
 Contribuyente ..> Hecho
 
+class CriterioCombinado {
+    - criterios: List<Criterio>
+
+    + agregarCriterio(criterio: Criterio): Void
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioCombinado ..|> Criterio
+CriterioCombinado --> " * " Criterio
+
+class CriterioFechas {
+    - fechaFinal: LocalDate
+    - fechaInicial: LocalDate
+    - tipoFecha: TipoFecha
+
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioFechas ..|> Criterio
+CriterioFechas --> TipoFecha
+
+class CriterioIgualdad {
+    - cadenaAComparar: String
+    - tipoDeDato: TipoDato
+
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioIgualdad ..|> Criterio
+CriterioIgualdad --> TipoDato
+
+class CriterioLugar {
+    - lat: Double
+    - lng: Double
+
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioLugar ..|> Criterio
+
+class CriterioOrigen {
+    - origen: OrigenHecho
+
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioOrigen ..|> Criterio
 CriterioOrigen --> OrigenHecho
+
+class DataHecho {
+    - categoria: Categoria
+    - descripcion: String
+    - fechaDeAcontecimiento: LocalDate
+    - fechaDeCarga: LocalDate
+    - latitud: Double
+    - longitud: Double
+    - titulo: String
+}
+
+DataHecho --> Categoria
+
+class Etiqueta {
+    - nombre: String
+}
+
+class Fuente {
+    - pathArchivo: String
+
+    + importarHechos(): List<Hecho>
+}
+
+class Hecho {
+    - contenidoMultimedia: List<ContenidoMultimedia>
+    - contribuyente: Contribuyente
+    - data: DataHecho
+    - etiquetas: Set<Etiqueta>
+    - estado: EstadoHecho
+    - origen: OrigenHecho
+    - transicionesDeEstado: List<TransicionEstadoHecho>
+
+    + agregarEtiqueta(unaEtiqueta: Etiqueta): Void
+    + contieneEtiqueta(unaEtiqueta: Etiqueta): Boolean
+    + esDuplicadoDe(otroHecho: Hecho): Boolean
+    + esVisible(): Boolean
+    + ocultar(): Void
+}
+
+Hecho --> Contribuyente
+Hecho *-- DataHecho
+Hecho --> EstadoHecho
+Hecho --> OrigenHecho
+Hecho --> " * " ContenidoMultimedia
+Hecho --> " * " Etiqueta
+Hecho --> " * " TransicionEstadoHecho
+
+class SolicitudDeEliminacion {
+    - contribuyente: Contribuyente
+    - hecho: Hecho
+    - estado: EstadoSolicitud
+    - fecha: LocalDate
+    - textoFundamentos: String
+    - transicionesDeEstado: List<TransicionEstadoSolicitud>
+    - validaciones: Set<Validacion>
+
+    + aceptar(): Void
+    + rechazar(): Void
+}
+
+SolicitudDeEliminacion --> Contribuyente
+SolicitudDeEliminacion --> EstadoSolicitud
+SolicitudDeEliminacion --> Hecho
+SolicitudDeEliminacion --> " * " TransicionEstadoSolicitud
+SolicitudDeEliminacion --> " * " Validacion
+
+class TransicionEstadoHecho {
+    - estadoFinal: EstadoHecho
+    - fecha: LocalDate
+}
+
+TransicionEstadoHecho --> EstadoHecho
+
+class TransicionEstadoSolicitud {
+    - estadoFinal: EstadoSolicitud
+    - fecha: LocalDate
+}
+
+TransicionEstadoSolicitud --> EstadoSolicitud
+
+class ValidacionLongitud {
+    - longitud: Int
+
+    + cumple(solicitud: SolicitudDeEliminacion): Boolean
+}
+
+ValidacionLongitud ..|> Validacion
+
+' ==== ENUMS ====
+
+enum EstadoHecho {
+    OCULTO
+    VISIBLE
+}
+
+enum EstadoSolicitud {
+    ACEPTADA
+    PENDIENTE
+    RECHAZADA
+}
+
+enum OrigenHecho {
+    CONTRIBUYENTE
+    DATASET
+    MANUAL
+}
+
+enum TipoContenido {
+    AUDIO
+    IMAGEN
+    VIDEO
+}
+
+enum TipoDato {
+    CATEGORIA
+    DESCRIPCION
+    ETIQUETA
+    TITULO
+}
+
+enum TipoFecha {
+    ACONTECIMIENTO
+    CARGA
+}
 
 @enduml
