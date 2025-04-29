@@ -50,17 +50,16 @@ class Contribuyente {
 
 Contribuyente ..> Hecho
 
-class CriterioCombinado {
+class CriterioCombinado implements Criterio {
     - criterios: List<Criterio>
 
     + agregarCriterio(criterio: Criterio): Void
     + cumple(hecho: Hecho): Boolean
 }
 
-CriterioCombinado ..|> Criterio
 CriterioCombinado --> " * " Criterio
 
-class CriterioFechas {
+class CriterioFechas implements Criterio {
     - fechaFinal: LocalDate
     - fechaInicial: LocalDate
     - tipoFecha: TipoFecha
@@ -68,35 +67,30 @@ class CriterioFechas {
     + cumple(hecho: Hecho): Boolean
 }
 
-CriterioFechas ..|> Criterio
 CriterioFechas --> TipoFecha
 
-class CriterioIgualdad {
+class CriterioIgualdad implements Criterio {
     - cadenaAComparar: String
     - tipoDeDato: TipoDato
 
     + cumple(hecho: Hecho): Boolean
 }
 
-CriterioIgualdad ..|> Criterio
 CriterioIgualdad --> TipoDato
 
-class CriterioLugar {
+class CriterioLugar implements Criterio {
     - lat: Double
     - lng: Double
 
     + cumple(hecho: Hecho): Boolean
 }
 
-CriterioLugar ..|> Criterio
-
-class CriterioOrigen {
+class CriterioOrigen implements Criterio {
     - origen: OrigenHecho
 
     + cumple(hecho: Hecho): Boolean
 }
 
-CriterioOrigen ..|> Criterio
 CriterioOrigen --> OrigenHecho
 
 class DataHecho {
@@ -178,13 +172,11 @@ class TransicionEstadoSolicitud {
 
 TransicionEstadoSolicitud --> EstadoSolicitud
 
-class ValidacionLongitud {
+class ValidacionLongitud implements Validacion {
     - longitud: Int
 
     + cumple(solicitud: SolicitudDeEliminacion): Boolean
 }
-
-ValidacionLongitud ..|> Validacion
 
 ' ==== ENUMS ====
 
