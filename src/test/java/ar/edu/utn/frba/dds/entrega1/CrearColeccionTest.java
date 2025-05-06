@@ -1,13 +1,13 @@
 package ar.edu.utn.frba.dds.entrega1;
 
-import ar.edu.utn.frba.dds.domain.datasource.FuenteEstatica;
-import ar.edu.utn.frba.dds.domain.model.coleccion.Coleccion;
-import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.CriterioCategoria;
-import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.CriterioTitulo;
-import ar.edu.utn.frba.dds.domain.model.hecho.DataHecho;
-import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
-import ar.edu.utn.frba.dds.domain.model.hecho.OrigenHecho;
-import ar.edu.utn.frba.dds.domain.model.user.Administrador;
+import ar.edu.utn.frba.dds.service.impl.FuenteEstatica;
+import ar.edu.utn.frba.dds.domain.coleccion.Coleccion;
+import ar.edu.utn.frba.dds.domain.coleccion.criterioDePertenencia.CriterioCategoria;
+import ar.edu.utn.frba.dds.domain.coleccion.criterioDePertenencia.CriterioTitulo;
+import ar.edu.utn.frba.dds.domain.hecho.DataHecho;
+import ar.edu.utn.frba.dds.domain.hecho.Hecho;
+import ar.edu.utn.frba.dds.domain.hecho.OrigenHecho;
+import ar.edu.utn.frba.dds.domain.user.Administrador;
 
 import java.time.LocalDate;
 import java.util.LinkedHashMap;

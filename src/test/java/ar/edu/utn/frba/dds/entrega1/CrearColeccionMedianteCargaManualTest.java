@@ -1,11 +1,16 @@
 package ar.edu.utn.frba.dds.entrega1;
 
 
-import ar.edu.utn.frba.dds.domain.datasource.Fuente;
-import ar.edu.utn.frba.dds.domain.model.coleccion.Coleccion;
-import ar.edu.utn.frba.dds.domain.model.coleccion.criterioDePertenencia.*;
-import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
-import ar.edu.utn.frba.dds.domain.model.user.Administrador;
+import ar.edu.utn.frba.dds.domain.coleccion.criterioDePertenencia.Criterio;
+import ar.edu.utn.frba.dds.domain.coleccion.criterioDePertenencia.CriterioCategoria;
+import ar.edu.utn.frba.dds.domain.coleccion.criterioDePertenencia.CriterioCombinado;
+import ar.edu.utn.frba.dds.domain.coleccion.criterioDePertenencia.CriterioFechas;
+import ar.edu.utn.frba.dds.domain.coleccion.criterioDePertenencia.CriterioTitulo;
+import ar.edu.utn.frba.dds.domain.coleccion.criterioDePertenencia.TipoFecha;
+import ar.edu.utn.frba.dds.service.Fuente;
+import ar.edu.utn.frba.dds.domain.coleccion.Coleccion;
+import ar.edu.utn.frba.dds.domain.hecho.Hecho;
+import ar.edu.utn.frba.dds.domain.user.Administrador;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

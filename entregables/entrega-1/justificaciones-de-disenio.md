@@ -52,7 +52,7 @@ Utilizamos un enum para el `origen de un hecho` en vez de una clase abstracta de
 > - No representa una entidad con responsabilidades propias dentro del dominio.
 > - No tiene relaciones con otras clases del modelo, a diferencia de `Contribuyente`.
 >
-> Por esta razón, decidimos solo tener una clase `Contribuyente`, el cual puede tener sus atributos vacíos en caso de solo querer visualizar los hechos, promoviendo la `usabilidad`.
+> Por esta razón, decidimos solo tener una clase `Contribuyente`, el cual puede tener sus atributos vacíos en caso de solo querer visualizar los hechos.
 > 
 > Si quiere subir un hecho deberá identificarse anteriormente.
 

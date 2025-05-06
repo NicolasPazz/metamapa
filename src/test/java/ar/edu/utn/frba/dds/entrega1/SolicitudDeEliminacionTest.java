@@ -1,15 +1,15 @@
 package ar.edu.utn.frba.dds.entrega1;
 
-import ar.edu.utn.frba.dds.domain.datasource.FuenteDinamica;
-import ar.edu.utn.frba.dds.domain.model.coleccion.Coleccion;
-import ar.edu.utn.frba.dds.domain.model.hecho.DataHecho;
-import ar.edu.utn.frba.dds.domain.model.hecho.EstadoHecho;
-import ar.edu.utn.frba.dds.domain.model.hecho.Hecho;
-import ar.edu.utn.frba.dds.domain.model.hecho.OrigenHecho;
-import ar.edu.utn.frba.dds.domain.model.request.EstadoSolicitud;
-import ar.edu.utn.frba.dds.domain.model.request.SolicitudDeEliminacion;
-import ar.edu.utn.frba.dds.domain.model.user.Administrador;
-import ar.edu.utn.frba.dds.domain.model.user.Contribuyente;
+import ar.edu.utn.frba.dds.service.impl.FuenteDinamica;
+import ar.edu.utn.frba.dds.domain.coleccion.Coleccion;
+import ar.edu.utn.frba.dds.domain.hecho.DataHecho;
+import ar.edu.utn.frba.dds.domain.hecho.EstadoHecho;
+import ar.edu.utn.frba.dds.domain.hecho.Hecho;
+import ar.edu.utn.frba.dds.domain.hecho.OrigenHecho;
+import ar.edu.utn.frba.dds.domain.request.EstadoSolicitud;
+import ar.edu.utn.frba.dds.domain.request.SolicitudDeEliminacion;
+import ar.edu.utn.frba.dds.domain.user.Administrador;
+import ar.edu.utn.frba.dds.domain.user.Contribuyente;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
