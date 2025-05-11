@@ -4,7 +4,6 @@ import ar.edu.utn.frba.dds.domain.dto.output.HechoOutputDTO;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
-@Service
 public interface IHechosService {
   List<HechoOutputDTO> buscarTodos();
 }
