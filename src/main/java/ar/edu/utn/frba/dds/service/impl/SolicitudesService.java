@@ -8,6 +8,7 @@ import ar.edu.utn.frba.dds.domain.repositorie.IHechosRepository;
 import ar.edu.utn.frba.dds.domain.repositorie.ISolicitudesRepository;
 import ar.edu.utn.frba.dds.domain.request.SolicitudDeEliminacion;
 import ar.edu.utn.frba.dds.domain.user.Contribuyente;
+import ar.edu.utn.frba.dds.service.DetectorDeSpam;
 import ar.edu.utn.frba.dds.service.ISolicitudesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -20,6 +21,8 @@ public class SolicitudesService implements ISolicitudesService {
   private IHechosRepository hechoRepository;
   @Autowired
   private IContribuyentesRepository contribuyenteRepository;
+  @Autowired
+  private DetectorDeSpam detectorDeSpam;
 
   @Override
   public SolicitudOutputDTO crear(SolicitudInputDTO solicitudInputDTO) {
@@ -28,8 +31,11 @@ public class SolicitudesService implements ISolicitudesService {
 
     SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(hecho, solicitudInputDTO.getTextoFundamentos(), contribuyente, solicitudInputDTO.getValidaciones());
 
-    solicitudRepository.save(solicitud);
+    if (detectorDeSpam.esSpam(solicitud.getTextoFundamentos())) {
+      solicitud.rechazar();
+    }
 
+    solicitudRepository.save(solicitud);
     return solicitudOutputDTO(solicitud);
   }
 

@@ -33,7 +33,6 @@ public class SolicitudDeEliminacion {
     this.validaciones = validaciones;
   }
 
-  // TODO - Revisar si es necesario estos metodos
   public void aceptar() {
     transicionesDeEstado.add(new TransicionEstadoSolicitud(EstadoSolicitud.ACEPTADA));
     this.estado = EstadoSolicitud.ACEPTADA;
