@@ -1,0 +1,46 @@
+package ar.edu.utn.frba.dds.service.impl;
+
+import ar.edu.utn.frba.dds.domain.dto.input.SolicitudInputDTO;
+import ar.edu.utn.frba.dds.domain.dto.output.SolicitudOutputDTO;
+import ar.edu.utn.frba.dds.domain.hecho.Hecho;
+import ar.edu.utn.frba.dds.domain.repositorie.IContribuyentesRepository;
+import ar.edu.utn.frba.dds.domain.repositorie.IHechosRepository;
+import ar.edu.utn.frba.dds.domain.repositorie.ISolicitudesRepository;
+import ar.edu.utn.frba.dds.domain.request.SolicitudDeEliminacion;
+import ar.edu.utn.frba.dds.domain.user.Contribuyente;
+import ar.edu.utn.frba.dds.service.ISolicitudesService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class SolicitudesService implements ISolicitudesService {
+  @Autowired
+  private ISolicitudesRepository solicitudRepository;
+  @Autowired
+  private IHechosRepository hechoRepository;
+  @Autowired
+  private IContribuyentesRepository contribuyenteRepository;
+
+  @Override
+  public SolicitudOutputDTO crear(SolicitudInputDTO solicitudInputDTO) {
+    Hecho hecho = hechoRepository.findById(solicitudInputDTO.getIdHecho());
+    Contribuyente contribuyente = contribuyenteRepository.findById(solicitudInputDTO.getIdContribuyente());
+
+    SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(hecho, solicitudInputDTO.getTextoFundamentos(), contribuyente, solicitudInputDTO.getValidaciones());
+
+    solicitudRepository.save(solicitud);
+
+    return solicitudOutputDTO(solicitud);
+  }
+
+  private SolicitudOutputDTO solicitudOutputDTO(SolicitudDeEliminacion solicitud) {
+    SolicitudOutputDTO dto = new SolicitudOutputDTO();
+    dto.setId(solicitud.getId());
+    dto.setIdHecho(solicitud.getHecho().getId());
+    dto.setTextoFundamentos(solicitud.getTextoFundamentos());
+    dto.setFecha(solicitud.getFecha());
+    dto.setEstado(solicitud.getEstado());
+    dto.setIdContribuyente(solicitud.getContribuyente().getId());
+    return dto;
+  }
+}

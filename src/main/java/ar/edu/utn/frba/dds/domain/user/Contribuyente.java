@@ -10,6 +10,7 @@ import ar.edu.utn.frba.dds.domain.request.SolicitudDeEliminacion;
 @Setter
 @NoArgsConstructor
 public class Contribuyente {
+  private Long id;
   private String nombre;
   private String apellido;
   private Integer edad;
@@ -21,10 +22,6 @@ public class Contribuyente {
     this.nombre = nombre;
     this.apellido = apellido;
     this.edad = edad;
-  }
-
-  public SolicitudDeEliminacion solicitarEliminacion(Hecho hecho, String fundamentos) {
-    return new SolicitudDeEliminacion(hecho, fundamentos);
   }
 
   public boolean esAnonimo() {

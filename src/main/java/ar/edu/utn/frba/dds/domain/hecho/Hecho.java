@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class Hecho {
-
+  private Long id;
   private DataHecho data;
   private OrigenHecho origen;
   private EstadoHecho estado;
