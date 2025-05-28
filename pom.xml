@@ -12,10 +12,10 @@
   </parent>
 
   <groupId>ar.edu.utn.frba.dds</groupId>
-  <artifactId>ejercicio</artifactId>
+  <artifactId>tp</artifactId>
   <version>1.0-SNAPSHOT</version>
 
-  <name>ejercicio</name>
+  <name>MetaMapa</name>
   <url>https://github.com/dds-utn</url>
 
   <properties>
