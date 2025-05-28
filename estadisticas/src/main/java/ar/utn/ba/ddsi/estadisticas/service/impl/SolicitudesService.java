@@ -1,0 +1,52 @@
+package ar.utn.ba.ddsi.estadisticas.service.impl;
+
+import ar.utn.ba.ddsi.estadisticas.domain.dto.input.SolicitudInputDTO;
+import ar.utn.ba.ddsi.estadisticas.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.estadisticas.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.estadisticas.domain.repositorie.IContribuyentesRepository;
+import ar.utn.ba.ddsi.estadisticas.domain.repositorie.IHechosRepository;
+import ar.utn.ba.ddsi.estadisticas.domain.repositorie.ISolicitudesRepository;
+import ar.utn.ba.ddsi.estadisticas.domain.request.SolicitudDeEliminacion;
+import ar.utn.ba.ddsi.estadisticas.domain.user.Contribuyente;
+import ar.utn.ba.ddsi.estadisticas.service.DetectorDeSpam;
+import ar.utn.ba.ddsi.estadisticas.service.ISolicitudesService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+@Service
+public class SolicitudesService implements ISolicitudesService {
+  @Autowired
+  private ISolicitudesRepository solicitudRepository;
+  @Autowired
+  private IHechosRepository hechoRepository;
+  @Autowired
+  private IContribuyentesRepository contribuyenteRepository;
+  @Autowired
+  private DetectorDeSpam detectorDeSpam;
+
+  @Override
+  public SolicitudOutputDTO crear(SolicitudInputDTO solicitudInputDTO) {
+    Hecho hecho = hechoRepository.findById(solicitudInputDTO.getIdHecho());
+    Contribuyente contribuyente = contribuyenteRepository.findById(solicitudInputDTO.getIdContribuyente());
+
+    SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(hecho, solicitudInputDTO.getTextoFundamentos(), contribuyente, solicitudInputDTO.getValidaciones());
+
+    if (detectorDeSpam.esSpam(solicitud.getTextoFundamentos())) {
+      solicitud.rechazar();
+    }
+
+    solicitudRepository.save(solicitud);
+    return solicitudOutputDTO(solicitud);
+  }
+
+  private SolicitudOutputDTO solicitudOutputDTO(SolicitudDeEliminacion solicitud) {
+    SolicitudOutputDTO dto = new SolicitudOutputDTO();
+    dto.setId(solicitud.getId());
+    dto.setIdHecho(solicitud.getHecho().getId());
+    dto.setTextoFundamentos(solicitud.getTextoFundamentos());
+    dto.setFecha(solicitud.getFecha());
+    dto.setEstado(solicitud.getEstado());
+    dto.setIdContribuyente(solicitud.getContribuyente().getId());
+    return dto;
+  }
+}
