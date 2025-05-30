@@ -1,0 +1,92 @@
+@startuml arquitectura_metamapa
+skinparam componentStyle rectangle
+skinparam shadowing false
+skinparam defaultTextAlignment center
+
+actor "Visitante" as Visitante
+actor "Revisor" as Revisor
+cloud "Proveedor de Identidad" as OAuth
+database "Hechos y\nsolicitudes" as DBHechos
+database "Estadísticas" as DBEstadisticas
+cloud "Servicio Externo" as ServicioExterno
+database "Dataset" as Dataset
+
+package "Agregador" {
+  [API Agregador] <<component>>
+  [UI Solicitudes] <<component>>
+  [Modelo Agregador] {
+    [Fuentes Agregador]
+    [Solicitudes Agregador]
+    [Agregación]
+  }
+}
+
+package "Fuente De Datos Estática" {
+  [API Estática] <<component>>
+  [Principal] <<component>>
+  [Fuentes Estáticas]
+}
+
+package "Fuente De Datos Proxy" {
+  [API Proxy] <<component>>
+  [Modelo Proxy] {
+    [Fuentes Proxy]
+  }
+}
+
+package "Fuente De Datos Dinámica" {
+  [API Dinámica] <<component>>
+  [UI Editor] <<component>>
+  [UI Solicitudes Dinámica] <<component>>
+  [Modelo Dinámica] {
+    [Fuentes Dinámicas]
+    [Solicitudes Dinámicas]
+  }
+}
+
+package "Servicio de estadísticas" {
+  [UI Visualizador] <<component>>
+  [Generador de Estadísticas] <<component>>
+  [Modelo Estadísticas] {
+    [Fuentes Estadísticas]
+  }
+}
+
+' === CONEXIONES ===
+
+Visitante --> [UI Visualizador]
+Visitante --> [UI Solicitudes Dinámica]
+Revisor --> [UI Solicitudes Dinámica]
+OAuth --> [UI Solicitudes Dinámica]
+
+[UI Solicitudes] --> [API Agregador]
+[API Agregador] --> [Agregación]
+[Agregación] --> [Fuentes Agregador]
+[Agregación] --> [Solicitudes Agregador]
+[Agregación] --> DBHechos
+
+[Agregación] --> [API Estática] : protocolo\nMetaMapa
+[Agregación] --> [API Proxy]
+[Agregación] --> [API Dinámica]
+
+[API Estática] --> [Principal]
+[Principal] --> [Fuentes Estáticas]
+[Principal] --> Dataset
+
+[API Proxy] --> [Modelo Proxy]
+[Modelo Proxy] --> [Fuentes Proxy]
+[Fuentes Proxy] --> ServicioExterno
+
+[API Dinámica] --> [Modelo Dinámica]
+[Modelo Dinámica] --> [Fuentes Dinámicas]
+[Modelo Dinámica] --> [Solicitudes Dinámicas]
+[Modelo Dinámica] --> DBHechos
+[UI Editor] --> [Modelo Dinámica]
+[UI Solicitudes Dinámica] --> [Modelo Dinámica]
+
+[Agregación] --> [Generador de Estadísticas]
+[Generador de Estadísticas] --> [Fuentes Estadísticas]
+[Generador de Estadísticas] --> DBEstadisticas
+[UI Visualizador] --> [Generador de Estadísticas]
+
+@enduml
