@@ -16,6 +16,5 @@
 		<module>dinamica</module>
 		<module>estatica</module>
 		<module>proxy</module>
-		<module>solicitudes</module>
 	</modules>
 </project>
