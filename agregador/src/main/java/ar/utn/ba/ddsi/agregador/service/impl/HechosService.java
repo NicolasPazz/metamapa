@@ -44,7 +44,7 @@ public class HechosService {
                 .map(tuple -> {
                     List<HechosServiceDTO> combinados = new ArrayList<>();
                     combinados.addAll(tuple.getT1()); // hechos dinámica
-                    combinados.addAll(tuple.getT2()); // hechos proxy
+                    combinados.addAll(tuple.getT2()); // hechos proxy_ong
                     return combinados;
                 });
     }
