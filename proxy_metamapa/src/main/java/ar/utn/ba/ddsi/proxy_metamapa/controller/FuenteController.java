@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.proxy_metamapa.controller;
 
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.HechoProxyDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.service.impl.FuenteProxyONGService;
+import ar.utn.ba.ddsi.proxy_metamapa.service.impl.FuenteService;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,10 +12,10 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("api/desastres")
-public class FuenteProxyController implements IFuenteController{
-  private final FuenteProxyONGService fuenteService;
+public class FuenteController implements IFuenteController{
+  private final FuenteService fuenteService;
 
-  public FuenteProxyController(FuenteProxyONGService fuenteService) {
+  public FuenteController(FuenteService fuenteService) {
     this.fuenteService = fuenteService;
   }
 

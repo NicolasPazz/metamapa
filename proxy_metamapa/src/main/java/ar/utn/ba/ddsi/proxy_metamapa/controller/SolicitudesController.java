@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.proxy_metamapa.controller;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.service.ISolicitudesService;
 import org.springframework.beans.factory.annotation.Autowired;

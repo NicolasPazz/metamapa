@@ -4,7 +4,6 @@ import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.HechoProxyDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.HechoProxyResponseDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.LoginResponseDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.proxy_metamapa.exception.ApiLoginException;
 import ar.utn.ba.ddsi.proxy_metamapa.service.IFuenteService;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
@@ -15,7 +14,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
-public class FuenteProxyONGService implements IFuenteService {
+public class FuenteService implements IFuenteService {
   private final WebClient webClient;
   private String accessToken;
   private String tokenType;
@@ -27,7 +26,7 @@ public class FuenteProxyONGService implements IFuenteService {
   @Value("${proxy_metamapa.auth.password}")
   private String password;
 
-  public FuenteProxyONGService(WebClient.Builder webClientBuilder) {
+  public FuenteService(WebClient.Builder webClientBuilder) {
     this.webClient = webClientBuilder.baseUrl("https://api-ddsi.disilab.ar/public/api").build();
   }
 

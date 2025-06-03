@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.proxy_metamapa.service.impl;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.HechoInputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.hecho.Categoria;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.hecho.ContenidoMultimedia;
