@@ -18,7 +18,7 @@ public class FuenteController {
   }
 
   @GetMapping
-  public Mono<List<HechoOutputDTO>> getAllHechosVisibles() {
+  public List<HechoOutputDTO> getAllHechosVisibles() {
     return fuenteService.getAllHechosVisibles();
   }
 

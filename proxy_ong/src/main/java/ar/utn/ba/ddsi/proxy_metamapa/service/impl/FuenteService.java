@@ -106,14 +106,14 @@ public class FuenteService {
         .collectList();
   }
 
-  public Mono<List<HechoOutputDTO>> getAllHechosVisibles() {
-    return Mono.just(List.of());
+  public List<HechoOutputDTO> getAllHechosVisibles() {
+    return List.of();
   }
 
   public Mono<List<HechoOutputDTO>> getAllHechosNuevos() {
     return this.getAllHechos()
         .flatMapMany(Flux::fromIterable)
-        .filter(dto -> !hechosRepository.existsById(dto.getId()))
+        .filter(dto -> !hechosRepository.existsById(dto.getId())) // Asumo que las API que se consumiran, no eliminan ni modifican hechos, solo agregan nuevos.
         .map(dto -> {
           hechosRepository.save(new Hecho(
               dto.getId(),

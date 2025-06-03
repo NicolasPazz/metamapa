@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.proxy_metamapa.service.impl;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.repositorie.IContribuyentesRepository;
