@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.criterioDePertenencia.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.service.IColeccionesService;
@@ -22,8 +23,8 @@ public class ColeccionesService implements IColeccionesService {
     }
 
     @Override
-    public List<Hecho> buscarHechosDeColeccion(String id) {
-        return coleccionRepository.findById(id).getHechos();
+    public Criterio buscarCriterioDeColeccion(String id) throws Exception {
+        return coleccionRepository.findById(id).getCriterioDePertenencia();
     }
 
     @Override
@@ -37,7 +38,7 @@ public class ColeccionesService implements IColeccionesService {
 
         dto.setHandler(coleccion.getHandle());
         dto.setTitulo(coleccion.getTitulo());
-        dto.setHechos(coleccion.getHechos());
+        //dto.setHechos(coleccion.getHechos());
         dto.setDescripcion(coleccion.getDescripcion());
         return dto;
     }

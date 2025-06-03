@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.controller;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechosServiceDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.HechosService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,12 @@ import java.util.List;
 public class AgregadorController {
     private final SolicitudesService solicitudesService;
     private final HechosService hechosService;
+    private final ColeccionesService coleccionesService;
 
-    public AgregadorController(SolicitudesService solicitudesService, HechosService hechosService) {
+    public AgregadorController(SolicitudesService solicitudesService, HechosService hechosService, ColeccionesService coleccionesService) {
         this.solicitudesService = solicitudesService;
         this.hechosService = hechosService;
+        this.coleccionesService = coleccionesService;
     }
 
     @GetMapping("/hechos")
@@ -35,5 +38,10 @@ public class AgregadorController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(null);
         }
+    }
+
+    @GetMapping("/colecciones/{handle}/hechos")
+    public List<HechosServiceDTO> getHechosColeccion(@PathVariable String handle) throws Exception {
+        return this.hechosService.getHechosFiltrados(this.coleccionesService.buscarCriterioDeColeccion(handle));
     }
 }

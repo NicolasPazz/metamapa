@@ -13,13 +13,13 @@ public class Coleccion {
   private String handle;
   private String titulo;
   private String descripcion;
-  private List<Hecho> hechos;
+  //private List<Hecho> hechos;
   private Criterio criterioDePertenencia;
 
   public Coleccion(String titulo, String descripcion, List<Hecho> hechos, Criterio criterioDePertenencia) {
     this.titulo = titulo;
     this.descripcion = descripcion;
-    this.hechos = hechos;
+    //this.hechos = hechos;
     this.criterioDePertenencia = criterioDePertenencia;
   }
 
@@ -29,7 +29,7 @@ public class Coleccion {
         .toList();
   }*/
 
-  public List<Hecho> obtenerHechos() throws Exception {
+  /*public List<Hecho> obtenerHechos() throws Exception {
 
     if (criterioDePertenencia == null) {
       return this.getHechos();
@@ -38,5 +38,5 @@ public class Coleccion {
     return this.hechos.stream()
         .filter(criterioDePertenencia::cumple)
         .toList();
-  }
+  }*/
 }
