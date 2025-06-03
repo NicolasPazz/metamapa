@@ -1,20 +1,14 @@
 package ar.utn.ba.ddsi.proxy_metamapa.domain.repositorie.impl;
 
 import ar.utn.ba.ddsi.proxy_metamapa.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.repositorie.IHechosRepository;
 import java.util.ArrayList;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public class HechosRepository implements IHechosRepository {
-  private List<Hecho> hechos;
+public class HechosRepository {
+  private List<Hecho> hechos = new ArrayList<>();
 
-  public HechosRepository() {
-    this.hechos = new ArrayList<>();
-  }
-
-  @Override
   public Hecho findById(Long id) {
     return this.hechos.stream()
         .filter(h -> h.getId().equals(id))
@@ -22,19 +16,13 @@ public class HechosRepository implements IHechosRepository {
         .orElse(null);
   }
 
-  @Override
-  public List<Hecho> findAll() {
-    return this.hechos;
-  }
-
-  @Override
   public void save(Hecho hecho) {
-    this.hechos.add(hecho);
-    hecho.setId((long) this.hechos.size());
+    if (findById(hecho.getId()) == null) {
+      this.hechos.add(hecho);
+    }
   }
 
-  @Override
-  public void delete(Hecho hecho) {
-    this.hechos.remove(hecho);
+  public boolean existsById(Long id) {
+    return this.hechos.stream().anyMatch(h -> h.getId().equals(id));
   }
 }
