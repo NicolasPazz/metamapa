@@ -4,27 +4,30 @@ import ar.utn.ba.ddsi.estatica.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.estatica.domain.hecho.Etiqueta;
 import ar.utn.ba.ddsi.estatica.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.estatica.domain.repositories.IHechosRepository;
-import ar.utn.ba.ddsi.estatica.service.IHechosService;
+import ar.utn.ba.ddsi.estatica.service.IFuenteService;
 import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class HechosService implements IHechosService {
+public class FuenteService implements IFuenteService {
   private final IHechosRepository hechosRepository;
 
-  public HechosService(IHechosRepository hechosRepository) {
+  public FuenteService(IHechosRepository hechosRepository) {
     this.hechosRepository = hechosRepository;
   }
 
   @Override
-  public List<HechoOutputDTO> buscarTodos() {
-    // TODO: asegurarme de que el usuario que haga esta peticion tenga permisos (tener en cuenta para modificar un hecho con users logueados)
+  public List<HechoOutputDTO> getAllHechosVisibles(String categoria, String fecha_reporte_desde, String fecha_reporte_hasta, String fecha_acontecimiento_desde, String fecha_acontecimiento_hasta, String ubicacion) {
+    return List.of();
+  }
+
+  @Override
+  public List<HechoOutputDTO> getAllHechosNuevos() {
     List<Hecho> hechos = this.hechosRepository.findAll();
-    List<HechoOutputDTO> dtoList = hechos
+    return hechos
         .stream()
         .map(this::hechoOutputDTO)
         .toList();
-    return dtoList;
   }
 
   private HechoOutputDTO hechoOutputDTO(Hecho hecho){
