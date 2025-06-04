@@ -10,19 +10,21 @@ import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.detector.DetectorDeSpam;
 import ar.utn.ba.ddsi.agregador.service.ISolicitudesService;
 import ar.utn.ba.ddsi.agregador.user.Contribuyente;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class SolicitudesService implements ISolicitudesService {
-  @Autowired
   private ISolicitudesRepository solicitudesRepository;
-  @Autowired
   private IHechosRepository hechosRepository;
-  @Autowired
   private IContribuyentesRepository contribuyentesRepository;
-  @Autowired
   private DetectorDeSpam detectorDeSpam;
+
+  public SolicitudesService(ISolicitudesRepository solicitudesRepository, IHechosRepository hechosRepository, IContribuyentesRepository contribuyentesRepository, DetectorDeSpam detectorDeSpam) {
+    this.solicitudesRepository = solicitudesRepository;
+    this.hechosRepository = hechosRepository;
+    this.contribuyentesRepository = contribuyentesRepository;
+    this.detectorDeSpam = detectorDeSpam;
+  }
 
   @Override
   public SolicitudOutputDTO crear(SolicitudInputDTO solicitudInputDTO) {
