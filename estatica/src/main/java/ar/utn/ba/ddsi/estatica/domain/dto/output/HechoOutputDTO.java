@@ -19,20 +19,4 @@ public class HechoOutputDTO {
     private String fechaDeCarga;
     private String ultimaModificacion;
     private List<String> multimediaPaths;
-
-    {
-        this.id = id;
-        this.origen = "ONG";
-        this.estado = "VISIBLE";
-        this.idContribuyente = null;
-        this.idEtiquetas = List.of();
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.latitud = latitud;
-        this.longitud = longitud;
-        this.fechaDeAcontecimiento = fechaDeAcontecimiento;
-        this.fechaDeCarga = fechaDeCarga;
-        this.ultimaModificacion = ultimaModificacion;
-        this.multimediaPaths = List.of();
-    }
 }
