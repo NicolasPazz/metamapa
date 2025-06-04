@@ -25,6 +25,14 @@ public class HechosRepository implements IHechosRepository {
   }
 
   @Override
+  public Hecho findByIdSolicitud(Long id) {
+    return this.hechos.stream()
+            .filter(h -> h.getIdSolicitud().equals(id))
+            .findFirst()
+            .orElse(null);
+  }
+
+  @Override
   public List<Hecho> findAll() {
     return this.hechos;
   }

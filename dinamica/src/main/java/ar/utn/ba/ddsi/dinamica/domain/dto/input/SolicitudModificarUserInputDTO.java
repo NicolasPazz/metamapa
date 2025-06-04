@@ -6,9 +6,11 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class HechoModificarInputDTO {
+public class SolicitudModificarUserInputDTO {
+    @JsonProperty("id_solicitud")
+    private Long idSolicitud;
     @JsonProperty("id_contribuyente")
-    private String idContribuyente;
+    private Long idContribuyente;
     @JsonProperty("titulo")
     private String nuevoTitulo;
     @JsonProperty("descripcion")
@@ -16,9 +18,9 @@ public class HechoModificarInputDTO {
     @JsonProperty("categoria")
     private String nuevoNombreCategoria;
     @JsonProperty("latitud")
-    private double nuevoLatitud;
+    private Double nuevoLatitud;
     @JsonProperty("longitud")
-    private double nuevoLongitud;
+    private Double nuevoLongitud;
     @JsonProperty("fecha_de_acontecimiento")
     private String nuevoFechaDeAcontecimiento;
     @JsonProperty("multimedia")

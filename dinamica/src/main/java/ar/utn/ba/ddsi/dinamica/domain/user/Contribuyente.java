@@ -3,9 +3,7 @@ package ar.utn.ba.ddsi.dinamica.domain.user;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
-import ar.utn.ba.ddsi.dinamica.domain.request.SolicitudDeEliminacion;
 
 import java.time.LocalDate;
 
@@ -32,10 +30,6 @@ public class Contribuyente {
     this.nombre = nombre;
     this.apellido = apellido;
     this.fechaDeNacimiento = fechaDeNacimiento;
-  }
-
-  public SolicitudDeEliminacion solicitarEliminacion(Hecho hecho, String fundamentos) {
-    return new SolicitudDeEliminacion(hecho, fundamentos);
   }
 
   public boolean esAnonimo() {

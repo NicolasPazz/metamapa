@@ -7,22 +7,19 @@ import lombok.Data;
 @Data
 public class HechoOutputDTO {
     private Long id;
-    private String origen;
-    private String estado;
     @JsonProperty("id_contribuyente")
     private Long idContribuyente;
-    @JsonProperty("id_etiquetas")
-    private List<Long> idEtiquetas;
+    private String origen;
     private String titulo;
     private String descripcion;
     @JsonProperty("id_categoria")
-    private Long idCategoria;
+    private String categoria;
     private double latitud;
     private double longitud;
     @JsonProperty("fecha_de_acontecimiento")
     private String fechaDeAcontecimiento;
+    @JsonProperty("multimedia_paths")
+    private List<String> multimediaPaths;
     @JsonProperty("fecha_de_carga")
     private String fechaDeCarga;
-    @JsonProperty("multimedia_paths")
-    private List<String> multimediaPaths;   //TODO:podria agregar dos listas una para borrar y otra para agregar
 }
