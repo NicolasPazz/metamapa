@@ -1,9 +1,8 @@
 package ar.utn.ba.ddsi.dinamica.domain.hecho;
 
+import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-
-import lombok.*;
 
 @Getter
 @Setter
@@ -11,18 +10,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class DataHecho {
-
-    private String titulo;
-
-    private String descripcion;
-
-    private String nombreCategoria;
-
-    private Double latitud;
-
-    private Double longitud;
-
-    private LocalDate fechaDeAcontecimiento;
-
-    private LocalDate fechaDeCarga = LocalDate.now();
+  private String titulo;
+  private String descripcion;
+  private String nombreCategoria;
+  private Double latitud;
+  private Double longitud;
+  private LocalDate fechaDeAcontecimiento;
+  @Builder.Default
+  private LocalDateTime fechaDeCarga = LocalDateTime.now();
 }

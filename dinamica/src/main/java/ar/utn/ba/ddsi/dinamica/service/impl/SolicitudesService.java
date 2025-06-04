@@ -8,7 +8,7 @@ import ar.utn.ba.ddsi.dinamica.domain.repositorie.ISolicitudesRepository;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.TransicionEstadoSolicitud;
-import ar.utn.ba.ddsi.dinamica.service.IHechosService;
+import ar.utn.ba.ddsi.dinamica.service.IFuenteService;
 import ar.utn.ba.ddsi.dinamica.service.ISolicitudesService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -26,14 +26,14 @@ public class SolicitudesService implements ISolicitudesService {
     private ISolicitudesRepository solicitudesRepository;
 
     @Autowired
-    private IHechosService hechosService;
+    private IFuenteService hechosService;
 
     @Override
     public List<SolicitudOutputDTO> buscarTodas(){
         List<SolicitudHecho> solicitudes = this.solicitudesRepository.findAll();
         return solicitudes
                 .stream()
-                .map(s->this.solicitudOutputDTO(s))
+                .map(this::solicitudOutputDTO)
                 .toList();
     }
 
