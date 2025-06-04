@@ -23,8 +23,8 @@ public class ColeccionesService implements IColeccionesService {
     }
 
     @Override
-    public Criterio buscarCriterioDeColeccion(String id) throws Exception {
-        return coleccionRepository.findById(id).getCriterioDePertenencia();
+    public List<Hecho> buscarHechosDeColeccion(String id) throws Exception {
+        return coleccionRepository.findById(id).getHechos();
     }
 
     @Override
@@ -33,12 +33,20 @@ public class ColeccionesService implements IColeccionesService {
         return coleccionOutputDTO(coleccion);
     }
 
+    @Override
+    public void actualizarColecciones(List<Hecho> hechos) {
+        for(Coleccion coleccion : coleccionRepository.findAll()) {
+            Coleccion nuevaColeccion = new Coleccion(coleccion.getTitulo(), coleccion.getDescripcion(), hechos, coleccion.getCriterioDePertenencia());
+            coleccionRepository.save(coleccion);
+        }
+    }
+
     private ColeccionOutputDTO coleccionOutputDTO(Coleccion coleccion) {
         ColeccionOutputDTO dto = new ColeccionOutputDTO();
 
         dto.setHandler(coleccion.getHandle());
         dto.setTitulo(coleccion.getTitulo());
-        //dto.setHechos(coleccion.getHechos());
+        dto.setHechos(coleccion.getHechos());
         dto.setDescripcion(coleccion.getDescripcion());
         return dto;
     }

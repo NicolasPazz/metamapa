@@ -9,6 +9,7 @@ import java.util.List;
 
 public interface IColeccionesService {
     public List<ColeccionOutputDTO> buscarTodas();
-    public Criterio buscarCriterioDeColeccion(String id) throws Exception;
+    public List<Hecho> buscarHechosDeColeccion(String id) throws Exception;
     public ColeccionOutputDTO buscarColeccion(String id);
+    public void actualizarColecciones(List<Hecho> hechos);
 }

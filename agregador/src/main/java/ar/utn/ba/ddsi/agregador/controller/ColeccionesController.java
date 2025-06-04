@@ -22,8 +22,5 @@ public class ColeccionesController {
         return this.coleccionService.buscarTodas();
     }
 
-    /*@GetMapping("{handle}/hechos")
-    public List<HechosServiceDTO> buscarHechosDeColeccion(@PathVariable String handle) throws Exception {
-        return this.coleccionService.buscarHechosDeColeccion(handle).stream().map(this.hechosService::hechosServiceDTO).toList();
-    }*/
+
 }

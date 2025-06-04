@@ -3,10 +3,12 @@ package ar.utn.ba.ddsi.agregador.service.impl;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterioDePertenencia.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechosServiceDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechosServiceResponseDTO;
+import ar.utn.ba.ddsi.agregador.domain.hecho.DataHecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositories.IHechosRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.time.format.DateTimeFormatter;
@@ -19,8 +21,9 @@ public class HechosService {
     private WebClient webClient;
     private IHechosRepository hechosRepository;
 
-    public HechosService(WebClient.Builder webClientDinamicaBuilder) {
+    public HechosService(WebClient.Builder webClientDinamicaBuilder, IHechosRepository hechosRepository) {
         this.webClient = webClientDinamicaBuilder.baseUrl("http://localhost:8080").build();
+        this.hechosRepository = hechosRepository;
     }
 
     public Mono<List<HechosServiceDTO>> getAllHechos(){
@@ -54,11 +57,15 @@ public class HechosService {
                 });
     }
 
-    public List<HechosServiceDTO> getHechosFiltrados(Criterio filtro) {
-        return this.hechosRepository.findAll().stream().filter(filtro::cumple).map(this::hechosServiceDTO).toList();
+    public void guardarHechos() {
+        this.getAllHechos().flatMapMany(Flux::fromIterable)
+                .map(this::DTOaHecho)
+                .doOnNext(hechosRepository::save)
+                .then()
+                .subscribe();
     }
 
-    private HechosServiceDTO hechosServiceDTO(Hecho hecho) {
+    public HechosServiceDTO hechosServiceDTO(Hecho hecho) {
         HechosServiceDTO dto = new HechosServiceDTO();
 
         dto.setDescripcion(hecho.getDescripcion());
@@ -78,4 +85,17 @@ public class HechosService {
         return dto;
 
     }
+
+    public Hecho DTOaHecho(HechosServiceDTO hechosServiceDTO) {
+
+        //TODO: terminar método que pase dtos a hechos
+        /*Hecho hecho = new Hecho();
+
+        hecho.setId(hechosServiceDTO.getId());
+        hecho.setCategoria(hechosServiceDTO.getIdCategoria());
+        hecho.setEtiquetas(hechosServiceDTO.getIdEtiquetas());
+        hecho.setContribuyente(hechosServiceDTO.getIdContribuyente());
+        hecho.setOrigen(hechosServiceDTO.getOrigen());
+        hecho.setMultimedia(hechosServiceDTO.getMultimediaPaths());
+        hecho.setData(hechosServiceDTO.get);*/
 }

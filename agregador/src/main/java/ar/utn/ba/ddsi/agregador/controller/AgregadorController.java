@@ -40,8 +40,8 @@ public class AgregadorController {
         }
     }
 
-    @GetMapping("/colecciones/{handle}/hechos")
-    public List<HechosServiceDTO> getHechosColeccion(@PathVariable String handle) throws Exception {
-        return this.hechosService.getHechosFiltrados(this.coleccionesService.buscarCriterioDeColeccion(handle));
+    @GetMapping("coleccion/{handle}/hechos")
+    public List<HechosServiceDTO> buscarHechosDeColeccion(@PathVariable String handle) throws Exception {
+        return this.coleccionesService.buscarHechosDeColeccion(handle).stream().map(this.hechosService::hechosServiceDTO).toList();
     }
 }
