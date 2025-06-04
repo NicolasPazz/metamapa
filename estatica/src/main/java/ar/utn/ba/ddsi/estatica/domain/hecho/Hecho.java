@@ -67,7 +67,7 @@ public class Hecho {
   }
 
   public void transicionarEstado(EstadoHecho estado) {
-    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDate.now()));
+    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDateTime.now()));
     this.estado = estado;
   }
 
