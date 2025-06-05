@@ -14,6 +14,7 @@ public class HechosServiceDTO {
     private String titulo;
     private String descripcion;
     private String categoria;
+    private Long idCategoria;
     private double latitud;
     private double longitud;
     private String fechaDeAcontecimiento;

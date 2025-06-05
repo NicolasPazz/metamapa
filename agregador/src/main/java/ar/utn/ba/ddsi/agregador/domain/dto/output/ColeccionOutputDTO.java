@@ -7,7 +7,7 @@ import java.util.List;
 
 @Data
 public class ColeccionOutputDTO {
-    private String handler;
+    private String handle;
     private String titulo;
     private String descripcion;
     private List<Hecho> hechos;

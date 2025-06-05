@@ -55,10 +55,10 @@ public class FuenteService {
         .collectList();
   }
 
-  public Mono<ColeccionDTO> getColeccionById(String id) {
+  public Mono<ColeccionDTO> getColeccionByHandle(String handle) {
     return webClient
         .get()
-        .uri("/colecciones/{id}/hechos", id)
+        .uri("/colecciones/{handle}/hechos", handle)
         .retrieve()
         .bodyToMono(ColeccionDTO.class);
   }

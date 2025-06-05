@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/hechos")
+@RequestMapping("/api/hechos")
 @CrossOrigin(origins = "http://localhost:3000")
 public class FuenteController {
     private final IFuenteService fuenteService;

@@ -15,7 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/solicitudes")
+@RequestMapping("/api/solicitudes")
 @CrossOrigin(origins = "http://localhost:3000")
 
 public class SolicitudesController {

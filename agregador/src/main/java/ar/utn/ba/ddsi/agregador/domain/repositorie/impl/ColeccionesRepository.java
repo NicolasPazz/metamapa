@@ -9,8 +9,8 @@ public class ColeccionesRepository implements IColeccionesRepository {
     private final Map<String, Coleccion> colecciones = new HashMap<>();
 
     @Override
-    public Coleccion findById(String id) {
-        return this.colecciones.get(id);
+    public Coleccion findByHandle(String handle) {
+        return this.colecciones.get(handle);
     }
 
     @Override

@@ -21,13 +21,13 @@ public class ColeccionesService implements IColeccionesService {
     }
 
     @Override
-    public List<Hecho> buscarHechosDeColeccion(String id) throws Exception {
-        return coleccionRepository.findById(id).getHechos();
+    public List<Hecho> buscarHechosDeColeccion(String handle) throws Exception {
+        return coleccionRepository.findByHandle(handle).getHechos();
     }
 
     @Override
-    public ColeccionOutputDTO buscarColeccion(String id) {
-        Coleccion coleccion = coleccionRepository.findById(id);
+    public ColeccionOutputDTO buscarColeccion(String handle) {
+        Coleccion coleccion = coleccionRepository.findByHandle(handle);
         return coleccionOutputDTO(coleccion);
     }
 
@@ -42,7 +42,7 @@ public class ColeccionesService implements IColeccionesService {
     private ColeccionOutputDTO coleccionOutputDTO(Coleccion coleccion) {
         ColeccionOutputDTO dto = new ColeccionOutputDTO();
 
-        dto.setHandler(coleccion.getHandle());
+        dto.setHandle(coleccion.getHandle());
         dto.setTitulo(coleccion.getTitulo());
         dto.setHechos(coleccion.getHechos());
         dto.setDescripcion(coleccion.getDescripcion());

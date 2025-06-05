@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("hechos")
+@RequestMapping("/api/hechos")
 public class FuenteController {
   private final FuenteService fuenteService;
 

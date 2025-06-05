@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 import reactor.core.publisher.Mono;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/api")
 public class FuenteController {
   private final FuenteService fuenteService;
 
@@ -36,7 +36,7 @@ public class FuenteController {
    * @param ubicacion ubicación del hecho (formato: lat,log)
    * @return lista de hechos visibles según los filtros
    */
-  @GetMapping("hechos")
+  @GetMapping("/hechos")
   public Mono<List<HechoDTO>> getAllHechosVisibles(
       @RequestParam(required = false) String categoria,
       @RequestParam(required = false) String fecha_reporte_desde,
@@ -47,7 +47,7 @@ public class FuenteController {
     return fuenteService.getAllHechosVisibles(categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
   }
 
-  @GetMapping("nuevos")
+  @GetMapping("/nuevos")
   public List<HechoDTO> getAllHechosNuevos() {
     return fuenteService.getAllHechosNuevos();
   }
@@ -56,7 +56,7 @@ public class FuenteController {
    *   GET /colecciones
    *   Esta ruta expone todas las colecciones disponibles, independientemente del origen de sus fuentes.
    */
-  @GetMapping("colecciones")
+  @GetMapping("/colecciones")
   public Mono<List<ColeccionDTO>> getAllColecciones() {
     return fuenteService.getAllColecciones();
   }
@@ -65,16 +65,16 @@ public class FuenteController {
    * GET /colecciones/:identificador/hechos
    *   Esta ruta, similar a la anterior, permite obtener los hechos asociados a una colección. Acepta los mismos parámetros y devuelve los resultados en el mismo formato.
    */
-  @GetMapping("colecciones/{id}/hechos")
-  public Mono<ColeccionDTO> getColeccionById(@PathVariable("id") String id) {
-    return fuenteService.getColeccionById(id);
+  @GetMapping("/colecciones/{handle}/hechos")
+  public Mono<ColeccionDTO> getColeccionByHandle(@PathVariable("handle") String handle) {
+    return fuenteService.getColeccionByHandle(handle);
   }
 
   /**
    *   POST /solicitudes
    *   Permite crear solicitudes de eliminación, enviando los datos de la solicitud como un JSON a través del cuerpo (body) de la misma.
    */
-  @PostMapping("solicitudes")
+  @PostMapping("/solicitudes")
   public Mono<SolicitudDeEliminacionDTO> createSolicitudDeEliminacion(@RequestBody SolicitudDeEliminacionDTO solicitud) {
     return fuenteService.createSolicitudDeEliminacion(solicitud);
   }

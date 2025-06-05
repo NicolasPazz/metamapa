@@ -98,4 +98,6 @@ public class HechosService {
         hecho.setOrigen(hechosServiceDTO.getOrigen());
         hecho.setMultimedia(hechosServiceDTO.getMultimediaPaths());
         hecho.setData(hechosServiceDTO.get);*/
+        return null;
+    }
 }
