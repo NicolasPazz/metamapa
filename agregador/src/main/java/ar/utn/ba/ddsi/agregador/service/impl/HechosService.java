@@ -1,27 +1,38 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
+import ar.utn.ba.ddsi.agregador.domain.coleccion.criterioDePertenencia.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechosServiceDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.HechosServiceResponseDTO;
+import ar.utn.ba.ddsi.agregador.domain.hecho.DataHecho;
+import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.domain.repositories.IHechosRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class HechosService {
 
     private WebClient webClient;
+    private IHechosRepository hechosRepository;
 
-    public HechosService(WebClient.Builder webClientDinamicaBuilder) {
-        //this.webClient = webClientDinamicaBuilder.baseUrl("http://localhost:8080").build();
+    public HechosService(WebClient.Builder webClientDinamicaBuilder, IHechosRepository hechosRepository) {
+        this.webClient = webClientDinamicaBuilder.baseUrl("http://localhost:8080").build();
+        this.hechosRepository = hechosRepository;
     }
 
     public Mono<List<HechosServiceDTO>> getAllHechos(){
-        /*Mono<List<HechosServiceDTO>> hechosDinamica = webClient
+        Mono<List<HechosServiceDTO>> hechosDinamica = webClient
                 .mutate()
                 .baseUrl("http://localhost:8080")
                 .build()
                 .get()
-                .uri("hechos")
+                .uri("/api/hechos")
                 .retrieve()
                 .bodyToFlux(HechosServiceDTO.class)
                 .collectList();
@@ -31,7 +42,7 @@ public class HechosService {
                 .baseUrl("http://localhost:8082")
                 .build()
                 .get()
-                .uri("desastres")
+                .uri("/api/desastres")
                 .retrieve()
                 .bodyToFlux(HechosServiceDTO.class)
                 .collectList();
@@ -43,7 +54,48 @@ public class HechosService {
                     combinados.addAll(tuple.getT1()); // hechos dinámica
                     combinados.addAll(tuple.getT2()); // hechos proxy_ong
                     return combinados;
-                });*/
-      return null;
+                });
     }
+
+    public void guardarHechos() {
+        this.getAllHechos().flatMapMany(Flux::fromIterable)
+                .map(this::DTOaHecho)
+                .doOnNext(hechosRepository::save)
+                .then()
+                .subscribe();
+    }
+
+    public HechosServiceDTO hechosServiceDTO(Hecho hecho) {
+        HechosServiceDTO dto = new HechosServiceDTO();
+
+        dto.setDescripcion(hecho.getDescripcion());
+        dto.setId(hecho.getId());
+        dto.setTitulo(hecho.getTitulo());
+        dto.setEstado(hecho.getEstado().name());
+        dto.setLatitud(hecho.getLatitud());
+        dto.setLongitud(hecho.getLongitud());
+        dto.setFechaDeAcontecimiento(hecho.getFechaDeAcontecimiento().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        dto.setOrigen(hecho.getOrigen().name());
+        dto.setFechaDeCarga(hecho.getFechaDeCarga().format(DateTimeFormatter.ofPattern("yyyy-MM-dd")));
+        dto.setIdCategoria(hecho.getCategoria().getId());
+        dto.setIdContribuyente(hecho.getContribuyente().getId());
+        dto.setIdEtiquetas(hecho.getIdEtiquetas());
+        dto.setMultimediaPaths(hecho.getMultimediaPaths());
+
+        return dto;
+
+    }
+
+    public Hecho DTOaHecho(HechosServiceDTO hechosServiceDTO) {
+
+        //TODO: terminar método que pase dtos a hechos
+        /*Hecho hecho = new Hecho();
+
+        hecho.setId(hechosServiceDTO.getId());
+        hecho.setCategoria(hechosServiceDTO.getIdCategoria());
+        hecho.setEtiquetas(hechosServiceDTO.getIdEtiquetas());
+        hecho.setContribuyente(hechosServiceDTO.getIdContribuyente());
+        hecho.setOrigen(hechosServiceDTO.getOrigen());
+        hecho.setMultimedia(hechosServiceDTO.getMultimediaPaths());
+        hecho.setData(hechosServiceDTO.get);*/
 }

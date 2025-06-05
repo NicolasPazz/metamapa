@@ -19,7 +19,7 @@ public class Coleccion {
   public Coleccion(String titulo, String descripcion, List<Hecho> hechos, Criterio criterioDePertenencia) {
     this.titulo = titulo;
     this.descripcion = descripcion;
-    this.hechos = hechos;
+    this.hechos = hechos.stream().filter(criterioDePertenencia::cumple).toList();
     this.criterioDePertenencia = criterioDePertenencia;
   }
 
@@ -29,7 +29,7 @@ public class Coleccion {
         .toList();
   }*/
 
-  public List<Hecho> obtenerHechos() throws Exception {
+  /*public List<Hecho> obtenerHechos() throws Exception {
 
     if (criterioDePertenencia == null) {
       return this.getHechos();
@@ -38,5 +38,5 @@ public class Coleccion {
     return this.hechos.stream()
         .filter(criterioDePertenencia::cumple)
         .toList();
-  }
+  }*/
 }

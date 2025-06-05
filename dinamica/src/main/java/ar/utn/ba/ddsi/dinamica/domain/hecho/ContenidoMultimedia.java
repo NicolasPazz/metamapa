@@ -8,12 +8,12 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 public class ContenidoMultimedia {
-    private Long id;
-    private String pathArchivo;
-    private TipoContenido tipoContenido;
+  private Long id;
+  private String pathArchivo;
+  private TipoContenido tipoContenido;
 
-    public ContenidoMultimedia(String pathArchivo, TipoContenido tipoContenido) {
-        this.pathArchivo = pathArchivo;
-        this.tipoContenido = tipoContenido;
-    }
+  public ContenidoMultimedia(String pathArchivo, TipoContenido tipoContenido) {
+    this.pathArchivo = pathArchivo;
+    this.tipoContenido = tipoContenido;
+  }
 }

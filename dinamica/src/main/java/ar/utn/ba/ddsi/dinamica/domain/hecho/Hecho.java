@@ -1,15 +1,12 @@
 package ar.utn.ba.ddsi.dinamica.domain.hecho;
 
+import lombok.*;
 import java.time.LocalDate;
-import ar.utn.ba.ddsi.dinamica.domain.user.Contribuyente;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import lombok.*;
 
 @Getter
 @Setter
@@ -18,12 +15,16 @@ import lombok.*;
 @AllArgsConstructor
 public class Hecho {
   private Long id;
+  private Long idSolicitud;
   private DataHecho data;
   private OrigenHecho origen;
   private EstadoHecho estado;
-  private Contribuyente contribuyente;
+  private Long idContribuyente;
+  @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
-  private List<ContenidoMultimedia> multimedia = new ArrayList<>();
+  @Builder.Default
+  private List<String> multimediaPaths = new ArrayList<>();
+  @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
   private Categoria categoria;
 
@@ -31,14 +32,17 @@ public class Hecho {
   public Hecho(DataHecho data, OrigenHecho origen) {
     this.data = data;
     this.origen = origen;
+    this.transiciones = new ArrayList<>();
     transicionarEstado(EstadoHecho.VISIBLE);
-    this.categoria = new Categoria(data.getNombreCategoria());
-    this.contribuyente = null;
+    // TODO: Los campos que no maneja el CSV como se inicializan?
+    this.idContribuyente = null;
+    this.categoria = null;
+    this.etiquetas = new HashSet<>();
+    this.multimediaPaths = new ArrayList<>();
   }
 
   // MANUAL / CONTRIBUYENTE
-  //TODO: etiquetas lo agregan los admin por lo que no seria un valor de instancia
-  public Hecho(String titulo, String descripcion, Categoria categoria, LocalDate fechaDeAcontecimiento, double latitud, double longitud, List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Contribuyente contribuyente) {
+  public Hecho(String titulo, String descripcion, Categoria categoria, LocalDate fechaDeAcontecimiento, Double latitud, Double longitud, List<String> multimedia, Set<Etiqueta> etiquetas, Long idContribuyente) {
     DataHecho dataHecho = new DataHecho();
     dataHecho.setTitulo(titulo);
     dataHecho.setDescripcion(descripcion);
@@ -49,11 +53,11 @@ public class Hecho {
 
     this.data = dataHecho;
     this.categoria = categoria;
-    this.multimedia = multimedia;
+    this.multimediaPaths = multimedia;
     this.etiquetas = etiquetas;
-    this.contribuyente = contribuyente;
+    this.idContribuyente = idContribuyente;
 
-    if(contribuyente != null) { //TODO: corregir, si el contribuyente es anonimo esto seria null y la carga seria CONTRIBUYENTE
+    if(idContribuyente != null) {
       this.origen = OrigenHecho.CONTRIBUYENTE;
     } else {
       this.origen = OrigenHecho.MANUAL;
@@ -62,55 +66,9 @@ public class Hecho {
     transicionarEstado(EstadoHecho.VISIBLE);
   }
 
-
-  public boolean esDuplicadoDe(Hecho otroHecho) {
-    return this.getTitulo().equalsIgnoreCase(otroHecho.getTitulo());
-  }
-
-  public void ocultar() {
-    this.estado = EstadoHecho.OCULTO;
-  }
-
-  public boolean esVisible() {
-    // TODO: verificar que no haya una solicitud de eliminacion aceptada
-    return this.estado == EstadoHecho.VISIBLE;
-  }
-
-  public void agregarEtiqueta(String etiq) {
-    //TODO: verificar que la etiqueta no exista
-    if (etiq != null && !etiq.isBlank()) {
-      Etiqueta nueva = new Etiqueta(etiq);
-      this.etiquetas.add(nueva);
-    }
-  }
-
-  public boolean contieneEtiqueta(String etiqueta) {
-    return this.etiquetas.contains(new Etiqueta(etiqueta));
-  }
-
-  public boolean esDeCategoria(Categoria categoria) {
-    return this.categoria.equals(categoria);
-  }
-
   public void transicionarEstado(EstadoHecho estado) {
-    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDate.now()));
+    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDateTime.now()));
     this.estado = estado;
-  }
-
-  // TODO: revisar si no conviene hacer una clase en estos dos casos
-  public List<Long> getIdEtiquetas() {
-    List<Long> ids = new ArrayList<>();
-    for (Etiqueta etiqueta : this.etiquetas) {
-      ids.add(etiqueta.getId());
-    }
-    return ids;
-  }
-  public List<String> getMultimediaPaths() {
-    List<String> paths = new ArrayList<>();
-    for (ContenidoMultimedia multimedia : this.multimedia) {
-      paths.add(multimedia.getPathArchivo());
-    }
-    return paths;
   }
 
   public String getTitulo() {
@@ -136,4 +94,14 @@ public class Hecho {
   public LocalDateTime getFechaDeCarga() {
     return data.getFechaDeCarga();
   }
+
+  public String getNombreCategoria() {
+    return data.getNombreCategoria();
+  }
+
+  /* public List<String> getMultimediaPaths() {
+    return this.multimediaPaths.stream()
+      .map(ContenidoMultimedia::getPathArchivo)
+      .toList();
+  } */
 }

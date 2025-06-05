@@ -8,24 +8,23 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 public class Categoria {
-    private Long id;
-    private String nombre;
+  private Long id;
+  private String nombre;
 
-    public Categoria(String nombre) {
+  public Categoria(String nombre) {
+    this.nombre = nombre.trim().toLowerCase();
+  }
 
-        this.nombre = nombre.trim().toLowerCase();
-    }
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    Categoria categoria = (Categoria) o;
+    return nombre.equals(categoria.nombre);
+  }
 
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Categoria categoria = (Categoria) o;
-        return nombre.equals(categoria.nombre);
-    }
-
-    @Override
-    public int hashCode() {
-        return nombre.hashCode();
-    }
+  @Override
+  public int hashCode() {
+    return nombre.hashCode();
+  }
 }

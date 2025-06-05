@@ -6,8 +6,9 @@ import java.util.List;
 
 public interface IHechosRepository {
     public Hecho findById(Long id);
+    public Hecho findByIdSolicitud(Long id);
     public List<Hecho> findAll();
     public void save(Hecho hecho);
-    void update(Hecho hecho);
+    public void update(Hecho hecho);
     public void delete(Hecho hecho);
 }
