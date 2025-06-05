@@ -1,8 +1,6 @@
 package ar.utn.ba.ddsi.dinamica.domain.repositorie;
 
 import ar.utn.ba.ddsi.dinamica.domain.hecho.ContenidoMultimedia;
-import ar.utn.ba.ddsi.dinamica.domain.hecho.Etiqueta;
-
 import java.util.List;
 
 public interface IMultimediasRepository {

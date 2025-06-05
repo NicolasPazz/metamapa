@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.agregador.domain.dto.external;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.List;
@@ -14,7 +13,7 @@ public class HechosServiceDTO {
     private List<Long> idEtiquetas;
     private String titulo;
     private String descripcion;
-    private Long idCategoria;
+    private String categoria;
     private double latitud;
     private double longitud;
     private String fechaDeAcontecimiento;

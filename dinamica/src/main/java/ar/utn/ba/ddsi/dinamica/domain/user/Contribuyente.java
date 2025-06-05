@@ -3,7 +3,6 @@ package ar.utn.ba.ddsi.dinamica.domain.user;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 import ar.utn.ba.ddsi.dinamica.domain.request.SolicitudDeEliminacion;
 

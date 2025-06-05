@@ -16,7 +16,7 @@ public class HechoOutputDTO {
     private String titulo;
     private String descripcion;
     @JsonProperty("id_categoria")
-    private Long idCategoria;
+    private String categoria;
     private double latitud;
     private double longitud;
     @JsonProperty("fecha_de_acontecimiento")

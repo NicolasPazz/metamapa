@@ -4,7 +4,6 @@ import ar.utn.ba.ddsi.dinamica.domain.dto.input.HechoModificarInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.dinamica.service.IHechosService;
 import ar.utn.ba.ddsi.dinamica.service.ISeederService;
-import jakarta.websocket.server.PathParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,8 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/hechos")
-@CrossOrigin(origins = "http://localhost:3000")
+@RequestMapping("hechos")
 
 public class HechosController {
   @Autowired

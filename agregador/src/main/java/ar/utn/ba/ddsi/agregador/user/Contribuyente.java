@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.agregador.user;
 
-import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;

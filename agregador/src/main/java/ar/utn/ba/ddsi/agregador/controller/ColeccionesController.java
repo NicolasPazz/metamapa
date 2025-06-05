@@ -9,7 +9,7 @@ import ar.utn.ba.ddsi.agregador.service.IColeccionesService;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/colecciones")
+@RequestMapping("colecciones")
 @CrossOrigin(origins = "http://localhost:3000")
 public class ColeccionesController {
     @Autowired

@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.dinamica.domain.repositorie.impl;
 
-import ar.utn.ba.ddsi.dinamica.domain.hecho.Etiqueta;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.IContribuyentesRepository;
 import ar.utn.ba.ddsi.dinamica.domain.user.Contribuyente;
 import org.springframework.stereotype.Repository;

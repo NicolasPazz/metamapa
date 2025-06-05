@@ -2,13 +2,9 @@ package ar.utn.ba.ddsi.agregador.domain.repositories.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.*;
 import ar.utn.ba.ddsi.agregador.domain.repositories.IHechosRepository;
-import ar.utn.ba.ddsi.agregador.user.Contribuyente;
 import org.springframework.stereotype.Repository;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 @Repository
 public class HechosRepository implements IHechosRepository {

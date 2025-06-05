@@ -7,8 +7,6 @@ import ar.utn.ba.ddsi.agregador.service.IColeccionesService;
 import lombok.SneakyThrows;
 import org.springframework.stereotype.Service;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.ColeccionOutputDTO;
-
-import java.util.Collection;
 import java.util.List;
 
 @Service

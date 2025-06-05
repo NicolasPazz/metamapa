@@ -2,8 +2,6 @@ package ar.utn.ba.ddsi.agregador.service;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.output.ColeccionOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-
-import java.util.Collection;
 import java.util.List;
 
 public interface IColeccionesService {

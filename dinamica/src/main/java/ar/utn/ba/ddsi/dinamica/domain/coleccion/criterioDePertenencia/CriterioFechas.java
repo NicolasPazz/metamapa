@@ -3,7 +3,6 @@ package ar.utn.ba.ddsi.dinamica.domain.coleccion.criterioDePertenencia;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class CriterioFechas implements Criterio {
     private LocalDate fechaInicial;

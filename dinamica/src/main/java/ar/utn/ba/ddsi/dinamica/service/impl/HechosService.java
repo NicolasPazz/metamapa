@@ -51,7 +51,7 @@ public class HechosService implements IHechosService {
     dto.setIdEtiquetas(hecho.getIdEtiquetas());
     dto.setTitulo(hecho.getTitulo());
     dto.setDescripcion(hecho.getDescripcion());
-    dto.setIdCategoria(hecho.getCategoria().getId());
+    dto.setCategoria(hecho.getCategoria().getNombre());
     dto.setLatitud(hecho.getLatitud());
     dto.setLongitud(hecho.getLongitud());
     dto.setFechaDeAcontecimiento(hecho.getFechaDeAcontecimiento().toString());

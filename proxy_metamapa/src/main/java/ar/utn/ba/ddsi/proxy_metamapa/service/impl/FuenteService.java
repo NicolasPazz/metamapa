@@ -1,109 +1,74 @@
 package ar.utn.ba.ddsi.proxy_metamapa.service.impl;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.HechoProxyDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.HechoProxyResponseDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.LoginResponseDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.proxy_metamapa.service.IFuenteService;
-import jakarta.annotation.PostConstruct;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.ColeccionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.HechoDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudDeEliminacionDTO;
 import java.util.List;
-import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 @Service
-public class FuenteService implements IFuenteService {
+public class FuenteService {
   private final WebClient webClient;
-  private String accessToken;
-  private String tokenType;
-  private static final String AUTH_HEADER = "Authorization";
 
-  @Value("${proxy_metamapa.auth.email}")
-  private String email;
-
-  @Value("${proxy_metamapa.auth.password}")
-  private String password;
-
-  public FuenteService(WebClient.Builder webClientBuilder) {
-    this.webClient = webClientBuilder.baseUrl("https://api-ddsi.disilab.ar/public/api").build();
+  public FuenteService(WebClient.Builder webClientBuilder, @Value("${agregador.url}") String apiUrl) {
+    this.webClient = webClientBuilder.baseUrl(apiUrl).build();
   }
 
-  @PostConstruct
-  public void init() {
-    this.obtenerToken()
-        .doOnNext(response -> {
-          this.accessToken = response.getData().getAccess_token();
-          this.tokenType = response.getData().getToken_type();
+  public Mono<List<HechoDTO>> getAllHechosVisibles(
+      String categoria,
+      String fecha_reporte_desde,
+      String fecha_reporte_hasta,
+      String fecha_acontecimiento_desde,
+      String fecha_acontecimiento_hasta,
+      String ubicacion
+  ) {
+    return webClient
+        .get()
+        .uri(uriBuilder -> {
+          uriBuilder.path("hechos");
+          if (categoria != null) uriBuilder.queryParam("categoria", categoria);
+          if (fecha_reporte_desde != null) uriBuilder.queryParam("fecha_reporte_desde", fecha_reporte_desde);
+          if (fecha_reporte_hasta != null) uriBuilder.queryParam("fecha_reporte_hasta", fecha_reporte_hasta);
+          if (fecha_acontecimiento_desde != null) uriBuilder.queryParam("fecha_acontecimiento_desde", fecha_acontecimiento_desde);
+          if (fecha_acontecimiento_hasta != null) uriBuilder.queryParam("fecha_acontecimiento_hasta", fecha_acontecimiento_hasta);
+          if (ubicacion != null) uriBuilder.queryParam("ubicacion", ubicacion);
+          return uriBuilder.build();
         })
-        .doOnError(error -> {
-          throw new ApiLoginException("No se pudo autenticar con el servicio externo", error);
-        })
-        .block();
-  }
-
-  public Mono<LoginResponseDTO> obtenerToken() {
-    return webClient
-        .post()
-        .uri("/login")
-        .bodyValue(Map.of("email", email, "password", password))
         .retrieve()
-        .bodyToMono(LoginResponseDTO.class)
-        .flatMap(res -> {
-          if (!res.isError()) {
-            return Mono.just(res);
-          } else {
-            return Mono.error(new ApiLoginException("Login fallido: " + res.getMessage()));
-          }
-        });
+        .bodyToFlux(HechoDTO.class)
+        .collectList();
   }
 
-  public Mono<List<HechoProxyDTO>> getAllHechos() {
-    return webClient
-        .get()
-        .uri("/desastres")
-        .header(AUTH_HEADER, tokenType + " " + accessToken)
-        .retrieve()
-        .bodyToMono(HechoProxyResponseDTO.class)
-        .map(HechoProxyResponseDTO::getData);
-  }
-
-  public Mono<List<HechoProxyDTO>> getProductsWithParams(Integer page, Integer per_page) {
-    return webClient
-        .get()
-        .uri(uriBuilder -> uriBuilder
-            .path("/desastres")
-            .queryParam("page", page)
-            .queryParam("per_page", per_page)
-            .build())
-        .header(AUTH_HEADER, tokenType + " " + accessToken)
-        .retrieve()
-        .bodyToMono(HechoProxyResponseDTO.class)
-        .map(HechoProxyResponseDTO::getData);
-  }
-
-  public Mono<HechoProxyDTO> getProductById(Long id) {
-    return webClient
-        .get()
-        .uri("/desastres/{id}", id)
-        .header(AUTH_HEADER, tokenType + " " + accessToken)
-        .retrieve()
-        .bodyToMono(HechoProxyDTO.class);
-  }
-
-  @Override
-  public List<Hecho> importarHechos() throws Exception {
+  public List<HechoDTO> getAllHechosNuevos() {
     return List.of();
   }
 
-  @Override
-  public void abrirFuente() throws Exception {
-
+  public Mono<List<ColeccionDTO>> getAllColecciones() {
+    return webClient
+        .get()
+        .uri("/colecciones")
+        .retrieve()
+        .bodyToFlux(ColeccionDTO.class)
+        .collectList();
   }
 
-  @Override
-  public void cerrarFuente() {
+  public Mono<ColeccionDTO> getColeccionById(String id) {
+    return webClient
+        .get()
+        .uri("/colecciones/{id}/hechos", id)
+        .retrieve()
+        .bodyToMono(ColeccionDTO.class);
+  }
 
+  public Mono<SolicitudDeEliminacionDTO> createSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
+    return webClient
+        .post()
+        .uri("/solicitudes")
+        .bodyValue(solicitud)
+        .retrieve()
+        .bodyToMono(SolicitudDeEliminacionDTO.class);
   }
 }

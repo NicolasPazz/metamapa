@@ -4,7 +4,9 @@ import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.HechoProxyDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.HechoProxyResponseDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.external.LoginResponseDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.HechoOutputDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.hecho.Categoria;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.repositorie.impl.CategoriasRepository;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.repositorie.impl.HechosRepository;
 import ar.utn.ba.ddsi.proxy_metamapa.exception.ApiLoginException;
 import jakarta.annotation.PostConstruct;
@@ -28,6 +30,8 @@ public class FuenteService {
 
   @Autowired
   private HechosRepository hechosRepository;
+  @Autowired
+  private CategoriasRepository categoriasRepository;
 
   @Value("${proxy_ong.auth.email}")
   private String email;
@@ -106,19 +110,32 @@ public class FuenteService {
         .collectList();
   }
 
-  public List<HechoOutputDTO> getAllHechosVisibles() {
+  public List<HechoOutputDTO> getAllHechosVisibles(String categoria, String fecha_reporte_desde, String fecha_reporte_hasta, String fecha_acontecimiento_desde, String fecha_acontecimiento_hasta, String ubicacion) {
     return List.of();
   }
 
+  /**
+   * Devuelve todos los hechos nuevos obtenidos de la fuente externa,
+   * que aún no están registrados localmente. Guarda los nuevos hechos
+   * en el repositorio local y devuelve su representación de salida.
+   *
+   * @return Mono con la lista de hechos nuevos
+   */
   public Mono<List<HechoOutputDTO>> getAllHechosNuevos() {
     return this.getAllHechos()
         .flatMapMany(Flux::fromIterable)
         .filter(dto -> !hechosRepository.existsById(dto.getId())) // Asumo que las API que se consumiran, no eliminan ni modifican hechos, solo agregan nuevos.
         .map(dto -> {
+          Categoria categoria = categoriasRepository.findByName(dto.getCategoria());
+          if (categoria == null) {
+            categoria = new Categoria(dto.getCategoria());
+            categoriasRepository.save(categoria);
+          }
           hechosRepository.save(new Hecho(
               dto.getId(),
               dto.getTitulo(),
               dto.getDescripcion(),
+              categoria,
               dto.getLatitud(),
               dto.getLongitud(),
               dto.getFecha_hecho(),
@@ -130,6 +147,7 @@ public class FuenteService {
               dto.getId(),
               dto.getTitulo(),
               dto.getDescripcion(),
+              dto.getCategoria(),
               dto.getLatitud(),
               dto.getLongitud(),
               dto.getFecha_hecho(),

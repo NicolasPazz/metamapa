@@ -12,7 +12,7 @@ import reactor.core.publisher.Mono;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api")
+@RequestMapping("api")
 public class AgregadorController {
     private final SolicitudesService solicitudesService;
     private final HechosService hechosService;

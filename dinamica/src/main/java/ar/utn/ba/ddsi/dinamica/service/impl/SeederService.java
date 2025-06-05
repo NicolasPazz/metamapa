@@ -180,9 +180,9 @@ public class SeederService implements ISeederService {
                         .build()
         );
 
-        hechos.forEach(h->{
-            this.hechosRepository.save(h);
-        });
+        hechos.forEach(h->
+            this.hechosRepository.save(h)
+        );
 
     }
 

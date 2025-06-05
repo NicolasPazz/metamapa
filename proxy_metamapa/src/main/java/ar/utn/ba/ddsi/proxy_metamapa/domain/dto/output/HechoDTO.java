@@ -4,19 +4,20 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class HechoOutputDTO {
-  // TODO: eliminar lo que no sea necesario
+public class HechoDTO {
   private Long id;
   private String origen;
   private String estado;
-  private Long idContribuyente;
-  private List<Long> idEtiquetas;
+  private ContribuyenteDTO contribuyente;
+  private List<String> etiquetas;
   private String titulo;
   private String descripcion;
-  private Long idCategoria;
+  private String categoria;
   private Double latitud;
   private Double longitud;
   private String fechaDeAcontecimiento;
   private String fechaDeCarga;
-  private List<String> multimediaPaths;
+  private String ultimaModificacion;
+  private List<ContenidoMultimediaDTO> contenidoMultimedia;
+  private List<TransicionEstadoHechoDTO> transicionesDeEstado;
 }
