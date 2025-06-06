@@ -28,7 +28,7 @@ public class FuenteService {
     return webClient
         .get()
         .uri(uriBuilder -> {
-          uriBuilder.path("hechos");
+          uriBuilder.path("/hechos");
           if (categoria != null) uriBuilder.queryParam("categoria", categoria);
           if (fecha_reporte_desde != null) uriBuilder.queryParam("fecha_reporte_desde", fecha_reporte_desde);
           if (fecha_reporte_hasta != null) uriBuilder.queryParam("fecha_reporte_hasta", fecha_reporte_hasta);
