@@ -27,6 +27,7 @@ public class Hecho {
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
   private Categoria categoria;
+  private LocalDateTime ultimaActualizacion;
 
   // CSV
   public Hecho(DataHecho data, OrigenHecho origen) {

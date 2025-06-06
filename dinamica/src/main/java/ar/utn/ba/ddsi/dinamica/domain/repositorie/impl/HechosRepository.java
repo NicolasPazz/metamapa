@@ -3,6 +3,8 @@ package ar.utn.ba.ddsi.dinamica.domain.repositorie.impl;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
 import org.springframework.stereotype.Repository;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,18 +42,22 @@ public class HechosRepository implements IHechosRepository {
   @Override
   public void save(Hecho hecho) {
     hecho.setId((long) (this.hechos.size() + 1));
+    hecho.setUltimaActualizacion(LocalDateTime.now());
     this.hechos.add(hecho);
+
   }
 
   @Override
   public void update(Hecho hecho) {
     for (int i = 0; i < hechos.size(); i++) {
       if (hechos.get(i).getId().equals(hecho.getId())) {
+        hecho.setUltimaActualizacion(LocalDateTime.now());
         hechos.set(i, hecho);
         return;
       }
     }
   }
+
 
   @Override
   public void delete(Hecho hecho) {

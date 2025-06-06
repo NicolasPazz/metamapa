@@ -29,19 +29,14 @@ public class FuenteService implements IFuenteService {
 
   @Override
   public List<HechoOutputDTO> getAllHechosNuevos() {
+    LocalDateTime ahora = LocalDateTime.now();
     List<Hecho> hechos = this.hechosRepository.findAll();
     List<HechoOutputDTO> nuevos = hechos.stream()
-        .filter(h -> {
-          LocalDateTime ultimaTransicion = h.getTransiciones().get(h.getTransiciones().size() - 1).getFechaTransicion();
-
-          // Verifica si la ultima transicion es posterior a la ultima llamada
-          return ultimaLlamada == null || ultimaTransicion.isAfter(ultimaLlamada);
-        })
+        .filter(h ->ultimaLlamada == null || h.getUltimaActualizacion().isAfter(ultimaLlamada))
         .map(this::hechoOutputDTO)
         .toList();
-
     // Actualizar la ultima llamada
-    ultimaLlamada = LocalDateTime.now();
+    ultimaLlamada = ahora;
 
     return nuevos;
   }
@@ -59,7 +54,6 @@ public class FuenteService implements IFuenteService {
 
     Hecho hecho = new Hecho();
     hecho.setIdSolicitud(solicitud.getIdSolicitud());
-    hecho.setIdSolicitud(solicitud.getIdSolicitud());
     hecho.setData(dataHecho);
     hecho.setOrigen(OrigenHecho.CONTRIBUYENTE);
     hecho.setIdContribuyente(solicitud.getIdContribuyente());
@@ -69,6 +63,7 @@ public class FuenteService implements IFuenteService {
     if (busqueda == null) {
       this.hechosRepository.save(hecho);
     }else{
+      hecho.setId(busqueda.getId());
       this.hechosRepository.update(hecho);
     }
   }
@@ -77,7 +72,7 @@ public class FuenteService implements IFuenteService {
     var dto = new HechoOutputDTO();
     dto.setId(hecho.getId());
     dto.setOrigen(hecho.getOrigen().name());
-    dto.setEstado(hecho.getEstado().name());
+    //dto.setEstado(hecho.getEstado().name());
     dto.setIdContribuyente(hecho.getIdContribuyente());
     dto.setIdEtiquetas(hecho.getEtiquetas().stream()
         .map(Etiqueta::getId)
@@ -89,9 +84,6 @@ public class FuenteService implements IFuenteService {
     dto.setLongitud(hecho.getLongitud());
     dto.setFechaDeAcontecimiento(hecho.getFechaDeAcontecimiento().toString());
     dto.setFechaDeCarga(hecho.getFechaDeCarga().toString());
-    if (!hecho.getTransiciones().isEmpty()) {
-      dto.setUltimaModificacion(hecho.getTransiciones().get(hecho.getTransiciones().size() - 1).getFechaTransicion().toString());
-    }
     dto.setMultimediaPaths(hecho.getMultimediaPaths());
     return dto;
   }

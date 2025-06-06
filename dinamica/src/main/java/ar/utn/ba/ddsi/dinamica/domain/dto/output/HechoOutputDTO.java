@@ -17,6 +17,5 @@ public class HechoOutputDTO {
     private Double longitud;
     private String fechaDeAcontecimiento;
     private String fechaDeCarga;
-    private String ultimaModificacion;
     private List<String> multimediaPaths;
 }

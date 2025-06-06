@@ -59,6 +59,7 @@ public class SolicitudesService implements ISolicitudesService {
 
     @Override
     public SolicitudOutputDTO obtenerSolicitud(Long id) {
+        //TODO: cuando se modelen admin y users validar que se cuente con los permisos
         SolicitudHecho solicitud = solicitudesRepository.findById(id);
         if (solicitud == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada");
@@ -92,9 +93,13 @@ public class SolicitudesService implements ISolicitudesService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada");
         }
 
-        // Validar que sea el mismo contribuyente
-        if (!solicitud.getIdContribuyente().equals(inputDTO.getIdContribuyente())) {
+        if(inputDTO.getIdContribuyente() == null){
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No autorizado para modificar esta solicitud");
+        }
+
+        // Validar que sea el mismo contribuyente(completar al agregar base de datos contribuyente)
+        if (!solicitud.getIdContribuyente().equals(inputDTO.getIdContribuyente())) {
+            //throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No autorizado para modificar esta solicitud");
 
         }
 
@@ -170,7 +175,6 @@ public class SolicitudesService implements ISolicitudesService {
         if (estado == EstadoSolicitud.ACEPTADO || estado == EstadoSolicitud.ACEPTADO_SUGERIDO) {
             hechosService.crearHechoDesdeSolicitud(solicitud);
         }
-
         return solicitudOutputDTO(solicitud);
     }
 }
