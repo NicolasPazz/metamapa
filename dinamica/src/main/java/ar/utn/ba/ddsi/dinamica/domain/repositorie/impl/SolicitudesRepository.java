@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.dinamica.domain.repositorie.impl;
 
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.ISolicitudesRepository;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -9,12 +10,9 @@ import java.util.List;
 
 @Repository
 public class SolicitudesRepository implements ISolicitudesRepository {
-    private List<SolicitudHecho> solicitudes;
 
-    public SolicitudesRepository() {
-        this.solicitudes = new ArrayList<>();
-    }
-
+    private List<SolicitudHecho> solicitudes = new ArrayList<>();
+    private final AtomicLong idGenerator = new AtomicLong(1);
 
     @Override
     public SolicitudHecho findById(Long id) {
@@ -31,7 +29,7 @@ public class SolicitudesRepository implements ISolicitudesRepository {
 
     @Override
     public Long save(SolicitudHecho solicitudHecho) {
-        Long nuevoId = (long) this.solicitudes.size()+1;
+        Long nuevoId = idGenerator.getAndIncrement();
         solicitudHecho.setIdSolicitud(nuevoId);
         this.solicitudes.add(solicitudHecho);
         return nuevoId;

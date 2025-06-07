@@ -6,6 +6,7 @@ import ar.utn.ba.ddsi.estatica.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.estatica.domain.repositories.IHechosRepository;
 import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Repository;
 import java.io.FileReader;
 import java.io.IOException;
@@ -18,7 +19,9 @@ import java.util.stream.Stream;
 
 @Repository
 public class HechosRepository implements IHechosRepository {
-  private List<Hecho> hechos = new ArrayList<>();
+
+  private final List<Hecho> hechos = new ArrayList<>();
+  private final AtomicLong idGenerator = new AtomicLong(1);
 
   public HechosRepository() {
     // Cargar todos los CSV al iniciar el repositorio
@@ -66,7 +69,7 @@ public class HechosRepository implements IHechosRepository {
 
   @Override
   public void save(Hecho hecho) {
-    hecho.setId((long) (this.hechos.size() + 1));
+    hecho.setId(idGenerator.getAndIncrement());
     this.hechos.add(hecho);
   }
 

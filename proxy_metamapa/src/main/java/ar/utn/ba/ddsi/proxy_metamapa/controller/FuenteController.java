@@ -47,11 +47,6 @@ public class FuenteController {
     return fuenteService.getAllHechosVisibles(categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
   }
 
-  @GetMapping("/nuevos")
-  public List<HechoDTO> getAllHechosNuevos() {
-    return fuenteService.getAllHechosNuevos();
-  }
-
   /**
    *   GET /colecciones
    *   Esta ruta expone todas las colecciones disponibles, independientemente del origen de sus fuentes.
@@ -63,7 +58,7 @@ public class FuenteController {
 
   /**
    * GET /colecciones/:identificador/hechos
-   *   Esta ruta, similar a la anterior, permite obtener los hechos asociados a una colección. Acepta los mismos parámetros y devuelve los resultados en el mismo formato.
+   *   Esta ruta, permite obtener los hechos asociados a una colección. Acepta los mismos parámetros y devuelve los resultados en el mismo formato.
    */
   @GetMapping("/colecciones/{handle}/hechos")
   public Mono<ColeccionDTO> getColeccionByHandle(@PathVariable("handle") String handle) {
@@ -75,7 +70,7 @@ public class FuenteController {
    *   Permite crear solicitudes de eliminación, enviando los datos de la solicitud como un JSON a través del cuerpo (body) de la misma.
    */
   @PostMapping("/solicitudes")
-  public Mono<SolicitudDeEliminacionDTO> createSolicitudDeEliminacion(@RequestBody SolicitudDeEliminacionDTO solicitud) {
-    return fuenteService.createSolicitudDeEliminacion(solicitud);
+  public Mono<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(@RequestBody SolicitudDeEliminacionDTO solicitud) {
+    return fuenteService.crearSolicitudDeEliminacion(solicitud);
   }
 }

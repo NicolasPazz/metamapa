@@ -1,0 +1,767 @@
+{
+	"info": {
+		"_postman_id": "0d4c7e3e-6d46-4843-b5fc-b172ebb99232",
+		"name": "metamapa",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43637471",
+		"_collection_link": "https://nicolaspaz-7741775.postman.co/workspace/Nicolas-Paz's-Workspace~290c9eb3-6d31-4de4-8a70-01f6b216242d/collection/43637471-0d4c7e3e-6d46-4843-b5fc-b172ebb99232?action=share&source=collection_link&creator=43637471"
+	},
+	"item": [
+		{
+			"name": "proxy",
+			"item": [
+				{
+					"name": "ong",
+					"item": [
+						{
+							"name": "api ddsi",
+							"item": [
+								{
+									"name": "/public/api/login",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "https://api-ddsi.disilab.ar/public/api/login?email={{ddsi_email}}&password={{ddsi_password}}",
+											"protocol": "https",
+											"host": [
+												"api-ddsi",
+												"disilab",
+												"ar"
+											],
+											"path": [
+												"public",
+												"api",
+												"login"
+											],
+											"query": [
+												{
+													"key": "email",
+													"value": "{{ddsi_email}}"
+												},
+												{
+													"key": "password",
+													"value": "{{ddsi_password}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "https://api-ddsi.disilab.ar/public/api/desastres?per_page=100&page=1",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer rY3j0CD1b4hpJBNWwZvJkva2NhsGEukeS2pFQkjE2yMBmk6sdlGQ5ATQkpYo",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "https://api-ddsi.disilab.ar/public/api/desastres?per_page=100&page=59",
+											"protocol": "https",
+											"host": [
+												"api-ddsi",
+												"disilab",
+												"ar"
+											],
+											"path": [
+												"public",
+												"api",
+												"desastres"
+											],
+											"query": [
+												{
+													"key": "per_page",
+													"value": "100"
+												},
+												{
+													"key": "page",
+													"value": "59"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "https://api-ddsi.disilab.ar/public/api/desastres?per_page=100&page=1 Copy",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer rY3j0CD1b4hpJBNWwZvJkva2NhsGEukeS2pFQkjE2yMBmk6sdlGQ5ATQkpYo",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "https://api-ddsi.disilab.ar/public/api/desastres/10",
+											"protocol": "https",
+											"host": [
+												"api-ddsi",
+												"disilab",
+												"ar"
+											],
+											"path": [
+												"public",
+												"api",
+												"desastres",
+												"10"
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "https://api-ddsi.disilab.ar/public/api/login?email={{ddsi_email}}&password={{ddsi_password}}",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "https://api-ddsi.disilab.ar/public/api/login?email={{ddsi_email}}&password={{ddsi_password}}",
+											"protocol": "https",
+											"host": [
+												"api-ddsi",
+												"disilab",
+												"ar"
+											],
+											"path": [
+												"public",
+												"api",
+												"login"
+											],
+											"query": [
+												{
+													"key": "email",
+													"value": "{{ddsi_email}}"
+												},
+												{
+													"key": "password",
+													"value": "{{ddsi_password}}"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "http://localhost:8083/api/hechos/nuevos",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8083/api/hechos/nuevos",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8083",
+									"path": [
+										"api",
+										"hechos",
+										"nuevos"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "metamapa",
+					"item": [
+						{
+							"name": "http://localhost:8086/api/hechos",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8086/api/hechos",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8086",
+									"path": [
+										"api",
+										"hechos"
+									],
+									"query": [
+										{
+											"key": "categoria",
+											"value": "Incendio",
+											"disabled": true
+										},
+										{
+											"key": "fecha_reporte_desde",
+											"value": "01-01-0001",
+											"disabled": true
+										},
+										{
+											"key": "fecha_reporte_hasta",
+											"value": "31-12-9999",
+											"disabled": true
+										},
+										{
+											"key": "fecha_acontecimiento_desde",
+											"value": "01-01-0001",
+											"disabled": true
+										},
+										{
+											"key": "fecha_acontecimiento_hasta",
+											"value": "31-12-9999",
+											"disabled": true
+										},
+										{
+											"key": "ubicacion",
+											"value": "Argentina",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "http://localhost:8086/api/colecciones",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8086/api/colecciones",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8086",
+									"path": [
+										"api",
+										"colecciones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "http://localhost:8086/api/coleccion/handle/hechos",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8086/api/coleccion/handle/hechos",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8086",
+									"path": [
+										"api",
+										"coleccion",
+										"handle",
+										"hechos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "http://localhost:8086/api/solicitudes",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"id_hecho\"\r\n  \"texto_fundamentos\"\r\n  \"id_contribuyente\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8086/api/solicitudes",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8086",
+									"path": [
+										"api",
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "http://localhost:8086/api/colecciones",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8086/api/colecciones",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8086",
+									"path": [
+										"api",
+										"colecciones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "http://localhost:8086/api/coleccion/handle/hechos",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "http://localhost:8086/api/coleccion/handle/hechos",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8086",
+									"path": [
+										"api",
+										"coleccion",
+										"handle",
+										"hechos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "http://localhost:8086/api/solicitudes",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"id_hecho\"\r\n  \"texto_fundamentos\"\r\n  \"id_contribuyente\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "http://localhost:8086/api/solicitudes",
+									"protocol": "http",
+									"host": [
+										"localhost"
+									],
+									"port": "8086",
+									"path": [
+										"api",
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "agregador",
+			"item": [
+				{
+					"name": "http://localhost:8084/api/hechos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/hechos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"hechos"
+							],
+							"query": [
+								{
+									"key": "categoria",
+									"value": "Incendio",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "ubicacion",
+									"value": "Argentina",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8084/api/colecciones",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/colecciones",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"colecciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8084/api/coleccion/handle/hechos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/coleccion/handle/hechos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"coleccion",
+								"handle",
+								"hechos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8084/api/solicitudes",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_hecho\"\r\n  \"texto_fundamentos\"\r\n  \"id_contribuyente\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/api/solicitudes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "dinamica",
+			"item": [
+				{
+					"name": "http://localhost:8081/api/hechos/nuevos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/api/hechos/nuevos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"hechos",
+								"nuevos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8081/api/solicitudes",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/api/solicitudes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8081/api/solicitudes/id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/api/solicitudes/id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"solicitudes",
+								"id"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8081/api/solicitudes",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id_contribuyente\"\r\n    \"titulo\"\r\n    \"descripcion\"\r\n    \"categoria\"\r\n    \"latitud\"\r\n    \"longitud\"\r\n    \"fecha_de_acontecimiento\"\r\n    \"multimedia\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/solicitudes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8081/api/solicitudes/user/id?id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id_solicitud\"\r\n    \"id_contribuyente\"\r\n    \"titulo\"\r\n    \"descripcion\"\r\n    \"categoria\"\r\n    \"latitud\"\r\n    \"longitud\"\r\n    \"fecha_de_acontecimiento\"\r\n    \"multimedia\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/solicitudes/user/id?id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"solicitudes",
+								"user",
+								"id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8081/api/solicitudes/admin/id?id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"id_solicitud\"\r\n    \"id_contribuyente\"\r\n    \"estado_solicitud\"\r\n    \"sugerencia\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/solicitudes/admin/id?id",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"solicitudes",
+								"admin",
+								"id"
+							],
+							"query": [
+								{
+									"key": "id",
+									"value": null
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "estatica",
+			"item": [
+				{
+					"name": "http://localhost:8082/api/hechos/nuevos",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/hechos/nuevos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"api",
+								"hechos",
+								"nuevos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

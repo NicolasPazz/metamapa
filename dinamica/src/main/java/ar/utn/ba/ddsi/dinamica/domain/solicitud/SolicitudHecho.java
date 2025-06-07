@@ -1,12 +1,9 @@
 package ar.utn.ba.ddsi.dinamica.domain.solicitud;
 
-import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import lombok.Getter;
 import lombok.Setter;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Setter

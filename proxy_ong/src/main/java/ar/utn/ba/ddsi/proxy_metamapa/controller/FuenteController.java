@@ -18,20 +18,8 @@ public class FuenteController {
     this.fuenteService = fuenteService;
   }
 
-  @GetMapping
-  public List<HechoOutputDTO> getAllHechosVisibles(
-      @RequestParam(required = false) String categoria,
-      @RequestParam(required = false) String fecha_reporte_desde,
-      @RequestParam(required = false) String fecha_reporte_hasta,
-      @RequestParam(required = false) String fecha_acontecimiento_desde,
-      @RequestParam(required = false) String fecha_acontecimiento_hasta,
-      @RequestParam(required = false) String ubicacion){
-    return fuenteService.getAllHechosVisibles(categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
-  }
-
   /**
    * Devuelve todos los hechos que todavia no se habian enviado.
-   *
    * @return lista reactiva (Mono) con hechos nuevos
    */
   @GetMapping("/nuevos")

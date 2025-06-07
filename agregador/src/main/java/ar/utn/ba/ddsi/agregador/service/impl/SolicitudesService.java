@@ -3,28 +3,23 @@ package ar.utn.ba.ddsi.agregador.service.impl;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.domain.repositories.IContribuyentesRepository;
-import ar.utn.ba.ddsi.agregador.domain.repositories.IHechosRepository;
-import ar.utn.ba.ddsi.agregador.domain.repositories.ISolicitudesRepository;
+import ar.utn.ba.ddsi.agregador.domain.repositorie.IContribuyentesRepository;
+import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
+import ar.utn.ba.ddsi.agregador.domain.repositorie.ISolicitudesRepository;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.detector.DetectorDeSpam;
 import ar.utn.ba.ddsi.agregador.service.ISolicitudesService;
 import ar.utn.ba.ddsi.agregador.user.Contribuyente;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 @Service
+@RequiredArgsConstructor
 public class SolicitudesService implements ISolicitudesService {
-  private ISolicitudesRepository solicitudesRepository;
-  private IHechosRepository hechosRepository;
-  private IContribuyentesRepository contribuyentesRepository;
-  private DetectorDeSpam detectorDeSpam;
-
-  public SolicitudesService(ISolicitudesRepository solicitudesRepository, IHechosRepository hechosRepository, IContribuyentesRepository contribuyentesRepository, DetectorDeSpam detectorDeSpam) {
-    this.solicitudesRepository = solicitudesRepository;
-    this.hechosRepository = hechosRepository;
-    this.contribuyentesRepository = contribuyentesRepository;
-    this.detectorDeSpam = detectorDeSpam;
-  }
+  private final ISolicitudesRepository solicitudesRepository;
+  private final IHechosRepository hechosRepository;
+  private final IContribuyentesRepository contribuyentesRepository;
+  private final DetectorDeSpam detectorDeSpam;
 
   @Override
   public SolicitudOutputDTO crear(SolicitudInputDTO solicitudInputDTO) {

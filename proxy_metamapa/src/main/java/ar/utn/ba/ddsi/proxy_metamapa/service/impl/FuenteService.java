@@ -42,10 +42,6 @@ public class FuenteService {
         .collectList();
   }
 
-  public List<HechoDTO> getAllHechosNuevos() {
-    return List.of();
-  }
-
   public Mono<List<ColeccionDTO>> getAllColecciones() {
     return webClient
         .get()
@@ -63,7 +59,7 @@ public class FuenteService {
         .bodyToMono(ColeccionDTO.class);
   }
 
-  public Mono<SolicitudDeEliminacionDTO> createSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
+  public Mono<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
     return webClient
         .post()
         .uri("/solicitudes")

@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.dinamica.domain.repositorie.impl;
 
 import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
+import java.util.concurrent.atomic.AtomicLong;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -11,11 +12,8 @@ import java.util.List;
 @Repository
 public class HechosRepository implements IHechosRepository {
 
-  private List<Hecho> hechos;
-
-  public HechosRepository() {
-    this.hechos = new ArrayList<>();
-  }
+  private final List<Hecho> hechos = new ArrayList<>();
+  private final AtomicLong idGenerator = new AtomicLong(1);
 
 
   @Override
@@ -41,7 +39,7 @@ public class HechosRepository implements IHechosRepository {
 
   @Override
   public void save(Hecho hecho) {
-    hecho.setId((long) (this.hechos.size() + 1));
+    hecho.setId(idGenerator.getAndIncrement());
     hecho.setUltimaActualizacion(LocalDateTime.now());
     this.hechos.add(hecho);
 

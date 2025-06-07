@@ -110,10 +110,6 @@ public class FuenteService {
         .collectList();
   }
 
-  public List<HechoOutputDTO> getAllHechosVisibles(String categoria, String fecha_reporte_desde, String fecha_reporte_hasta, String fecha_acontecimiento_desde, String fecha_acontecimiento_hasta, String ubicacion) {
-    return List.of();
-  }
-
   /**
    * Devuelve todos los hechos nuevos obtenidos de la fuente externa,
    * que aún no están registrados localmente. Guarda los nuevos hechos

@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudHechoInputContribuyenteDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.dinamica.service.ISolicitudesService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +18,10 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/solicitudes")
 @CrossOrigin(origins = "http://localhost:3000")
-
+@RequiredArgsConstructor
 public class SolicitudesController {
 
-  @Autowired
-  private ISolicitudesService solicitudesService;
-
+  private final ISolicitudesService solicitudesService;
 
 //TODO: validar que solo pueda hacerlo los admins
 //--------------------MOSTRAR TODAS LAS SOLICITUDES---------------------

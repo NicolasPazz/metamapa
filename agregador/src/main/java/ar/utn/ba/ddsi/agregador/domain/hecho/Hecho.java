@@ -1,14 +1,20 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
+import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.ContribuyenteDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
 import java.time.LocalDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import ar.utn.ba.ddsi.agregador.user.Contribuyente;
+import java.util.stream.Collectors;
 import lombok.*;
 
 @Getter
@@ -100,6 +106,53 @@ public class Hecho {
     this.estado = estado;
   }
 
+  public HechoDTO mapToDTO() {
+    HechoDTO dto = new HechoDTO();
+    dto.setId(this.getId());
+    dto.setTitulo(this.getTitulo());
+    dto.setDescripcion(this.getDescripcion());
+    dto.setCategoria(this.getCategoria().getNombre());
+    dto.setLatitud(this.getLatitud());
+    dto.setLongitud(this.getLongitud());
+    dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento().toString());
+    dto.setFechaDeCarga(this.getFechaDeCarga().toString());
+    dto.setOrigen(this.getOrigen().name());
+    dto.setEstado(this.getEstado().name());
+
+    if (this.getContribuyente() != null) {
+      ContribuyenteDTO contribuyenteDTO = new ContribuyenteDTO();
+      contribuyenteDTO.setNombre(this.getContribuyente().getNombre());
+      contribuyenteDTO.setApellido(this.getContribuyente().getApellido());
+      contribuyenteDTO.setFechaDeNacimiento(
+          Optional.ofNullable(this.getContribuyente().getFechaDeNacimiento())
+              .map(Object::toString)
+              .orElse(null));
+      dto.setContribuyente(contribuyenteDTO);
+    }
+
+    dto.setEtiquetas(this.getEtiquetas().stream()
+        .map(Etiqueta::getNombre)
+        .collect(Collectors.toList()));
+
+    dto.setContenidoMultimedia(this.getMultimedia().stream()
+        .map(m -> {
+          ContenidoMultimediaDTO dtoMultimedia = new ContenidoMultimediaDTO();
+          dtoMultimedia.setPathArchivo(m.getPathArchivo());
+          dtoMultimedia.setTipoContenido(m.getTipoContenido().name());
+          return dtoMultimedia;
+        }).collect(Collectors.toList()));
+
+    dto.setTransicionesDeEstado(this.getTransiciones().stream()
+        .map(t -> {
+          TransicionEstadoHechoDTO tDto = new TransicionEstadoHechoDTO();
+          tDto.setEstadoFinal(t.getEstadoFinal().name());
+          tDto.setFecha(t.getFechaTransicion().toString());
+          return tDto;
+        }).collect(Collectors.toList()));
+
+    return dto;
+  }
+
   // TODO: revisar si no conviene hacer una clase en estos dos casos
   public List<Long> getIdEtiquetas() {
     List<Long> ids = new ArrayList<>();
@@ -110,8 +163,8 @@ public class Hecho {
   }
   public List<String> getMultimediaPaths() {
     List<String> paths = new ArrayList<>();
-    for (ContenidoMultimedia multimedia : this.multimedia) {
-      paths.add(multimedia.getPathArchivo());
+    for (ContenidoMultimedia multim : this.multimedia) {
+      paths.add(multim.getPathArchivo());
     }
     return paths;
   }

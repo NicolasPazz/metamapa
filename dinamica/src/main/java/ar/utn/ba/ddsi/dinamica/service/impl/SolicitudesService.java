@@ -10,6 +10,7 @@ import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.TransicionEstadoSolicitud;
 import ar.utn.ba.ddsi.dinamica.service.IFuenteService;
 import ar.utn.ba.ddsi.dinamica.service.ISolicitudesService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,13 +21,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class SolicitudesService implements ISolicitudesService {
 
-    @Autowired
-    private ISolicitudesRepository solicitudesRepository;
-
-    @Autowired
-    private IFuenteService hechosService;
+    private final ISolicitudesRepository solicitudesRepository;
+    private final IFuenteService hechosService;
 
     @Override
     public List<SolicitudOutputDTO> buscarTodas(){

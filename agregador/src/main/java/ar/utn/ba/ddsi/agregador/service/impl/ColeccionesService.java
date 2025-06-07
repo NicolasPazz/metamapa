@@ -1,51 +1,61 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
-import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.criterioDePertenencia.Criterio;
-import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
-import ar.utn.ba.ddsi.agregador.service.IColeccionesService;
-import lombok.SneakyThrows;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
+import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ar.utn.ba.ddsi.agregador.domain.dto.output.ColeccionOutputDTO;
+import reactor.core.publisher.Mono;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class ColeccionesService implements IColeccionesService {
-    private IColeccionesRepository coleccionRepository;
+@RequiredArgsConstructor
+public class ColeccionesService {
 
-    @SneakyThrows
-    @Override
-    public List<ColeccionOutputDTO> buscarTodas() {
-        return coleccionRepository.findAll().stream().map(this::coleccionOutputDTO).toList();
+    private final IColeccionesRepository coleccionesRepository;
+    private final FuentesService fuentesService;
+
+    public Mono<List<ColeccionDTO>> getAll() {
+        Mono<List<ColeccionDTO>> coleccionesLocales = Mono.just(
+            coleccionesRepository.findAll().stream()
+                .map(Coleccion::mapToDTO)
+                .toList()
+        );
+
+        Mono<List<ColeccionDTO>> coleccionesExternas = fuentesService.getAllColecciones();
+
+        return Mono.zip(coleccionesLocales, coleccionesExternas)
+            .map(tuple -> {
+                List<ColeccionDTO> combinadas = new ArrayList<>();
+                combinadas.addAll(tuple.getT1());
+                combinadas.addAll(tuple.getT2());
+                return combinadas;
+            });
     }
 
-    @Override
-    public List<Hecho> buscarHechosDeColeccion(String handle) throws Exception {
-        return coleccionRepository.findByHandle(handle).getHechos();
-    }
-
-    @Override
-    public ColeccionOutputDTO buscarColeccion(String handle) {
-        Coleccion coleccion = coleccionRepository.findByHandle(handle);
-        return coleccionOutputDTO(coleccion);
-    }
-
-    @Override
-    public void actualizarColecciones(List<Hecho> hechos) {
-        for(Coleccion coleccion : coleccionRepository.findAll()) {
-            Coleccion nuevaColeccion = new Coleccion(coleccion.getTitulo(), coleccion.getDescripcion(), hechos, coleccion.getCriterioDePertenencia());
-            coleccionRepository.save(coleccion);
+    public Mono<List<HechoDTO>> getByHandle(String handle) {
+        Coleccion local = coleccionesRepository.findByHandle(handle);
+        if (local != null) {
+            try {
+                List<HechoDTO> hechosDTO = local.getHechos()
+                    .stream()
+                    .map(Hecho::mapToDTO)
+                    .toList();
+                return Mono.just(hechosDTO);
+            } catch (Exception e) {
+                return Mono.error(e);
+            }
         }
+
+        return fuentesService.getColeccionByHandle(handle)
+            .flatMap(coleccionDTO -> {
+                List<HechoDTO> hechos = coleccionDTO.getHechos();
+                return Mono.just(hechos);
+            })
+            .switchIfEmpty(Mono.error(new IllegalArgumentException("No se encontró ninguna colección con el handle: " + handle)));
     }
 
-    private ColeccionOutputDTO coleccionOutputDTO(Coleccion coleccion) {
-        ColeccionOutputDTO dto = new ColeccionOutputDTO();
-
-        dto.setHandle(coleccion.getHandle());
-        dto.setTitulo(coleccion.getTitulo());
-        dto.setHechos(coleccion.getHechos());
-        dto.setDescripcion(coleccion.getDescripcion());
-        return dto;
-    }
 }

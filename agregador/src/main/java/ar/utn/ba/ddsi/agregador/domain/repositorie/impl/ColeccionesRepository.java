@@ -4,7 +4,9 @@ import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 
 import java.util.*;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class ColeccionesRepository implements IColeccionesRepository {
     private final Map<String, Coleccion> colecciones = new HashMap<>();
 
@@ -20,17 +22,21 @@ public class ColeccionesRepository implements IColeccionesRepository {
 
     @Override
     public void save(Coleccion coleccion) {
-        if(coleccion.getHandle() == null) {
-            coleccion.setHandle(Integer.toString(this.colecciones.size()));
-            colecciones.put(coleccion.getHandle(), coleccion);
+        if (colecciones.containsKey(coleccion.getHandle())) {
+            throw new IllegalArgumentException("Ya existe una colección con handle: " + coleccion.getHandle());
         }
-        else {
-            colecciones.put(coleccion.getHandle(), coleccion);
-        }
+        colecciones.put(coleccion.getHandle(), coleccion);
     }
 
     @Override
     public void delete(Coleccion coleccion) {
         colecciones.remove(coleccion.getHandle());
+    }
+
+    @Override
+    public void actualizarColecciones() {
+        for (Coleccion coleccion : colecciones.values()) {
+            coleccion.actualizar();
+        }
     }
 }

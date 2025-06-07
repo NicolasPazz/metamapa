@@ -8,4 +8,5 @@ public interface IColeccionesRepository {
     public Collection<Coleccion> findAll();
     public void save(Coleccion coleccion);
     public void delete(Coleccion coleccion);
+    public void actualizarColecciones();
 }
