@@ -19,18 +19,10 @@ public class FuenteController {
         this.fuenteService = hechosService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<HechoOutputDTO>> getAllHechosVisibles(
-        @RequestParam(required = false) String categoria,
-        @RequestParam(required = false) String fecha_reporte_desde,
-        @RequestParam(required = false) String fecha_reporte_hasta,
-        @RequestParam(required = false) String fecha_acontecimiento_desde,
-        @RequestParam(required = false) String fecha_acontecimiento_hasta,
-        @RequestParam(required = false) String ubicacion) {
-        List<HechoOutputDTO> hechos = this.fuenteService.getAllHechosVisibles(categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
-        return ResponseEntity.ok(hechos);
-    }
-
+    /**
+     * Devuelve todos los hechos que todavia no se habian enviado.
+     * @return lista reactiva (Mono) con hechos nuevos
+     */
     @GetMapping("/nuevos")
     public ResponseEntity<List<HechoOutputDTO>> getAllHechosNuevos() {
         List<HechoOutputDTO> hechosNuevos = this.fuenteService.getAllHechosNuevos();

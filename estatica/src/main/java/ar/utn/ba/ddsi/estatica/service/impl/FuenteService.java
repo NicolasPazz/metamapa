@@ -17,11 +17,6 @@ public class FuenteService implements IFuenteService {
     this.hechosRepository = hechosRepository;
   }
 
-  @Override
-  public List<HechoOutputDTO> getAllHechosVisibles(String categoria, String fecha_reporte_desde, String fecha_reporte_hasta, String fecha_acontecimiento_desde, String fecha_acontecimiento_hasta, String ubicacion) {
-    return List.of();
-  }
-
   private LocalDateTime ultimaLlamada = null;
 
   @Override
@@ -43,29 +38,16 @@ public class FuenteService implements IFuenteService {
   }
 
   private HechoOutputDTO hechoOutputDTO(Hecho hecho){
-    var dto = new HechoOutputDTO();
-    dto.setId(hecho.getId());
-    dto.setOrigen(hecho.getOrigen().name());
-    dto.setEstado(hecho.getEstado().name());
-    if (hecho.getContribuyente() != null) {
-      dto.setIdContribuyente(hecho.getContribuyente().getId());
-    } else {
-      dto.setIdContribuyente(null);
-    }
-    dto.setIdEtiquetas(hecho.getEtiquetas().stream()
-        .map(Etiqueta::getId)
-        .toList());
-    dto.setTitulo(hecho.getTitulo());
-    dto.setDescripcion(hecho.getDescripcion());
-    dto.setCategoria(hecho.getNombreCategoria());
-    dto.setLatitud(hecho.getLatitud());
-    dto.setLongitud(hecho.getLongitud());
-    dto.setFechaDeAcontecimiento(hecho.getFechaDeAcontecimiento().toString());
-    dto.setFechaDeCarga(hecho.getFechaDeCarga().toString());
-    if (!hecho.getTransiciones().isEmpty()) {
-      dto.setUltimaModificacion(hecho.getTransiciones().get(hecho.getTransiciones().size() - 1).getFechaTransicion().toString());
-    }
-    dto.setMultimediaPaths(hecho.getMultimediaPaths());
-    return dto;
+     return new HechoOutputDTO(
+        hecho.getId(),
+        hecho.getTitulo(),
+        hecho.getDescripcion(),
+        hecho.getNombreCategoria(),
+        hecho.getLatitud(),
+        hecho.getLongitud(),
+        hecho.getFechaDeAcontecimiento(),
+        hecho.getFechaDeCarga(),
+        hecho.getTransiciones().get(hecho.getTransiciones().size() - 1).getFechaTransicion()
+        );
   }
 }
