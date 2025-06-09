@@ -18,4 +18,9 @@ public class SolicitudesRepository implements ISolicitudesRepository {
     solicitud.setId(idGenerator.getAndIncrement());
     this.solicitudes.add(solicitud);
   }
+
+  @Override
+  public List<SolicitudDeEliminacion> findAll() {
+    return solicitudes;
+  }
 }

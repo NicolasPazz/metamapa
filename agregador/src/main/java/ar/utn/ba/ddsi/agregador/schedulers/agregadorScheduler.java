@@ -21,4 +21,9 @@ public class agregadorScheduler {
     public void refrescarHechosYColecciones() throws Exception {
         this.agregadorService.actualizarHechos();
     }
+
+    @Scheduled(cron = "0 0 * * * *")
+    public void revisarSpamSolicitudes() {
+        this.agregadorService.revisarSolicitudes();
+    }
 }
