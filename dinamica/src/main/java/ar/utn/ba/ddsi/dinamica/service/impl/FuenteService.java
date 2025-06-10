@@ -1,13 +1,19 @@
 package ar.utn.ba.ddsi.dinamica.service.impl;
 
+import ar.utn.ba.ddsi.dinamica.domain.dto.input.ContenidoMultimediaInputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.dto.output.ContenidoMultimediaOutputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.*;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 
 import ar.utn.ba.ddsi.dinamica.service.IFuenteService;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -50,14 +56,27 @@ public class FuenteService implements IFuenteService {
     dataHecho.setLatitud(solicitud.getLatitud());
     dataHecho.setLongitud(solicitud.getLongitud());
     dataHecho.setFechaDeAcontecimiento(solicitud.getFechaDeAcontecimiento());
-
+    List<ContenidoMultimedia> multimediaConvertida = new ArrayList<>();
+    if (solicitud.getMultimedia() != null) {
+      for (ContenidoMultimediaInputDTO dto : solicitud.getMultimedia()) {
+        try {
+          TipoContenido tipo = TipoContenido.valueOf(dto.getTipoContenido().toUpperCase());
+          multimediaConvertida.add(new ContenidoMultimedia(dto.getPathArchivo(), tipo));
+        } catch (IllegalArgumentException e) {
+          throw new ResponseStatusException(
+                  HttpStatus.BAD_REQUEST,
+                  "Tipo de contenido inválido en solicitud: " + dto.getTipoContenido()
+          );
+        }
+      }
+    }
 
     Hecho hecho = new Hecho();
     hecho.setIdSolicitud(solicitud.getIdSolicitud());
     hecho.setData(dataHecho);
     hecho.setOrigen(OrigenHecho.CONTRIBUYENTE);
     hecho.setIdContribuyente(solicitud.getIdContribuyente());
-    hecho.setMultimediaPaths(solicitud.getMultimedia());
+    hecho.setMultimediaPaths(multimediaConvertida);
 
     Hecho busqueda = this.hechosRepository.findByIdSolicitud(solicitud.getIdSolicitud());
     if (busqueda == null) {
@@ -69,22 +88,26 @@ public class FuenteService implements IFuenteService {
   }
 
   private HechoOutputDTO hechoOutputDTO(Hecho hecho){
-    var dto = new HechoOutputDTO();
-    dto.setId(hecho.getId());
-    dto.setOrigen(hecho.getOrigen().name());
-    //dto.setEstado(hecho.getEstado().name());
-    dto.setIdContribuyente(hecho.getIdContribuyente());
-    dto.setIdEtiquetas(hecho.getEtiquetas().stream()
-        .map(Etiqueta::getId)
-        .toList());
-    dto.setTitulo(hecho.getTitulo());
-    dto.setDescripcion(hecho.getDescripcion());
-    dto.setCategoria(hecho.getNombreCategoria());
-    dto.setLatitud(hecho.getLatitud());
-    dto.setLongitud(hecho.getLongitud());
-    dto.setFechaDeAcontecimiento(hecho.getFechaDeAcontecimiento().toString());
-    dto.setFechaDeCarga(hecho.getFechaDeCarga().toString());
-    dto.setMultimediaPaths(hecho.getMultimediaPaths());
-    return dto;
+
+    List<ContenidoMultimediaOutputDTO> multimedia = hecho.getMultimediaPaths().stream()
+            .map(m -> new ContenidoMultimediaOutputDTO(
+                    m.getPathArchivo(),
+                    m.getTipoContenido().name()
+            ))
+            .toList();
+
+    return new HechoOutputDTO(
+            hecho.getId(),
+            hecho.getTitulo(),
+            hecho.getDescripcion(),
+            hecho.getNombreCategoria(),
+            hecho.getLatitud(),
+            hecho.getLongitud(),
+            hecho.getFechaDeAcontecimiento(),
+            hecho.getFechaDeCarga(),
+            hecho.getUltimaActualizacion(),
+            hecho.getIdContribuyente(),
+            multimedia
+           );
   }
 }

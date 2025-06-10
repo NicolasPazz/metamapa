@@ -23,6 +23,6 @@ public class SolicitudHechoInputContribuyenteDTO {
     @JsonProperty("fecha_de_acontecimiento")
     private String fechaDeAcontecimiento;
     @JsonProperty("multimedia")
-    private List<String> multimedia;
+    private List<ContenidoMultimediaInputDTO> multimedia;
 
 }

@@ -1,5 +1,7 @@
 package ar.utn.ba.ddsi.dinamica.domain.solicitud;
 
+import ar.utn.ba.ddsi.dinamica.domain.dto.input.ContenidoMultimediaInputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.hecho.ContenidoMultimedia;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
@@ -17,7 +19,7 @@ public class SolicitudHecho {
     private double latitud;
     private double longitud;
     private LocalDate fechaDeAcontecimiento;
-    private List<String> multimedia;
+    private List<ContenidoMultimediaInputDTO> multimedia;
     private LocalDateTime fechaDeCargaSolicitud;
     private EstadoSolicitud estado; //pendiente-aceptado-rechazado
     private String sugerencia;

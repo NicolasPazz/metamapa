@@ -24,5 +24,5 @@ public class SolicitudModificarUserInputDTO {
     @JsonProperty("fecha_de_acontecimiento")
     private String nuevoFechaDeAcontecimiento;
     @JsonProperty("multimedia")
-    private List<String> nuevoContenidoMultimedia;
+    private List<ContenidoMultimediaInputDTO> nuevoContenidoMultimedia;
 }

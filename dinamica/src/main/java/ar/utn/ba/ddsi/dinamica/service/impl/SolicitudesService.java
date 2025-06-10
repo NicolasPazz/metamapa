@@ -1,9 +1,11 @@
 package ar.utn.ba.ddsi.dinamica.service.impl;
 
+import ar.utn.ba.ddsi.dinamica.domain.dto.input.ContenidoMultimediaInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudHechoInputContribuyenteDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarAdminInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.hecho.TipoContenido;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.ISolicitudesRepository;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
@@ -11,13 +13,13 @@ import ar.utn.ba.ddsi.dinamica.domain.solicitud.TransicionEstadoSolicitud;
 import ar.utn.ba.ddsi.dinamica.service.IFuenteService;
 import ar.utn.ba.ddsi.dinamica.service.ISolicitudesService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -47,11 +49,32 @@ public class SolicitudesService implements ISolicitudesService {
         solicitud.setLatitud(input.getLatitud());
         solicitud.setLongitud(input.getLongitud());
         solicitud.setFechaDeAcontecimiento(LocalDate.parse(input.getFechaDeAcontecimiento()));
+
+        List<ContenidoMultimediaInputDTO> multimedia = input.getMultimedia();
+        if (multimedia != null) {
+            for (ContenidoMultimediaInputDTO item : multimedia) {
+                String tipoStr = item.getTipoContenido();
+                if (tipoStr == null || tipoStr.isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de contenido no puede estar vacío");
+                }
+
+                try {
+                    TipoContenido.valueOf(tipoStr.toUpperCase()); // Validamos si es un tipo válido
+                } catch (IllegalArgumentException e) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Tipo de contenido inválido: " + tipoStr + ". Los tipos válidos son: " + Arrays.toString(TipoContenido.values())
+                    );
+                }
+            }
+        }
+
         solicitud.setMultimedia(input.getMultimedia());
         solicitud.setFechaDeCargaSolicitud(LocalDateTime.now());
         solicitud.setEstado(EstadoSolicitud.PENDIENTE);
         solicitud.setSugerencia(null);
         solicitud.setTransiciones(new ArrayList<>());
+
 
         return solicitudesRepository.save(solicitud);   //asigno id
     }
@@ -126,8 +149,31 @@ public class SolicitudesService implements ISolicitudesService {
         if (inputDTO.getNuevoFechaDeAcontecimiento() != null)
             solicitud.setFechaDeAcontecimiento(LocalDate.parse(inputDTO.getNuevoFechaDeAcontecimiento()));
 
-        if (inputDTO.getNuevoContenidoMultimedia() != null)
-            solicitud.setMultimedia(inputDTO.getNuevoContenidoMultimedia());
+        /*if (inputDTO.getNuevoContenidoMultimedia() != null)
+            solicitud.setMultimedia(inputDTO.getNuevoContenidoMultimedia());*/
+
+        List<ContenidoMultimediaInputDTO> nuevoMultimedia = inputDTO.getNuevoContenidoMultimedia();
+        if (nuevoMultimedia != null) {
+            for (ContenidoMultimediaInputDTO item : nuevoMultimedia) {
+                String tipoStr = item.getTipoContenido();
+                if (tipoStr == null || tipoStr.isBlank()) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El tipo de contenido no puede estar vacío");
+                }
+
+                try {
+                    TipoContenido.valueOf(tipoStr.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    throw new ResponseStatusException(
+                            HttpStatus.BAD_REQUEST,
+                            "Tipo de contenido inválido: " + tipoStr + ". Tipos válidos: " + Arrays.toString(TipoContenido.values())
+                    );
+                }
+            }
+
+            // Solo si pasó la validación se actualiza
+            solicitud.setMultimedia(nuevoMultimedia);
+        }
+
 
         // Cambiar estado a PENDIENTE
         solicitud.setEstado(EstadoSolicitud.PENDIENTE);
