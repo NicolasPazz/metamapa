@@ -3,9 +3,12 @@ package ar.utn.ba.ddsi.agregador.controller;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechosServiceDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.EtiquetaInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.ColeccionOutputDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.agregador.domain.hecho.Etiqueta;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.HechosService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
@@ -77,4 +80,9 @@ public class AgregadorController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
+    /*@PostMapping("/etiquetas")
+    public ResponseEntity<HechoOutputDTO> agregar(@RequestBody EtiquetaInputDTO etiquetaInputDTO) {
+        // TODO: agregar etiquetas a hechos
+    }*/
 }

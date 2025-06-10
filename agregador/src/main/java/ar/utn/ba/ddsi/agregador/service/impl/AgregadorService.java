@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.hecho.Etiqueta;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.ISolicitudesRepository;
@@ -46,5 +47,13 @@ public class AgregadorService implements IAgregadorService {
                 solicitud.aceptar();
             }
         }
+    }
+
+    public void agregarEtiquetaAHecho(Long idHecho, Etiqueta etiqueta) {
+        Hecho hecho = this.hechosRepository.findById(idHecho);
+
+        hecho.agregarEtiqueta(etiqueta.getNombre());
+
+        this.hechosRepository.save(hecho);
     }
 }
