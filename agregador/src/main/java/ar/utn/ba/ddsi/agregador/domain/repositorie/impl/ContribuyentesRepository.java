@@ -9,34 +9,34 @@ import java.util.concurrent.atomic.AtomicLong;
 
 @Repository
 public class ContribuyentesRepository implements IContribuyentesRepository {
-  private List<Contribuyente> contribuyentes;
-  private final AtomicLong idGenerador = new AtomicLong(1);
+  private List<Long> contribuyentes;
+  //private final AtomicLong idGenerador = new AtomicLong(1);
 
   public ContribuyentesRepository() {
     this.contribuyentes = new ArrayList<>();
   }
 
-  public Contribuyente findById(Long id) {
+  public Long findById(Long id) {
     return this.contribuyentes.stream()
-        .filter(contribuyente -> contribuyente.getId().equals(id))
+        .filter(contribuyente -> contribuyente.equals(id))
         .findFirst()
         .orElse(null);
   }
 
   @Override
-  public List<Contribuyente> findAll() {
+  public List<Long> findAll() {
     return this.contribuyentes;
   }
 
   @Override
-  public void save(Contribuyente contribuyente) {
-    Long id = idGenerador.getAndIncrement();
-    contribuyente.setId(id);
+  public void save(Long contribuyente) {
+    //Long id = idGenerador.getAndIncrement();
+    // contribuyente.setId(id);
     contribuyentes.add(contribuyente);
   }
 
   @Override
-  public void delete(Contribuyente contribuyente) {
+  public void delete(Long contribuyente) {
     this.contribuyentes.remove(contribuyente);
   }
 }

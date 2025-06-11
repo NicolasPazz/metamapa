@@ -1,8 +1,9 @@
 package ar.utn.ba.ddsi.proxy_metamapa.service.impl;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.ColeccionDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.HechoDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudDeEliminacionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,12 +61,12 @@ public class FuenteService {
         .bodyToMono(ColeccionDTO.class);
   }
 
-  public Mono<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
+  public Mono<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
     return webClient
         .post()
         .uri("/solicitudes")
         .bodyValue(solicitud)
         .retrieve()
-        .bodyToMono(SolicitudDeEliminacionDTO.class);
+        .bodyToMono(SolicitudOutputDTO.class);
   }
 }

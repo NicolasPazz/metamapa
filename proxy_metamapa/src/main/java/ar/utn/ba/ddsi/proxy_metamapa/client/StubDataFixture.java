@@ -1,6 +1,9 @@
 package ar.utn.ba.ddsi.proxy_metamapa.client;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.*;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ContenidoMultimediaDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.TransicionEstadoHechoDTO;
 import lombok.Getter;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;

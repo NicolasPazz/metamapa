@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output;
+package ar.utn.ba.ddsi.proxy_metamapa.domain.dto;
 
 public class ContribuyenteDTO {
   private String nombre;

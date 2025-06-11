@@ -1,8 +1,10 @@
-package ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output;
+package ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.Data;
 
-public class SolicitudDeEliminacionDTO {
+@Data
+public class SolicitudInputDTO {
   @JsonProperty("id_hecho")
   private Long idHecho;
   @JsonProperty("texto_fundamentos")

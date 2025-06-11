@@ -1,8 +1,9 @@
 package ar.utn.ba.ddsi.proxy_metamapa.client;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.ColeccionDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.HechoDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudDeEliminacionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.service.impl.FuenteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
@@ -41,7 +42,7 @@ public class WebClientAgregadorClient implements AgregadorClient {
   }
 
   @Override
-  public Mono<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
+  public Mono<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
     return fuenteService.crearSolicitudDeEliminacion(solicitud);
   }
 }

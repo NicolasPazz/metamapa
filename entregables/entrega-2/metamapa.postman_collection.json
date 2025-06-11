@@ -485,7 +485,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8084/api/hechos",
+							"raw": "http://localhost:8084/api/hechos?categoria=desastre tecnológico - contaminación&fecha_reporte_desde=01-01-0001&fecha_reporte_hasta=31-12-9999&fecha_acontecimiento_desde=01-01-0001&fecha_acontecimiento_hasta=31-12-9999&ubicacion=-34.647167,-58.343773",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -498,33 +498,27 @@
 							"query": [
 								{
 									"key": "categoria",
-									"value": "Incendio",
-									"disabled": true
+									"value": "desastre tecnológico - contaminación"
 								},
 								{
 									"key": "fecha_reporte_desde",
-									"value": "01-01-0001",
-									"disabled": true
+									"value": "01-01-0001"
 								},
 								{
 									"key": "fecha_reporte_hasta",
-									"value": "31-12-9999",
-									"disabled": true
+									"value": "31-12-9999"
 								},
 								{
 									"key": "fecha_acontecimiento_desde",
-									"value": "01-01-0001",
-									"disabled": true
+									"value": "01-01-0001"
 								},
 								{
 									"key": "fecha_acontecimiento_hasta",
-									"value": "31-12-9999",
-									"disabled": true
+									"value": "31-12-9999"
 								},
 								{
 									"key": "ubicacion",
-									"value": "Argentina",
-									"disabled": true
+									"value": "-34.647167,-58.343773"
 								}
 							]
 						}
@@ -563,7 +557,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8084/api/coleccion/desastres-naturales-ar-2025-c0055f91/hechos",
+							"raw": "http://localhost:8084/api/coleccion/desastres-naturales-ar-2025-XXXXXXXX/hechos",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -572,7 +566,7 @@
 							"path": [
 								"api",
 								"coleccion",
-								"desastres-naturales-ar-2025-c0055f91",
+								"desastres-naturales-ar-2025-XXXXXXXX",
 								"hechos"
 							]
 						}
@@ -589,7 +583,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_hecho\": 1,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho porque contiene datos sensibles que, de permanecer públicos, podrían poner en riesgo la seguridad e integridad de las personas involucradas. La publicación menciona información que permite identificar ubicaciones específicas, horarios y nombres propios sin el debido consentimiento explícito de los afectados. Además, existen distintos errores fácticos que ya fueron reportados a la organización responsable y cuya divulgación genera confusión, desinformación y estigmatización de la comunidad a la que se refiere el incidente. Considero que mantener el contenido visible vulnera los principios de anonimato y privacidad que la plataforma se compromete a resguardar, y que su supresión inmediata resulta necesaria para prevenir posibles daños morales, emocionales y físicos sobre quienes aparecen directa o indirectamente identificados. En virtud de todo lo expuesto—y fundamentado en la normativa vigente relativa a la protección de datos personales, la libertad de expresión responsable y los derechos humanos básicos—solicito encarecidamente que se proceda a retirar la pieza de información en cuestión a la mayor brevedad posible.\",\r\n  \"id_contribuyente\": 1002\r\n}",
+							"raw": "{\r\n  \"id_hecho\": 2,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho porque contiene datos sensibles que, de permanecer públicos, podrían poner en riesgo la seguridad e integridad de las personas involucradas. La publicación menciona información que permite identificar ubicaciones específicas, horarios y nombres propios sin el debido consentimiento explícito de los afectados. Además, existen distintos errores fácticos que ya fueron reportados a la organización responsable y cuya divulgación genera confusión, desinformación y estigmatización de la comunidad a la que se refiere el incidente.\",\r\n  \"id_contribuyente\": 2\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

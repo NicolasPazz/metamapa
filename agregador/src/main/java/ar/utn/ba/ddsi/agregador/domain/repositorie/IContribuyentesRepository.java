@@ -4,9 +4,9 @@ import ar.utn.ba.ddsi.agregador.user.Contribuyente;
 import java.util.List;
 
 public interface IContribuyentesRepository {
-  public List<Contribuyente> findAll();
-  public Contribuyente findById(Long id);
-  public void save(Contribuyente contribuyente);
-  public void delete(Contribuyente contribuyente);
+  public List<Long> findAll();
+  public Long findById(Long id);
+  public void save(Long contribuyente);
+  public void delete(Long contribuyente);
 }
 
