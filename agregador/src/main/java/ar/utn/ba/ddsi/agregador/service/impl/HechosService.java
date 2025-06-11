@@ -7,6 +7,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Etiqueta;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -24,10 +25,10 @@ public class HechosService {
     private final FuentesService fuentesService;
 
     public Mono<List<HechoDTO>> getAll(String categoria,
-                                       String fecha_reporte_desde,
-                                       String fecha_reporte_hasta,
-                                       String fecha_acontecimiento_desde,
-                                       String fecha_acontecimiento_hasta,
+                                       LocalDate fecha_reporte_desde,
+                                       LocalDate fecha_reporte_hasta,
+                                       LocalDate fecha_acontecimiento_desde,
+                                       LocalDate fecha_acontecimiento_hasta,
                                        String ubicacion) {
 
         Mono<List<HechoDTO>> externos = fuentesService.getAllHechosVisibles(
@@ -40,9 +41,14 @@ public class HechosService {
         );
 
         Mono<List<HechoDTO>> locales = Mono.fromSupplier(() ->
-            hechosRepository.findAll().stream()
+            hechosRepository.findByFilters(
+                    categoria,
+                    fecha_reporte_desde,  fecha_reporte_hasta,
+                    fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+                    ubicacion
+                ).stream()
                 .map(Hecho::mapToDTO)
-                .collect(Collectors.toList())
+                .toList()
         );
 
         return Mono.zip(externos, locales, (ext, loc) -> {

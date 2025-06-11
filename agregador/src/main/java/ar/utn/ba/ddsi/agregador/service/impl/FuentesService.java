@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.SolicitudDeEliminacionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.infra.fuente.IFuente;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,7 @@ public class FuentesService {
     }
   }
 
-  public Mono<List<HechoDTO>> getAllHechosVisibles(String categoria, String fecha_reporte_desde,
-                                                   String fecha_reporte_hasta, String fecha_acontecimiento_desde,
-                                                   String fecha_acontecimiento_hasta, String ubicacion) {
+  public Mono<List<HechoDTO>> getAllHechosVisibles(String categoria, LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta, LocalDate fecha_acontecimiento_desde,LocalDate fecha_acontecimiento_hasta, String ubicacion) {
     return Flux.fromIterable(fuentes)
         .flatMap(f -> f.getAllHechosVisibles(categoria, fecha_reporte_desde,
             fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion))

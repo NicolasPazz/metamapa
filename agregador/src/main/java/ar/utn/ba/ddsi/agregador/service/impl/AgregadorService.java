@@ -26,12 +26,12 @@ public class AgregadorService implements IAgregadorService {
 
     @Override
     public void actualizarHechos() {
-        List<HechoDTO> hechosDTO = Optional.ofNullable(this.fuentesService.getAllHechosNuevos().block())
+        List<HechoDTO> hechos = Optional.ofNullable(this.fuentesService.getAllHechosNuevos().block())
             .orElse(List.of());
 
-        if (hechosDTO.isEmpty()) return;
+        if (hechos.isEmpty()) return;
 
-        List<Hecho> hechosNuevos = hechosDTO.stream()
+        List<Hecho> hechosNuevos = hechos.stream()
             .map(HechoDTO::mapToHecho)
             .collect(Collectors.toList());
 

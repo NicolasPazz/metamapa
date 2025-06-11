@@ -27,7 +27,7 @@ public class Hecho {
   private DataHecho data;
   private OrigenHecho origen;
   private EstadoHecho estado;
-  private Contribuyente contribuyente;
+  private Long contribuyente;  // private Contribuyente contribuyente;
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
   @Builder.Default
@@ -47,7 +47,7 @@ public class Hecho {
 
   // MANUAL / CONTRIBUYENTE
   //TODO: etiquetas lo agregan los admin por lo que no seria un valor de instancia
-  public Hecho(String titulo, String descripcion, Categoria categoria, LocalDate fechaDeAcontecimiento, double latitud, double longitud, List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Contribuyente contribuyente) {
+  public Hecho(String titulo, String descripcion, Categoria categoria, LocalDate fechaDeAcontecimiento, double latitud, double longitud, List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Long contribuyente) {
     DataHecho dataHecho = new DataHecho();
     dataHecho.setTitulo(titulo);
     dataHecho.setDescripcion(descripcion);
@@ -102,7 +102,7 @@ public class Hecho {
   }
 
   public void transicionarEstado(EstadoHecho estado) {
-    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDate.now()));
+    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDateTime.now()));
     this.estado = estado;
   }
 
@@ -114,21 +114,23 @@ public class Hecho {
     dto.setCategoria(this.getCategoria().getNombre());
     dto.setLatitud(this.getLatitud());
     dto.setLongitud(this.getLongitud());
-    dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento().toString());
-    dto.setFechaDeCarga(this.getFechaDeCarga().toString());
+    dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento());
+    dto.setFechaDeCarga(this.getFechaDeCarga());
     dto.setOrigen(this.getOrigen().name());
     dto.setEstado(this.getEstado().name());
 
+    /*
     if (this.getContribuyente() != null) {
       ContribuyenteDTO contribuyenteDTO = new ContribuyenteDTO();
       contribuyenteDTO.setNombre(this.getContribuyente().getNombre());
       contribuyenteDTO.setApellido(this.getContribuyente().getApellido());
       contribuyenteDTO.setFechaDeNacimiento(
           Optional.ofNullable(this.getContribuyente().getFechaDeNacimiento())
-              .map(Object::toString)
               .orElse(null));
       dto.setContribuyente(contribuyenteDTO);
     }
+    */
+    dto.setContribuyente(this.getContribuyente());
 
     dto.setEtiquetas(this.getEtiquetas().stream()
         .map(Etiqueta::getNombre)
@@ -146,7 +148,7 @@ public class Hecho {
         .map(t -> {
           TransicionEstadoHechoDTO tDto = new TransicionEstadoHechoDTO();
           tDto.setEstadoFinal(t.getEstadoFinal().name());
-          tDto.setFecha(t.getFechaTransicion().toString());
+          tDto.setFecha(t.getFechaTransicion());
           return tDto;
         }).collect(Collectors.toList()));
 

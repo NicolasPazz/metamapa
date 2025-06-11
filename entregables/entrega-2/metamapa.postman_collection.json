@@ -160,6 +160,55 @@
 						},
 						{
 							"name": "http://localhost:8083/api/hechos/nuevos",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parseamos el body como JSON\r",
+											"let hechos = pm.response.json();\r",
+											"\r",
+											"// Total de hechos\r",
+											"let total = hechos.length;\r",
+											"\r",
+											"// Inicializamos el contador por origen según tu enum\r",
+											"let counts = {\r",
+											"  DATASET: 0,\r",
+											"  ONG: 0,\r",
+											"  METAMAPA: 0,\r",
+											"  CONTRIBUYENTE: 0,\r",
+											"  MANUAL: 0\r",
+											"};\r",
+											"\r",
+											"// Recorremos y contamos\r",
+											"hechos.forEach(h => {\r",
+											"  let o = h.origen;\r",
+											"  if (counts.hasOwnProperty(o)) {\r",
+											"    counts[o]++;\r",
+											"  } else {\r",
+											"    // opcional: para orígenes inesperados\r",
+											"    console.warn(`Origen desconocido: ${o}`);\r",
+											"  }\r",
+											"});\r",
+											"\r",
+											"// Mostramos en consola\r",
+											"console.log(`Total hechos: ${total}`);\r",
+											"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+											"  console.log(`${origen}: ${cnt}`);\r",
+											"});\r",
+											"\r",
+											"// (Opcional) Guardamos en variables de entorno\r",
+											"pm.environment.set(\"totalHechos\", total);\r",
+											"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+											"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"auth": {
 									"type": "noauth"
@@ -189,6 +238,55 @@
 					"item": [
 						{
 							"name": "http://localhost:8086/api/hechos",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parseamos el body como JSON\r",
+											"let hechos = pm.response.json();\r",
+											"\r",
+											"// Total de hechos\r",
+											"let total = hechos.length;\r",
+											"\r",
+											"// Inicializamos el contador por origen según tu enum\r",
+											"let counts = {\r",
+											"  DATASET: 0,\r",
+											"  ONG: 0,\r",
+											"  METAMAPA: 0,\r",
+											"  CONTRIBUYENTE: 0,\r",
+											"  MANUAL: 0\r",
+											"};\r",
+											"\r",
+											"// Recorremos y contamos\r",
+											"hechos.forEach(h => {\r",
+											"  let o = h.origen;\r",
+											"  if (counts.hasOwnProperty(o)) {\r",
+											"    counts[o]++;\r",
+											"  } else {\r",
+											"    // opcional: para orígenes inesperados\r",
+											"    console.warn(`Origen desconocido: ${o}`);\r",
+											"  }\r",
+											"});\r",
+											"\r",
+											"// Mostramos en consola\r",
+											"console.log(`Total hechos: ${total}`);\r",
+											"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+											"  console.log(`${origen}: ${cnt}`);\r",
+											"});\r",
+											"\r",
+											"// (Opcional) Guardamos en variables de entorno\r",
+											"pm.environment.set(\"totalHechos\", total);\r",
+											"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+											"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {}
+									}
+								}
+							],
 							"request": {
 								"auth": {
 									"type": "noauth"
@@ -300,87 +398,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"id_hecho\"\r\n  \"texto_fundamentos\"\r\n  \"id_contribuyente\"\r\n}",
-									"options": {
-										"raw": {
-											"language": "json"
-										}
-									}
-								},
-								"url": {
-									"raw": "http://localhost:8086/api/solicitudes",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "8086",
-									"path": [
-										"api",
-										"solicitudes"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "http://localhost:8086/api/colecciones",
-							"request": {
-								"auth": {
-									"type": "noauth"
-								},
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "http://localhost:8086/api/colecciones",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "8086",
-									"path": [
-										"api",
-										"colecciones"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "http://localhost:8086/api/coleccion/handle/hechos",
-							"request": {
-								"auth": {
-									"type": "noauth"
-								},
-								"method": "GET",
-								"header": [],
-								"url": {
-									"raw": "http://localhost:8086/api/coleccion/handle/hechos",
-									"protocol": "http",
-									"host": [
-										"localhost"
-									],
-									"port": "8086",
-									"path": [
-										"api",
-										"coleccion",
-										"handle",
-										"hechos"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "http://localhost:8086/api/solicitudes",
-							"request": {
-								"auth": {
-									"type": "noauth"
-								},
-								"method": "POST",
-								"header": [],
-								"body": {
-									"mode": "raw",
-									"raw": "{\r\n  \"id_hecho\"\r\n  \"texto_fundamentos\"\r\n  \"id_contribuyente\"\r\n}",
+									"raw": "{\r\n  \"id_hecho\": 1,\r\n  \"texto_fundamentos\": \"hola\",\r\n  \"id_contribuyente\": 1\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -411,6 +429,55 @@
 			"item": [
 				{
 					"name": "http://localhost:8084/api/hechos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parseamos el body como JSON\r",
+									"let hechos = pm.response.json();\r",
+									"\r",
+									"// Total de hechos\r",
+									"let total = hechos.length;\r",
+									"\r",
+									"// Inicializamos el contador por origen según tu enum\r",
+									"let counts = {\r",
+									"  DATASET: 0,\r",
+									"  ONG: 0,\r",
+									"  METAMAPA: 0,\r",
+									"  CONTRIBUYENTE: 0,\r",
+									"  MANUAL: 0\r",
+									"};\r",
+									"\r",
+									"// Recorremos y contamos\r",
+									"hechos.forEach(h => {\r",
+									"  let o = h.origen;\r",
+									"  if (counts.hasOwnProperty(o)) {\r",
+									"    counts[o]++;\r",
+									"  } else {\r",
+									"    // opcional: para orígenes inesperados\r",
+									"    console.warn(`Origen desconocido: ${o}`);\r",
+									"  }\r",
+									"});\r",
+									"\r",
+									"// Mostramos en consola\r",
+									"console.log(`Total hechos: ${total}`);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  console.log(`${origen}: ${cnt}`);\r",
+									"});\r",
+									"\r",
+									"// (Opcional) Guardamos en variables de entorno\r",
+									"pm.environment.set(\"totalHechos\", total);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -496,7 +563,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8084/api/coleccion/handle/hechos",
+							"raw": "http://localhost:8084/api/coleccion/desastres-naturales-ar-2025-c0055f91/hechos",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -505,7 +572,7 @@
 							"path": [
 								"api",
 								"coleccion",
-								"handle",
+								"desastres-naturales-ar-2025-c0055f91",
 								"hechos"
 							]
 						}
@@ -522,7 +589,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_hecho\"\r\n  \"texto_fundamentos\"\r\n  \"id_contribuyente\"\r\n}",
+							"raw": "{\r\n  \"id_hecho\": 1,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho porque contiene datos sensibles que, de permanecer públicos, podrían poner en riesgo la seguridad e integridad de las personas involucradas. La publicación menciona información que permite identificar ubicaciones específicas, horarios y nombres propios sin el debido consentimiento explícito de los afectados. Además, existen distintos errores fácticos que ya fueron reportados a la organización responsable y cuya divulgación genera confusión, desinformación y estigmatización de la comunidad a la que se refiere el incidente. Considero que mantener el contenido visible vulnera los principios de anonimato y privacidad que la plataforma se compromete a resguardar, y que su supresión inmediata resulta necesaria para prevenir posibles daños morales, emocionales y físicos sobre quienes aparecen directa o indirectamente identificados. En virtud de todo lo expuesto—y fundamentado en la normativa vigente relativa a la protección de datos personales, la libertad de expresión responsable y los derechos humanos básicos—solicito encarecidamente que se proceda a retirar la pieza de información en cuestión a la mayor brevedad posible.\",\r\n  \"id_contribuyente\": 1002\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -550,15 +617,24 @@
 			"name": "dinamica",
 			"item": [
 				{
-					"name": "http://localhost:8081/api/hechos/nuevos",
+					"name": "http://localhost:8081/api/solicitudes",
 					"request": {
 						"auth": {
 							"type": "noauth"
 						},
-						"method": "GET",
+						"method": "POST",
 						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Inundación en el barrio\",\r\n  \"descripcion\": \"Las calles principales del barrio se inundaron tras la tormenta.\",\r\n  \"categoria\": \"Desastre Natural\",\r\n  \"latitud\": -34.6037,\r\n  \"longitud\": -58.3816,\r\n  \"fecha_de_acontecimiento\": \"2024-05-10\",\r\n  \"multimedia\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
 						"url": {
-							"raw": "http://localhost:8081/api/hechos/nuevos",
+							"raw": "http://localhost:8081/api/solicitudes",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -566,8 +642,75 @@
 							"port": "8081",
 							"path": [
 								"api",
-								"hechos",
-								"nuevos"
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8081/api/solicitudes/user/id?id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Corte prolongado de energía eléctrica\",\r\n  \"descripcion\": \"La zona estuvo sin suministro eléctrico por más de 12 horas, afectando a cientos de hogares.\",\r\n  \"categoria\": \"Servicio Público\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/solicitudes/user/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"solicitudes",
+								"user",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8081/api/solicitudes/admin/id?id",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_solicitud\": 1,\r\n  \"id_contribuyente\": 123,\r\n  \"estado_solicitud\": \"ACEPTADO_SUGERIDO\",\r\n  \"sugerencia\": \"Corregir ubicación del evento\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8081/api/solicitudes/admin/1",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"solicitudes",
+								"admin",
+								"1"
 							]
 						}
 					},
@@ -605,7 +748,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/api/solicitudes/id",
+							"raw": "http://localhost:8081/api/solicitudes/1",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -614,31 +757,71 @@
 							"path": [
 								"api",
 								"solicitudes",
-								"id"
+								"1"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "http://localhost:8081/api/solicitudes",
+					"name": "http://localhost:8081/api/hechos/nuevos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parseamos el body como JSON\r",
+									"let hechos = pm.response.json();\r",
+									"\r",
+									"// Total de hechos\r",
+									"let total = hechos.length;\r",
+									"\r",
+									"// Inicializamos el contador por origen según tu enum\r",
+									"let counts = {\r",
+									"  DATASET: 0,\r",
+									"  ONG: 0,\r",
+									"  METAMAPA: 0,\r",
+									"  CONTRIBUYENTE: 0,\r",
+									"  MANUAL: 0\r",
+									"};\r",
+									"\r",
+									"// Recorremos y contamos\r",
+									"hechos.forEach(h => {\r",
+									"  let o = h.origen;\r",
+									"  if (counts.hasOwnProperty(o)) {\r",
+									"    counts[o]++;\r",
+									"  } else {\r",
+									"    // opcional: para orígenes inesperados\r",
+									"    console.warn(`Origen desconocido: ${o}`);\r",
+									"  }\r",
+									"});\r",
+									"\r",
+									"// Mostramos en consola\r",
+									"console.log(`Total hechos: ${total}`);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  console.log(`${origen}: ${cnt}`);\r",
+									"});\r",
+									"\r",
+									"// (Opcional) Guardamos en variables de entorno\r",
+									"pm.environment.set(\"totalHechos\", total);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "noauth"
 						},
-						"method": "POST",
+						"method": "GET",
 						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"id_contribuyente\"\r\n    \"titulo\"\r\n    \"descripcion\"\r\n    \"categoria\"\r\n    \"latitud\"\r\n    \"longitud\"\r\n    \"fecha_de_acontecimiento\"\r\n    \"multimedia\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
 						"url": {
-							"raw": "http://localhost:8081/api/solicitudes",
+							"raw": "http://localhost:8081/api/hechos/nuevos",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -646,87 +829,8 @@
 							"port": "8081",
 							"path": [
 								"api",
-								"solicitudes"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "http://localhost:8081/api/solicitudes/user/id?id",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"id_solicitud\"\r\n    \"id_contribuyente\"\r\n    \"titulo\"\r\n    \"descripcion\"\r\n    \"categoria\"\r\n    \"latitud\"\r\n    \"longitud\"\r\n    \"fecha_de_acontecimiento\"\r\n    \"multimedia\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8081/api/solicitudes/user/id?id",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8081",
-							"path": [
-								"api",
-								"solicitudes",
-								"user",
-								"id"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": null
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "http://localhost:8081/api/solicitudes/admin/id?id",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"id_solicitud\"\r\n    \"id_contribuyente\"\r\n    \"estado_solicitud\"\r\n    \"sugerencia\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8081/api/solicitudes/admin/id?id",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8081",
-							"path": [
-								"api",
-								"solicitudes",
-								"admin",
-								"id"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": null
-								}
+								"hechos",
+								"nuevos"
 							]
 						}
 					},
@@ -739,6 +843,55 @@
 			"item": [
 				{
 					"name": "http://localhost:8082/api/hechos/nuevos",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parseamos el body como JSON\r",
+									"let hechos = pm.response.json();\r",
+									"\r",
+									"// Total de hechos\r",
+									"let total = hechos.length;\r",
+									"\r",
+									"// Inicializamos el contador por origen según tu enum\r",
+									"let counts = {\r",
+									"  DATASET: 0,\r",
+									"  ONG: 0,\r",
+									"  METAMAPA: 0,\r",
+									"  CONTRIBUYENTE: 0,\r",
+									"  MANUAL: 0\r",
+									"};\r",
+									"\r",
+									"// Recorremos y contamos\r",
+									"hechos.forEach(h => {\r",
+									"  let o = h.origen;\r",
+									"  if (counts.hasOwnProperty(o)) {\r",
+									"    counts[o]++;\r",
+									"  } else {\r",
+									"    // opcional: para orígenes inesperados\r",
+									"    console.warn(`Origen desconocido: ${o}`);\r",
+									"  }\r",
+									"});\r",
+									"\r",
+									"// Mostramos en consola\r",
+									"console.log(`Total hechos: ${total}`);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  console.log(`${origen}: ${cnt}`);\r",
+									"});\r",
+									"\r",
+									"// (Opcional) Guardamos en variables de entorno\r",
+									"pm.environment.set(\"totalHechos\", total);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
 					"request": {
 						"auth": {
 							"type": "noauth"

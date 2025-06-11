@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,5 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class TransicionEstadoHecho {
   private EstadoHecho estadoFinal;
-  private LocalDate fechaTransicion;
+  private LocalDateTime fechaTransicion;
 }

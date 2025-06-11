@@ -16,8 +16,9 @@ public class FuenteInitializer {
 
   @PostConstruct
   public void init() {
-    properties.getConfig().forEach(config ->
-      fuentesService.agregarFuente(factory.crearFuente(config))
-    );
+    properties.getConfig().forEach(config -> {
+      fuentesService.agregarFuente(factory.crearFuente(config));
+      System.out.println("🔌 Fuente cargada: " + config.getUrl() + " (" + config.getTipo() + ")");
+    });
   }
 }

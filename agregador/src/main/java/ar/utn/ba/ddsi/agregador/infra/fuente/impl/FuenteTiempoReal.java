@@ -4,6 +4,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.SolicitudDeEliminacionDTO;
 import ar.utn.ba.ddsi.agregador.infra.fuente.IFuente;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,7 @@ public class FuenteTiempoReal implements IFuente {
   private final WebClient webClient;
 
   @Override
-  public Mono<List<HechoDTO>> getAllHechosVisibles(String categoria, String fecha_reporte_desde, String fecha_reporte_hasta, String fecha_acontecimiento_desde, String fecha_acontecimiento_hasta, String ubicacion) {
+  public Mono<List<HechoDTO>> getAllHechosVisibles(String categoria, LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta, LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta, String ubicacion) {
     return webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/hechos")

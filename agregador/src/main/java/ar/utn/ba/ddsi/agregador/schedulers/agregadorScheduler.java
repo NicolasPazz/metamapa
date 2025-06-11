@@ -14,7 +14,9 @@ public class agregadorScheduler {
 
     @PostConstruct
     public void onStartup() throws Exception {
+        System.out.println("onStartup: Scheduler de agregador iniciado");
         this.refrescarHechosYColecciones();
+        System.out.println("onStartup: Scheduler de agregador finalizado");
     }
 
     @Scheduled(cron = "0 0 * * * *")
