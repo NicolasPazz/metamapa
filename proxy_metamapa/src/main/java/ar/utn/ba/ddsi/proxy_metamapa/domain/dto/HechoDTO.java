@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output;
+package ar.utn.ba.ddsi.proxy_metamapa.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDate;

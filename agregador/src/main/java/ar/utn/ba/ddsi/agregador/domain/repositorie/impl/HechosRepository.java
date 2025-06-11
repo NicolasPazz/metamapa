@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.agregador.domain.repositorie.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.*;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
+import ar.utn.ba.ddsi.agregador.domain.repositorie.IContribuyentesRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicLong;
@@ -17,11 +18,14 @@ public class HechosRepository implements IHechosRepository {
   private final AtomicLong idGenerator;
 
   private final IColeccionesRepository coleccionesRepository;
+  private final IContribuyentesRepository contribuyentesRepository;
 
-  public HechosRepository(IColeccionesRepository coleccionesRepository) {
+  public HechosRepository(IColeccionesRepository coleccionesRepository,
+                          IContribuyentesRepository contribuyentesRepository) {
     this.hechos = new ArrayList<>();
     this.idGenerator = new AtomicLong(1);
     this.coleccionesRepository = coleccionesRepository;
+    this.contribuyentesRepository = contribuyentesRepository;
   }
 
   @Override
@@ -62,18 +66,18 @@ public class HechosRepository implements IHechosRepository {
         .filter(h -> fechaReporteDesde == null ||
             !h.getFechaDeCarga()
                 .toLocalDate()
-                .isAfter(fechaReporteDesde))
+                .isBefore(fechaReporteDesde))
         .filter(h -> fechaReporteHasta == null ||
             !h.getFechaDeCarga()
                 .toLocalDate()
-                .isBefore(fechaReporteHasta))
+                .isAfter(fechaReporteHasta))
 
         .filter(h -> fechaAcontecimientoDesde == null ||
             !h.getFechaDeAcontecimiento()
-                .isAfter(fechaAcontecimientoDesde))
+                .isBefore(fechaAcontecimientoDesde))
         .filter(h -> fechaAcontecimientoHasta == null ||
             !h.getFechaDeAcontecimiento()
-                .isBefore(fechaAcontecimientoDesde))
+                .isAfter(fechaAcontecimientoHasta))
 
         .filter(h -> lat == null || (
             Double.compare(h.getLatitud(),  lat) == 0 &&
@@ -84,6 +88,13 @@ public class HechosRepository implements IHechosRepository {
 
   @Override
   public void save(Hecho hecho) {
+    if (hecho.getContribuyente() != null) {
+      Long cid = hecho.getContribuyente();
+      if (contribuyentesRepository.findById(cid) == null) {
+        contribuyentesRepository.save(cid);
+      }
+    }
+
     hecho.setId(idGenerator.getAndIncrement());
     this.hechos.add(hecho);
     coleccionesRepository.actualizarColecciones();

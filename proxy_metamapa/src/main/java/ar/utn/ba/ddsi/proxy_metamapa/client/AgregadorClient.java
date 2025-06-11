@@ -1,8 +1,9 @@
 package ar.utn.ba.ddsi.proxy_metamapa.client;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.ColeccionDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.HechoDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudDeEliminacionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDate;
@@ -20,5 +21,5 @@ public interface AgregadorClient {
 
   Mono<List<ColeccionDTO>> getAllColecciones();
   Mono<ColeccionDTO> getColeccionByHandle(String handle);
-  Mono<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud);
+  Mono<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud);
 }

@@ -8,6 +8,7 @@ import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 
 import ar.utn.ba.ddsi.dinamica.service.IFuenteService;
+import java.time.LocalDate;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -26,7 +27,7 @@ public class FuenteService implements IFuenteService {
   }
 
   @Override
-  public List<HechoOutputDTO> getAllHechosVisibles(String categoria, String fecha_reporte_desde, String fecha_reporte_hasta, String fecha_acontecimiento_desde, String fecha_acontecimiento_hasta, String ubicacion) {
+  public List<HechoOutputDTO> getAllHechosVisibles(String categoria, LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta, LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta, String ubicacion) {
     return List.of();
   }
 

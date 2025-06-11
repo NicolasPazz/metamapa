@@ -14,6 +14,7 @@ import ar.utn.ba.ddsi.agregador.service.impl.HechosService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
@@ -43,11 +44,24 @@ public class AgregadorController {
     @GetMapping("/hechos")
     public Mono<List<HechoDTO>> getAllHechosVisibles(
         @RequestParam(required = false) String categoria,
-        @RequestParam(required = false) LocalDate fecha_reporte_desde,
-        @RequestParam(required = false) LocalDate fecha_reporte_hasta,
-        @RequestParam(required = false) LocalDate fecha_acontecimiento_desde,
-        @RequestParam(required = false) LocalDate fecha_acontecimiento_hasta,
-        @RequestParam(required = false) String ubicacion){
+
+        @RequestParam(required = false)
+        @DateTimeFormat(pattern = "dd-MM-yyyy")
+        LocalDate fecha_reporte_desde,
+
+        @RequestParam(required = false)
+        @DateTimeFormat(pattern = "dd-MM-yyyy")
+        LocalDate fecha_reporte_hasta,
+
+        @RequestParam(required = false)
+        @DateTimeFormat(pattern = "dd-MM-yyyy")
+        LocalDate fecha_acontecimiento_desde,
+
+        @RequestParam(required = false)
+        @DateTimeFormat(pattern = "dd-MM-yyyy")
+        LocalDate fecha_acontecimiento_hasta,
+
+        @RequestParam(required = false) String ubicacion) {
         return hechosService.getAll(categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
     }
 

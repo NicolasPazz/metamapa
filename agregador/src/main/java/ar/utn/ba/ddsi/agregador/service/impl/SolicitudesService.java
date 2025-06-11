@@ -24,9 +24,9 @@ public class SolicitudesService implements ISolicitudesService {
   @Override
   public SolicitudOutputDTO crear(SolicitudInputDTO solicitudInputDTO) {
     Hecho hecho = hechosRepository.findById(solicitudInputDTO.getIdHecho());
-    Contribuyente contribuyente = contribuyentesRepository.findById(solicitudInputDTO.getIdContribuyente());
+    //Long contribuyente = contribuyentesRepository.findById(solicitudInputDTO.getIdContribuyente());
 
-    SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(hecho, solicitudInputDTO.getTextoFundamentos(), contribuyente);
+    SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(hecho, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getIdContribuyente());
 
     if (detectorDeSpam.esSpam(solicitud.getTextoFundamentos())) {
       solicitud.rechazar();
@@ -45,7 +45,7 @@ public class SolicitudesService implements ISolicitudesService {
     dto.setFecha(solicitud.getFecha());
     dto.setEstado(solicitud.getEstado());
     if (solicitud.getContribuyente() != null) {
-      dto.setIdContribuyente(solicitud.getContribuyente().getId());
+      dto.setIdContribuyente(solicitud.getContribuyente());
     }
     return dto;
   }

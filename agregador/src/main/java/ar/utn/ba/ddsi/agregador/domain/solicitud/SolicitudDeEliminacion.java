@@ -19,10 +19,10 @@ public class SolicitudDeEliminacion {
   private String textoFundamentos;
   private LocalDate fecha;
   private EstadoSolicitud estado;
-  private Contribuyente contribuyente;
+  private Long contribuyente;
   private List<TransicionEstadoSolicitud> transicionesDeEstado = new ArrayList<>();
 
-  public SolicitudDeEliminacion(Hecho hecho, String textoFundamentos, Contribuyente contribuyente) {
+  public SolicitudDeEliminacion(Hecho hecho, String textoFundamentos, Long contribuyente) {
     this.hecho = hecho;
     this.textoFundamentos = textoFundamentos;
     this.fecha = LocalDate.now();

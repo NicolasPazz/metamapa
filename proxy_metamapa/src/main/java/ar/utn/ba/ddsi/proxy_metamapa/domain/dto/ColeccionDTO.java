@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output;
+package ar.utn.ba.ddsi.proxy_metamapa.domain.dto;
 
 import java.util.List;
 import java.util.UUID;

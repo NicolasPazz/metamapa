@@ -1,8 +1,9 @@
 package ar.utn.ba.ddsi.proxy_metamapa.client;
 
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.ColeccionDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.HechoDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudDeEliminacionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
@@ -30,19 +31,19 @@ public class StubAgregadorClient implements AgregadorClient {
 
             .filter(h -> frd == null ||
                 (h.getFechaDeCarga() != null &&
-                    !h.getFechaDeCarga().toLocalDate().isAfter(frd)))
+                    !h.getFechaDeCarga().toLocalDate().isBefore(frd)))
 
             .filter(h -> frh == null ||
                 (h.getFechaDeCarga() != null &&
-                    !h.getFechaDeCarga().toLocalDate().isBefore(frh)))
+                    !h.getFechaDeCarga().toLocalDate().isAfter(frh)))
 
             .filter(h -> fad == null ||
                 (h.getFechaDeAcontecimiento() != null &&
-                    !h.getFechaDeAcontecimiento().isAfter(fad)))
+                    !h.getFechaDeAcontecimiento().isBefore(fad)))
 
             .filter(h -> fah == null ||
                 (h.getFechaDeAcontecimiento() != null &&
-                    !h.getFechaDeAcontecimiento().isBefore(fah)))
+                    !h.getFechaDeAcontecimiento().isAfter(fah)))
 
             .filter(h -> {
               if (ubicacion == null) return true;
@@ -70,7 +71,14 @@ public class StubAgregadorClient implements AgregadorClient {
   }
 
   @Override
-  public Mono<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
-    return Mono.just(solicitud);
+  public Mono<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
+    SolicitudOutputDTO solicitudOutputDTO = new SolicitudOutputDTO();
+    solicitudOutputDTO.setId(1L);
+    solicitudOutputDTO.setIdHecho(solicitud.getIdHecho());
+    solicitudOutputDTO.setTextoFundamentos(solicitud.getTextoFundamentos());
+    solicitudOutputDTO.setFecha(LocalDate.now());
+    solicitudOutputDTO.setEstado("PENDIENTE");
+    solicitudOutputDTO.setIdContribuyente(solicitud.getIdContribuyente());
+    return Mono.just(solicitudOutputDTO);
   }
 }
