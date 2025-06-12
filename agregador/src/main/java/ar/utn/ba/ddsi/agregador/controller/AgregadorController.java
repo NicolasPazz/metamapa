@@ -86,13 +86,13 @@ public class AgregadorController {
      *   Permite crear solicitudes de eliminación.
      */
     @PostMapping("/solicitudes")
-    public ResponseEntity<SolicitudOutputDTO> crear(@RequestBody SolicitudInputDTO solicitudInputDTO) {
+    public ResponseEntity<?> crear(@RequestBody SolicitudInputDTO solicitudInputDTO) {
         // y si el hecho pertenece a otra instancia metamapa quien la maneja?
         try {
             SolicitudOutputDTO respuesta = solicitudesService.crear(solicitudInputDTO);
             return ResponseEntity.ok(respuesta);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body("ERROR: " + e.getMessage());
         }
     }
 

@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.agregador.infra.fuente.factory;
+package ar.utn.ba.ddsi.agregador.domain.fuente.factory;
 
 import ar.utn.ba.ddsi.agregador.config.FuentesProperties;
 import ar.utn.ba.ddsi.agregador.service.impl.FuentesService;

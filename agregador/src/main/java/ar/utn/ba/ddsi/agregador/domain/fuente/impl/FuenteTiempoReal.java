@@ -1,9 +1,9 @@
-package ar.utn.ba.ddsi.agregador.infra.fuente.impl;
+package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.SolicitudDeEliminacionDTO;
-import ar.utn.ba.ddsi.agregador.infra.fuente.IFuente;
+import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;

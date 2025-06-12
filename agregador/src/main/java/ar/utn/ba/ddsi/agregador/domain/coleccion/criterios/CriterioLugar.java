@@ -21,8 +21,6 @@ public class CriterioLugar implements Criterio {
         boolean cumpleLatitud = (lat == null || hecho.getLatitud().equals(lat));
         boolean cumpleLongitud = (lng == null || hecho.getLongitud().equals(lng));
 
-        // TODO: implementar GeoTools para filtrar por pais?
-
         return cumpleLatitud && cumpleLongitud;
     }
 }

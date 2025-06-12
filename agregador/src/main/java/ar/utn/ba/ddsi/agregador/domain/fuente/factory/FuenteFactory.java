@@ -1,9 +1,9 @@
-package ar.utn.ba.ddsi.agregador.infra.fuente.factory;
+package ar.utn.ba.ddsi.agregador.domain.fuente.factory;
 
 import ar.utn.ba.ddsi.agregador.config.FuenteConfig;
-import ar.utn.ba.ddsi.agregador.infra.fuente.IFuente;
-import ar.utn.ba.ddsi.agregador.infra.fuente.impl.FuenteCron;
-import ar.utn.ba.ddsi.agregador.infra.fuente.impl.FuenteTiempoReal;
+import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
+import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteCron;
+import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
 

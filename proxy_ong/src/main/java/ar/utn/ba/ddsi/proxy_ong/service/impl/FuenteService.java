@@ -4,11 +4,10 @@ import ar.utn.ba.ddsi.proxy_ong.domain.dto.external.HechoProxyDTO;
 import ar.utn.ba.ddsi.proxy_ong.domain.dto.external.HechoProxyResponseDTO;
 import ar.utn.ba.ddsi.proxy_ong.domain.dto.external.LoginResponseDTO;
 import ar.utn.ba.ddsi.proxy_ong.domain.dto.output.HechoOutputDTO;
-import ar.utn.ba.ddsi.proxy_ong.domain.hecho.Categoria;
 import ar.utn.ba.ddsi.proxy_ong.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.proxy_ong.domain.repositorie.impl.CategoriasRepository;
 import ar.utn.ba.ddsi.proxy_ong.domain.repositorie.impl.HechosRepository;
 import ar.utn.ba.ddsi.proxy_ong.exception.ApiLoginException;
+import ar.utn.ba.ddsi.proxy_ong.service.IFuenteService;
 import jakarta.annotation.PostConstruct;
 import java.util.List;
 import java.util.Map;
@@ -20,7 +19,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 @Service
-public class FuenteService {
+public class FuenteService implements IFuenteService {
   private final WebClient webClient;
   private String accessToken;
   private String tokenType;
@@ -30,8 +29,6 @@ public class FuenteService {
 
   @Autowired
   private HechosRepository hechosRepository;
-  @Autowired
-  private CategoriasRepository categoriasRepository;
 
   @Value("${proxy_ong.auth.email}")
   private String email;
@@ -117,21 +114,17 @@ public class FuenteService {
    *
    * @return Mono con la lista de hechos nuevos
    */
+  @Override
   public Mono<List<HechoOutputDTO>> getAllHechosNuevos() {
     return this.getAllHechos()
         .flatMapMany(Flux::fromIterable)
         .filter(dto -> !hechosRepository.existsById(dto.getId())) // Asumo que las API que se consumiran, no eliminan ni modifican hechos, solo agregan nuevos.
         .map(dto -> {
-          Categoria categoria = categoriasRepository.findByName(dto.getCategoria());
-          if (categoria == null) {
-            categoria = new Categoria(dto.getCategoria());
-            categoriasRepository.save(categoria);
-          }
           hechosRepository.save(new Hecho(
               dto.getId(),
               dto.getTitulo(),
               dto.getDescripcion(),
-              categoria,
+              dto.getCategoria(),
               dto.getLatitud(),
               dto.getLongitud(),
               dto.getFecha_hecho(),

@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.agregador.user;
+package ar.utn.ba.ddsi.agregador.domain.user;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ public class Contribuyente {
   private Long id;
   private String nombre;
   private String apellido;
-  private LocalDate fechaDeNacimiento;  //mejor esto que edad
+  private LocalDate fechaDeNacimiento;
 
   public Contribuyente(String nombre) {
     if (nombre == null) {
@@ -33,5 +33,12 @@ public class Contribuyente {
 
   public boolean esAnonimo() {
     return this.nombre != null;
+  }
+
+  public Integer edad() {
+    if (fechaDeNacimiento == null) {
+      return null; // No se puede calcular la edad si no hay fecha de nacimiento
+    }
+    return LocalDate.now().getYear() - fechaDeNacimiento.getYear();
   }
 }

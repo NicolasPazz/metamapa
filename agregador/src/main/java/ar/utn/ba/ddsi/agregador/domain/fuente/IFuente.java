@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.agregador.infra.fuente;
+package ar.utn.ba.ddsi.agregador.domain.fuente;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;

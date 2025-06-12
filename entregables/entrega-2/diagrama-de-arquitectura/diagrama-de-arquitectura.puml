@@ -126,7 +126,7 @@ external_ong --> proxy_ong_service
 external_metamapa --> proxy_metamapa_service
 
 ' Conexiones del Agregador consumiendo interfaces
-agregador_hechos_service ..> hechos_api : consume
-agregador_hechos_service ..> hechos_nuevos_api : consume
+agregador_fuentes_service ..> hechos_api : consume
+agregador_fuentes_service ..> hechos_nuevos_api : consume
 
 @enduml

@@ -13,14 +13,14 @@ public class Hecho {
   private Long id;
   private String titulo;
   private String descripcion;
-  private Categoria categoria;
+  private String categoria;
   private Double latitud;
   private Double longitud;
   private LocalDate fechaDeAcontecimiento;
   private LocalDateTime fechaDeCarga;
   private LocalDateTime ultimaModificacion;
 
-  public Hecho(Long id, String titulo, String descripcion, Categoria categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, LocalDateTime ultimaModificacion) {
+  public Hecho(Long id, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, LocalDateTime ultimaModificacion) {
     this.id = id;
     this.titulo = titulo;
     this.descripcion = descripcion;

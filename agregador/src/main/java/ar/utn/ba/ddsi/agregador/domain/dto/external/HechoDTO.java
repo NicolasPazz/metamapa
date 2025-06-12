@@ -9,11 +9,8 @@ import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.TipoContenido;
 import ar.utn.ba.ddsi.agregador.domain.hecho.TransicionEstadoHecho;
-import ar.utn.ba.ddsi.agregador.user.Contribuyente;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,7 +46,7 @@ public class HechoDTO {
     data.setLongitud(this.getLongitud());
     data.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento());
     data.setFechaDeCarga(this.getFechaDeCarga());
-    data.setNombreCategoria(this.getCategoria());
+    hecho.setCategoria(new Categoria(this.getCategoria()));
     hecho.setData(data);
 
     hecho.setOrigen(OrigenHecho.valueOf(this.getOrigen()));

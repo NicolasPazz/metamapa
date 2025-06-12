@@ -1,10 +1,11 @@
-package ar.utn.ba.ddsi.agregador.domain.solicitud.detector;
+package ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.detector;
 
+import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.Validacion;
 import org.springframework.stereotype.Component;
 import java.util.*;
 
 @Component
-public class DetectorDeSpamTFIDF implements DetectorDeSpam {
+public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
   // Algoritmo TF-IDF
   // Corpus simple de documentos validos
   private final List<String> corpus = List.of(
@@ -14,6 +15,11 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam {
   );
 
   private final double umbral = 1.0;
+
+  @Override
+  public boolean esValida(String texto) {
+    return texto != null && !esSpam(texto);
+  }
 
   @Override
   public boolean esSpam(String texto) {

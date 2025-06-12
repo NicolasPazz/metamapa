@@ -1,7 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.ContribuyenteDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
 import java.time.LocalDate;
@@ -10,10 +9,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
-import ar.utn.ba.ddsi.agregador.user.Contribuyente;
 import java.util.stream.Collectors;
 import lombok.*;
 
@@ -36,17 +33,6 @@ public class Hecho {
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
   private Categoria categoria;
 
-  // CSV
-  public Hecho(DataHecho data, OrigenHecho origen) {
-    this.data = data;
-    this.origen = origen;
-    transicionarEstado(EstadoHecho.VISIBLE);
-    this.categoria = new Categoria(data.getNombreCategoria());
-    this.contribuyente = null;
-  }
-
-  // MANUAL / CONTRIBUYENTE
-  //TODO: etiquetas lo agregan los admin por lo que no seria un valor de instancia
   public Hecho(String titulo, String descripcion, Categoria categoria, LocalDate fechaDeAcontecimiento, double latitud, double longitud, List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Long contribuyente) {
     DataHecho dataHecho = new DataHecho();
     dataHecho.setTitulo(titulo);
@@ -54,13 +40,13 @@ public class Hecho {
     dataHecho.setFechaDeAcontecimiento(fechaDeAcontecimiento);
     dataHecho.setLatitud(latitud);
     dataHecho.setLongitud(longitud);
-    dataHecho.setNombreCategoria(categoria.getNombre());
 
     this.data = dataHecho;
     this.categoria = categoria;
     this.multimedia = multimedia;
     this.etiquetas = etiquetas;
     this.contribuyente = contribuyente;
+    this.categoria = categoria;
 
     if(contribuyente != null) { //TODO: corregir, si el contribuyente es anonimo esto seria null y la carga seria CONTRIBUYENTE
       this.origen = OrigenHecho.CONTRIBUYENTE;
@@ -70,7 +56,6 @@ public class Hecho {
 
     transicionarEstado(EstadoHecho.VISIBLE);
   }
-
 
   public boolean esDuplicadoDe(Hecho otroHecho) {
     return this.getTitulo().equalsIgnoreCase(otroHecho.getTitulo());

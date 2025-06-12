@@ -18,7 +18,6 @@ public class Coleccion {
   @Getter
   @Setter
   private String descripcion;
-  @Setter
   private List<Hecho> hechos;
   @Getter
   @Setter

@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.service;
 
+import reactor.core.publisher.Mono;
+
 public interface IAgregadorService {
-    public void actualizarHechos();
-    public void revisarSolicitudes();
+    public Mono<Void> actualizarHechos();
 }

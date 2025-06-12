@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.agregador.domain.repositorie;
 
-import ar.utn.ba.ddsi.agregador.user.Contribuyente;
 import java.util.List;
 
 public interface IContribuyentesRepository {

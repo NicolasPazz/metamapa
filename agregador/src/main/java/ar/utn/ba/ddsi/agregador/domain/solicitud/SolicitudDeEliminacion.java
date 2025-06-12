@@ -1,7 +1,11 @@
 package ar.utn.ba.ddsi.agregador.domain.solicitud;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.user.Contribuyente;
+import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.Validacion;
+import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.ValidacionLongitud;
+import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.detector.DetectorDeSpamTFIDF;
+import java.util.HashSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,7 +16,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class SolicitudDeEliminacion {
   private Long id;
   private Hecho hecho;
@@ -21,13 +24,21 @@ public class SolicitudDeEliminacion {
   private EstadoSolicitud estado;
   private Long contribuyente;
   private List<TransicionEstadoSolicitud> transicionesDeEstado = new ArrayList<>();
+  private Set<Validacion> validaciones = Set.of(
+      new ValidacionLongitud(),
+      new DetectorDeSpamTFIDF()
+  );
 
   public SolicitudDeEliminacion(Hecho hecho, String textoFundamentos, Long contribuyente) {
-    this.hecho = hecho;
-    this.textoFundamentos = textoFundamentos;
-    this.fecha = LocalDate.now();
-    this.estado = EstadoSolicitud.PENDIENTE;
-    this.contribuyente = contribuyente;
+    if (esValida(textoFundamentos)) {
+      this.hecho = hecho;
+      this.textoFundamentos = textoFundamentos;
+      this.fecha = LocalDate.now();
+      this.estado = EstadoSolicitud.PENDIENTE;
+      this.contribuyente = contribuyente;
+    } else {
+      throw new IllegalArgumentException("La solicitud fue rechazada por no cumplir las validaciones.");
+    }
   }
 
   public void aceptar() {
@@ -39,5 +50,9 @@ public class SolicitudDeEliminacion {
   public void rechazar() {
     transicionesDeEstado.add(new TransicionEstadoSolicitud(EstadoSolicitud.RECHAZADA));
     this.estado = EstadoSolicitud.RECHAZADA;
+  }
+
+  public boolean esValida(String textoFundamentos) {
+    return validaciones.stream().allMatch(validacion -> validacion.esValida(textoFundamentos));
   }
 }

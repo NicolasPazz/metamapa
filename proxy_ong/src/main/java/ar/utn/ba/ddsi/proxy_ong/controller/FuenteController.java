@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.proxy_ong.controller;
 
 import ar.utn.ba.ddsi.proxy_ong.domain.dto.output.HechoOutputDTO;
+import ar.utn.ba.ddsi.proxy_ong.service.IFuenteService;
 import ar.utn.ba.ddsi.proxy_ong.service.impl.FuenteService;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,9 +12,9 @@ import reactor.core.publisher.Mono;
 @RestController
 @RequestMapping("/api/hechos")
 public class FuenteController {
-  private final FuenteService fuenteService;
+  private final IFuenteService fuenteService;
 
-  public FuenteController(FuenteService fuenteService) {
+  public FuenteController(IFuenteService fuenteService) {
     this.fuenteService = fuenteService;
   }
 
