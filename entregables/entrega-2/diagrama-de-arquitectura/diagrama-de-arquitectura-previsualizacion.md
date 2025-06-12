@@ -1,4 +1,4 @@
-<!-- IMPORTANTE: actualizar la url si se modifica el .puml -->
+<!-- IMPORTANTE: actualizar la url si se modifica el diagrama -->
 
 ## Diagrama de Arquitectura
 
