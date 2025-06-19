@@ -1,0 +1,17 @@
+package ar.utn.ba.ddsi.dinamica.domain.hecho;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
+@Setter
+@Getter
+public class ContenidoMultimedia {
+  private String pathArchivo;
+  private TipoContenido tipoContenido;
+
+  public ContenidoMultimedia(String pathArchivo, TipoContenido tipoContenido) {
+    this.pathArchivo = pathArchivo;
+    this.tipoContenido = tipoContenido;
+  }
+}

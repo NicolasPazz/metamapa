@@ -1,218 +1,132 @@
 @startuml
-' IMPORTANTE: actualizar la url en la previsualización si se modifica el .puml
+!theme plain
 
-' ==== INTERFACES ====
-
-interface Criterio {
-    + cumple(hecho: Hecho): Boolean
+skinparam package {
+    BackgroundColor #E8F4FD
+    BorderColor #4472C4
+    FontColor #1F4E79
 }
 
-interface Validacion {
-    + cumple(solicitud: SolicitudDeEliminacion): Boolean
+skinparam component {
+    BackgroundColor #FFF2CC
+    BorderColor #D6B656
+    FontColor #7F6000
 }
 
-' ==== CLASES ====
-
-class Categoria {
-    - categoria: String
+skinparam cloud {
+    BackgroundColor #F8CECC
+    BorderColor #B85450
+    FontColor #5F2C29
 }
 
-class Coleccion {
-    - criterioDePertenencia: Criterio
-    - descripcion: String
-    - fuente: Fuente
-    - titulo: String
-
-    + importarHechosVisibles(): List<Hecho>
-    + obtenerHechos(): List<Hecho>
+skinparam database {
+    BackgroundColor #E1D5E7
+    BorderColor #9673A6
+    FontColor #432D54
 }
 
-Coleccion --> Criterio
-Coleccion --> Fuente
-
-class ContenidoMultimedia {
-    - pathArchivo: String
-    - tipoContenido: TipoContenido
+skinparam interface {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    FontColor #000000
 }
 
-ContenidoMultimedia --> TipoContenido
+title "Diagrama de Arquitectura - MetaMapa"
 
-class Contribuyente {
-    - apellido: String
-    - fechaDeNacimiento: LocalDate
-    - nombre: String
+' Servicios externos
+cloud "API Externa ONG" as external_ong
+cloud "API Externa MetaMapa" as external_metamapa
 
-    + edad(): Int
-    + esAnonimo(): Boolean
-    + solicitarEliminacion(hecho: Hecho, fundamentos: String): SolicitudDeEliminacion
-    + subir(hecho: Hecho): Void
+' Interfaces expuestas
+interface "Hechos\n/api/hechos" as hechos_api
+interface "Hechos\n/api/hechos/nuevos" as hechos_nuevos_api
+
+' Modulo Proxy ONG
+package "Proxy ONG\n:8083" #FFE6CC {
+    component "FuenteController" as proxy_ong_controller
+    component "FuenteService" as proxy_ong_service
+    database "DB Hechos" as proxy_ong_hechos_db
+    
+    proxy_ong_controller .up.> hechos_nuevos_api : expone
+    proxy_ong_service --> proxy_ong_hechos_db
+    proxy_ong_controller --> proxy_ong_service
 }
 
-Contribuyente ..> Hecho
-
-class CriterioCombinado implements Criterio {
-    - criterios: List<Criterio>
-
-    + agregarCriterio(criterio: Criterio): Void
-    + cumple(hecho: Hecho): Boolean
+' Modulo Proxy MetaMapa
+package "Proxy MetaMapa\n:8086" #FFE6CC {
+    component "FuenteController" as proxy_metamapa_controller
+    component "FuenteService" as proxy_metamapa_service
+    
+    proxy_metamapa_controller .up.> hechos_api : expone
+    proxy_metamapa_controller --> proxy_metamapa_service
 }
 
-CriterioCombinado --> " * " Criterio
-
-class CriterioFechas implements Criterio {
-    - fechaFinal: LocalDate
-    - fechaInicial: LocalDate
-    - tipoFecha: TipoFecha
-
-    + cumple(hecho: Hecho): Boolean
+' Modulo Estatica
+package "Estatica\n:8082" {
+    component "FuenteController" as estatica_controller
+    component "FuenteService" as estatica_service
+    database "DB Hechos" as estatica_hechos_db
+    
+    estatica_controller .up.> hechos_nuevos_api : expone
+    estatica_controller --> estatica_service
+    estatica_service --> estatica_hechos_db
 }
 
-CriterioFechas --> TipoFecha
-
-class CriterioIgualdad implements Criterio {
-    - cadenaAComparar: String
-    - tipoDeDato: TipoDato
-
-    + cumple(hecho: Hecho): Boolean
+' Modulo Dinamica
+package "Dinamica\n:8081" {
+    component "FuenteController" as dinamica_controller
+    component "SolicitudesController" as dinamica_solicitudes_controller
+    component "FuenteService" as dinamica_service
+    component "SolicitudesService" as dinamica_solicitudes_service
+    database "DB Hechos" as dinamica_hechos_db
+    database "DB Solicitudes" as dinamica_solicitudes_db
+    database "DB Contribuyentes" as dinamica_contribuyentes_db
+    
+    dinamica_controller .up.> hechos_nuevos_api : expone
+    dinamica_controller --> dinamica_service
+    dinamica_solicitudes_controller --> dinamica_solicitudes_service
+    dinamica_service --> dinamica_hechos_db
+    dinamica_solicitudes_service --> dinamica_solicitudes_db
+    dinamica_solicitudes_service --> dinamica_contribuyentes_db
 }
 
-CriterioIgualdad --> TipoDato
-
-class CriterioLugar implements Criterio {
-    - lat: Double
-    - lng: Double
-
-    + cumple(hecho: Hecho): Boolean
+' Modulo Agregador
+package "Agregador\n:8084" {
+    component "AgregadorController" as agregador_controller
+    component "AgregadorService" as agregador_service
+    component "HechosService" as agregador_hechos_service
+    component "ColeccionesService" as agregador_colecciones_service
+    component "SolicitudesService" as agregador_solicitudes_service
+    component "FuentesService" as agregador_fuentes_service
+    component "DetectorDeSpam" as agregador_detector_spam
+    component "AgregadorScheduler" as agregador_scheduler
+    database "DB Hechos" as agregador_hechos_db
+    database "DB Colecciones" as agregador_colecciones_db
+    database "DB Solicitudes" as agregador_solicitudes_db
+    database "DB Contribuyentes" as agregador_contribuyentes_db
+    
+    agregador_controller --> agregador_hechos_service
+    agregador_controller --> agregador_colecciones_service
+    agregador_controller --> agregador_solicitudes_service
+    agregador_service --> agregador_hechos_service
+    agregador_service --> agregador_colecciones_service
+    agregador_solicitudes_service --> agregador_detector_spam
+    agregador_solicitudes_service --> agregador_hechos_db
+    agregador_colecciones_service --> agregador_fuentes_service
+    agregador_hechos_service --> agregador_fuentes_service
+    agregador_hechos_service --> agregador_hechos_db
+    agregador_colecciones_service --> agregador_colecciones_db
+    agregador_solicitudes_service --> agregador_solicitudes_db
+    agregador_solicitudes_service --> agregador_contribuyentes_db
+    agregador_scheduler --> agregador_service
 }
 
-class CriterioOrigen implements Criterio {
-    - origen: OrigenHecho
+' Conexiones externas hacia proxies
+external_ong --> proxy_ong_service
+external_metamapa --> proxy_metamapa_service
 
-    + cumple(hecho: Hecho): Boolean
-}
-
-CriterioOrigen --> OrigenHecho
-
-class DataHecho {
-    - categoria: Categoria
-    - descripcion: String
-    - fechaDeAcontecimiento: LocalDate
-    - fechaDeCarga: LocalDate
-    - latitud: Double
-    - longitud: Double
-    - titulo: String
-}
-
-DataHecho --> Categoria
-
-class Etiqueta {
-    - nombre: String
-}
-
-class Fuente {
-    - pathArchivo: String
-
-    + importarHechos(): List<Hecho>
-}
-
-class Hecho {
-    - contenidoMultimedia: List<ContenidoMultimedia>
-    - contribuyente: Contribuyente
-    - data: DataHecho
-    - etiquetas: Set<Etiqueta>
-    - estado: EstadoHecho
-    - origen: OrigenHecho
-    - transicionesDeEstado: List<TransicionEstadoHecho>
-
-    + agregarEtiqueta(unaEtiqueta: Etiqueta): Void
-    + contieneEtiqueta(unaEtiqueta: Etiqueta): Boolean
-    + esDuplicadoDe(otroHecho: Hecho): Boolean
-    + esVisible(): Boolean
-    + ocultar(): Void
-}
-
-Hecho --> Contribuyente
-Hecho *-- DataHecho
-Hecho --> EstadoHecho
-Hecho --> OrigenHecho
-Hecho --> " * " ContenidoMultimedia
-Hecho --> " * " Etiqueta
-Hecho --> " * " TransicionEstadoHecho
-
-class SolicitudDeEliminacion {
-    - contribuyente: Contribuyente
-    - hecho: Hecho
-    - estado: EstadoSolicitud
-    - fecha: LocalDate
-    - textoFundamentos: String
-    - transicionesDeEstado: List<TransicionEstadoSolicitud>
-    - validaciones: Set<Validacion>
-
-    + aceptar(): Void
-    + rechazar(): Void
-}
-
-SolicitudDeEliminacion --> Contribuyente
-SolicitudDeEliminacion --> EstadoSolicitud
-SolicitudDeEliminacion --> Hecho
-SolicitudDeEliminacion --> " * " TransicionEstadoSolicitud
-SolicitudDeEliminacion --> " * " Validacion
-
-class TransicionEstadoHecho {
-    - estadoFinal: EstadoHecho
-    - fecha: LocalDate
-}
-
-TransicionEstadoHecho --> EstadoHecho
-
-class TransicionEstadoSolicitud {
-    - estadoFinal: EstadoSolicitud
-    - fecha: LocalDate
-}
-
-TransicionEstadoSolicitud --> EstadoSolicitud
-
-class ValidacionLongitud implements Validacion {
-    - longitud: Int
-
-    + cumple(solicitud: SolicitudDeEliminacion): Boolean
-}
-
-' ==== ENUMS ====
-
-enum EstadoHecho {
-    OCULTO
-    VISIBLE
-}
-
-enum EstadoSolicitud {
-    ACEPTADA
-    PENDIENTE
-    RECHAZADA
-}
-
-enum OrigenHecho {
-    CONTRIBUYENTE
-    DATASET
-    MANUAL
-}
-
-enum TipoContenido {
-    AUDIO
-    IMAGEN
-    VIDEO
-}
-
-enum TipoDato {
-    CATEGORIA
-    DESCRIPCION
-    ETIQUETA
-    TITULO
-}
-
-enum TipoFecha {
-    ACONTECIMIENTO
-    CARGA
-}
+' Conexiones del Agregador consumiendo interfaces
+agregador_fuentes_service ..> hechos_api : consume
+agregador_fuentes_service ..> hechos_nuevos_api : consume
 
 @enduml
