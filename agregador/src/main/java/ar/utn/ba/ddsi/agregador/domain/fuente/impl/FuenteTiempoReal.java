@@ -8,8 +8,9 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 
 @RequiredArgsConstructor
 public class FuenteTiempoReal implements IFuente {
@@ -17,8 +18,12 @@ public class FuenteTiempoReal implements IFuente {
   private final WebClient webClient;
 
   @Override
-  public Mono<List<HechoDTO>> getAllHechosVisibles(String categoria, LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta, LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta, String ubicacion) {
-    return webClient.get()
+  public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion) {
+    List<HechoDTO> hechos = webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/hechos")
             .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
@@ -30,37 +35,46 @@ public class FuenteTiempoReal implements IFuente {
             .build())
         .retrieve()
         .bodyToFlux(HechoDTO.class)
-        .collectList();
+        .collectList()
+        .block();
+    return ResponseEntity.of(Optional.ofNullable(hechos));
   }
 
   @Override
-  public Mono<List<HechoDTO>> getAllHechosNuevos() {
-    return Mono.just(List.of());
+  public ResponseEntity<List<HechoDTO>> getAllHechosNuevos() {
+    return ResponseEntity.ok(List.of());
   }
 
   @Override
-  public Mono<List<ColeccionDTO>> getAllColecciones() {
-    return webClient.get()
+  public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
+    List<ColeccionDTO> colecciones = webClient.get()
         .uri("/colecciones")
         .retrieve()
         .bodyToFlux(ColeccionDTO.class)
-        .collectList();
+        .collectList()
+        .block();
+    return ResponseEntity.of(Optional.ofNullable(colecciones));
   }
 
   @Override
-  public Mono<ColeccionDTO> getColeccionByHandle(String handle) {
-    return webClient.get()
+  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle) {
+    List<HechoDTO> hechos = webClient.get()
         .uri("/colecciones/{handle}/hechos", handle)
         .retrieve()
-        .bodyToMono(ColeccionDTO.class);
+        .bodyToFlux(HechoDTO.class)
+        .collectList()
+        .block();
+    return ResponseEntity.ok(hechos);
   }
 
   @Override
-  public Mono<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
-    return webClient.post()
+  public ResponseEntity<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
+    SolicitudDeEliminacionDTO resultado = webClient.post()
         .uri("/solicitudes")
         .bodyValue(solicitud)
         .retrieve()
-        .bodyToMono(SolicitudDeEliminacionDTO.class);
+        .bodyToMono(SolicitudDeEliminacionDTO.class)
+        .block();
+    return ResponseEntity.of(Optional.ofNullable(resultado));
   }
 }

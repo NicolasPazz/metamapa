@@ -9,15 +9,18 @@ import ar.utn.ba.ddsi.proxy_ong.domain.repositorie.impl.HechosRepository;
 import ar.utn.ba.ddsi.proxy_ong.exception.ApiLoginException;
 import ar.utn.ba.ddsi.proxy_ong.service.IFuenteService;
 import jakarta.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 
+@Slf4j
 @Service
 public class FuenteService implements IFuenteService {
   private final WebClient webClient;
@@ -36,43 +39,42 @@ public class FuenteService implements IFuenteService {
   @Value("${proxy_ong.auth.password}")
   private String password;
 
-  public FuenteService(WebClient.Builder webClientBuilder, @Value("${proxy_ong.api.url}") String apiUrl) {
-    this.webClient = webClientBuilder.baseUrl(apiUrl).build();
-  }
+  public FuenteService(
+      WebClient.Builder webClientBuilder,
+      @Value("${proxy_ong.api.url}") String apiUrl
+  ) { this.webClient = webClientBuilder.baseUrl(apiUrl).build(); }
 
   @PostConstruct
   private void init() {
-    this.obtenerToken()
-        .doOnNext(response -> {
-          this.accessToken = response.getData().getAccess_token();
-          this.tokenType = response.getData().getToken_type();
-          AUTH_HEADER_VALUE = tokenType + " " + accessToken;
-        })
-        .doOnError(error -> {
-          throw new ApiLoginException("No se pudo autenticar con el servicio externo", error);
-        })
-        .block();
+    try {
+      LoginResponseDTO response = obtenerToken();
+      this.accessToken = response.getData().getAccess_token();
+      this.tokenType = response.getData().getToken_type();
+      this.AUTH_HEADER_VALUE = tokenType + " " + accessToken;
+    } catch (Exception e) {
+      throw new ApiLoginException("No se pudo autenticar con el servicio externo", e);
+    }
   }
 
-  private Mono<LoginResponseDTO> obtenerToken() {
-    return webClient
+  private LoginResponseDTO obtenerToken() {
+    LoginResponseDTO response = webClient
         .post()
         .uri("/login")
         .bodyValue(Map.of("email", email, "password", password))
         .retrieve()
         .bodyToMono(LoginResponseDTO.class)
-        .flatMap(res -> {
-          if (!res.isError()) {
-            return Mono.just(res);
-          } else {
-            return Mono.error(new ApiLoginException("Login fallido: " + res.getMessage()));
-          }
-        });
+        .block();
+
+    if (response == null || response.isError()) {
+      throw new ApiLoginException("Login fallido: " + (response != null ? response.getMessage() : "respuesta nula"));
+    }
+
+    return response;
   }
 
-  private Mono<List<HechoProxyDTO>> getAllHechos() {
-    return webClient
-        .get()
+  private List<HechoProxyDTO> getAllHechos() {
+    // Obtener primera página para saber cuántos hay
+    HechoProxyResponseDTO firstPage = webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/desastres")
             .queryParam("per_page", per_page)
@@ -81,30 +83,32 @@ public class FuenteService implements IFuenteService {
         .header(AUTH_HEADER, AUTH_HEADER_VALUE)
         .retrieve()
         .bodyToMono(HechoProxyResponseDTO.class)
-        .flatMapMany(firstPage -> {
-          long lastPage = firstPage.getLast_page();
+        .block();
 
-          Flux<HechoProxyDTO> pagina1 = Flux.fromIterable(firstPage.getData());
+    if (firstPage == null || firstPage.getData() == null) return List.of();
 
-          Flux<HechoProxyDTO> resto = Flux.range(2, (int) (lastPage))
-              .flatMap(page ->
-                  webClient
-                      .get()
-                      .uri(uriBuilder -> uriBuilder
-                          .path("/desastres")
-                          .queryParam("per_page", per_page)
-                          .queryParam("page", page)
-                          .build())
-                      .header(AUTH_HEADER, AUTH_HEADER_VALUE)
-                      .retrieve()
-                      .bodyToMono(HechoProxyResponseDTO.class)
-                      .map(HechoProxyResponseDTO::getData)
-                      .flatMapMany(Flux::fromIterable)
-              );
+    List<HechoProxyDTO> todos = new ArrayList<>(firstPage.getData());
+    long lastPage = firstPage.getLast_page();
 
-          return pagina1.concatWith(resto);
-        })
-        .collectList();
+    for (int page = 2; page <= lastPage; page++) {
+      int finalPage = page;
+      HechoProxyResponseDTO pageResult = webClient.get()
+          .uri(uriBuilder -> uriBuilder
+              .path("/desastres")
+              .queryParam("per_page", per_page)
+              .queryParam("page", finalPage)
+              .build())
+          .header(AUTH_HEADER, AUTH_HEADER_VALUE)
+          .retrieve()
+          .bodyToMono(HechoProxyResponseDTO.class)
+          .block();
+
+      if (pageResult != null && pageResult.getData() != null) {
+        todos.addAll(pageResult.getData());
+      }
+    }
+
+    return todos;
   }
 
   /**
@@ -115,24 +119,15 @@ public class FuenteService implements IFuenteService {
    * @return Mono con la lista de hechos nuevos
    */
   @Override
-  public Mono<List<HechoOutputDTO>> getAllHechosNuevos() {
-    return this.getAllHechos()
-        .flatMapMany(Flux::fromIterable)
-        .filter(dto -> !hechosRepository.existsById(dto.getId())) // Asumo que las API que se consumiran, no eliminan ni modifican hechos, solo agregan nuevos.
-        .map(dto -> {
-          hechosRepository.save(new Hecho(
-              dto.getId(),
-              dto.getTitulo(),
-              dto.getDescripcion(),
-              dto.getCategoria(),
-              dto.getLatitud(),
-              dto.getLongitud(),
-              dto.getFecha_hecho(),
-              dto.getCreated_at(),
-              dto.getUpdated_at()
-          ));
+  public ResponseEntity<List<HechoOutputDTO>> getAllHechosNuevos() {
+    try {
+      List<HechoProxyDTO> todos = getAllHechos();
 
-          return new HechoOutputDTO(
+      List<HechoOutputDTO> nuevos = new ArrayList<>();
+
+      for (HechoProxyDTO dto : todos) {
+        if (!hechosRepository.existsById(dto.getId())) {
+          Hecho hecho = new Hecho(
               dto.getId(),
               dto.getTitulo(),
               dto.getDescripcion(),
@@ -143,7 +138,28 @@ public class FuenteService implements IFuenteService {
               dto.getCreated_at(),
               dto.getUpdated_at()
           );
-        })
-        .collectList();
+
+          hechosRepository.save(hecho);
+
+          nuevos.add(new HechoOutputDTO(
+              dto.getId(),
+              dto.getTitulo(),
+              dto.getDescripcion(),
+              dto.getCategoria(),
+              dto.getLatitud(),
+              dto.getLongitud(),
+              dto.getFecha_hecho(),
+              dto.getCreated_at(),
+              dto.getUpdated_at()
+          ));
+        }
+      }
+
+      return ResponseEntity.of(Optional.of(nuevos));
+
+    } catch (Exception e) {
+      log.error("Error al obtener hechos nuevos desde el proxy ONG", e);
+      return ResponseEntity.internalServerError().build();
+    }
   }
 }

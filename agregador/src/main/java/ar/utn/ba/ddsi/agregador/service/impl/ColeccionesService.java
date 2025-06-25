@@ -5,9 +5,10 @@ import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,44 +19,46 @@ public class ColeccionesService {
     private final IColeccionesRepository coleccionesRepository;
     private final FuentesService fuentesService;
 
-    public Mono<List<ColeccionDTO>> getAll() {
-        Mono<List<ColeccionDTO>> coleccionesLocales = Mono.just(
-            coleccionesRepository.findAll().stream()
-                .map(Coleccion::mapToDTO)
-                .toList()
-        );
+    public ResponseEntity<List<ColeccionDTO>> getAll() {
+      List<ColeccionDTO> locales = coleccionesRepository.findAll().stream()
+          .map(Coleccion::mapToDTO)
+          .toList();
 
-        Mono<List<ColeccionDTO>> coleccionesExternas = fuentesService.getAllColecciones();
+      List<ColeccionDTO> externas = Optional.ofNullable(
+          fuentesService.getAllColecciones().getBody()
+      ).orElse(List.of());
 
-        return Mono.zip(coleccionesLocales, coleccionesExternas)
-            .map(tuple -> {
-                List<ColeccionDTO> combinadas = new ArrayList<>();
-                combinadas.addAll(tuple.getT1());
-                combinadas.addAll(tuple.getT2());
-                return combinadas;
-            });
+      List<ColeccionDTO> combinadas = new ArrayList<>();
+      combinadas.addAll(locales);
+      combinadas.addAll(externas);
+
+      return ResponseEntity.of(Optional.of(combinadas));
     }
 
-    public Mono<List<HechoDTO>> getByHandle(String handle) {
-        Coleccion local = coleccionesRepository.findByHandle(handle);
-        if (local != null) {
-            try {
-                List<HechoDTO> hechosDTO = local.getHechos()
-                    .stream()
-                    .map(Hecho::mapToDTO)
-                    .toList();
-                return Mono.just(hechosDTO);
-            } catch (Exception e) {
-                return Mono.error(e);
-            }
+    public ResponseEntity<List<HechoDTO>> getByHandle(String handle) {
+      // Buscar primero en las colecciones locales
+      Coleccion local = coleccionesRepository.findByHandle(handle);
+      if (local != null) {
+        try {
+          List<HechoDTO> hechosDTO = local.getHechos()
+              .stream()
+              .map(Hecho::mapToDTO)
+              .toList();
+
+          return ResponseEntity.ok(hechosDTO);
+        } catch (Exception e) {
+          return ResponseEntity.internalServerError().build();
         }
+      }
 
-        return fuentesService.getColeccionByHandle(handle)
-            .flatMap(coleccionDTO -> {
-                List<HechoDTO> hechos = coleccionDTO.getHechos();
-                return Mono.just(hechos);
-            })
-            .switchIfEmpty(Mono.error(new IllegalArgumentException("No se encontró ninguna colección con el handle: " + handle)));
+      // Si no está en las locales, buscar en fuentes externas
+      ResponseEntity<List<HechoDTO>> respuesta = fuentesService.getColeccionByHandle(handle);
+      List<HechoDTO> externos = respuesta.getBody();
+
+      if (externos != null) {
+        return ResponseEntity.ok(externos);
+      }
+
+      return ResponseEntity.notFound().build();
     }
-
 }

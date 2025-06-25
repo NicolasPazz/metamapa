@@ -4,14 +4,14 @@ import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.ISolicitudesRepository;
-import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.detector.DetectorDeSpam;
 import ar.utn.ba.ddsi.agregador.service.IAgregadorService;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 
 @Slf4j
 @Service
@@ -23,25 +23,28 @@ public class AgregadorService implements IAgregadorService {
     private final DetectorDeSpam detectorDeSpam;
 
     @Override
-    public Mono<Void> actualizarHechos() {
-        return this.fuentesService.getAllHechosNuevos()
-            .doOnSubscribe(subscription -> log.info("[Agregador] Iniciando actualización de hechos..."))
-            .doOnNext(lista -> log.info("[Agregador] Cantidad de hechos nuevos obtenidos: {}", lista.size()))
-            .doOnError(error -> log.error("[Agregador] Error al obtener hechos nuevos: {}", error.getMessage(), error))
-            .flatMap(lista -> {
-                if (lista == null || lista.isEmpty()) {
-                    log.info("[Agregador] No hay hechos nuevos para guardar.");
-                    return Mono.empty();
-                }
+    public void actualizarHechos() {
+      try {
+        log.info("[Agregador] Iniciando actualización de hechos...");
 
-                List<Hecho> hechosNuevos = lista.stream()
-                    .map(HechoDTO::mapToHecho)
-                    .toList();
+        List<HechoDTO> nuevosDTOs = Optional.ofNullable(
+            fuentesService.getAllHechosNuevos().getBody()
+        ).orElse(List.of());
 
-                hechosRepository.saveBatch(hechosNuevos);
-                log.info("[Agregador] Se guardaron {} hechos nuevos.", hechosNuevos.size());
+        log.info("[Agregador] Cantidad de hechos nuevos obtenidos: {}", nuevosDTOs.size());
 
-                return Mono.empty();
-            });
+        if (nuevosDTOs.isEmpty()) {
+          log.info("[Agregador] No hay hechos nuevos para guardar.");
+        }
+
+        List<Hecho> hechosNuevos = nuevosDTOs.stream()
+            .map(HechoDTO::mapToHecho)
+            .toList();
+
+        hechosRepository.saveBatch(hechosNuevos);
+        log.info("[Agregador] Se guardaron {} hechos nuevos.", hechosNuevos.size());
+      } catch (Exception e) {
+        log.error("[Agregador] Error al actualizar hechos: {}", e.getMessage(), e);
+      }
     }
 }

@@ -16,17 +16,26 @@ public class agregadorScheduler {
 
     @PostConstruct
     public void onStartup() {
-        log.info("⌛ onStartup: Scheduler de agregador iniciado");
+        System.out.println("⌛ onStartup: Scheduler de agregador iniciado, esto puede tardar hasta dos minutos");
 
-        agregadorService.actualizarHechos()
-            .doOnTerminate(() -> log.info("✅ onStartup: Scheduler de agregador finalizado"))
-            .subscribe();
+        try {
+            agregadorService.actualizarHechos();
+            System.out.println("✅ onStartup: Scheduler de agregador finalizado, hechos actualizados correctamente");
+        } catch (Exception e) {
+            log.error("❌ Error en onStartup al actualizar hechos", e);
+        }
     }
 
     @Scheduled(cron = "0 0 * * * *")
     public void refrescarHechosYColecciones() {
-        agregadorService.actualizarHechos()
-            .doOnError(e -> log.error("[Scheduler] Error al actualizar hechos", e))
-            .subscribe();
+        new Thread(() -> {
+            try {
+                log.info("⌛ [Scheduler] Iniciando actualización de hechos en hilo separado...");
+                agregadorService.actualizarHechos();
+                log.info("✅ [Scheduler] Actualización de hechos finalizada correctamente.");
+            } catch (Exception e) {
+                log.error("❌ [Scheduler] Error al actualizar hechos", e);
+            }
+        }, "cron-refrescarHechosYColecciones").start();
     }
 }

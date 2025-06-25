@@ -6,7 +6,6 @@ import ar.utn.ba.ddsi.agregador.domain.repositorie.IContribuyentesRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicLong;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,12 +41,11 @@ public class HechosRepository implements IHechosRepository {
   }
 
   @Override
-  public List<Hecho> findByFilters(String categoria,
-                                   LocalDate fechaReporteDesde,
-                                   LocalDate fechaReporteHasta,
-                                   LocalDate fechaAcontecimientoDesde,
-                                   LocalDate fechaAcontecimientoHasta,
-                                   String   ubicacion) {
+  public List<Hecho> findByFilters(
+      String categoria,
+      LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
+      LocalDate fechaAcontecimientoDesde, LocalDate fechaAcontecimientoHasta,
+      String ubicacion) {
 
     Double lat, lon;
     if (ubicacion != null && ubicacion.contains(",")) {
@@ -61,7 +59,9 @@ public class HechosRepository implements IHechosRepository {
 
     return hechos.stream()
         .filter(h -> categoria == null ||
-            categoria.equalsIgnoreCase(h.getCategoria().getNombre()))
+            (h.getCategoria() != null &&
+                h.getCategoria().getNombre() != null &&
+                h.getCategoria().getNombre().toLowerCase().contains(categoria.toLowerCase())))
 
         .filter(h -> fechaReporteDesde == null ||
             !h.getFechaDeCarga()

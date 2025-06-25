@@ -6,10 +6,12 @@ import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
+
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @Profile({"dev"})
@@ -19,59 +21,67 @@ public class StubAgregadorClient implements AgregadorClient {
   private final StubDataFixture fixture;
 
   @Override
-  public Mono<List<HechoDTO>> getAllHechosVisibles(String categoria,
-                                                   LocalDate frd, LocalDate frh,
-                                                   LocalDate fad, LocalDate fah,
-                                                   String  ubicacion) {
+  public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(String categoria,
+                                                             LocalDate frd, LocalDate frh,
+                                                             LocalDate fad, LocalDate fah,
+                                                             String ubicacion) {
 
-    return Mono.just(
-        fixture.getHechos().stream()
+    List<HechoDTO> filtrados = fixture.getHechos().stream()
 
-            .filter(h -> categoria == null || categoria.equals(h.getCategoria()))
+        .filter(h -> categoria == null ||
+            h.getCategoria() != null &&
+                h.getCategoria().toLowerCase().contains(categoria.toLowerCase()))
 
-            .filter(h -> frd == null ||
-                (h.getFechaDeCarga() != null &&
-                    !h.getFechaDeCarga().toLocalDate().isBefore(frd)))
+        .filter(h -> frd == null ||
+            (h.getFechaDeCarga() != null &&
+                !h.getFechaDeCarga().toLocalDate().isBefore(frd)))
 
-            .filter(h -> frh == null ||
-                (h.getFechaDeCarga() != null &&
-                    !h.getFechaDeCarga().toLocalDate().isAfter(frh)))
+        .filter(h -> frh == null ||
+            (h.getFechaDeCarga() != null &&
+                !h.getFechaDeCarga().toLocalDate().isAfter(frh)))
 
-            .filter(h -> fad == null ||
-                (h.getFechaDeAcontecimiento() != null &&
-                    !h.getFechaDeAcontecimiento().isBefore(fad)))
+        .filter(h -> fad == null ||
+            (h.getFechaDeAcontecimiento() != null &&
+                !h.getFechaDeAcontecimiento().isBefore(fad)))
 
-            .filter(h -> fah == null ||
-                (h.getFechaDeAcontecimiento() != null &&
-                    !h.getFechaDeAcontecimiento().isAfter(fah)))
+        .filter(h -> fah == null ||
+            (h.getFechaDeAcontecimiento() != null &&
+                !h.getFechaDeAcontecimiento().isAfter(fah)))
 
-            .filter(h -> {
-              if (ubicacion == null) return true;
-              String current = h.getLatitud() + "," + h.getLongitud();
-              return ubicacion.equals(current);
-            })
+        .filter(h -> {
+          if (ubicacion == null) return true;
+          String current = h.getLatitud() + "," + h.getLongitud();
+          return ubicacion.equals(current);
+        })
 
-            .toList()
-    );
+        .toList();
+
+    return ResponseEntity.of(Optional.of(filtrados));
   }
 
   @Override
-  public Mono<List<ColeccionDTO>> getAllColecciones() {
-    return Mono.just(fixture.getColecciones());
+  public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
+    return ResponseEntity.of(Optional.of(fixture.getColecciones()));
   }
 
   @Override
-  public Mono<ColeccionDTO> getColeccionByHandle(String handle) {
-    return Mono.just(
-        fixture.getColecciones().stream()
-            .filter(c -> c.getHandle().equals(handle))
-            .findFirst()
-            .orElse(null)
-    );
+  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle) {
+    ColeccionDTO encontrada = fixture.getColecciones().stream()
+        .filter(c -> c.getHandle().equals(handle))
+        .findFirst()
+        .orElse(null);
+
+    if (encontrada == null) {
+      return ResponseEntity.notFound().build();
+    }
+
+    List<HechoDTO> hechos = Optional.ofNullable(encontrada.getHechos()).orElse(List.of());
+    return ResponseEntity.ok(hechos);
   }
 
+
   @Override
-  public Mono<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
+  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
     SolicitudOutputDTO solicitudOutputDTO = new SolicitudOutputDTO();
     solicitudOutputDTO.setId(1L);
     solicitudOutputDTO.setIdHecho(solicitud.getIdHecho());
@@ -79,6 +89,7 @@ public class StubAgregadorClient implements AgregadorClient {
     solicitudOutputDTO.setFecha(LocalDate.now());
     solicitudOutputDTO.setEstado("PENDIENTE");
     solicitudOutputDTO.setIdContribuyente(solicitud.getIdContribuyente());
-    return Mono.just(solicitudOutputDTO);
+
+    return ResponseEntity.of(Optional.of(solicitudOutputDTO));
   }
 }

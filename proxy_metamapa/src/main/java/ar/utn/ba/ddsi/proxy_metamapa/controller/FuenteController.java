@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api")
@@ -38,7 +38,7 @@ public class FuenteController {
    * @return lista de hechos visibles según los filtros
    */
   @GetMapping("/hechos")
-  public Mono<List<HechoDTO>> getAllHechosVisibles(
+  public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       @RequestParam(required = false) String categoria,
 
       @RequestParam(required = false)
@@ -58,7 +58,11 @@ public class FuenteController {
       LocalDate fecha_acontecimiento_hasta,
 
       @RequestParam(required = false) String ubicacion) {
-    return agregador.getAllHechosVisibles(categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
+    return agregador.getAllHechosVisibles(
+        categoria,
+        fecha_reporte_desde, fecha_reporte_hasta,
+        fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+        ubicacion);
   }
 
   /**
@@ -66,7 +70,7 @@ public class FuenteController {
    *   Esta ruta expone todas las colecciones disponibles, independientemente del origen de sus fuentes.
    */
   @GetMapping("/colecciones")
-  public Mono<List<ColeccionDTO>> getAllColecciones() {
+  public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     return agregador.getAllColecciones();
   }
 
@@ -75,7 +79,7 @@ public class FuenteController {
    *   Esta ruta, permite obtener los hechos asociados a una colección. Acepta los mismos parámetros y devuelve los resultados en el mismo formato.
    */
   @GetMapping("/colecciones/{handle}/hechos")
-  public Mono<ColeccionDTO> getColeccionByHandle(@PathVariable("handle") String handle) {
+  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(@PathVariable("handle") String handle) {
     return agregador.getColeccionByHandle(handle);
   }
 
@@ -84,7 +88,7 @@ public class FuenteController {
    *   Permite crear solicitudes de eliminación, enviando los datos de la solicitud como un JSON a través del cuerpo (body) de la misma.
    */
   @PostMapping("/solicitudes")
-  public Mono<SolicitudOutputDTO> crearSolicitudDeEliminacion(@RequestBody SolicitudInputDTO solicitud) {
+  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(@RequestBody SolicitudInputDTO solicitud) {
     return agregador.crearSolicitudDeEliminacion(solicitud);
   }
 }
