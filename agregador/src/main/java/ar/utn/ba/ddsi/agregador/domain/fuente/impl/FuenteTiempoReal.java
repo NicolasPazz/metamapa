@@ -2,7 +2,8 @@ package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.SolicitudDeEliminacionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import java.time.LocalDate;
 import java.util.List;
@@ -10,9 +11,11 @@ import java.util.Optional;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.ResponseEntity;
 
+@Slf4j
 @RequiredArgsConstructor
 @Getter
 public class FuenteTiempoReal implements IFuente {
@@ -86,12 +89,13 @@ public class FuenteTiempoReal implements IFuente {
 
 
   @Override
-  public ResponseEntity<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
-    SolicitudDeEliminacionDTO resultado = webClient.post()
+  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
+    log.info("[FuenteTiempoReal] Creando solicitud de eliminacion: {}", solicitud);
+    SolicitudOutputDTO resultado = webClient.post()
         .uri("/solicitudes")
         .bodyValue(solicitud)
         .retrieve()
-        .bodyToMono(SolicitudDeEliminacionDTO.class)
+        .bodyToMono(SolicitudOutputDTO.class)
         .block();
     return ResponseEntity.of(Optional.ofNullable(resultado));
   }

@@ -96,12 +96,13 @@ public class AgregadorController {
      */
     @PostMapping("/solicitudes")
     public ResponseEntity<?> crear(@RequestBody SolicitudInputDTO solicitudInputDTO) {
-        // y si el hecho pertenece a otra instancia metamapa quien la maneja?
         try {
             SolicitudOutputDTO respuesta = solicitudesService.crear(solicitudInputDTO);
             return ResponseEntity.ok(respuesta);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body("ERROR: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body("ERROR inesperado: " + e.getMessage());
         }
     }
 

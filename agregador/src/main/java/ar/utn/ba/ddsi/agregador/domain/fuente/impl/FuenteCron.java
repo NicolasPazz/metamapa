@@ -2,7 +2,8 @@ package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.SolicitudDeEliminacionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import java.time.LocalDate;
 import java.util.Optional;
@@ -55,7 +56,7 @@ public class FuenteCron implements IFuente {
   }
 
   @Override
-  public ResponseEntity<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
+  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
     return ResponseEntity.of(Optional.empty());
   }
 }

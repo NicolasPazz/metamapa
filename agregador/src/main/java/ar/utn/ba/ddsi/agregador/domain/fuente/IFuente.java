@@ -2,7 +2,8 @@ package ar.utn.ba.ddsi.agregador.domain.fuente;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.SolicitudDeEliminacionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import java.time.LocalDate;
 
 import org.springframework.http.ResponseEntity;
@@ -30,5 +31,5 @@ public interface IFuente {
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
       String ubicacion);
 
-  ResponseEntity<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud);
+  ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud);
 }

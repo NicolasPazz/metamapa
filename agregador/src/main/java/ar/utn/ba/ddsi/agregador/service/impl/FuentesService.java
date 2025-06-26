@@ -2,8 +2,6 @@ package ar.utn.ba.ddsi.agregador.service.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.SolicitudDeEliminacionDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -141,8 +139,10 @@ public class FuentesService {
     return ResponseEntity.notFound().build();
   }
 
-  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {
-    // TODO: Buscar que fuente tiene el hecho y redirigir la solicitud a esa fuente? o manejarla solo para esta instancia metamapa? o ambas?
-    return ResponseEntity.of(Optional.empty());
+  public IFuente getFuenteById(Long idFuente) {
+    return fuentes.stream()
+        .filter(fuente -> fuente.getId().equals(idFuente))
+        .findFirst()
+        .orElse(null);
   }
 }

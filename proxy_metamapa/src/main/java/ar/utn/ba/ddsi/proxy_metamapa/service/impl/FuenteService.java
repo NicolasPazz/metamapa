@@ -7,11 +7,13 @@ import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.ResponseEntity;
 
+@Slf4j
 @Service
 public class FuenteService {
   private final WebClient webClient;
@@ -84,6 +86,7 @@ public class FuenteService {
   }
 
   public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
+    log.info("Creando solicitud de eliminacion: {}", solicitud);
     SolicitudOutputDTO resultado = webClient
         .post()
         .uri("/solicitudes")
