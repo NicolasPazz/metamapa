@@ -28,20 +28,16 @@ public class FuenteService {
   ) {
     List<HechoDTO> hechos = webClient
         .get()
-        .uri(uriBuilder -> {
-          uriBuilder.path("/hechos");
-          if (categoria != null) uriBuilder.queryParam("categoria", categoria);
-          if (fecha_reporte_desde != null) uriBuilder.queryParam(
-              "fecha_reporte_desde", fecha_reporte_desde);
-          if (fecha_reporte_hasta != null) uriBuilder.queryParam(
-              "fecha_reporte_hasta", fecha_reporte_hasta);
-          if (fecha_acontecimiento_desde != null) uriBuilder.queryParam(
-              "fecha_acontecimiento_desde", fecha_acontecimiento_desde);
-          if (fecha_acontecimiento_hasta != null) uriBuilder.queryParam(
-              "fecha_acontecimiento_hasta", fecha_acontecimiento_hasta);
-          if (ubicacion != null) uriBuilder.queryParam("ubicacion", ubicacion);
-          return uriBuilder.build();
-        })
+        .uri(uriBuilder -> uriBuilder
+            .path("/hechos")
+            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
+            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
+            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
+            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
+            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
+            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
+            .build()
+        )
         .retrieve()
         .bodyToFlux(HechoDTO.class)
         .collectList()
@@ -62,14 +58,28 @@ public class FuenteService {
     return ResponseEntity.of(Optional.ofNullable(colecciones));
   }
 
-  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle) {
-    List<HechoDTO> hechos = webClient
-        .get()
-        .uri("/colecciones/{handle}/hechos", handle)
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion
+  ) {
+    List<HechoDTO> hechos = webClient.get()
+        .uri(uriBuilder -> uriBuilder
+            .path(String.format("/colecciones/%s/hechos", handle))
+            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
+            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
+            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
+            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
+            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
+            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
+            .build(handle))
         .retrieve()
         .bodyToFlux(HechoDTO.class)
         .collectList()
         .block();
+
     return ResponseEntity.of(Optional.ofNullable(hechos));
   }
 

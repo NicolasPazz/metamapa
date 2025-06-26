@@ -37,8 +37,20 @@ public class WebClientAgregadorClient implements AgregadorClient {
   }
 
   @Override
-  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle) {
-    return fuenteService.getColeccionByHandle(handle);
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion
+  ) {
+    return fuenteService.getHechosColeccionByHandle(
+        handle,
+        categoria,
+        fecha_reporte_desde, fecha_reporte_hasta,
+        fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+        ubicacion
+    );
   }
 
   @Override

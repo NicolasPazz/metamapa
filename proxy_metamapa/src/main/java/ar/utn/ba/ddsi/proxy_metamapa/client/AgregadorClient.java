@@ -20,6 +20,14 @@ public interface AgregadorClient {
   );
 
   ResponseEntity<List<ColeccionDTO>> getAllColecciones();
-  ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle);
+
+  ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion
+  );
+
   ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud);
 }

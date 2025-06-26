@@ -105,11 +105,25 @@ public class FuentesService {
     return ResponseEntity.of(Optional.of(resultados));
   }
 
-  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle) {
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion
+  ) {
     for (IFuente fuente : fuentes) {
-      ResponseEntity<List<HechoDTO>> respuesta = fuente.getColeccionByHandle(handle);
+      ResponseEntity<List<HechoDTO>> respuesta = fuente.getHechosColeccionByHandle(
+          handle,
+          categoria,
+          fecha_reporte_desde, fecha_reporte_hasta,
+          fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+          ubicacion
+      );
+
       List<HechoDTO> hechos = respuesta.getBody();
 
+      // Setear ID unico para cada hecho
       if (hechos != null) {
         Long idFuente = fuente.getId();
         hechos.forEach(h -> {
@@ -123,7 +137,8 @@ public class FuentesService {
         return ResponseEntity.ok(hechos);
       }
     }
-    return ResponseEntity.of(Optional.empty());
+
+    return ResponseEntity.notFound().build();
   }
 
   public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {

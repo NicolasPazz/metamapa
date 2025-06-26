@@ -45,7 +45,12 @@ public class FuenteCron implements IFuente {
   }
 
   @Override
-  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle) {
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion) {
     return ResponseEntity.of(Optional.empty());
   }
 

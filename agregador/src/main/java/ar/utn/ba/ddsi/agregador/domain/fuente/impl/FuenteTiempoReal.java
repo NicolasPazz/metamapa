@@ -60,15 +60,30 @@ public class FuenteTiempoReal implements IFuente {
   }
 
   @Override
-  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle) {
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion) {
     List<HechoDTO> hechos = webClient.get()
-        .uri("/colecciones/{handle}/hechos", handle)
+        .uri(uriBuilder -> uriBuilder
+            .path(String.format("/colecciones/%s/hechos", handle))
+            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
+            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
+            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
+            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
+            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
+            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
+            .build(handle))
         .retrieve()
         .bodyToFlux(HechoDTO.class)
         .collectList()
         .block();
+
     return ResponseEntity.ok(hechos);
   }
+
 
   @Override
   public ResponseEntity<SolicitudDeEliminacionDTO> crearSolicitudDeEliminacion(SolicitudDeEliminacionDTO solicitud) {

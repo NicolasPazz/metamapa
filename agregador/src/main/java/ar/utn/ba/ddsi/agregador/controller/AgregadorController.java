@@ -39,23 +39,10 @@ public class AgregadorController {
     @GetMapping("/hechos")
     public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
         @RequestParam(required = false) String categoria,
-
-        @RequestParam(required = false)
-        @DateTimeFormat(pattern = "dd-MM-yyyy")
-        LocalDate fecha_reporte_desde,
-
-        @RequestParam(required = false)
-        @DateTimeFormat(pattern = "dd-MM-yyyy")
-        LocalDate fecha_reporte_hasta,
-
-        @RequestParam(required = false)
-        @DateTimeFormat(pattern = "dd-MM-yyyy")
-        LocalDate fecha_acontecimiento_desde,
-
-        @RequestParam(required = false)
-        @DateTimeFormat(pattern = "dd-MM-yyyy")
-        LocalDate fecha_acontecimiento_hasta,
-
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
         @RequestParam(required = false) String ubicacion) {
         return hechosService.getAll(
             categoria,
@@ -72,12 +59,35 @@ public class AgregadorController {
     public ResponseEntity<List<ColeccionDTO>> getAllColecciones() { return this.coleccionesService.getAll(); }
 
     /**
-     * GET /colecciones/:identificador/hechos
-     *   Esta ruta, permite obtener los hechos asociados a una colección.
+     * GET /colecciones/:handle/hechos
+     * Esta ruta permite obtener los hechos asociados a una colección,
+     * aplicando filtros opcionales y seleccionando el modo de navegación.
+     *
+     * @param handle identificador de la colección
+     * @param categoria filtro opcional por categoría
+     * @param fecha_reporte_desde filtro opcional (formato: dd-MM-yyyy)
+     * @param fecha_reporte_hasta filtro opcional (formato: dd-MM-yyyy)
+     * @param fecha_acontecimiento_desde filtro opcional (formato: dd-MM-yyyy)
+     * @param fecha_acontecimiento_hasta filtro opcional (formato: dd-MM-yyyy)
+     * @param ubicacion filtro opcional por lat,long
      */
     @GetMapping("/colecciones/{handle}/hechos")
-    public ResponseEntity<List<HechoDTO>> getColeccionByHandle(@PathVariable String handle) {
-        return this.coleccionesService.getByHandle(handle);
+    public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+        @PathVariable String handle,
+        @RequestParam(required = false) String categoria,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
+        @RequestParam(required = false) String ubicacion
+    ) {
+        return coleccionesService.getHechosColeccionByHandle(
+            handle,
+            categoria,
+            fecha_reporte_desde, fecha_reporte_hasta,
+            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+            ubicacion
+        );
     }
 
     /**

@@ -79,9 +79,33 @@ public class FuenteController {
    *   Esta ruta, permite obtener los hechos asociados a una colección. Acepta los mismos parámetros y devuelve los resultados en el mismo formato.
    */
   @GetMapping("/colecciones/{handle}/hechos")
-  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(@PathVariable("handle") String handle) {
-    return agregador.getColeccionByHandle(handle);
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      @PathVariable("handle") String handle,
+      @RequestParam(required = false) String categoria,
+
+      @RequestParam(required = false)
+      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
+
+      @RequestParam(required = false)
+      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_hasta,
+
+      @RequestParam(required = false)
+      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_acontecimiento_desde,
+
+      @RequestParam(required = false)
+      @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_acontecimiento_hasta,
+
+      @RequestParam(required = false) String ubicacion
+  ) {
+    return agregador.getHechosColeccionByHandle(
+        handle,
+        categoria,
+        fecha_reporte_desde, fecha_reporte_hasta,
+        fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+        ubicacion
+    );
   }
+
 
   /**
    *   POST /solicitudes

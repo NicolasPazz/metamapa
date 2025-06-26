@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Profile({"dev"})
 @RequiredArgsConstructor
@@ -65,7 +67,16 @@ public class StubAgregadorClient implements AgregadorClient {
   }
 
   @Override
-  public ResponseEntity<List<HechoDTO>> getColeccionByHandle(String handle) {
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion
+  ) {
+    log.info("Buscando hechos de la colección con handle: {}", handle);
+    log.info("Filtros - Categoria: {}, Fecha Reporte Desde: {}, Fecha Reporte Hasta: {}, Fecha Acontecimiento Desde: {}, Fecha Acontecimiento Hasta: {}, Ubicación: {}",
+        categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
     ColeccionDTO encontrada = fixture.getColecciones().stream()
         .filter(c -> c.getHandle().equals(handle))
         .findFirst()
@@ -75,10 +86,19 @@ public class StubAgregadorClient implements AgregadorClient {
       return ResponseEntity.notFound().build();
     }
 
-    List<HechoDTO> hechos = Optional.ofNullable(encontrada.getHechos()).orElse(List.of());
-    return ResponseEntity.ok(hechos);
-  }
+    List<HechoDTO> hechosFiltrados = Optional.ofNullable(encontrada.getHechos())
+        .orElse(List.of())
+        .stream()
+        .filter(h -> categoria == null || (h.getCategoria() != null && h.getCategoria().toLowerCase().contains(categoria.toLowerCase())))
+        .filter(h -> ubicacion == null || (h.getLatitud() + "," + h.getLongitud()).equals(ubicacion))
+        .filter(h -> fecha_reporte_desde == null || !h.getFechaDeCarga().toLocalDate().isBefore(fecha_reporte_desde))
+        .filter(h -> fecha_reporte_hasta == null || !h.getFechaDeCarga().toLocalDate().isAfter(fecha_reporte_hasta))
+        .filter(h -> fecha_acontecimiento_desde == null || !h.getFechaDeAcontecimiento().isBefore(fecha_acontecimiento_desde))
+        .filter(h -> fecha_acontecimiento_hasta == null || !h.getFechaDeAcontecimiento().isAfter(fecha_acontecimiento_hasta))
+        .toList();
 
+    return ResponseEntity.ok(hechosFiltrados);
+  }
 
   @Override
   public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {

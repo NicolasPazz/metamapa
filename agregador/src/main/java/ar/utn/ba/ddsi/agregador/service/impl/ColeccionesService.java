@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import java.time.LocalDate;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,30 +36,42 @@ public class ColeccionesService {
       return ResponseEntity.of(Optional.of(combinadas));
     }
 
-    public ResponseEntity<List<HechoDTO>> getByHandle(String handle) {
-      // Buscar primero en las colecciones locales
-      Coleccion local = coleccionesRepository.findByHandle(handle);
-      if (local != null) {
-        try {
-          List<HechoDTO> hechosDTO = local.getHechos()
-              .stream()
-              .map(Hecho::mapToDTO)
-              .toList();
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion) {
+    // Primero, buscar en local
+    Coleccion local = coleccionesRepository.findByHandle(handle);
 
-          return ResponseEntity.ok(hechosDTO);
-        } catch (Exception e) {
-          return ResponseEntity.internalServerError().build();
-        }
-      }
+    if (local != null) {
+      List<Hecho> hechos = local.getHechos().stream()
+          .filter(h -> categoria == null || (h.getCategoria() != null &&
+              h.getCategoria().getNombre() != null &&
+              h.getCategoria().getNombre().toLowerCase().contains(categoria.toLowerCase())))
+          .filter(h -> ubicacion == null || (h.getLatitud() + "," + h.getLongitud()).equals(ubicacion))
+          .filter(h -> fecha_reporte_desde == null || !h.getFechaDeCarga().toLocalDate().isBefore(fecha_reporte_desde))
+          .filter(h -> fecha_reporte_hasta == null || !h.getFechaDeCarga().toLocalDate().isAfter(fecha_reporte_hasta))
+          .filter(h -> fecha_acontecimiento_desde == null || !h.getFechaDeAcontecimiento().isBefore(fecha_acontecimiento_desde))
+          .filter(h -> fecha_acontecimiento_hasta == null || !h.getFechaDeAcontecimiento().isAfter(fecha_acontecimiento_hasta))
+          .toList();
 
-      // Si no está en las locales, buscar en fuentes externas
-      ResponseEntity<List<HechoDTO>> respuesta = fuentesService.getColeccionByHandle(handle);
-      List<HechoDTO> externos = respuesta.getBody();
+      List<HechoDTO> hechosDTO = hechos.stream()
+          .map(Hecho::mapToDTO)
+          .toList();
 
-      if (externos != null) {
-        return ResponseEntity.ok(externos);
-      }
-
-      return ResponseEntity.notFound().build();
+      return ResponseEntity.ok(hechosDTO);
     }
+
+    // Si no está en locales, buscar en fuentes externas
+    return fuentesService.getHechosColeccionByHandle(
+        handle,
+        categoria,
+        fecha_reporte_desde, fecha_reporte_hasta,
+        fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+        ubicacion
+    );
+  }
+
 }
