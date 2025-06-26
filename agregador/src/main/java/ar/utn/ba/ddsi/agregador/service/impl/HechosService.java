@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import java.time.LocalDate;

@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.dto.external;
 
+import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import java.util.List;
 import lombok.Data;
 

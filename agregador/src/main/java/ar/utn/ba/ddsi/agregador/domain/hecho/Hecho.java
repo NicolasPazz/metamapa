@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
+import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
 import java.time.LocalDate;
 
@@ -33,7 +33,10 @@ public class Hecho {
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
   private Categoria categoria;
 
-  public Hecho(String titulo, String descripcion, Categoria categoria, LocalDate fechaDeAcontecimiento, double latitud, double longitud, List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Long contribuyente) {
+  public Hecho(String titulo, String descripcion, Categoria categoria,
+               LocalDate fechaDeAcontecimiento, double latitud, double longitud,
+               List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Long contribuyente) {
+
     DataHecho dataHecho = new DataHecho();
     dataHecho.setTitulo(titulo);
     dataHecho.setDescripcion(descripcion);
@@ -46,7 +49,6 @@ public class Hecho {
     this.multimedia = multimedia;
     this.etiquetas = etiquetas;
     this.contribuyente = contribuyente;
-    this.categoria = categoria;
 
     if(contribuyente != null) { //TODO: corregir, si el contribuyente es anonimo esto seria null y la carga seria CONTRIBUYENTE
       this.origen = OrigenHecho.CONTRIBUYENTE;

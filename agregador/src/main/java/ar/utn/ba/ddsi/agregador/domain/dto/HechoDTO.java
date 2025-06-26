@@ -1,5 +1,7 @@
-package ar.utn.ba.ddsi.agregador.domain.dto.external;
+package ar.utn.ba.ddsi.agregador.domain.dto;
 
+import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Categoria;
 import ar.utn.ba.ddsi.agregador.domain.hecho.ContenidoMultimedia;
 import ar.utn.ba.ddsi.agregador.domain.hecho.DataHecho;

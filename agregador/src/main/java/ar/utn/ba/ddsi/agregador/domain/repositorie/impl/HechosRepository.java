@@ -6,10 +6,12 @@ import ar.utn.ba.ddsi.agregador.domain.repositorie.IContribuyentesRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import java.time.LocalDate;
 import java.util.concurrent.atomic.AtomicLong;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Repository
 public class HechosRepository implements IHechosRepository {
 
@@ -95,19 +97,20 @@ public class HechosRepository implements IHechosRepository {
       }
     }
 
-    hecho.setId(idGenerator.getAndIncrement());
     this.hechos.add(hecho);
     coleccionesRepository.actualizarColecciones();
   }
 
   @Override
   public void saveBatch(List<Hecho> nuevosHechos) {
-    if (nuevosHechos == null || nuevosHechos.isEmpty()) return;
-
-    for (Hecho hecho : nuevosHechos) {
-      hecho.setId(idGenerator.getAndIncrement());
-      this.hechos.add(hecho);
+    if (nuevosHechos == null || nuevosHechos.isEmpty()) {
+      log.info("[HechosRepository] No se recibieron hechos para guardar.");
+      return;
     }
+
+    hechos.addAll(nuevosHechos);
+    log.info("[HechosRepository] Se guardaron {} hechos nuevos.", nuevosHechos.size());
+
     coleccionesRepository.actualizarColecciones();
   }
 

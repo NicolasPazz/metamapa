@@ -1,21 +1,24 @@
 package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.SolicitudDeEliminacionDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.http.ResponseEntity;
 
 @RequiredArgsConstructor
+@Getter
 public class FuenteTiempoReal implements IFuente {
 
   private final WebClient webClient;
+  private final Long id;
 
   @Override
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(

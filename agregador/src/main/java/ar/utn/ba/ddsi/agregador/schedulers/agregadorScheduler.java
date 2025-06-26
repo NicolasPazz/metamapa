@@ -16,11 +16,11 @@ public class agregadorScheduler {
 
     @PostConstruct
     public void onStartup() {
-        System.out.println("⌛ onStartup: Scheduler de agregador iniciado, esto puede tardar hasta dos minutos");
+        log.info("⌛ onStartup: Scheduler de agregador iniciado, esto puede tardar hasta dos minutos");
 
         try {
             agregadorService.actualizarHechos();
-            System.out.println("✅ onStartup: Scheduler de agregador finalizado, hechos actualizados correctamente");
+            log.info("✅ onStartup: Scheduler de agregador finalizado, hechos actualizados correctamente");
         } catch (Exception e) {
             log.error("❌ Error en onStartup al actualizar hechos", e);
         }

@@ -88,7 +88,7 @@ public class FuenteService implements IFuenteService {
     if (firstPage == null || firstPage.getData() == null) return List.of();
 
     List<HechoProxyDTO> todos = new ArrayList<>(firstPage.getData());
-    long lastPage = firstPage.getLast_page();
+    Long lastPage = firstPage.getLast_page();
 
     for (int page = 2; page <= lastPage; page++) {
       int finalPage = page;

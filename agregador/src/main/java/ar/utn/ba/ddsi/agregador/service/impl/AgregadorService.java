@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.ISolicitudesRepository;
@@ -11,7 +11,6 @@ import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.http.ResponseEntity;
 
 @Slf4j
 @Service
@@ -32,10 +31,6 @@ public class AgregadorService implements IAgregadorService {
         ).orElse(List.of());
 
         log.info("[Agregador] Cantidad de hechos nuevos obtenidos: {}", nuevosDTOs.size());
-
-        if (nuevosDTOs.isEmpty()) {
-          log.info("[Agregador] No hay hechos nuevos para guardar.");
-        }
 
         List<Hecho> hechosNuevos = nuevosDTOs.stream()
             .map(HechoDTO::mapToHecho)

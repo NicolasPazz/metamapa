@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion;
 
+import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import java.util.UUID;
