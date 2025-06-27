@@ -4,6 +4,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
+import java.util.ArrayList;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,13 +12,14 @@ import java.util.List;
 
 public class Coleccion {
   @Getter
-  private String handle;
+  private final String handle;
   @Getter
   @Setter
   private String titulo;
   @Getter
   @Setter
   private String descripcion;
+  @Setter
   private List<Hecho> hechos;
   @Getter
   @Setter
@@ -27,7 +29,7 @@ public class Coleccion {
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.criterioDePertenencia = criterioDePertenencia;
-    this.hechos = hechos.stream().filter(criterioDePertenencia::cumple).toList();
+    this.hechos = new ArrayList<>();
     this.handle = generarHandle(titulo);
   }
 

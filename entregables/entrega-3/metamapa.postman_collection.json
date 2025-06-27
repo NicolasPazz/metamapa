@@ -719,7 +719,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/solicitudes/?id=3",
+							"raw": "http://localhost:8084/api/admin/solicitudes/3",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -729,20 +729,14 @@
 								"api",
 								"admin",
 								"solicitudes",
-								""
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "3"
-								}
+								"3"
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "http://localhost:8084/api/solicitudes Copy",
+					"name": "http://localhost:8084/api/solicitudes Copy 2",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -751,7 +745,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"estado\": \"ACEPTADA\"\r\n}",
+							"raw": "{\r\n  \"id_fuente\": 1,\r\n  \"accion\": \"ELIMINAR\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -759,7 +753,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/solicitudes/?id=3",
+							"raw": "http://localhost:8084/api/admin/colecciones/{handle}/criterios/fuentes",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -768,14 +762,46 @@
 							"path": [
 								"api",
 								"admin",
-								"solicitudes",
-								""
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "3"
+								"colecciones",
+								"{handle}",
+								"criterios",
+								"fuentes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "http://localhost:8084/api/solicitudes Copy 2",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_fuente\": 1,\r\n  \"accion\": \"ELIMINAR\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
 								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/api/admin/colecciones/{handle}/criterios/fuentes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
+								"colecciones",
+								"{handle}",
+								"criterios",
+								"fuentes"
 							]
 						}
 					},

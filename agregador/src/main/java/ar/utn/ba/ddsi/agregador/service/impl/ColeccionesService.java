@@ -1,7 +1,10 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
+import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarFuentesColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
@@ -74,4 +77,31 @@ public class ColeccionesService {
     );
   }
 
+  public ResponseEntity<?> actualizarFuentesDeColeccion(String handle, ActualizarFuentesColeccionDTO dto) {
+    Coleccion coleccion = coleccionesRepository.findByHandle(handle);
+    if (coleccion == null) {
+      return ResponseEntity.badRequest().body("No se encontró la colección con handle: " + handle);
+    }
+
+    Criterio criterioExistente = coleccion.getCriterioDePertenencia();
+
+    if (!(criterioExistente instanceof CriterioFuente criterioFuente)) {
+      return ResponseEntity.badRequest().body("La colección no tiene un criterio de tipo CriterioFuente");
+    }
+
+    Long idFuente = dto.getIdFuente();
+    String accion = dto.getAccion().toLowerCase();
+
+    if ("AGREGAR".equals(accion)) {
+      criterioFuente.agregarExclusion(idFuente);
+      coleccionesRepository.actualizarColeccion(handle);
+      return ResponseEntity.ok("Fuente " + idFuente + " agregada a las exclusiones de la colección");
+    } else if ("ELIMINAR".equals(accion)) {
+      criterioFuente.eliminarExclusion(idFuente);
+      coleccionesRepository.actualizarColeccion(handle);
+      return ResponseEntity.ok("Fuente " + idFuente + " eliminada de las exclusiones de la colección");
+    } else {
+      return ResponseEntity.badRequest().body("Acción no válida. Usar 'AGREGAR' o 'ELIMINAR'");
+    }
+  }
 }
