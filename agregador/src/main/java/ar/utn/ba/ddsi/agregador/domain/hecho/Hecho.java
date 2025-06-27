@@ -63,10 +63,6 @@ public class Hecho {
     return this.getTitulo().equalsIgnoreCase(otroHecho.getTitulo());
   }
 
-  public void ocultar() {
-    this.estado = EstadoHecho.OCULTO;
-  }
-
   public boolean esVisible() {
     // TODO: verificar que no haya una solicitud de eliminacion aceptada
     return this.estado == EstadoHecho.VISIBLE;
@@ -89,7 +85,7 @@ public class Hecho {
   }
 
   public void transicionarEstado(EstadoHecho estado) {
-    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDateTime.now()));
+    this.transiciones.add(new TransicionEstadoHecho(estado));
     this.estado = estado;
   }
 

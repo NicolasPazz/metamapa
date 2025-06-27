@@ -5,6 +5,8 @@ import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IContribuyentesRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
@@ -15,16 +17,13 @@ import java.util.List;
 @Repository
 public class HechosRepository implements IHechosRepository {
 
-  private List<Hecho> hechos;
-  private final AtomicLong idGenerator;
-
+  private final List<Hecho> hechos = new ArrayList<>();
+  private final Map<Long, Hecho> hechosOcultos = new HashMap<>();
   private final IColeccionesRepository coleccionesRepository;
   private final IContribuyentesRepository contribuyentesRepository;
 
   public HechosRepository(IColeccionesRepository coleccionesRepository,
                           IContribuyentesRepository contribuyentesRepository) {
-    this.hechos = new ArrayList<>();
-    this.idGenerator = new AtomicLong(1);
     this.coleccionesRepository = coleccionesRepository;
     this.contribuyentesRepository = contribuyentesRepository;
   }
@@ -127,5 +126,23 @@ public class HechosRepository implements IHechosRepository {
   @Override
   public void delete(Hecho hecho) {
     this.hechos.remove(hecho);
+  }
+
+  @Override
+  public void ocultar(Long id)  {
+    Hecho hecho = findById(id);
+    if (hecho != null) {
+      hecho.transicionarEstado(EstadoHecho.OCULTO);
+      this.delete(hecho);
+      hechosOcultos.put(id, hecho);
+      log.info("[HechosRepository] Hecho {} ocultado.", id);
+    } else {
+      log.warn("[HechosRepository] No se encontró el hecho con ID {} para ocultar.", id);
+    }
+  }
+
+  @Override
+  public Boolean isOculto(Long id) {
+    return hechosOcultos.containsKey(id);
   }
 }

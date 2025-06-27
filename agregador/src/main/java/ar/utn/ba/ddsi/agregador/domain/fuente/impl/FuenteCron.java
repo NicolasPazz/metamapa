@@ -57,6 +57,6 @@ public class FuenteCron implements IFuente {
 
   @Override
   public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
-    return ResponseEntity.of(Optional.empty());
+    throw new UnsupportedOperationException("Not supported.");
   }
 }

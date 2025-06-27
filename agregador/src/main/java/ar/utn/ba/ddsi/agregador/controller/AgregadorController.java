@@ -96,14 +96,7 @@ public class AgregadorController {
      */
     @PostMapping("/solicitudes")
     public ResponseEntity<?> crear(@RequestBody SolicitudInputDTO solicitudInputDTO) {
-        try {
-            SolicitudOutputDTO respuesta = solicitudesService.crear(solicitudInputDTO);
-            return ResponseEntity.ok(respuesta);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("ERROR: " + e.getMessage());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body("ERROR inesperado: " + e.getMessage());
-        }
+        return solicitudesService.crear(solicitudInputDTO);
     }
 
     /*@PostMapping("/etiquetas")
