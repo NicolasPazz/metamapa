@@ -8,7 +8,7 @@ import java.util.List;
 public abstract class AAlgoritmoConsenso {
     private IHechosRepository hechosRepository;
 
-    protected abstract Boolean esConsensuado(Hecho hecho);
+    public abstract Boolean esConsensuado(Hecho hecho);
 
     public int contarApariciones(Hecho hecho, List<Hecho> hechos) {
         int cont = 0;
