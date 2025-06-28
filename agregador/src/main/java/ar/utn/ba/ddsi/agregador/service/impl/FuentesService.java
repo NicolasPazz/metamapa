@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.service.impl;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +31,8 @@ public class FuentesService {
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde,LocalDate fecha_acontecimiento_hasta,
-      String ubicacion) {
+      String ubicacion,
+      ModoNavegacion modo) {
     List<HechoDTO> resultados = new ArrayList<>();
     for (IFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
@@ -38,7 +40,7 @@ public class FuentesService {
           fuente.getAllHechosVisibles(categoria,
               fecha_reporte_desde, fecha_reporte_hasta,
               fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-              ubicacion).getBody()
+              ubicacion, modo).getBody()
       ).orElse(List.of());
       // Setear ID unico
       hechos.forEach(h -> {
@@ -108,7 +110,8 @@ public class FuentesService {
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
-      String ubicacion
+      String ubicacion,
+      ModoNavegacion modo
   ) {
     for (IFuente fuente : fuentes) {
       ResponseEntity<List<HechoDTO>> respuesta = fuente.getHechosColeccionByHandle(
@@ -116,7 +119,7 @@ public class FuentesService {
           categoria,
           fecha_reporte_desde, fecha_reporte_hasta,
           fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-          ubicacion
+          ubicacion, modo
       );
 
       List<HechoDTO> hechos = respuesta.getBody();
