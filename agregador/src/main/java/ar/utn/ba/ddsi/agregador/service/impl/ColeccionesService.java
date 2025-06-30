@@ -2,9 +2,11 @@ package ar.utn.ba.ddsi.agregador.service.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioCombinado;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarFuentesColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.ModificarCriterioColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
@@ -103,5 +105,22 @@ public class ColeccionesService {
     } else {
       return ResponseEntity.badRequest().body("Acción no válida. Usar 'AGREGAR' o 'ELIMINAR'");
     }
+  }
+
+  public ResponseEntity<?> modificarCriterioColeccion(String handle, ModificarCriterioColeccionDTO dto) {
+    Coleccion coleccion = coleccionesRepository.findByHandle(handle);
+    if (coleccion == null) {
+      return ResponseEntity.badRequest().body("No se encontro la coleccion con handle: " + handle);
+    }
+
+    Criterio nuevoCriterio = dto.getCriterio();
+    
+    // Actualizar el criterio de la coleccion
+    coleccion.setCriterioDePertenencia(nuevoCriterio);
+    
+    // Actualizar los hechos de la coleccion segun el nuevo criterio
+    coleccionesRepository.actualizarColeccion(handle);
+    
+    return ResponseEntity.ok("Criterio de la coleccion actualizado exitosamente");
   }
 }

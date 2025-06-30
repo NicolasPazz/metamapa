@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.agregador.controller;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarFuentesColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.ModificarCriterioColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
@@ -67,5 +68,13 @@ public class AdminController {
       @RequestBody ActualizarFuentesColeccionDTO dto
   ) {
     return coleccionesService.actualizarFuentesDeColeccion(handle, dto);
+  }
+
+  @PutMapping("/colecciones/{handle}/criterios")
+  public ResponseEntity<?> modificarCriterioColeccion(
+      @PathVariable String handle,
+      @RequestBody ModificarCriterioColeccionDTO dto
+  ) {
+    return coleccionesService.modificarCriterioColeccion(handle, dto);
   }
 }
