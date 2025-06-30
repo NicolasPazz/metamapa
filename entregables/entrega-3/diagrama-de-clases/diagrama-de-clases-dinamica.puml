@@ -1,0 +1,129 @@
+@startuml
+package "fuenteDinamica"{
+' Enumerations
+enum EstadoHecho {
+  VISIBLE
+  OCULTO
+}
+
+enum OrigenHecho {
+  DATASET
+  MANUAL
+  CONTRIBUYENTE
+}
+
+enum EstadoSolicitud {
+  PENDIENTE
+  ACEPTADO
+  ACEPTADO_SUGERIDO
+  RECHAZADO
+}
+
+enum TipoContenido {
+  AUDIO
+  IMAGEN
+  VIDEO
+}
+
+' Classes
+
+class Hecho {
+  - id: Long
+  - idSolicitud: Long
+  - data: DataHecho
+  - origen: OrigenHecho
+  - estado: EstadoHecho
+  - idContribuyente: Long
+  - etiquetas: List<String>
+  - multimediaPaths: List<ContenidoMultimedia>
+  - transiciones: List<TransicionEstadoHecho>
+  - ultimaActualizacion: LocalDateTime
+
+  + transicionarEstado(estado: EstadoHecho): void
+  + getTitulo(): String
+  + getDescripcion(): String
+  + getLatitud(): Double
+  + getLongitud(): Double
+  + getFechaDeAcontecimiento(): LocalDate
+  + getFechaDeCarga(): LocalDateTime
+  + getNombreCategoria(): String
+}
+
+class DataHecho {
+  - titulo: String
+  - descripcion: String
+  - nombreCategoria: String
+  - latitud: Double
+  - longitud: Double
+  - fechaDeAcontecimiento: LocalDate
+  - fechaDeCarga: LocalDateTime
+}
+
+'class ContenidoMultimedia {
+'  - pathArchivo: String
+'  - tipoContenido: TipoContenido
+
+' + ContenidoMultimedia(pathArchivo: String, tipoContenido: TipoContenido)
+'}
+
+class TransicionEstadoHecho {
+  - estadoFinal: EstadoHecho
+  - fechaTransicion: LocalDateTime
+}
+
+class SolicitudHecho {
+  - idSolicitud: Long
+  - idContribuyente: Long
+  - titulo: String
+  - descripcion: String
+  - categoria: String
+  - latitud: double
+  - longitud: double
+  - fechaDeAcontecimiento: LocalDate
+  - multimedia: List<ContenidoMultimediaInputDTO>
+  - fechaDeCargaSolicitud: LocalDateTime
+  - estado: EstadoSolicitud
+  - sugerencia: String
+  - transiciones: List<TransicionEstadoSolicitud>
+}
+
+class TransicionEstadoSolicitud {
+  - estadoSolicitud: EstadoSolicitud
+  - fecha: LocalDate
+
+  + TransicionEstadoSolicitud(estadoSolicitud: EstadoSolicitud)
+}
+
+class Contribuyente {
+  - id: Long
+  - nombre: String
+  - apellido: String
+  - fechaDeNacimiento: LocalDate
+
+  + esAnonimo(): boolean
+  + subirHecho(hecho: Hecho): void
+}
+
+
+
+Hecho "1" *-- "1" DataHecho
+Hecho "1" o-- "*" ContenidoMultimedia
+Hecho "1" o-- "*" TransicionEstadoHecho
+Hecho   --> OrigenHecho
+TransicionEstadoHecho --> EstadoHecho
+
+''SolicitudHecho "1" o-- "*" ContenidoMultimediaInputDTO
+SolicitudHecho "1" o-- "*" TransicionEstadoSolicitud
+SolicitudHecho  --> EstadoSolicitud
+
+
+ContenidoMultimedia --> TipoContenido
+
+' Asociación entre Contribuyente y SolicitudHecho (1 a muchos)
+Contribuyente "1" -- "0..*" SolicitudHecho : hace >
+
+' Asociación entre SolicitudHecho y Hecho (0..1 a muchos)
+SolicitudHecho "0..1" -- "0..*" Hecho : genera >
+
+}
+@enduml

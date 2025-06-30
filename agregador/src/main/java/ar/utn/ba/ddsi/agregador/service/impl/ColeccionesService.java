@@ -1,18 +1,27 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
+import ar.utn.ba.ddsi.agregador.domain.coleccion.TipoAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarColeccionInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarFuentesColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.CrearColeccionInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
+
+import ar.utn.ba.ddsi.agregador.factory.CriterioDePertenenciaFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,4 +113,89 @@ public class ColeccionesService {
       return ResponseEntity.badRequest().body("Acción no válida. Usar 'AGREGAR' o 'ELIMINAR'");
     }
   }
+
+  public ResponseEntity<?> crearColeccion(CrearColeccionInputDTO dto){
+      Criterio criterio = null;
+
+      if (dto.getCriterioDePertenencia() != null) {
+        criterio = CriterioDePertenenciaFactory.crearCriterioDesdeDTO(dto.getCriterioDePertenencia());
+      }
+      TipoAlgoritmoConsenso tipoAlgoritmoConsenso = parsearAlgoritmo(dto.getAlgoritmoConsenso());
+
+      Coleccion coleccion = new Coleccion(
+              dto.getTitulo(),
+              dto.getDescripcion(),
+              criterio/*,
+              tipoAlgoritmoConsenso*/ //agregar en constructor de coleccion
+      );
+
+      coleccionesRepository.save(coleccion);
+      coleccionesRepository.actualizarColeccion(coleccion.getHandle());
+      return ResponseEntity.ok("Coleccion creada correctamente.");
+  }
+
+  public ResponseEntity<?> actualizarColeccion(String handle, ActualizarColeccionInputDTO dto){
+      Coleccion coleccion = coleccionesRepository.findByHandle(handle);
+      if(coleccion == null){
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Colección no encontrada");
+      }
+      boolean criterioModificado = false;
+
+      //Titulo
+      if (dto.getTitulo() != null && !dto.getTitulo().isBlank()) {
+        coleccion.setTitulo(dto.getTitulo());
+      }
+      //Descripcion
+      if (dto.getDescripcion() != null && !dto.getDescripcion().isBlank()) {
+        coleccion.setDescripcion(dto.getDescripcion());
+      }
+
+      //CriterioPertenencia
+      if(dto.getCriterioDePertenencia() != null){
+        Criterio nuevoCriterio= CriterioDePertenenciaFactory.crearCriterioDesdeDTO(dto.getCriterioDePertenencia());
+        coleccion.setCriterioDePertenencia(nuevoCriterio);
+        criterioModificado = true;
+      }
+
+      //AlgoritmoConcenso
+      if(dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isBlank()){
+        TipoAlgoritmoConsenso tipo = parsearAlgoritmo(dto.getAlgoritmoConsenso());
+        //coleccion.setAlgoritmoConsenso(tipo); //TODO: descomentar al corregir el algoritmo de consenso
+      }
+
+      coleccionesRepository.update(coleccion);
+
+      if(criterioModificado){
+        coleccionesRepository.actualizarColeccion(handle);
+      }
+
+      return ResponseEntity.ok("Coleccion actualizada correctamente.");
+  }
+
+  public ResponseEntity<?> eliminarColeccion(String handle){
+      Coleccion coleccion = coleccionesRepository.findByHandle(handle);
+    if(coleccion == null){
+      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Colección no encontrada");
+    }
+
+    coleccionesRepository.delete(coleccion);
+    return ResponseEntity.ok("Coleccion eliminada correctamente.");
+  }
+
+  public TipoAlgoritmoConsenso parsearAlgoritmo(String valor){
+      if(valor == null) return null;
+
+      valor= valor.trim();
+      if(valor.isEmpty()){
+        throw new IllegalArgumentException("El algoritmo no puede ser una cadena vacia.");
+      }
+
+      try{
+        return TipoAlgoritmoConsenso.valueOf(valor.toUpperCase());
+      }catch(IllegalArgumentException e){
+        throw new IllegalArgumentException("El algoritmo no es valido, debe ser uno de:"+ Arrays.toString(TipoAlgoritmoConsenso.values()));
+      }
+  }
+
+
 }

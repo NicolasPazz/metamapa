@@ -33,6 +33,14 @@ public class ColeccionesRepository implements IColeccionesRepository {
     }
 
     @Override
+    public void update(Coleccion coleccion){
+        if (!colecciones.containsKey(coleccion.getHandle())) {
+            throw new IllegalArgumentException("No existe una colección con handle: " + coleccion.getHandle());
+        }
+        colecciones.put(coleccion.getHandle(), coleccion);
+    }
+
+    @Override
     public void delete(Coleccion coleccion) {
         colecciones.remove(coleccion.getHandle());
     }
