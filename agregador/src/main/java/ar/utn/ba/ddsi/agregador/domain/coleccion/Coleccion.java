@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion;
 
+import ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
@@ -24,6 +25,9 @@ public class Coleccion {
   @Getter
   @Setter
   private Criterio criterioDePertenencia;
+  @Getter
+  @Setter
+  private AAlgoritmoConsenso algoritmoConsenso;
 
   public Coleccion(String titulo, String descripcion, Criterio criterioDePertenencia) {
     this.titulo = titulo;
@@ -41,6 +45,12 @@ public class Coleccion {
   }
 
   public List<Hecho> getHechos() {
+    if(algoritmoConsenso == null) return this.getHechosSegunCriterio();
+    else return this.getHechosSegunCriterio().stream().filter(algoritmoConsenso::esConsensuado).toList();
+
+  }
+
+  public List<Hecho> getHechosSegunCriterio() {
     if (criterioDePertenencia == null) {
       return this.hechos.stream()
           .filter(Hecho::esVisible)
