@@ -145,4 +145,8 @@ public class FuentesService {
         .findFirst()
         .orElse(null);
   }
+
+  public int cantidadDeFuentes() {
+    return fuentes.size();
+  }
 }

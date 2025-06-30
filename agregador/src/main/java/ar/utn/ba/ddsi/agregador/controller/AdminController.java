@@ -1,13 +1,19 @@
 package ar.utn.ba.ddsi.agregador.controller;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarColeccionInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarFuentesColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.ModificarCriterioColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.CrearColeccionInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
 import java.time.LocalDate;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -77,4 +83,35 @@ public class AdminController {
   ) {
     return coleccionesService.modificarCriterioColeccion(handle, dto);
   }
+
+  //CREATE
+  @PostMapping("/colecciones")
+  public ResponseEntity<?> crearColeccion(@RequestBody @Valid CrearColeccionInputDTO dto){
+    return coleccionesService.crearColeccion(dto);
+  }
+
+  //READ
+  /**
+   *   GET /colecciones
+   *   Esta ruta expone todas las colecciones disponibles, independientemente del origen de sus fuentes.
+   */
+  @GetMapping("/colecciones")
+  public ResponseEntity<List<ColeccionDTO>> getAllColecciones() { return this.coleccionesService.getAll(); }
+
+  //UPDATE
+  @PatchMapping("/colecciones/{handle}")
+  public ResponseEntity<?> actualizarColeccion(
+          @PathVariable String handle,
+          @RequestBody ActualizarColeccionInputDTO dto
+  ){
+    return coleccionesService.actualizarColeccion(handle,dto);
+  }
+
+  //DELETE
+  @DeleteMapping("/colecciones/{handle}")
+  public ResponseEntity<?> eliminarColeccion(@PathVariable String handle){
+    return coleccionesService.eliminarColeccion(handle);
+  }
+
 }
+
