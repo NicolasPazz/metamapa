@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
+import ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
@@ -9,7 +10,10 @@ import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Optional;
+
+import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
@@ -22,6 +26,7 @@ public class ColeccionesService {
 
     private final IColeccionesRepository coleccionesRepository;
     private final FuentesService fuentesService;
+    private AAlgoritmoConsenso algoritmoConsenso;
 
     public ResponseEntity<List<ColeccionDTO>> getAll() {
       List<ColeccionDTO> locales = coleccionesRepository.findAll().stream()
@@ -103,5 +108,16 @@ public class ColeccionesService {
     } else {
       return ResponseEntity.badRequest().body("Acción no válida. Usar 'AGREGAR' o 'ELIMINAR'");
     }
+  }
+
+  public void actualizarHechosSegunConsenso() {
+      Collection<Coleccion> colecciones = this.coleccionesRepository.findAll();
+      int fuentesTotales = this.fuentesService.cantidadDeFuentes();
+
+      for (Coleccion coleccion : colecciones) {
+        coleccion.setearHechosConsensuados(fuentesTotales);
+        this.coleccionesRepository.save(coleccion);
+      }
+
   }
 }

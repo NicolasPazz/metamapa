@@ -4,6 +4,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.agregador.service.ISeederService;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.HechosService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
@@ -22,6 +23,7 @@ public class AgregadorController {
     private final SolicitudesService solicitudesService;
     private final HechosService hechosService;
     private final ColeccionesService coleccionesService;
+    private ISeederService seederService;
 
     /**
      * GET /hechos
@@ -103,4 +105,10 @@ public class AgregadorController {
     public ResponseEntity<HechoDTO> agregar(@RequestBody EtiquetaInputDTO etiquetaInputDTO) {
         // TODO: agregar etiquetas a hechos
     }*/
+
+    @GetMapping("/inicializar")
+    public Boolean inicializar() {
+        this.seederService.inicializar();
+        return true;
+    }
 }
