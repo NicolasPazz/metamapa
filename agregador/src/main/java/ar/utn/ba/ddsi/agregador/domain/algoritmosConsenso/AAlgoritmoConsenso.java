@@ -6,9 +6,8 @@ import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import java.util.List;
 
 public abstract class AAlgoritmoConsenso {
-    private IHechosRepository hechosRepository;
 
-    public abstract Boolean esConsensuado(Hecho hecho);
+    public abstract Boolean esConsensuado(Hecho hecho, int fuentesTotales, List<Hecho> hechos);
 
     public int contarApariciones(Hecho hecho, List<Hecho> hechos) {
         int cont = 0;
@@ -20,8 +19,7 @@ public abstract class AAlgoritmoConsenso {
         return cont;
     }
 
-    public Boolean aparicionesMayorA(Hecho hecho, int comparador) {
-        List<Hecho> hechosTotales = this.hechosRepository.findAll();
-        return this.contarApariciones(hecho, hechosTotales) >= comparador;
+    public Boolean aparicionesMayorA(Hecho hecho, int comparador, List<Hecho> hechos) {
+        return this.contarApariciones(hecho, hechos) >= comparador;
     }
 }

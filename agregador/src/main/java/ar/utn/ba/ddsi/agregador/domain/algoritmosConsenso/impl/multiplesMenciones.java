@@ -8,11 +8,10 @@ import java.util.List;
 import java.util.Objects;
 
 public class multiplesMenciones extends AAlgoritmoConsenso {
-    IHechosRepository hechosRepository;
 
     @Override
-    public Boolean esConsensuado(Hecho hecho) {
-        return this.aparicionesMayorA(hecho, 2) && !this.igualTituloDistintosAtributos(hechosRepository.findAll(), hecho);
+    public Boolean esConsensuado(Hecho hecho, int fuentesTotales, List<Hecho> hechos) {
+        return this.aparicionesMayorA(hecho, 2, hechos) && !this.igualTituloDistintosAtributos(hechos, hecho);
     }
 
     private Boolean igualTituloDistintosAtributos(List<Hecho> hechos, Hecho hecho) {

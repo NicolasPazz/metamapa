@@ -131,6 +131,7 @@ public class HechosRepository implements IHechosRepository {
     for (int i = 0; i < hechos.size(); i++) {
       if (hechos.get(i).getId().equals(hecho.getId())) {
         hechos.set(i, hecho);
+        coleccionesRepository.actualizarColecciones();
         return;
       }
     }
@@ -139,6 +140,7 @@ public class HechosRepository implements IHechosRepository {
   @Override
   public void delete(Hecho hecho) {
     this.hechos.remove(hecho);
+    coleccionesRepository.actualizarColecciones();
   }
 
   @Override

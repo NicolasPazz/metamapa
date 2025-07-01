@@ -28,13 +28,17 @@ public class Coleccion {
   @Getter
   @Setter
   private AAlgoritmoConsenso algoritmoConsenso;
+  @Getter
+  @Setter
+  private List<Hecho> hechosConsensuados;
 
-  public Coleccion(String titulo, String descripcion, Criterio criterioDePertenencia) {
+  public Coleccion(String titulo, String descripcion, Criterio criterioDePertenencia, AAlgoritmoConsenso algoritmoConsenso) {
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.criterioDePertenencia = criterioDePertenencia;
     this.hechos = new ArrayList<>();
     this.handle = generarHandle(titulo);
+    this.algoritmoConsenso = algoritmoConsenso;
   }
 
   public Coleccion(String titulo, String descripcion, List<Hecho> hechos) {
@@ -45,12 +49,6 @@ public class Coleccion {
   }
 
   public List<Hecho> getHechos() {
-    if(algoritmoConsenso == null) return this.getHechosSegunCriterio();
-    else return this.getHechosSegunCriterio().stream().filter(algoritmoConsenso::esConsensuado).toList();
-
-  }
-
-  public List<Hecho> getHechosSegunCriterio() {
     if (criterioDePertenencia == null) {
       return this.hechos.stream()
           .filter(Hecho::esVisible)
@@ -61,6 +59,14 @@ public class Coleccion {
         .filter(criterioDePertenencia::cumple)
         .filter(Hecho::esVisible)
         .toList();
+  }
+
+  public void setearHechosConsensuados(int fuentesTotales) {
+    this.setHechosConsensuados(this
+            .getHechos()
+            .stream()
+            .filter(hecho->this.algoritmoConsenso.esConsensuado(hecho, fuentesTotales, this.hechos))
+            .toList());
   }
 
   private String generarHandle(String titulo) {

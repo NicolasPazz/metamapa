@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
+import ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.TipoAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
@@ -14,8 +15,11 @@ import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import java.time.LocalDate;
+import java.util.Collection;
 import java.util.Arrays;
 import java.util.Optional;
+
+import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 
 import ar.utn.ba.ddsi.agregador.factory.CriterioDePertenenciaFactory;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +37,7 @@ public class ColeccionesService {
 
     private final IColeccionesRepository coleccionesRepository;
     private final FuentesService fuentesService;
+    private AAlgoritmoConsenso algoritmoConsenso;
 
     public ResponseEntity<List<ColeccionDTO>> getAll() {
       List<ColeccionDTO> locales = coleccionesRepository.findAll().stream()
@@ -116,6 +121,17 @@ public class ColeccionesService {
     }
   }
 
+  public void actualizarHechosSegunConsenso() {
+      Collection<Coleccion> colecciones = this.coleccionesRepository.findAll();
+      int fuentesTotales = this.fuentesService.cantidadDeFuentes();
+
+      for (Coleccion coleccion : colecciones) {
+        coleccion.setearHechosConsensuados(fuentesTotales);
+        this.coleccionesRepository.save(coleccion);
+      }
+
+  }
+
   public ResponseEntity<?> modificarCriterioColeccion(String handle, ModificarCriterioColeccionDTO dto) {
     Coleccion coleccion = coleccionesRepository.findByHandle(handle);
     if (coleccion == null) {
@@ -123,13 +139,13 @@ public class ColeccionesService {
     }
 
     Criterio nuevoCriterio = dto.getCriterio();
-    
+
     // Actualizar el criterio de la coleccion
     coleccion.setCriterioDePertenencia(nuevoCriterio);
-    
+
     // Actualizar los hechos de la coleccion segun el nuevo criterio
     coleccionesRepository.actualizarColeccion(handle);
-    
+
     return ResponseEntity.ok("Criterio de la coleccion actualizado exitosamente");
   }
   public ResponseEntity<?> crearColeccion(CrearColeccionInputDTO dto){

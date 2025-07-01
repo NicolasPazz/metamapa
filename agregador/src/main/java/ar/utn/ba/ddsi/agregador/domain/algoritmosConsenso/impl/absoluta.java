@@ -8,11 +8,9 @@ import ar.utn.ba.ddsi.agregador.service.impl.FuentesService;
 import java.util.List;
 
 public class absoluta extends AAlgoritmoConsenso {
-    private FuentesService fuentesService;
-    private final int fuentesTotales = this.fuentesService.cantidadDeFuentes();
 
     @Override
-    public Boolean esConsensuado(Hecho hecho) {
-        return this.aparicionesMayorA(hecho, fuentesTotales);
+    public Boolean esConsensuado(Hecho hecho, int fuentesTotales, List<Hecho> hechos) {
+        return this.aparicionesMayorA(hecho, fuentesTotales, hechos);
     }
 }
