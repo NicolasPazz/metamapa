@@ -17,6 +17,7 @@ import java.time.LocalDate;
 @Data
 public class CriterioInputDTO {
 
+    @JsonProperty("tipo")
     private String tipo;
 
     //agregar campos segun el tipo

@@ -49,9 +49,17 @@ public class ColeccionesRepository implements IColeccionesRepository {
     public void actualizarColeccion(String handle) {
         Coleccion coleccion = colecciones.get(handle);
         if (coleccion != null) {
-            Set<Hecho> hechosFiltrados = hechosRepository.getHechosPorCriterio(
-                coleccion.getCriterioDePertenencia()
-            );
+            Set<Hecho> hechosFiltrados;
+
+            if (coleccion.getCriterioDePertenencia() != null) {
+                hechosFiltrados = hechosRepository.getHechosPorCriterio(
+                        coleccion.getCriterioDePertenencia()
+                );
+            } else {
+                // Si no hay criterio, se agregan todos los hechos
+                hechosFiltrados = new HashSet<>(hechosRepository.findAll());
+            }
+
             coleccion.setHechos(new ArrayList<>(hechosFiltrados));
         }
     }

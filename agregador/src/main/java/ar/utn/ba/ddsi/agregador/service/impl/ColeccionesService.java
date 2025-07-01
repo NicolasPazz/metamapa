@@ -147,13 +147,17 @@ public class ColeccionesService {
 
     return ResponseEntity.ok("Criterio de la coleccion actualizado exitosamente");
   }
+
+
   public ResponseEntity<?> crearColeccion(CrearColeccionInputDTO dto){
       Criterio criterio = null;
 
       if (dto.getCriterioDePertenencia() != null) {
         criterio = criterioDePertenenciaFactory.crearCriterioDesdeDTO(dto.getCriterioDePertenencia());
       }
+
       AAlgoritmoConsenso algoritmoConsenso = null;
+
       if (dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isBlank()) {
           algoritmoConsenso = algoritmoConsensoFactory.crearAlgoritmo(dto.getAlgoritmoConsenso().toUpperCase());
       }
