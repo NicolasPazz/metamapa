@@ -1,10 +1,8 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.AAlgoritmoConsenso;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.TipoAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioCombinado;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarColeccionInputDTO;
@@ -16,11 +14,9 @@ import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.Arrays;
 import java.util.Optional;
 
-import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
-
+import ar.utn.ba.ddsi.agregador.factory.AAlgoritmoDeConsensoFactory;
 import ar.utn.ba.ddsi.agregador.factory.CriterioDePertenenciaFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -37,7 +33,10 @@ public class ColeccionesService {
 
     private final IColeccionesRepository coleccionesRepository;
     private final FuentesService fuentesService;
-    private AAlgoritmoConsenso algoritmoConsenso;
+    //private AAlgoritmoConsenso algoritmoConsenso;
+    private final AAlgoritmoDeConsensoFactory algoritmoConsensoFactory;
+    private final CriterioDePertenenciaFactory criterioDePertenenciaFactory;
+
 
     public ResponseEntity<List<ColeccionDTO>> getAll() {
       List<ColeccionDTO> locales = coleccionesRepository.findAll().stream()
@@ -152,15 +151,18 @@ public class ColeccionesService {
       Criterio criterio = null;
 
       if (dto.getCriterioDePertenencia() != null) {
-        criterio = CriterioDePertenenciaFactory.crearCriterioDesdeDTO(dto.getCriterioDePertenencia());
+        criterio = criterioDePertenenciaFactory.crearCriterioDesdeDTO(dto.getCriterioDePertenencia());
       }
-      TipoAlgoritmoConsenso tipoAlgoritmoConsenso = parsearAlgoritmo(dto.getAlgoritmoConsenso());
-
+      AAlgoritmoConsenso algoritmoConsenso = null;
+      if (dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isBlank()) {
+          algoritmoConsenso = algoritmoConsensoFactory.crearAlgoritmo(dto.getAlgoritmoConsenso().toUpperCase());
+      }
+      // Si es null o vacío, algoritmoConsenso queda null
       Coleccion coleccion = new Coleccion(
               dto.getTitulo(),
               dto.getDescripcion(),
-              criterio/*,
-              tipoAlgoritmoConsenso*/ //agregar en constructor de coleccion
+              criterio,
+              algoritmoConsenso
       );
 
       coleccionesRepository.save(coleccion);
@@ -186,15 +188,15 @@ public class ColeccionesService {
 
       //CriterioPertenencia
       if(dto.getCriterioDePertenencia() != null){
-        Criterio nuevoCriterio= CriterioDePertenenciaFactory.crearCriterioDesdeDTO(dto.getCriterioDePertenencia());
+        Criterio nuevoCriterio= criterioDePertenenciaFactory.crearCriterioDesdeDTO(dto.getCriterioDePertenencia());
         coleccion.setCriterioDePertenencia(nuevoCriterio);
         criterioModificado = true;
       }
 
       //AlgoritmoConcenso
       if(dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isBlank()){
-        TipoAlgoritmoConsenso tipo = parsearAlgoritmo(dto.getAlgoritmoConsenso());
-        //coleccion.setAlgoritmoConsenso(tipo); //TODO: descomentar al corregir el algoritmo de consenso
+        AAlgoritmoConsenso algoritmo = algoritmoConsensoFactory.crearAlgoritmo(dto.getAlgoritmoConsenso().toUpperCase());
+        coleccion.setAlgoritmoConsenso(algoritmo);
       }
 
       coleccionesRepository.update(coleccion);
@@ -216,7 +218,7 @@ public class ColeccionesService {
     return ResponseEntity.ok("Coleccion eliminada correctamente.");
   }
 
-  public TipoAlgoritmoConsenso parsearAlgoritmo(String valor){
+  /*public TipoAlgoritmoConsenso parsearAlgoritmo(String valor){
       if(valor == null) return null;
 
       valor= valor.trim();
@@ -229,7 +231,7 @@ public class ColeccionesService {
       }catch(IllegalArgumentException e){
         throw new IllegalArgumentException("El algoritmo no es valido, debe ser uno de:"+ Arrays.toString(TipoAlgoritmoConsenso.values()));
       }
-  }
+  }*/
 
 
 }

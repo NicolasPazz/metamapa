@@ -11,7 +11,7 @@ import java.util.Arrays;
 @Component
 public class CriterioDePertenenciaFactory {
 
-    public static Criterio crearCriterioDesdeDTO(CriterioInputDTO dto) {
+    public Criterio crearCriterioDesdeDTO(CriterioInputDTO dto) {
         if (dto.getTipo() != null && dto.getTipo().trim().isEmpty()){
             throw new IllegalArgumentException("Debe especificar el tipo de Criterio");
         }
