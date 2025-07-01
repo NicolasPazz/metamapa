@@ -16,7 +16,7 @@ public class multiplesMenciones extends AAlgoritmoConsenso {
 
     private Boolean igualTituloDistintosAtributos(List<Hecho> hechos, Hecho hecho) {
         for(Hecho vHecho : hechos) {
-            if (Objects.equals(vHecho.getTitulo(), hecho.getTitulo()) && !Objects.equals(vHecho.getData(), hecho.getData())) {
+            if (vHecho.getTitulo() == hecho.getTitulo() && vHecho.getData() != hecho.getData()) {
                 return true;
             }
         }
