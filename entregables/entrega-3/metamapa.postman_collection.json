@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "7471a79b-0e7d-4999-a8d0-6e21349e4d1b",
+		"_postman_id": "01aa08ce-c248-4553-aab3-a08fd17f40fd",
 		"name": "metamapa",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "45379907",
-		"_collection_link": "https://matias-5678213.postman.co/workspace/a47de49b-9d4f-4fac-8d77-ffc48683ec3d/collection/45379907-7471a79b-0e7d-4999-a8d0-6e21349e4d1b?action=share&source=collection_link&creator=45379907"
+		"_exporter_id": "33879579"
 	},
 	"item": [
 		{
@@ -104,7 +103,7 @@
 											}
 										],
 										"url": {
-											"raw": "https://api-ddsi.disilab.ar/public/api/desastres/10",
+											"raw": "https://api-ddsi.disilab.ar/public/api/desastres/:id",
 											"protocol": "https",
 											"host": [
 												"api-ddsi",
@@ -115,7 +114,13 @@
 												"public",
 												"api",
 												"desastres",
-												"10"
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "10"
+												}
 											]
 										}
 									},
@@ -372,7 +377,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "http://localhost:8086/api/colecciones/desastres-naturales-ar-2025-474f6e65/hechos",
+									"raw": "http://localhost:8086/api/colecciones/:handle/hechos",
 									"protocol": "http",
 									"host": [
 										"localhost"
@@ -381,8 +386,14 @@
 									"path": [
 										"api",
 										"colecciones",
-										"desastres-naturales-ar-2025-474f6e65",
+										":handle",
 										"hechos"
+									],
+									"variable": [
+										{
+											"key": "handle",
+											"value": "desastres-naturales-ar-2025-474f6e65"
+										}
 									]
 								}
 							},
@@ -563,7 +574,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8084/api/colecciones/handle/hechos",
+							"raw": "http://localhost:8084/api/colecciones/:handle/hechos?modo=CURADA",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -572,7 +583,75 @@
 							"path": [
 								"api",
 								"colecciones",
-								"handle",
+								":handle",
+								"hechos"
+							],
+							"query": [
+								{
+									"key": "categoria",
+									"value": "Incendio",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "ubicacion",
+									"value": "-31.42,-64.19",
+									"disabled": true
+								},
+								{
+									"key": "modo",
+									"value": "CURADA"
+								}
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "coleccion-de-ejemplo-2438c2ef"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Coleccion by Handle (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/admin/colecciones/:handle/hechos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
+								"colecciones",
+								":handle",
 								"hechos"
 							],
 							"query": [
@@ -606,63 +685,11 @@
 									"value": "-31.42,-64.19",
 									"disabled": true
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Coleccion by Handle (Admin)",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/handle/hechos",
-							"protocol": "http",
-							"host": [
-								"localhost"
 							],
-							"port": "8084",
-							"path": [
-								"api",
-								"admin",
-								"colecciones",
-								"handle",
-								"hechos"
-							],
-							"query": [
+							"variable": [
 								{
-									"key": "categoria",
-									"value": "Incendio",
-									"disabled": true
-								},
-								{
-									"key": "fecha_reporte_desde",
-									"value": "01-01-0001",
-									"disabled": true
-								},
-								{
-									"key": "fecha_reporte_hasta",
-									"value": "31-12-9999",
-									"disabled": true
-								},
-								{
-									"key": "fecha_acontecimiento_desde",
-									"value": "01-01-0001",
-									"disabled": true
-								},
-								{
-									"key": "fecha_acontecimiento_hasta",
-									"value": "31-12-9999",
-									"disabled": true
-								},
-								{
-									"key": "ubicacion",
-									"value": "-31.42,-64.19",
-									"disabled": true
+									"key": "handle",
+									"value": ""
 								}
 							]
 						}
@@ -719,7 +746,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/solicitudes/3",
+							"raw": "http://localhost:8084/api/admin/solicitudes/:id",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -729,7 +756,13 @@
 								"api",
 								"admin",
 								"solicitudes",
-								"3"
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
 							]
 						}
 					},
@@ -753,7 +786,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/{handle}/criterios/fuentes",
+							"raw": "http://localhost:8084/api/admin/colecciones/:handle/criterios/fuentes",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -763,9 +796,15 @@
 								"api",
 								"admin",
 								"colecciones",
-								"{handle}",
+								":handle",
 								"criterios",
 								"fuentes"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "desastres-naturales-ar-2025-474f6e65"
+								}
 							]
 						}
 					},
@@ -789,7 +828,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/{handle}/criterios/fuentes",
+							"raw": "http://localhost:8084/api/admin/colecciones/:handle/criterios/fuentes",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -799,9 +838,15 @@
 								"api",
 								"admin",
 								"colecciones",
-								"{handle}",
+								":handle",
 								"criterios",
 								"fuentes"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "coleccion-de-ejemplo-b9cbbde4"
+								}
 							]
 						}
 					},
@@ -825,7 +870,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/coleccion-de-prueba-29898076",
+							"raw": "http://localhost:8084/api/admin/colecciones/:handle",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -835,7 +880,13 @@
 								"api",
 								"admin",
 								"colecciones",
-								"coleccion-de-prueba-29898076"
+								":handle"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "coleccion-de-ejemplo-b9cbbde4"
+								}
 							]
 						}
 					},
@@ -851,7 +902,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"titulo\": \"Colección de ejemplo\",\r\n  \"descripcion\": \"Esta es una colección de prueba sin criterio ni algoritmo\",\r\n  \"criterio_pertenencia\": null,\r\n  \"algoritmo_consenso\": null\r\n}\r\n",
+							"raw": "{\r\n  \"titulo\": \"Coleccion de ejemplo\",\r\n  \"descripcion\": \"Esta es una colección de prueba sin criterio ni algoritmo\",\r\n  \"criterio_pertenencia\": null,\r\n  \"algoritmo_consenso\": \"ABSOLUTA\"\r\n}\r\n",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -884,7 +935,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}\r\n",
+							"raw": "// {\r\n//   \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n//   \"criterio_pertenencia\": {\r\n//     \"tipo\": \"lugar\",\r\n//     \"latitud\": -38.825939, \r\n//     \"longitud\": -62.069268\r\n//   }\r\n// }\r\n\r\n{\r\n  \"descripcion\": \"Cambio algoritmo de consenso\",\r\n  \"algoritmo_consenso\": \"ABSOLUTA\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -892,7 +943,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/colecci-n-de-ejemplo-29899807",
+							"raw": "http://localhost:8084/api/admin/colecciones/:handle",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -902,7 +953,13 @@
 								"api",
 								"admin",
 								"colecciones",
-								"colecci-n-de-ejemplo-29899807"
+								":handle"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "coleccion-de-ejemplo-2438c2ef"
+								}
 							]
 						}
 					},
@@ -926,7 +983,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/colecci-n-de-ejemplo-29899807",
+							"raw": "http://localhost:8084/api/admin/colecciones/:handle",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -936,7 +993,13 @@
 								"api",
 								"admin",
 								"colecciones",
-								"colecci-n-de-ejemplo-29899807"
+								":handle"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "coleccion-de-ejemplo-b9cbbde4"
+								}
 							]
 						}
 					},
@@ -997,7 +1060,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/api/solicitudes/user/1",
+							"raw": "http://localhost:8081/api/solicitudes/user/:id",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1007,7 +1070,13 @@
 								"api",
 								"solicitudes",
 								"user",
-								"1"
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -1031,7 +1100,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8081/api/solicitudes/admin/1",
+							"raw": "http://localhost:8081/api/solicitudes/admin/:id",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1041,7 +1110,13 @@
 								"api",
 								"solicitudes",
 								"admin",
-								"1"
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
 							]
 						}
 					},
@@ -1079,7 +1154,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8081/api/solicitudes/1",
+							"raw": "http://localhost:8081/api/solicitudes/:id",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1088,7 +1163,13 @@
 							"path": [
 								"api",
 								"solicitudes",
-								"1"
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
 							]
 						}
 					},
