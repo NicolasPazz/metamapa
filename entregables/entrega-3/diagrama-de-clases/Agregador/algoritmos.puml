@@ -20,6 +20,10 @@ abstract AAlgoritmoConsenso {
         {abstract}+ esConsensuado(): Boolean
         + contarApariciones(hecho: Hecho, hechos: List<Hecho>): Int
         + aparicionesMayorA(hecho: Hecho, comparador: int, hechos: List<Hecho>)
+        - sonSimilares(h1: Hecho, h2: Hecho): Boolean
+        - igualesIgnoreCaseTrim(a: String, b: String): Boolean
+        - contarConTituloIgual(hecho: Hecho, hechos: List<Hecho>): Long
+        - tieneConflictosDeTitulo(hecho: Hecho, hechos: List<Hecho>)
 }
 
 class Absoluta extends AAlgoritmoConsenso {
@@ -32,7 +36,6 @@ class MayoriaSimple extends AAlgoritmoConsenso {
 
 class MultiplesMenciones extends AAlgoritmoConsenso {
         + esConsensuado(): Boolean
-        - igualTituloDistintosAtributos(): Boolean
 }
 
 Coleccion -->AAlgoritmoConsenso
