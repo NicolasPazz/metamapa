@@ -1,0 +1,7 @@
+<!-- IMPORTANTE: actualizar la url si se modifica el diagrama -->
+
+## Diagrama de Clases
+
+Diagrama generado a partir de `algoritmos.puml`:
+
+![https:](https://www.plantuml.com/plantuml/png/hLFDZjCm4BxdAQmzfIfzWGYjDhI7HGA1j1NtgJDaHpYUQ6Oi0TM-EsvQgDLakO1lzdpp_NZi1pKGIqEeHl3Ve4Ttr_Q2FNGiT-xeAXz0rMqveFV4qHqhTraRvuKCXNY7dr4C8qPFqBZjvRX0TgWPF9uO6lTaGh4lgaQM0YyKdY5s0PSAw9zP6_U1rDu-dZRti-gMesBK1DthI0Wz2zd05t0sqRQtPzMVXhLJD0Hvd0dKNnD6GzspGS2izpxQgd5VcBgYkqSxjzQhHKSJ9A9aXIbvVGw-cjt0sWqmxdct_vIPhjF9-m82tX84-WbIbrPUgWeEQfBB2s6B0Hz_mrxM3ikq9xftp04X5dAUeu6q8mYTlA3MqnmQDsLyipIprNHFfULhzqVumTBUS7WUCY9RaCPHj6NIAYSyFzlse1oIWSFlXh7Jl-TzFUMLSN95y4J36F0_qgPWD8QS6kCv_hzo5u-S-WHXF_sn7QbHDDRMX0x9M6_iN3_wPdC_bywGX-mg3U4N)
