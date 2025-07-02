@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
+
 import java.util.ArrayList;
 import java.util.UUID;
 import lombok.Getter;
@@ -41,13 +42,6 @@ public class Coleccion {
     this.algoritmoConsenso = algoritmoConsenso;
   }
 
-  public Coleccion(String titulo, String descripcion, List<Hecho> hechos) {
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.hechos = hechos;
-    this.handle = generarHandle(titulo);
-  }
-
   public List<Hecho> getHechos() {
     if (criterioDePertenencia == null) {
       return this.hechos.stream()
@@ -65,7 +59,7 @@ public class Coleccion {
     this.setHechosConsensuados(this
             .getHechos()
             .stream()
-            .filter(hecho->this.algoritmoConsenso.esConsensuado(hecho, fuentesTotales, this.hechos))
+            .filter(hecho -> this.algoritmoConsenso.esConsensuado(hecho, fuentesTotales, this.hechos))
             .toList());
   }
 

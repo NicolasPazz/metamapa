@@ -43,15 +43,27 @@ public class agregadorScheduler {
         }, "cron-refrescarHechosYColecciones").start();
     }
 
-    @Scheduled(cron = "* * 3 * * *")
+    /**
+     * Cron Job que actualiza los hechos consensuados de todas las colecciones
+     * Se ejecuta todos los días a las 3:00 AM
+     * Formato cron: "0 0 3 * * *" = segundo minuto hora día mes día_semana
+     */
+    @Scheduled(cron = "0 0 3 * * *")
     public void actualizarColeccionesSegunConsenso() {
-        new Thread(
-                () -> {
-                   try{ coleccionesService.actualizarHechosSegunConsenso();}
-                   catch (Exception e) {
-                       log.error("Error al actualizar colecciones");
-                   }
-                }
-        ).start();
+        new Thread(() -> {
+            try {
+                log.info("⌛ [Scheduler] Iniciando actualización de hechos consensuados de todas las colecciones...");
+                long startTime = System.currentTimeMillis();
+                
+                coleccionesService.actualizarHechosSegunConsenso();
+                
+                long endTime = System.currentTimeMillis();
+                long duration = endTime - startTime;
+                
+                log.info("✅ [Scheduler] Actualización de hechos consensuados finalizada correctamente en {} ms", duration);
+            } catch (Exception e) {
+                log.error("❌ [Scheduler] Error al actualizar hechos consensuados de las colecciones", e);
+            }
+        }, "cron-actualizarColeccionesSegunConsenso").start();
     }
 }

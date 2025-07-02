@@ -1,11 +1,17 @@
 package ar.utn.ba.ddsi.agregador.controller;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarColeccionInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarFuentesColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.ModificarCriterioColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.CrearColeccionInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
 import java.time.LocalDate;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +39,7 @@ public class AdminController {
    * @param fecha_acontecimiento_desde filtro opcional (formato: dd-MM-yyyy)
    * @param fecha_acontecimiento_hasta filtro opcional (formato: dd-MM-yyyy)
    * @param ubicacion                  filtro opcional por lat,long
+   * @param modo                       modo de navegación (IRRESTRICTA o CURADA)
    */
   @GetMapping("/colecciones/{handle}/hechos")
   public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
@@ -42,14 +49,15 @@ public class AdminController {
       @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
       @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
       @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
-      @RequestParam(required = false) String ubicacion
+      @RequestParam(required = false) String ubicacion,
+      @RequestParam(required = false) String modo
   ) {
     return coleccionesService.getHechosColeccionByHandle(
         handle,
         categoria,
         fecha_reporte_desde, fecha_reporte_hasta,
         fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-        ubicacion
+        ubicacion, modo
     );
   }
 
@@ -68,4 +76,43 @@ public class AdminController {
   ) {
     return coleccionesService.actualizarFuentesDeColeccion(handle, dto);
   }
+
+  @PutMapping("/colecciones/{handle}/criterios")
+  public ResponseEntity<?> modificarCriterioColeccion(
+      @PathVariable String handle,
+      @RequestBody ModificarCriterioColeccionDTO dto
+  ) {
+    return coleccionesService.modificarCriterioColeccion(handle, dto);
+  }
+
+  //CREATE
+  @PostMapping("/colecciones")
+  public ResponseEntity<ColeccionDTO> crearColeccion(@RequestBody @Valid CrearColeccionInputDTO dto){
+    return coleccionesService.crearColeccion(dto);
+  }
+
+  //READ
+  /**
+   *   GET /colecciones
+   *   Esta ruta expone todas las colecciones disponibles, independientemente del origen de sus fuentes.
+   */
+  @GetMapping("/colecciones")
+  public ResponseEntity<List<ColeccionDTO>> getAllColecciones() { return this.coleccionesService.getAll(); }
+
+  //UPDATE
+  @PatchMapping("/colecciones/{handle}")
+  public ResponseEntity<?> actualizarColeccion(
+          @PathVariable String handle,
+          @RequestBody ActualizarColeccionInputDTO dto
+  ){
+    return coleccionesService.actualizarColeccion(handle, dto);
+  }
+
+  //DELETE
+  @DeleteMapping("/colecciones/{handle}")
+  public ResponseEntity<?> eliminarColeccion(@PathVariable String handle){
+    return coleccionesService.eliminarColeccion(handle);
+  }
+
 }
+

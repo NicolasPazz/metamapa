@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.service.impl;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
@@ -29,8 +30,7 @@ public class HechosService {
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,
             fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-            ubicacion
-        );
+            ubicacion);
 
         List<HechoDTO> externos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
 

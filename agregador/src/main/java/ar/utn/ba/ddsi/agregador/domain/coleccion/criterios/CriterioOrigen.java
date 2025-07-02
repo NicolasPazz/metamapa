@@ -3,7 +3,7 @@ package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 
-public class CriterioOrigen {
+public class CriterioOrigen implements Criterio{
   private OrigenHecho origen;
 
   public CriterioOrigen(OrigenHecho origen) {

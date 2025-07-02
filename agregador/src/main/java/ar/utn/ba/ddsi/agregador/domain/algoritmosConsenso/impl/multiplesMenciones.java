@@ -11,15 +11,7 @@ public class multiplesMenciones extends AAlgoritmoConsenso {
 
     @Override
     public Boolean esConsensuado(Hecho hecho, int fuentesTotales, List<Hecho> hechos) {
-        return this.aparicionesMayorA(hecho, 2, hechos) && !this.igualTituloDistintosAtributos(hechos, hecho);
+        return this.aparicionesMayorA(hecho, 2, hechos) && !tieneConflictosDeTitulo(hecho, hechos);
     }
 
-    private Boolean igualTituloDistintosAtributos(List<Hecho> hechos, Hecho hecho) {
-        for(Hecho vHecho : hechos) {
-            if (vHecho.getTitulo() == hecho.getTitulo() && vHecho.getData() != hecho.getData()) {
-                return true;
-            }
-        }
-        return false;
-    }
 }
