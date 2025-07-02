@@ -574,7 +574,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8084/api/colecciones/:handle/hechos?modo=CURADA",
+							"raw": "http://localhost:8084/api/colecciones/:handle/hechos?modo=curada",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -619,13 +619,13 @@
 								},
 								{
 									"key": "modo",
-									"value": "CURADA"
+									"value": "curada"
 								}
 							],
 							"variable": [
 								{
 									"key": "handle",
-									"value": "coleccion-de-ejemplo-2438c2ef"
+									"value": "colecci-n-de-desastres-tecnol-gicos-e5ef7652"
 								}
 							]
 						}
@@ -902,7 +902,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"titulo\": \"Coleccion de ejemplo\",\r\n  \"descripcion\": \"Esta es una colección de prueba sin criterio ni algoritmo\",\r\n  \"criterio_pertenencia\": null,\r\n  \"algoritmo_consenso\": \"ABSOLUTA\"\r\n}\r\n",
+							"raw": "{\r\n  \"titulo\": \"Colección de desastres tecnológicos\",\r\n  \"descripcion\": \"Incluye hechos cuya categoría es 'desastre tecnológico - evento sanitario'\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"igualdad\",\r\n    \"cadena_a_comparar\": \"desastre tecnológico - evento sanitario\",\r\n    \"tipo_dato\": \"CATEGORIA\"\r\n  },\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -935,7 +935,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "// {\r\n//   \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n//   \"criterio_pertenencia\": {\r\n//     \"tipo\": \"lugar\",\r\n//     \"latitud\": -38.825939, \r\n//     \"longitud\": -62.069268\r\n//   }\r\n// }\r\n\r\n{\r\n  \"descripcion\": \"Cambio algoritmo de consenso\",\r\n  \"algoritmo_consenso\": \"ABSOLUTA\"\r\n}",
+							"raw": "// {\r\n//   \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n//   \"criterio_pertenencia\": {\r\n//     \"tipo\": \"lugar\",\r\n//     \"latitud\": -38.825939, \r\n//     \"longitud\": -62.069268\r\n//   }\r\n// }\r\n\r\n{\r\n  \"descripcion\": \"Cambio algoritmo de consenso\",\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -958,7 +958,7 @@
 							"variable": [
 								{
 									"key": "handle",
-									"value": "coleccion-de-ejemplo-2438c2ef"
+									"value": "colecci-n-de-desastres-tecnol-gicos-c4c03d97"
 								}
 							]
 						}
@@ -1020,7 +1020,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Inundación en el barrio\",\r\n  \"descripcion\": \"Las calles principales del barrio se inundaron tras la tormenta.\",\r\n  \"categoria\": \"Desastre Natural\",\r\n  \"latitud\": -34.6037,\r\n  \"longitud\": -58.3816,\r\n  \"fecha_de_acontecimiento\": \"2024-05-10\",\r\n  \"multimedia\": []\r\n}",
+							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Crisis sanitaria afecta a Tilcara, Jujuy\",\r\n  \"descripcion\": \"Grave crisis sanitaria ocurrió en las inmediaciones de Tilcara, Jujuy. El incidente afectando gravemente la infraestructura local. Se ha declarado estado de emergencia en la región para facilitar la asistencia.\",\r\n  \"categoria\": \"desastre tecnológico - evento sanitario\",\r\n  \"latitud\": -23.574039,\r\n  \"longitud\": -65.36991,\r\n  \"fecha_de_acontecimiento\": \"2013-11-11\",\r\n  \"multimedia\": []\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
