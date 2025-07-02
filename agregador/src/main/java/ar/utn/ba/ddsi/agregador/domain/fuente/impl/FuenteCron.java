@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import java.util.Optional;
 import lombok.Getter;
@@ -26,8 +27,10 @@ public class FuenteCron implements IFuente {
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
-      String ubicacion
-  ) { return ResponseEntity.ok(List.of()); }
+      String ubicacion,
+      ModoNavegacion modo) { 
+    return ResponseEntity.ok(List.of()); 
+  }
 
   @Override
   public ResponseEntity<List<HechoDTO>> getAllHechosNuevos() {
@@ -51,7 +54,8 @@ public class FuenteCron implements IFuente {
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
-      String ubicacion) {
+      String ubicacion,
+      ModoNavegacion modo) {
     return ResponseEntity.of(Optional.empty());
   }
 

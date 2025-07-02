@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -28,7 +29,8 @@ public class FuenteTiempoReal implements IFuente {
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
-      String ubicacion) {
+      String ubicacion,
+      ModoNavegacion modo) {
     List<HechoDTO> hechos = webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/hechos")
@@ -38,6 +40,7 @@ public class FuenteTiempoReal implements IFuente {
             .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
             .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
             .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
+            .queryParamIfPresent("modo", Optional.ofNullable(modo))
             .build())
         .retrieve()
         .bodyToFlux(HechoDTO.class)
@@ -68,7 +71,8 @@ public class FuenteTiempoReal implements IFuente {
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
-      String ubicacion) {
+      String ubicacion,
+      ModoNavegacion modo) {
     List<HechoDTO> hechos = webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path(String.format("/colecciones/%s/hechos", handle))
@@ -78,6 +82,7 @@ public class FuenteTiempoReal implements IFuente {
             .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
             .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
             .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
+            .queryParamIfPresent("modo", Optional.ofNullable(modo))
             .build(handle))
         .retrieve()
         .bodyToFlux(HechoDTO.class)
@@ -86,7 +91,6 @@ public class FuenteTiempoReal implements IFuente {
 
     return ResponseEntity.ok(hechos);
   }
-
 
   @Override
   public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
