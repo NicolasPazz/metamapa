@@ -55,7 +55,7 @@ public class FuenteCron implements IFuente {
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
       String ubicacion,
-      ModoNavegacion modo) {
+      String modo) {
     return ResponseEntity.of(Optional.empty());
   }
 

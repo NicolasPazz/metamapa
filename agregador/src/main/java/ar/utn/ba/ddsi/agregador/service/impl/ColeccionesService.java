@@ -18,6 +18,7 @@ import java.util.Collection;
 import java.util.Optional;
 import ar.utn.ba.ddsi.agregador.factory.AAlgoritmoDeConsensoFactory;
 import ar.utn.ba.ddsi.agregador.factory.CriterioDePertenenciaFactory;
+import ar.utn.ba.ddsi.agregador.service.IColeccionesService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -62,15 +63,18 @@ public class ColeccionesService implements IColeccionesService {
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
       String ubicacion,
-      ModoNavegacion modo) {
+      String modo) {
     // Primero, buscar en local
     Coleccion local = coleccionesRepository.findByHandle(handle);
 
     if (local != null) {
-      // Determinar el modo de navegación a usar
-      ModoNavegacion modoNavegacion = modo != null ? modo : ModoNavegacion.IRRESTRICTA;
-      
-      List<Hecho> hechos = local.getHechos(modoNavegacion).stream()
+      List<Hecho> hechos;
+
+      if (modo.equalsIgnoreCase(ModoNavegacion.CURADA.name())) {
+        hechos = local.getHechosConsensuados();
+      }
+
+      hechos = local.getHechos().stream()
           .filter(h -> categoria == null || (h.getCategoria() != null &&
               h.getCategoria().getNombre() != null &&
               h.getCategoria().getNombre().toLowerCase().contains(categoria.toLowerCase())))
@@ -127,6 +131,7 @@ public class ColeccionesService implements IColeccionesService {
     }
   }
 
+  @Override
   public void actualizarHechosSegunConsenso() {
       Collection<Coleccion> colecciones = this.coleccionesRepository.findAll();
       int fuentesTotales = this.fuentesService.cantidadDeFuentes();
@@ -138,6 +143,7 @@ public class ColeccionesService implements IColeccionesService {
 
   }
 
+  @Override
   public ResponseEntity<?> modificarCriterioColeccion(String handle, ModificarCriterioColeccionDTO dto) {
     Coleccion coleccion = coleccionesRepository.findByHandle(handle);
     if (coleccion == null) {
@@ -155,8 +161,8 @@ public class ColeccionesService implements IColeccionesService {
     return ResponseEntity.ok("Criterio de la coleccion actualizado exitosamente");
   }
 
-
-  public ResponseEntity<?> crearColeccion(CrearColeccionInputDTO dto){
+  @Override
+  public ResponseEntity<ColeccionDTO> crearColeccion(CrearColeccionInputDTO dto){
       Criterio criterio = null;
 
       if (dto.getCriterioDePertenencia() != null) {
@@ -178,9 +184,10 @@ public class ColeccionesService implements IColeccionesService {
 
       coleccionesRepository.save(coleccion);
       coleccionesRepository.actualizarColeccion(coleccion.getHandle());
-      return ResponseEntity.ok("Coleccion creada correctamente.");
+      return ResponseEntity.ok(coleccion.mapToDTO());
   }
 
+  @Override
   public ResponseEntity<?> actualizarColeccion(String handle, ActualizarColeccionInputDTO dto){
       Coleccion coleccion = coleccionesRepository.findByHandle(handle);
       if(coleccion == null){
@@ -208,6 +215,10 @@ public class ColeccionesService implements IColeccionesService {
       if(dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isBlank()){
         AAlgoritmoConsenso algoritmo = algoritmoConsensoFactory.crearAlgoritmo(dto.getAlgoritmoConsenso().toUpperCase());
         coleccion.setAlgoritmoConsenso(algoritmo);
+
+        // Si se cambia el algoritmo, se actualizan los hechos consensuados
+        int fuentesTotales = this.fuentesService.cantidadDeFuentes();
+        coleccion.setearHechosConsensuados(fuentesTotales);
       }
 
       coleccionesRepository.update(coleccion);
@@ -219,6 +230,7 @@ public class ColeccionesService implements IColeccionesService {
       return ResponseEntity.ok("Coleccion actualizada correctamente.");
   }
 
+  @Override
   public ResponseEntity<?> eliminarColeccion(String handle){
       Coleccion coleccion = coleccionesRepository.findByHandle(handle);
     if(coleccion == null){

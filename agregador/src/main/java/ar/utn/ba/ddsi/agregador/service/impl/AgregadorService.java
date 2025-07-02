@@ -18,8 +18,6 @@ import org.springframework.stereotype.Service;
 public class AgregadorService implements IAgregadorService {
     private final FuentesService fuentesService;
     private final IHechosRepository hechosRepository;
-    private final ISolicitudesRepository solicitudesRepository;
-    private final DetectorDeSpam detectorDeSpam;
 
     @Override
     public void actualizarHechos() {

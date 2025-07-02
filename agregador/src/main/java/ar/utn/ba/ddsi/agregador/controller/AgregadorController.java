@@ -24,7 +24,7 @@ public class AgregadorController {
     private final SolicitudesService solicitudesService;
     private final HechosService hechosService;
     private final ColeccionesService coleccionesService;
-    private ISeederService seederService;
+    private final ISeederService seederService;
 
     /**
      * GET /hechos
@@ -86,7 +86,7 @@ public class AgregadorController {
         @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
         @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
         @RequestParam(required = false) String ubicacion,
-        @RequestParam(required = false) ModoNavegacion modo
+        @RequestParam(required = false) String modo
     ) {
         return coleccionesService.getHechosColeccionByHandle(
             handle,

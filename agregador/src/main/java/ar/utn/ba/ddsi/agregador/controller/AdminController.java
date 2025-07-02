@@ -9,12 +9,10 @@ import ar.utn.ba.ddsi.agregador.domain.dto.input.CrearColeccionInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.Value;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +50,7 @@ public class AdminController {
       @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
       @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
       @RequestParam(required = false) String ubicacion,
-      @RequestParam(required = false) ModoNavegacion modo
+      @RequestParam(required = false) String modo
   ) {
     return coleccionesService.getHechosColeccionByHandle(
         handle,
@@ -89,7 +87,7 @@ public class AdminController {
 
   //CREATE
   @PostMapping("/colecciones")
-  public ResponseEntity<?> crearColeccion(@RequestBody @Valid CrearColeccionInputDTO dto){
+  public ResponseEntity<ColeccionDTO> crearColeccion(@RequestBody @Valid CrearColeccionInputDTO dto){
     return coleccionesService.crearColeccion(dto);
   }
 
@@ -107,7 +105,7 @@ public class AdminController {
           @PathVariable String handle,
           @RequestBody ActualizarColeccionInputDTO dto
   ){
-    return coleccionesService.actualizarColeccion(handle,dto);
+    return coleccionesService.actualizarColeccion(handle, dto);
   }
 
   //DELETE

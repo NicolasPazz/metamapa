@@ -111,7 +111,7 @@ public class FuentesService {
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
       String ubicacion,
-      ModoNavegacion modo
+      String modo
   ) {
     for (IFuente fuente : fuentes) {
       ResponseEntity<List<HechoDTO>> respuesta = fuente.getHechosColeccionByHandle(

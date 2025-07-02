@@ -72,7 +72,7 @@ public class FuenteTiempoReal implements IFuente {
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
       String ubicacion,
-      ModoNavegacion modo) {
+      String modo) {
     List<HechoDTO> hechos = webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path(String.format("/colecciones/%s/hechos", handle))
