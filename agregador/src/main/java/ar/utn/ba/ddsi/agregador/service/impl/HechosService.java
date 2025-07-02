@@ -24,14 +24,13 @@ public class HechosService {
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
         LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
-        String ubicacion,
-        ModoNavegacion modo) {
+        String ubicacion) {
 
         ResponseEntity<List<HechoDTO>> respuestaExternos  = fuentesService.getAllHechosVisibles(
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,
             fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-            ubicacion, modo);
+            ubicacion);
 
         List<HechoDTO> externos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
 

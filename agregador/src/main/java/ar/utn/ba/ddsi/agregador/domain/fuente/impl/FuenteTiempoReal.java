@@ -29,8 +29,7 @@ public class FuenteTiempoReal implements IFuente {
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
-      String ubicacion,
-      ModoNavegacion modo) {
+      String ubicacion) {
     List<HechoDTO> hechos = webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/hechos")
@@ -40,7 +39,6 @@ public class FuenteTiempoReal implements IFuente {
             .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
             .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
             .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
-            .queryParamIfPresent("modo", Optional.ofNullable(modo))
             .build())
         .retrieve()
         .bodyToFlux(HechoDTO.class)

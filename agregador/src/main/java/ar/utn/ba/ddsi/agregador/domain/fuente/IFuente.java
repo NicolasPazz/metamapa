@@ -19,8 +19,7 @@ public interface IFuente {
                                                       LocalDate fecha_reporte_hasta,
                                                       LocalDate fecha_acontecimiento_desde,
                                                       LocalDate fecha_acontecimiento_hasta,
-                                                      String ubicacion,
-                                                      ModoNavegacion modo);
+                                                      String ubicacion);
 
   ResponseEntity<List<HechoDTO>> getAllHechosNuevos();
 

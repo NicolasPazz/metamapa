@@ -31,8 +31,7 @@ public class FuentesService {
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde,LocalDate fecha_acontecimiento_hasta,
-      String ubicacion,
-      ModoNavegacion modo) {
+      String ubicacion) {
     List<HechoDTO> resultados = new ArrayList<>();
     for (IFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
@@ -40,7 +39,7 @@ public class FuentesService {
           fuente.getAllHechosVisibles(categoria,
               fecha_reporte_desde, fecha_reporte_hasta,
               fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-              ubicacion, modo).getBody()
+              ubicacion).getBody()
       ).orElse(List.of());
       // Setear ID unico
       hechos.forEach(h -> {
