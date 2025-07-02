@@ -179,12 +179,12 @@ public class ColeccionesService implements IColeccionesService {
               algoritmoConsenso
       );
 
+      coleccionesRepository.save(coleccion);
+      coleccionesRepository.actualizarColeccion(coleccion.getHandle());
+
       // Setear hechos consensuados al crear la coleccion
       int fuentesTotales = this.fuentesService.cantidadDeFuentes();
       coleccion.setearHechosConsensuados(fuentesTotales);
-
-      coleccionesRepository.save(coleccion);
-      coleccionesRepository.actualizarColeccion(coleccion.getHandle());
 
       return ResponseEntity.ok(coleccion.mapToDTO());
   }
