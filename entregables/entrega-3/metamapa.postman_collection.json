@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "0d4c7e3e-6d46-4843-b5fc-b172ebb99232",
+		"_postman_id": "7471a79b-0e7d-4999-a8d0-6e21349e4d1b",
 		"name": "metamapa",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "43637471",
-		"_collection_link": "https://nicolaspaz-7741775.postman.co/workspace/Nicolas-Paz's-Workspace~290c9eb3-6d31-4de4-8a70-01f6b216242d/collection/43637471-0d4c7e3e-6d46-4843-b5fc-b172ebb99232?action=share&source=collection_link&creator=43637471"
+		"_exporter_id": "45379907",
+		"_collection_link": "https://matias-5678213.postman.co/workspace/a47de49b-9d4f-4fac-8d77-ffc48683ec3d/collection/45379907-7471a79b-0e7d-4999-a8d0-6e21349e4d1b?action=share&source=collection_link&creator=45379907"
 	},
 	"item": [
 		{
@@ -17,7 +17,7 @@
 							"name": "api ddsi",
 							"item": [
 								{
-									"name": "/public/api/login",
+									"name": "Login DDSI API",
 									"request": {
 										"method": "POST",
 										"header": [],
@@ -49,7 +49,7 @@
 									"response": []
 								},
 								{
-									"name": "https://api-ddsi.disilab.ar/public/api/desastres?per_page=100&page=1",
+									"name": "Get Desastres (Paginado)",
 									"request": {
 										"auth": {
 											"type": "noauth"
@@ -90,7 +90,7 @@
 									"response": []
 								},
 								{
-									"name": "https://api-ddsi.disilab.ar/public/api/desastres?per_page=100&page=1 Copy",
+									"name": "Get Desastre by ID",
 									"request": {
 										"auth": {
 											"type": "noauth"
@@ -122,7 +122,7 @@
 									"response": []
 								},
 								{
-									"name": "https://api-ddsi.disilab.ar/public/api/login?email={{ddsi_email}}&password={{ddsi_password}}",
+									"name": "Login DDSI API (Copy)",
 									"request": {
 										"auth": {
 											"type": "noauth"
@@ -159,7 +159,7 @@
 							]
 						},
 						{
-							"name": "http://localhost:8083/api/hechos/nuevos",
+							"name": "Get Nuevos Hechos ONG Proxy",
 							"event": [
 								{
 									"listen": "test",
@@ -237,7 +237,7 @@
 					"name": "metamapa",
 					"item": [
 						{
-							"name": "http://localhost:8086/api/hechos",
+							"name": "Get All Hechos MetaMapa",
 							"event": [
 								{
 									"listen": "test",
@@ -341,7 +341,7 @@
 							"response": []
 						},
 						{
-							"name": "http://localhost:8086/api/colecciones",
+							"name": "Get All Colecciones MetaMapa",
 							"request": {
 								"auth": {
 									"type": "noauth"
@@ -364,7 +364,7 @@
 							"response": []
 						},
 						{
-							"name": "http://localhost:8086/api/coleccion/handle/hechos",
+							"name": "Get Coleccion by Handle MetaMapa",
 							"request": {
 								"auth": {
 									"type": "noauth"
@@ -389,7 +389,7 @@
 							"response": []
 						},
 						{
-							"name": "http://localhost:8086/api/solicitudes",
+							"name": "Create Solicitud MetaMapa",
 							"request": {
 								"auth": {
 									"type": "noauth"
@@ -428,7 +428,7 @@
 			"name": "agregador",
 			"item": [
 				{
-					"name": "http://localhost:8084/api/hechos",
+					"name": "Get All Hechos Agregador",
 					"event": [
 						{
 							"listen": "test",
@@ -532,7 +532,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8084/api/colecciones",
+					"name": "Get All Colecciones Agregador",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -555,7 +555,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8084/api/coleccion/handle/hechos",
+					"name": "Get Coleccion by Handle Agregador",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -612,7 +612,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8084/api/coleccion/handle/hechos Copy",
+					"name": "Get Coleccion by Handle (Admin)",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -670,7 +670,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8084/api/solicitudes",
+					"name": "Create Solicitud Agregador",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -702,7 +702,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8084/api/solicitudes Copy",
+					"name": "Update Solicitud Estado (Admin)",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -736,7 +736,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8084/api/solicitudes Copy 2",
+					"name": "Update Fuentes Coleccion (Admin)",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -772,7 +772,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8084/api/solicitudes Copy 2",
+					"name": "Update Criterio Coleccion (Admin)",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -806,6 +806,141 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "Delete Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/api/admin/colecciones/coleccion-de-prueba-29898076",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
+								"colecciones",
+								"coleccion-de-prueba-29898076"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"titulo\": \"Colección de ejemplo\",\r\n  \"descripcion\": \"Esta es una colección de prueba sin criterio ni algoritmo\",\r\n  \"criterio_pertenencia\": null,\r\n  \"algoritmo_consenso\": null\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/api/admin/colecciones",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
+								"colecciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/api/admin/colecciones/colecci-n-de-ejemplo-29899807",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
+								"colecciones",
+								"colecci-n-de-ejemplo-29899807"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/api/admin/colecciones/colecci-n-de-ejemplo-29899807",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
+								"colecciones",
+								"colecci-n-de-ejemplo-29899807"
+							]
+						}
+					},
+					"response": []
 				}
 			]
 		},
@@ -813,7 +948,7 @@
 			"name": "dinamica",
 			"item": [
 				{
-					"name": "http://localhost:8081/api/solicitudes",
+					"name": "Create Solicitud Dinamica",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -845,7 +980,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8081/api/solicitudes/user/id?id",
+					"name": "Update Solicitud User Dinamica",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -879,7 +1014,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8081/api/solicitudes/admin/id?id",
+					"name": "Update Solicitud Admin Dinamica",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -913,7 +1048,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8081/api/solicitudes",
+					"name": "Get All Solicitudes Dinamica",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -936,7 +1071,7 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8081/api/solicitudes/id",
+					"name": "Get Solicitud by ID Dinamica",
 					"request": {
 						"auth": {
 							"type": "noauth"
@@ -960,7 +1095,111 @@
 					"response": []
 				},
 				{
-					"name": "http://localhost:8081/api/hechos/nuevos",
+					"name": "Get All Hechos Dinamica",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parseamos el body como JSON\r",
+									"let hechos = pm.response.json();\r",
+									"\r",
+									"// Total de hechos\r",
+									"let total = hechos.length;\r",
+									"\r",
+									"// Inicializamos el contador por origen según tu enum\r",
+									"let counts = {\r",
+									"  DATASET: 0,\r",
+									"  ONG: 0,\r",
+									"  METAMAPA: 0,\r",
+									"  CONTRIBUYENTE: 0,\r",
+									"  MANUAL: 0\r",
+									"};\r",
+									"\r",
+									"// Recorremos y contamos\r",
+									"hechos.forEach(h => {\r",
+									"  let o = h.origen;\r",
+									"  if (counts.hasOwnProperty(o)) {\r",
+									"    counts[o]++;\r",
+									"  } else {\r",
+									"    // opcional: para orígenes inesperados\r",
+									"    console.warn(`Origen desconocido: ${o}`);\r",
+									"  }\r",
+									"});\r",
+									"\r",
+									"// Mostramos en consola\r",
+									"console.log(`Total hechos: ${total}`);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  console.log(`${origen}: ${cnt}`);\r",
+									"});\r",
+									"\r",
+									"// (Opcional) Guardamos en variables de entorno\r",
+									"pm.environment.set(\"totalHechos\", total);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8081/api/hechos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8081",
+							"path": [
+								"api",
+								"hechos"
+							],
+							"query": [
+								{
+									"key": "categoria",
+									"value": "Incendio",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "ubicacion",
+									"value": "-31.42,-64.19",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Nuevos Hechos Dinamica",
 					"event": [
 						{
 							"listen": "test",
@@ -1038,7 +1277,7 @@
 			"name": "estatica",
 			"item": [
 				{
-					"name": "http://localhost:8082/api/hechos/nuevos",
+					"name": "Get Nuevos Hechos Estatica",
 					"event": [
 						{
 							"listen": "test",
