@@ -14,7 +14,7 @@ public abstract class AAlgoritmoConsenso {
         int cont = 0;
 
         for(Hecho vHecho : hechos) {
-            if(sonSimilares(hecho,vHecho)) cont++;
+            if(vHecho.equals(hecho)) cont++;
         }
 
         return cont;
