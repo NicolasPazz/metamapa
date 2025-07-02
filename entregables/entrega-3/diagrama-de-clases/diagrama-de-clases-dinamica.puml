@@ -59,12 +59,11 @@ class DataHecho {
   - fechaDeCarga: LocalDateTime
 }
 
-'class ContenidoMultimedia {
-'  - pathArchivo: String
-'  - tipoContenido: TipoContenido
+class ContenidoMultimedia {
+  - pathArchivo: String
+  - tipoContenido: TipoContenido
 
-' + ContenidoMultimedia(pathArchivo: String, tipoContenido: TipoContenido)
-'}
+}
 
 class TransicionEstadoHecho {
   - estadoFinal: EstadoHecho
@@ -90,18 +89,6 @@ class SolicitudHecho {
 class TransicionEstadoSolicitud {
   - estadoSolicitud: EstadoSolicitud
   - fecha: LocalDate
-
-  + TransicionEstadoSolicitud(estadoSolicitud: EstadoSolicitud)
-}
-
-class Contribuyente {
-  - id: Long
-  - nombre: String
-  - apellido: String
-  - fechaDeNacimiento: LocalDate
-
-  + esAnonimo(): boolean
-  + subirHecho(hecho: Hecho): void
 }
 
 
@@ -119,11 +106,9 @@ SolicitudHecho  --> EstadoSolicitud
 
 ContenidoMultimedia --> TipoContenido
 
-' Asociación entre Contribuyente y SolicitudHecho (1 a muchos)
-Contribuyente "1" -- "0..*" SolicitudHecho : hace >
 
 ' Asociación entre SolicitudHecho y Hecho (0..1 a muchos)
-SolicitudHecho "0..1" -- "0..*" Hecho : genera >
+SolicitudHecho "1 " -- "0..1 " Hecho : genera >
 
 }
 @enduml
