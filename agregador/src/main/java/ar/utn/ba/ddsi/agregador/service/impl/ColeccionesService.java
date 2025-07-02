@@ -68,13 +68,7 @@ public class ColeccionesService implements IColeccionesService {
     Coleccion local = coleccionesRepository.findByHandle(handle);
 
     if (local != null) {
-      List<Hecho> hechos;
-
-      if (modo.equalsIgnoreCase(ModoNavegacion.CURADA.name())) {
-        hechos = local.getHechosConsensuados();
-      }
-
-      hechos = local.getHechos().stream()
+      List<Hecho> hechos = local.getHechos().stream()
           .filter(h -> categoria == null || (h.getCategoria() != null &&
               h.getCategoria().getNombre() != null &&
               h.getCategoria().getNombre().toLowerCase().contains(categoria.toLowerCase())))
@@ -84,6 +78,14 @@ public class ColeccionesService implements IColeccionesService {
           .filter(h -> fecha_acontecimiento_desde == null || !h.getFechaDeAcontecimiento().isBefore(fecha_acontecimiento_desde))
           .filter(h -> fecha_acontecimiento_hasta == null || !h.getFechaDeAcontecimiento().isAfter(fecha_acontecimiento_hasta))
           .toList();
+
+      if (modo.equalsIgnoreCase(ModoNavegacion.CURADA.name())) {
+        // Filtrar hechos consensuados según el algoritmo de consenso
+        AAlgoritmoConsenso algoritmo = local.getAlgoritmoConsenso();
+        hechos = hechos.stream()
+            .filter(h -> algoritmo.esConsensuado(h, fuentesService.cantidadDeFuentes(), local.getHechos()))
+            .toList();
+      }
 
       List<HechoDTO> hechosDTO = hechos.stream()
           .map(Hecho::mapToDTO)
@@ -182,8 +184,13 @@ public class ColeccionesService implements IColeccionesService {
               algoritmoConsenso
       );
 
+      // Setear hechos consensuados al crear la coleccion
+      int fuentesTotales = this.fuentesService.cantidadDeFuentes();
+      coleccion.setearHechosConsensuados(fuentesTotales);
+
       coleccionesRepository.save(coleccion);
       coleccionesRepository.actualizarColeccion(coleccion.getHandle());
+
       return ResponseEntity.ok(coleccion.mapToDTO());
   }
 
