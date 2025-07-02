@@ -68,7 +68,10 @@ public class ColeccionesService implements IColeccionesService {
     Coleccion local = coleccionesRepository.findByHandle(handle);
 
     if (local != null) {
-      List<Hecho> hechos = local.getHechos().stream()
+      // Si el modo es CURADA, se obtienen los hechos consensuados
+      List<Hecho> hechos = modo.equalsIgnoreCase(ModoNavegacion.CURADA.name()) ? local.getHechosConsensuados() : local.getHechos();
+
+      List<Hecho> hechosFiltrados = hechos.stream()
           .filter(h -> categoria == null || (h.getCategoria() != null &&
               h.getCategoria().getNombre() != null &&
               h.getCategoria().getNombre().toLowerCase().contains(categoria.toLowerCase())))
@@ -79,15 +82,7 @@ public class ColeccionesService implements IColeccionesService {
           .filter(h -> fecha_acontecimiento_hasta == null || !h.getFechaDeAcontecimiento().isAfter(fecha_acontecimiento_hasta))
           .toList();
 
-      if (modo.equalsIgnoreCase(ModoNavegacion.CURADA.name())) {
-        // Filtrar hechos consensuados según el algoritmo de consenso
-        AAlgoritmoConsenso algoritmo = local.getAlgoritmoConsenso();
-        hechos = hechos.stream()
-            .filter(h -> algoritmo.esConsensuado(h, fuentesService.cantidadDeFuentes(), local.getHechos()))
-            .toList();
-      }
-
-      List<HechoDTO> hechosDTO = hechos.stream()
+      List<HechoDTO> hechosDTO = hechosFiltrados.stream()
           .map(Hecho::mapToDTO)
           .toList();
 
