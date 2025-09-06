@@ -4,9 +4,11 @@ import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import java.util.Collection;
 
 public interface IColeccionesRepository {
-    public Coleccion findByHandle(String handle);
-    public Collection<Coleccion> findAll();
-    public void save(Coleccion coleccion);
-    public void delete(Coleccion coleccion);
-    public void actualizarColecciones();
+     Coleccion findByHandle(String handle);
+     Collection<Coleccion> findAll();
+     void save(Coleccion coleccion);
+     void update(Coleccion coleccion);
+     void delete(Coleccion coleccion);
+     void actualizarColeccion(String handle);
+     void actualizarColecciones();
 }

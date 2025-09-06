@@ -1,0 +1,141 @@
+@startuml
+!theme plain
+
+skinparam package {
+    BackgroundColor #E8F4FD
+    BorderColor #4472C4
+    FontColor #1F4E79
+}
+
+skinparam component {
+    BackgroundColor #FFF2CC
+    BorderColor #D6B656
+    FontColor #7F6000
+}
+
+skinparam cloud {
+    BackgroundColor #F8CECC
+    BorderColor #B85450
+    FontColor #5F2C29
+}
+
+skinparam database {
+    BackgroundColor #E1D5E7
+    BorderColor #9673A6
+    FontColor #432D54
+}
+
+skinparam interface {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    FontColor #000000
+}
+
+title "Diagrama de Arquitectura - MetaMapa"
+
+' Servicios externos
+cloud "API Externa ONG" as external_ong
+cloud "API Externa MetaMapa" as external_metamapa
+
+' Interfaces expuestas
+interface "Hechos\n/api/hechos" as hechos_api
+interface "Hechos\n/api/hechos/nuevos" as hechos_nuevos_api
+
+' Modulo Proxy ONG
+package "Proxy ONG\n:8083" #FFE6CC {
+    component "FuenteController" as proxy_ong_controller
+    component "FuenteService" as proxy_ong_service
+    database "DB Hechos" as proxy_ong_hechos_db
+    
+    proxy_ong_controller .up.> hechos_nuevos_api : expone
+    proxy_ong_service --> proxy_ong_hechos_db
+    proxy_ong_controller --> proxy_ong_service
+}
+
+' Modulo Proxy MetaMapa
+package "Proxy MetaMapa\n:8086" #FFE6CC {
+    component "FuenteController" as proxy_metamapa_controller
+    component "FuenteService" as proxy_metamapa_service
+    
+    proxy_metamapa_controller .up.> hechos_api : expone
+    proxy_metamapa_controller --> proxy_metamapa_service
+}
+
+' Modulo Estatica
+package "Estatica\n:8082" {
+    component "FuenteController" as estatica_controller
+    component "FuenteService" as estatica_service
+    database "DB Hechos" as estatica_hechos_db
+    
+    estatica_controller .up.> hechos_nuevos_api : expone
+    estatica_controller --> estatica_service
+    estatica_service --> estatica_hechos_db
+}
+
+' Modulo Dinamica
+package "Dinamica\n:8081" {
+    component "FuenteController" as dinamica_controller
+    component "SolicitudesController" as dinamica_solicitudes_controller
+    component "FuenteService" as dinamica_service
+    component "SolicitudesService" as dinamica_solicitudes_service
+    database "DB Hechos" as dinamica_hechos_db
+    database "DB Solicitudes" as dinamica_solicitudes_db
+    database "DB Contribuyentes" as dinamica_contribuyentes_db
+    
+    dinamica_controller .up.> hechos_nuevos_api : expone
+    dinamica_controller --> dinamica_service
+    dinamica_solicitudes_controller --> dinamica_solicitudes_service
+    dinamica_service --> dinamica_hechos_db
+    dinamica_solicitudes_service --> dinamica_solicitudes_db
+    dinamica_solicitudes_service --> dinamica_contribuyentes_db
+    dinamica_solicitudes_service --> dinamica_service
+}
+
+' Modulo Agregador
+package "Agregador\n:8084" {
+    component "AgregadorController" as agregador_controller
+    component "AdminController" as admin_controller
+    component "AgregadorService" as agregador_service
+    component "HechosService" as agregador_hechos_service
+    component "ColeccionesService" as agregador_colecciones_service
+    component "SolicitudesService" as agregador_solicitudes_service
+    component "FuentesService" as agregador_fuentes_service
+    component "IdService" as agregador_id_service
+    component "DetectorDeSpam" as agregador_detector_spam
+    component "AgregadorScheduler" as agregador_scheduler
+    database "DB Hechos" as agregador_hechos_db
+    database "DB Colecciones" as agregador_colecciones_db
+    database "DB Solicitudes" as agregador_solicitudes_db
+    database "DB Contribuyentes" as agregador_contribuyentes_db
+    
+    agregador_controller --> agregador_hechos_service
+    agregador_controller --> agregador_colecciones_service
+    agregador_controller --> agregador_solicitudes_service
+    admin_controller --> agregador_colecciones_service
+    admin_controller --> agregador_solicitudes_service
+    agregador_service --> agregador_hechos_service
+    agregador_service --> agregador_colecciones_service
+    agregador_service --> agregador_hechos_db
+    agregador_service --> agregador_solicitudes_db
+    agregador_service --> agregador_detector_spam
+    agregador_solicitudes_service --> agregador_detector_spam
+    agregador_solicitudes_service --> agregador_id_service
+    agregador_solicitudes_service --> agregador_hechos_db
+    agregador_colecciones_service --> agregador_fuentes_service
+    agregador_hechos_service --> agregador_fuentes_service
+    agregador_hechos_service --> agregador_hechos_db
+    agregador_colecciones_service --> agregador_colecciones_db
+    agregador_solicitudes_service --> agregador_solicitudes_db
+    agregador_solicitudes_service --> agregador_contribuyentes_db
+    agregador_scheduler --> agregador_service
+}
+
+' Conexiones externas hacia proxies
+external_ong --> proxy_ong_service
+external_metamapa --> proxy_metamapa_service
+
+' Conexiones del Agregador consumiendo interfaces
+agregador_fuentes_service ..> hechos_api : consume
+agregador_fuentes_service ..> hechos_nuevos_api : consume
+
+@enduml

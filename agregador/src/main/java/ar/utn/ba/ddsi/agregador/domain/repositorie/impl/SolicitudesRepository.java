@@ -23,4 +23,18 @@ public class SolicitudesRepository implements ISolicitudesRepository {
   public List<SolicitudDeEliminacion> findAll() {
     return solicitudes;
   }
+
+  @Override
+  public SolicitudDeEliminacion findById(Long id) {
+    return solicitudes.stream()
+        .filter(s -> s.getId().equals(id))
+        .findFirst()
+        .orElse(null);
+  }
+
+  @Override
+  public void eliminar(Long id) {
+    solicitudes.removeIf(s -> s.getId().equals(id));
+  }
+
 }

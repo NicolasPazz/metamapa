@@ -6,11 +6,14 @@ import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 
+@Slf4j
 @Service
 public class FuenteService {
   private final WebClient webClient;
@@ -19,54 +22,79 @@ public class FuenteService {
     this.webClient = webClientBuilder.baseUrl(apiUrl).build();
   }
 
-  public Mono<List<HechoDTO>> getAllHechosVisibles(
+  public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       String categoria,
-      LocalDate fecha_reporte_desde,
-      LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde,
-      LocalDate fecha_acontecimiento_hasta,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
       String ubicacion
   ) {
-    return webClient
+    List<HechoDTO> hechos = webClient
         .get()
-        .uri(uriBuilder -> {
-          uriBuilder.path("/hechos");
-          if (categoria != null) uriBuilder.queryParam("categoria", categoria);
-          if (fecha_reporte_desde != null) uriBuilder.queryParam("fecha_reporte_desde", fecha_reporte_desde);
-          if (fecha_reporte_hasta != null) uriBuilder.queryParam("fecha_reporte_hasta", fecha_reporte_hasta);
-          if (fecha_acontecimiento_desde != null) uriBuilder.queryParam("fecha_acontecimiento_desde", fecha_acontecimiento_desde);
-          if (fecha_acontecimiento_hasta != null) uriBuilder.queryParam("fecha_acontecimiento_hasta", fecha_acontecimiento_hasta);
-          if (ubicacion != null) uriBuilder.queryParam("ubicacion", ubicacion);
-          return uriBuilder.build();
-        })
+        .uri(uriBuilder -> uriBuilder
+            .path("/hechos")
+            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
+            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
+            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
+            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
+            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
+            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
+            .build()
+        )
         .retrieve()
         .bodyToFlux(HechoDTO.class)
-        .collectList();
+        .collectList()
+        .block();
+
+    return ResponseEntity.of(Optional.ofNullable(hechos));
   }
 
-  public Mono<List<ColeccionDTO>> getAllColecciones() {
-    return webClient
+  public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
+    List<ColeccionDTO> colecciones = webClient
         .get()
         .uri("/colecciones")
         .retrieve()
         .bodyToFlux(ColeccionDTO.class)
-        .collectList();
+        .collectList()
+        .block();
+
+    return ResponseEntity.of(Optional.ofNullable(colecciones));
   }
 
-  public Mono<ColeccionDTO> getColeccionByHandle(String handle) {
-    return webClient
-        .get()
-        .uri("/colecciones/{handle}/hechos", handle)
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion
+  ) {
+    List<HechoDTO> hechos = webClient.get()
+        .uri(uriBuilder -> uriBuilder
+            .path(String.format("/colecciones/%s/hechos", handle))
+            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
+            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
+            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
+            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
+            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
+            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
+            .build(handle))
         .retrieve()
-        .bodyToMono(ColeccionDTO.class);
+        .bodyToFlux(HechoDTO.class)
+        .collectList()
+        .block();
+
+    return ResponseEntity.of(Optional.ofNullable(hechos));
   }
 
-  public Mono<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
-    return webClient
+  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
+    log.info("Creando solicitud de eliminacion: {}", solicitud);
+    SolicitudOutputDTO resultado = webClient
         .post()
         .uri("/solicitudes")
         .bodyValue(solicitud)
         .retrieve()
-        .bodyToMono(SolicitudOutputDTO.class);
+        .bodyToMono(SolicitudOutputDTO.class)
+        .block();
+
+    return ResponseEntity.of(Optional.ofNullable(resultado));
   }
 }

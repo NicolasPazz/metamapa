@@ -1,23 +1,20 @@
 package ar.utn.ba.ddsi.agregador.controller;
 
+import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.HechosServiceDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.input.EtiquetaInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.output.ColeccionOutputDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
-import ar.utn.ba.ddsi.agregador.domain.hecho.Etiqueta;
+import ar.utn.ba.ddsi.agregador.service.ISeederService;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.HechosService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
+
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 @RestController
@@ -27,6 +24,7 @@ public class AgregadorController {
     private final SolicitudesService solicitudesService;
     private final HechosService hechosService;
     private final ColeccionesService coleccionesService;
+    private final ISeederService seederService;
 
     /**
      * GET /hechos
@@ -42,27 +40,18 @@ public class AgregadorController {
      * @return lista de hechos visibles según los filtros
      */
     @GetMapping("/hechos")
-    public Mono<List<HechoDTO>> getAllHechosVisibles(
+    public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
         @RequestParam(required = false) String categoria,
-
-        @RequestParam(required = false)
-        @DateTimeFormat(pattern = "dd-MM-yyyy")
-        LocalDate fecha_reporte_desde,
-
-        @RequestParam(required = false)
-        @DateTimeFormat(pattern = "dd-MM-yyyy")
-        LocalDate fecha_reporte_hasta,
-
-        @RequestParam(required = false)
-        @DateTimeFormat(pattern = "dd-MM-yyyy")
-        LocalDate fecha_acontecimiento_desde,
-
-        @RequestParam(required = false)
-        @DateTimeFormat(pattern = "dd-MM-yyyy")
-        LocalDate fecha_acontecimiento_hasta,
-
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
         @RequestParam(required = false) String ubicacion) {
-        return hechosService.getAll(categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
+        return hechosService.getAll(
+            categoria,
+            fecha_reporte_desde, fecha_reporte_hasta,
+            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+            ubicacion);
     }
 
     /**
@@ -70,15 +59,40 @@ public class AgregadorController {
      *   Esta ruta expone todas las colecciones disponibles, independientemente del origen de sus fuentes.
      */
     @GetMapping("/colecciones")
-    public Mono<List<ColeccionDTO>> getAllColecciones() { return this.coleccionesService.getAll(); }
+    public ResponseEntity<List<ColeccionDTO>> getAllColecciones() { return this.coleccionesService.getAll(); }
 
     /**
-     * GET /colecciones/:identificador/hechos
-     *   Esta ruta, permite obtener los hechos asociados a una colección.
+     * GET /colecciones/:handle/hechos
+     * Esta ruta permite obtener los hechos asociados a una colección,
+     * aplicando filtros opcionales y seleccionando el modo de navegación.
+     *
+     * @param handle identificador de la colección
+     * @param categoria filtro opcional por categoría
+     * @param fecha_reporte_desde filtro opcional (formato: dd-MM-yyyy)
+     * @param fecha_reporte_hasta filtro opcional (formato: dd-MM-yyyy)
+     * @param fecha_acontecimiento_desde filtro opcional (formato: dd-MM-yyyy)
+     * @param fecha_acontecimiento_hasta filtro opcional (formato: dd-MM-yyyy)
+     * @param ubicacion filtro opcional por lat,long
+     * @param modo modo de navegación (IRRESTRICTA o CURADA)
      */
-    @GetMapping("/coleccion/{handle}/hechos")
-    public Mono<List<HechoDTO>> getColeccionByHandle(@PathVariable String handle) {
-        return this.coleccionesService.getByHandle(handle);
+    @GetMapping("/colecciones/{handle}/hechos")
+    public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+        @PathVariable String handle,
+        @RequestParam(required = false) String categoria,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
+        @RequestParam(required = false) String ubicacion,
+        @RequestParam(required = false) String modo
+    ) {
+        return coleccionesService.getHechosColeccionByHandle(
+            handle,
+            categoria,
+            fecha_reporte_desde, fecha_reporte_hasta,
+            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+            ubicacion, modo
+        );
     }
 
     /**
@@ -87,17 +101,17 @@ public class AgregadorController {
      */
     @PostMapping("/solicitudes")
     public ResponseEntity<?> crear(@RequestBody SolicitudInputDTO solicitudInputDTO) {
-        // y si el hecho pertenece a otra instancia metamapa quien la maneja?
-        try {
-            SolicitudOutputDTO respuesta = solicitudesService.crear(solicitudInputDTO);
-            return ResponseEntity.ok(respuesta);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body("ERROR: " + e.getMessage());
-        }
+        return solicitudesService.crear(solicitudInputDTO);
     }
 
     /*@PostMapping("/etiquetas")
-    public ResponseEntity<HechoOutputDTO> agregar(@RequestBody EtiquetaInputDTO etiquetaInputDTO) {
+    public ResponseEntity<HechoDTO> agregar(@RequestBody EtiquetaInputDTO etiquetaInputDTO) {
         // TODO: agregar etiquetas a hechos
     }*/
+
+    @GetMapping("/inicializar")
+    public Boolean inicializar() {
+        this.seederService.inicializar();
+        return true;
+    }
 }

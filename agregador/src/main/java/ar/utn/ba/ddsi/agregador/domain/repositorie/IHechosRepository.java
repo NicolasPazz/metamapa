@@ -1,21 +1,26 @@
 package ar.utn.ba.ddsi.agregador.domain.repositorie;
 
+import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Set;
 
 public interface IHechosRepository {
-  public Hecho findById(Long id);
-  public List<Hecho> findAll();
+   Hecho findById(Long id);
+   List<Hecho> findAll();
   List<Hecho> findByFilters(String categoria,
                             LocalDate fechaReporteDesde,
                             LocalDate fechaReporteHasta,
                             LocalDate fechaAcontecimientoDesde,
                             LocalDate fechaAcontecimientoHasta,
                             String   ubicacion);
-  public void save(Hecho hecho);
-  public void saveBatch(List<Hecho> nuevosHechos);
+   void save(Hecho hecho);
+   void saveBatch(List<Hecho> nuevosHechos);
   void update(Hecho hecho);
-  public void delete(Hecho hecho);
+   void delete(Hecho hecho);
+   void ocultar(Long id);
+   Boolean isOculto(Long id);
+   Set<Hecho> getHechosPorCriterio(Criterio criterio);
 }
 

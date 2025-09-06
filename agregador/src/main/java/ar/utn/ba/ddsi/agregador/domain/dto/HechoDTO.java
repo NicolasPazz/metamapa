@@ -1,5 +1,7 @@
-package ar.utn.ba.ddsi.agregador.domain.dto.external;
+package ar.utn.ba.ddsi.agregador.domain.dto;
 
+import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Categoria;
 import ar.utn.ba.ddsi.agregador.domain.hecho.ContenidoMultimedia;
 import ar.utn.ba.ddsi.agregador.domain.hecho.DataHecho;
@@ -37,42 +39,40 @@ public class HechoDTO {
   public Hecho mapToHecho() {
     Hecho hecho = new Hecho();
 
-    hecho.setId(this.getId());
+    hecho.setId(this.id);
+    hecho.setContribuyente(this.contribuyente);
 
+    // Cargar DataHecho
     DataHecho data = new DataHecho();
-    data.setTitulo(this.getTitulo());
-    data.setDescripcion(this.getDescripcion());
-    data.setLatitud(this.getLatitud());
-    data.setLongitud(this.getLongitud());
-    data.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento());
-    data.setFechaDeCarga(this.getFechaDeCarga());
-    hecho.setCategoria(new Categoria(this.getCategoria()));
+    data.setTitulo(this.titulo);
+    data.setDescripcion(this.descripcion);
+    data.setLatitud(this.latitud);
+    data.setLongitud(this.longitud);
+    data.setFechaDeAcontecimiento(this.fechaDeAcontecimiento);
+    data.setFechaDeCarga(this.fechaDeCarga);
     hecho.setData(data);
 
-    hecho.setOrigen(OrigenHecho.valueOf(this.getOrigen()));
-    hecho.setEstado(EstadoHecho.valueOf(this.getEstado()));
-    hecho.setCategoria(new Categoria(this.getCategoria()));
-    /*
-    if (this.getContribuyente() != null) {
-      Contribuyente cont = new Contribuyente();
-      cont.setNombre(this.getContribuyente().getNombre());
-      cont.setApellido(this.getContribuyente().getApellido());
-      if (this.getContribuyente().getFechaDeNacimiento() != null) {
-        cont.setFechaDeNacimiento(this.getContribuyente().getFechaDeNacimiento());
-      }
-      hecho.setContribuyente(cont);
-    }
-    */
-    hecho.setContribuyente(this.getContribuyente());
-    if (this.getEtiquetas() != null) {
-      Set<Etiqueta> etq = this.getEtiquetas().stream()
+    // Origen y Estado
+    if (this.origen != null)
+      hecho.setOrigen(OrigenHecho.valueOf(this.origen));
+    if (this.estado != null)
+      hecho.setEstado(EstadoHecho.valueOf(this.estado));
+
+    // Categoría
+    if (this.categoria != null)
+      hecho.setCategoria(new Categoria(this.categoria));
+
+    // Etiquetas
+    if (this.etiquetas != null) {
+      Set<Etiqueta> etq = this.etiquetas.stream()
           .map(Etiqueta::new)
           .collect(Collectors.toSet());
       hecho.setEtiquetas(etq);
     }
 
-    if (this.getContenidoMultimedia() != null) {
-      List<ContenidoMultimedia> multimedia = this.getContenidoMultimedia().stream()
+    // Contenido Multimedia
+    if (this.contenidoMultimedia != null) {
+      List<ContenidoMultimedia> multimedia = this.contenidoMultimedia.stream()
           .map(m -> new ContenidoMultimedia(
               m.getPathArchivo(),
               TipoContenido.valueOf(m.getTipoContenido())
@@ -81,8 +81,9 @@ public class HechoDTO {
       hecho.setMultimedia(multimedia);
     }
 
-    if (this.getTransicionesDeEstado() != null) {
-      List<TransicionEstadoHecho> transiciones = this.getTransicionesDeEstado().stream()
+    // Transiciones
+    if (this.transicionesDeEstado != null) {
+      List<TransicionEstadoHecho> transiciones = this.transicionesDeEstado.stream()
           .map(t -> new TransicionEstadoHecho(
               EstadoHecho.valueOf(t.getEstadoFinal()),
               t.getFecha()

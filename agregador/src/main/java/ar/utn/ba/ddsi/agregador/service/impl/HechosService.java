@@ -1,19 +1,15 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.ContribuyenteDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.hecho.Etiqueta;
+import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 
@@ -24,38 +20,33 @@ public class HechosService {
     private final IHechosRepository hechosRepository;
     private final FuentesService fuentesService;
 
-    public Mono<List<HechoDTO>> getAll(String categoria,
-                                       LocalDate fecha_reporte_desde,
-                                       LocalDate fecha_reporte_hasta,
-                                       LocalDate fecha_acontecimiento_desde,
-                                       LocalDate fecha_acontecimiento_hasta,
-                                       String ubicacion) {
+    public ResponseEntity<List<HechoDTO>> getAll(
+        String categoria,
+        LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+        LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+        String ubicacion) {
 
-        Mono<List<HechoDTO>> externos = fuentesService.getAllHechosVisibles(
+        ResponseEntity<List<HechoDTO>> respuestaExternos  = fuentesService.getAllHechosVisibles(
             categoria,
-            fecha_reporte_desde,
-            fecha_reporte_hasta,
-            fecha_acontecimiento_desde,
-            fecha_acontecimiento_hasta,
+            fecha_reporte_desde, fecha_reporte_hasta,
+            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+            ubicacion);
+
+        List<HechoDTO> externos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
+
+        List<HechoDTO> locales = hechosRepository.findByFilters(
+            categoria,
+            fecha_reporte_desde, fecha_reporte_hasta,
+            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
             ubicacion
-        );
+            ).stream()
+             .map(Hecho::mapToDTO)
+             .toList();
 
-        Mono<List<HechoDTO>> locales = Mono.fromSupplier(() ->
-            hechosRepository.findByFilters(
-                    categoria,
-                    fecha_reporte_desde,  fecha_reporte_hasta,
-                    fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-                    ubicacion
-                ).stream()
-                .map(Hecho::mapToDTO)
-                .toList()
-        );
+        List<HechoDTO> combinados = new ArrayList<>();
+        combinados.addAll(locales);
+        combinados.addAll(externos);
 
-        return Mono.zip(externos, locales, (ext, loc) -> {
-            List<HechoDTO> combinados = new ArrayList<>();
-            combinados.addAll(loc);
-            combinados.addAll(ext);
-            return combinados;
-        });
+        return ResponseEntity.of(Optional.of(combinados));
     }
 }

@@ -8,7 +8,7 @@ import ar.utn.ba.ddsi.proxy_metamapa.service.impl.FuenteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
+import org.springframework.http.ResponseEntity;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class WebClientAgregadorClient implements AgregadorClient {
   private final FuenteService fuenteService;
 
   @Override
-  public Mono<List<HechoDTO>> getAllHechosVisibles(String categoria, LocalDate fechaReporteDesde, LocalDate fechaReporteHasta, LocalDate fechaAcontecimientoDesde, LocalDate fechaAcontecimientoHasta, String ubicacion) {
+  public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(String categoria, LocalDate fechaReporteDesde, LocalDate fechaReporteHasta, LocalDate fechaAcontecimientoDesde, LocalDate fechaAcontecimientoHasta, String ubicacion) {
     return fuenteService.getAllHechosVisibles(
         categoria,
         fechaReporteDesde,
@@ -32,17 +32,29 @@ public class WebClientAgregadorClient implements AgregadorClient {
   }
 
   @Override
-  public Mono<List<ColeccionDTO>> getAllColecciones() {
+  public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     return fuenteService.getAllColecciones();
   }
 
   @Override
-  public Mono<ColeccionDTO> getColeccionByHandle(String handle) {
-    return fuenteService.getColeccionByHandle(handle);
+  public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
+      String handle,
+      String categoria,
+      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      String ubicacion
+  ) {
+    return fuenteService.getHechosColeccionByHandle(
+        handle,
+        categoria,
+        fecha_reporte_desde, fecha_reporte_hasta,
+        fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+        ubicacion
+    );
   }
 
   @Override
-  public Mono<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
+  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
     return fuenteService.crearSolicitudDeEliminacion(solicitud);
   }
 }

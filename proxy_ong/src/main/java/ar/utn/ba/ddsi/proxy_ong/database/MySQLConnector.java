@@ -4,21 +4,23 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class MySQLConnector {
   private Connection connection;
 
   // Método para conectarse a la base de datos MySQL
   public void connect(String url, String username, String password) throws SQLException {
     connection = DriverManager.getConnection(url, username, password);
-    System.out.println("Conexión establecida con la base de datos MySQL");
+    log.info("Conexión establecida con la base de datos MySQL");
   }
 
   // Método para desconectarse de la base de datos MySQL
   public void disconnect() throws SQLException {
     if (connection != null && !connection.isClosed()) {
       connection.close();
-      System.out.println("Desconexión exitosa de la base de datos MySQL");
+      log.info("Desconexión exitosa de la base de datos MySQL");
     }
   }
 
@@ -45,7 +47,7 @@ public class MySQLConnector {
         statement.setObject(i + 1, values[i]);
       }
       statement.executeUpdate();
-      System.out.println("Registro insertado en la tabla " + tableName);
+      log.info("Registro insertado en la tabla " + tableName);
     }
   }
 }
