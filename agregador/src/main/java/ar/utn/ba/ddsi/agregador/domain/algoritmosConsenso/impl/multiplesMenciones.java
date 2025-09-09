@@ -3,10 +3,14 @@ package ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.impl;
 import ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 
 import java.util.List;
 import java.util.Objects;
 
+@Entity
+@Table(name = "multiplesMenciones")
 public class multiplesMenciones extends AAlgoritmoConsenso {
 
     @Override

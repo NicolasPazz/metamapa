@@ -2,11 +2,18 @@ package ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
+import jakarta.persistence.*;
 
 import java.util.List;
 import java.util.Objects;
 
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@Table(name = "coleccion_algoritmo")
 public abstract class AAlgoritmoConsenso {
+
+    @Id
+    private Long algoritmoId;
 
     public abstract Boolean esConsensuado(Hecho hecho, int fuentesTotales, List<Hecho> hechos);
 
@@ -49,5 +56,13 @@ public abstract class AAlgoritmoConsenso {
 
     public Boolean aparicionesMayorA(Hecho hecho, int comparador, List<Hecho> hechos) {
         return this.contarApariciones(hecho, hechos) >= comparador;
+    }
+
+    public void setId(Long id) {
+        this.algoritmoId = id;
+    }
+
+    public Long getId() {
+        return algoritmoId;
     }
 }
