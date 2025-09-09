@@ -2,7 +2,9 @@ package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 public class CriterioOrigen implements Criterio{
   private OrigenHecho origen;
 

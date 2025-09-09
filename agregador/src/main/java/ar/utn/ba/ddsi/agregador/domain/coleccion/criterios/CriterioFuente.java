@@ -5,10 +5,12 @@ import ar.utn.ba.ddsi.agregador.service.impl.IdService;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
+@NoArgsConstructor(force = true)
 public class CriterioFuente implements Criterio {
     private Set<Long> fuentesExcluidas = new HashSet<>();
     private final IdService idService;

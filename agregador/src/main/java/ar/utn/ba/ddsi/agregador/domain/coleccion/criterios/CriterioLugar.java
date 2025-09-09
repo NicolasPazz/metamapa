@@ -1,7 +1,9 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho ;
+import lombok.NoArgsConstructor;
 
+@NoArgsConstructor
 public class CriterioLugar implements Criterio {
     private Double lat;
     private Double lng;
