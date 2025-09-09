@@ -17,6 +17,7 @@ import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.detector.DetectorDeS
 import ar.utn.ba.ddsi.agregador.service.ISolicitudesService;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,10 +52,11 @@ public class SolicitudesService implements ISolicitudesService {
     Long idHechoUnico = solicitudInputDTO.getIdHecho();
 
     // Buscar el hecho localmente
-    Hecho hecho = hechosRepository.findById(idHechoUnico);
+    Optional<Hecho> hecho = hechosRepository.findById(idHechoUnico);
+    Hecho hechoEncontrado = hecho.get();
     if (hecho != null) {
       SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(
-          hecho, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getIdContribuyente()
+          hechoEncontrado, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getIdContribuyente()
       );
       solicitudesRepository.save(solicitud);
       return ResponseEntity.ok(solicitud.toDTO());
@@ -115,25 +117,27 @@ public class SolicitudesService implements ISolicitudesService {
 
   @Override
   public void aceptar(Long idSolicitud) {
-    SolicitudDeEliminacion solicitud = solicitudesRepository.findById(idSolicitud);
+    Optional<SolicitudDeEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
+    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
     if (solicitud == null) {
       throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
     }
 
-    solicitud.aceptar();
-    hechosRepository.ocultar(solicitud.getHecho().getId());
+    solicitudEncontrada.aceptar();
+    hechosRepository.ocultar(solicitudEncontrada.getHecho().getId());
     log.info("[SolicitudesService] Solicitud {} aceptada.", idSolicitud);
   }
 
   @Override
   public void rechazar(Long idSolicitud) {
-    SolicitudDeEliminacion solicitud = solicitudesRepository.findById(idSolicitud);
+    Optional<SolicitudDeEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
+    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
     if (solicitud == null) {
       throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
     }
 
-    solicitud.rechazar();
-    solicitudesRepository.eliminar(idSolicitud);
+    solicitudEncontrada.rechazar();
+    solicitudesRepository.delete(solicitudEncontrada);
     log.info("[SolicitudesService] Solicitud {} rechazada.", idSolicitud);
   }
 }

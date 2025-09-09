@@ -65,11 +65,11 @@ public class ColeccionesService implements IColeccionesService {
       String ubicacion,
       String modo) {
     // Primero, buscar en local
-    Coleccion local = coleccionesRepository.findByHandle(handle);
+    Optional<Coleccion> local = coleccionesRepository.findById(handle);
 
     if (local != null) {
       // Si el modo es CURADA, se obtienen los hechos consensuados
-      List<Hecho> hechos = modo.equalsIgnoreCase(ModoNavegacion.CURADA.name()) ? local.getHechosConsensuados() : local.getHechos();
+      List<Hecho> hechos = modo.equalsIgnoreCase(ModoNavegacion.CURADA.name()) ? local.get().getHechosConsensuados() : local.get().getHechos();
 
       List<Hecho> hechosFiltrados = hechos.stream()
           .filter(h -> categoria == null || (h.getCategoria() != null &&
@@ -101,12 +101,13 @@ public class ColeccionesService implements IColeccionesService {
 
   @Override
   public ResponseEntity<?> actualizarFuentesDeColeccion(String handle, ActualizarFuentesColeccionDTO dto) {
-    Coleccion coleccion = coleccionesRepository.findByHandle(handle);
+    Optional<Coleccion> coleccion = coleccionesRepository.findById(handle);
+    Coleccion coleccion1 = coleccion.get();
     if (coleccion == null) {
       return ResponseEntity.badRequest().body("No se encontró la colección con handle: " + handle);
     }
 
-    Criterio criterioExistente = coleccion.getCriterioDePertenencia();
+    Criterio criterioExistente = coleccion.get().getCriterioDePertenencia();
 
     if (!(criterioExistente instanceof CriterioFuente criterioFuente)) {
       return ResponseEntity.badRequest().body("La colección no tiene un criterio de tipo CriterioFuente");
@@ -117,11 +118,11 @@ public class ColeccionesService implements IColeccionesService {
 
     if ("AGREGAR".equals(accion)) {
       criterioFuente.agregarExclusion(idFuente);
-      coleccionesRepository.actualizarColeccion(handle);
+      coleccionesRepository.save(coleccion1);
       return ResponseEntity.ok("Fuente " + idFuente + " agregada a las exclusiones de la colección");
     } else if ("ELIMINAR".equals(accion)) {
       criterioFuente.eliminarExclusion(idFuente);
-      coleccionesRepository.actualizarColeccion(handle);
+      coleccionesRepository.save(coleccion1);
       return ResponseEntity.ok("Fuente " + idFuente + " eliminada de las exclusiones de la colección");
     } else {
       return ResponseEntity.badRequest().body("Acción no válida. Usar 'AGREGAR' o 'ELIMINAR'");
@@ -142,7 +143,8 @@ public class ColeccionesService implements IColeccionesService {
 
   @Override
   public ResponseEntity<?> modificarCriterioColeccion(String handle, ModificarCriterioColeccionDTO dto) {
-    Coleccion coleccion = coleccionesRepository.findByHandle(handle);
+    Optional<Coleccion> coleccion = coleccionesRepository.findById(handle);
+    Coleccion coleccionEncontrada = coleccion.get();
     if (coleccion == null) {
       return ResponseEntity.badRequest().body("No se encontro la coleccion con handle: " + handle);
     }
@@ -150,10 +152,10 @@ public class ColeccionesService implements IColeccionesService {
     Criterio nuevoCriterio = dto.getCriterio();
 
     // Actualizar el criterio de la coleccion
-    coleccion.setCriterioDePertenencia(nuevoCriterio);
+    coleccion.get().setCriterioDePertenencia(nuevoCriterio);
 
     // Actualizar los hechos de la coleccion segun el nuevo criterio
-    coleccionesRepository.actualizarColeccion(handle);
+    coleccionesRepository.save(coleccionEncontrada);
 
     return ResponseEntity.ok("Criterio de la coleccion actualizado exitosamente");
   }
@@ -180,8 +182,7 @@ public class ColeccionesService implements IColeccionesService {
       );
 
       coleccionesRepository.save(coleccion);
-      coleccionesRepository.actualizarColeccion(coleccion.getHandle());
-
+      coleccionesRepository.save(coleccion);
       // Setear hechos consensuados al crear la coleccion
       int fuentesTotales = this.fuentesService.cantidadDeFuentes();
       coleccion.setearHechosConsensuados(fuentesTotales);
@@ -191,7 +192,8 @@ public class ColeccionesService implements IColeccionesService {
 
   @Override
   public ResponseEntity<?> actualizarColeccion(String handle, ActualizarColeccionInputDTO dto){
-      Coleccion coleccion = coleccionesRepository.findByHandle(handle);
+      Optional<Coleccion> coleccion = coleccionesRepository.findById(handle);
+      Coleccion coleccionEncontrada = coleccion.get();
       if(coleccion == null){
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Colección no encontrada");
       }
@@ -199,34 +201,34 @@ public class ColeccionesService implements IColeccionesService {
 
       //Titulo
       if (dto.getTitulo() != null && !dto.getTitulo().isBlank()) {
-        coleccion.setTitulo(dto.getTitulo());
+        coleccion.get().setTitulo(dto.getTitulo());
       }
       //Descripcion
       if (dto.getDescripcion() != null && !dto.getDescripcion().isBlank()) {
-        coleccion.setDescripcion(dto.getDescripcion());
+        coleccion.get().setDescripcion(dto.getDescripcion());
       }
 
       //CriterioPertenencia
       if(dto.getCriterioDePertenencia() != null){
         Criterio nuevoCriterio= criterioDePertenenciaFactory.crearCriterioDesdeDTO(dto.getCriterioDePertenencia());
-        coleccion.setCriterioDePertenencia(nuevoCriterio);
+        coleccion.get().setCriterioDePertenencia(nuevoCriterio);
         criterioModificado = true;
       }
 
       //AlgoritmoConcenso
       if(dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isBlank()){
         AAlgoritmoConsenso algoritmo = algoritmoConsensoFactory.crearAlgoritmo(dto.getAlgoritmoConsenso().toUpperCase());
-        coleccion.setAlgoritmoConsenso(algoritmo);
+        coleccion.get().setAlgoritmoConsenso(algoritmo);
 
         // Si se cambia el algoritmo, se actualizan los hechos consensuados
         int fuentesTotales = this.fuentesService.cantidadDeFuentes();
-        coleccion.setearHechosConsensuados(fuentesTotales);
+        coleccion.get().setearHechosConsensuados(fuentesTotales);
       }
 
-      coleccionesRepository.update(coleccion);
+      coleccionesRepository.save(coleccionEncontrada);
 
       if(criterioModificado){
-        coleccionesRepository.actualizarColeccion(handle);
+        coleccionesRepository.save(coleccionEncontrada);
       }
 
       return ResponseEntity.ok("Coleccion actualizada correctamente.");
@@ -234,12 +236,13 @@ public class ColeccionesService implements IColeccionesService {
 
   @Override
   public ResponseEntity<?> eliminarColeccion(String handle){
-      Coleccion coleccion = coleccionesRepository.findByHandle(handle);
+      Optional<Coleccion> coleccion = coleccionesRepository.findById(handle);
+      Coleccion coleccionEncontrada = coleccion.get();
     if(coleccion == null){
       throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Colección no encontrada");
     }
 
-    coleccionesRepository.delete(coleccion);
+    coleccionesRepository.delete(coleccionEncontrada);
     return ResponseEntity.ok("Coleccion eliminada correctamente.");
   }
 

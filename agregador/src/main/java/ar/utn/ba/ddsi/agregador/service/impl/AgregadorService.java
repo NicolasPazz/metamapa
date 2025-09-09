@@ -34,7 +34,7 @@ public class AgregadorService implements IAgregadorService {
             .map(HechoDTO::mapToHecho)
             .toList();
 
-        hechosRepository.saveBatch(hechosNuevos);
+        hechosRepository.saveAll(hechosNuevos);
         log.info("[Agregador] Se guardaron {} hechos nuevos.", hechosNuevos.size());
       } catch (Exception e) {
         log.error("[Agregador] Error al actualizar hechos: {}", e.getMessage(), e);
