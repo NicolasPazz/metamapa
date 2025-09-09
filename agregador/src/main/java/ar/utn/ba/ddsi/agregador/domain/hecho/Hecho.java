@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Set;
 
 import java.util.stream.Collectors;
+
+import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
@@ -19,18 +21,31 @@ import lombok.*;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "hecho")
 public class Hecho {
+  @Id
+  @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
+  @Embedded
   private DataHecho data;
+  @Enumerated(EnumType.ORDINAL)
   private OrigenHecho origen;
+  @Enumerated(EnumType.ORDINAL)
   private EstadoHecho estado;
+  @Column(name="contribuyente_id", nullable = true)
   private Long contribuyente;  // private Contribuyente contribuyente;
+  @OneToMany(mappedBy = "hecho")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
+  @OneToMany(mappedBy = "hecho")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
+  @ElementCollection
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
+  @OneToOne
+  @JoinColumn(name = "id")
   private Categoria categoria;
 
   public Hecho(String titulo, String descripcion, Categoria categoria,
