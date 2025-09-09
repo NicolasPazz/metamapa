@@ -1,12 +1,14 @@
 package ar.utn.ba.ddsi.agregador.domain.repositorie;
 
+import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface ISolicitudesRepository {
-  void save(SolicitudDeEliminacion solicitudDeEliminacion);
-  public List<SolicitudDeEliminacion> findAll();
-  SolicitudDeEliminacion findById(Long idSolicitud);
-  public void eliminar(Long id);
+public interface ISolicitudesRepository extends JpaRepository<SolicitudDeEliminacion, Long> {
+  //void save(SolicitudDeEliminacion solicitudDeEliminacion);
+  //public List<SolicitudDeEliminacion> findAll();
+  //SolicitudDeEliminacion findById(Long idSolicitud);
+  //public void eliminar(Long id);
   }
