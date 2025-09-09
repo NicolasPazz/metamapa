@@ -1,13 +1,21 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
 import java.util.Objects;
-import lombok.Getter;
-import lombok.Setter;
+
+import jakarta.persistence.*;
+import lombok.*;
 
 @Setter
 @Getter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
 public class Etiqueta {
+  @Id
+  @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
+  @Column(name = "nombre")
   private String nombre;
 
   public Etiqueta(String nombre) {

@@ -3,13 +3,16 @@ package ar.utn.ba.ddsi.agregador.domain.hecho;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
 
-@Setter
+import jakarta.persistence.*;
+import lombok.*;
+
 @Getter
+@Setter
+@NoArgsConstructor
+@Embeddable
 public class TransicionEstadoHecho {
+  private Long id;
   private EstadoHecho estadoFinal;
   private LocalDateTime fechaTransicion;
 

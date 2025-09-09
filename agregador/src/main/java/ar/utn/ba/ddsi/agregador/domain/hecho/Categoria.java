@@ -1,14 +1,21 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
 @AllArgsConstructor
+@NoArgsConstructor
+@Entity
 public class Categoria {
+  @Id
+  @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
+  @Column(name = "nombre")
   private String nombre;
 
   public Categoria(String nombre) {
