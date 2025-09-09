@@ -15,7 +15,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
-
+/*
 @Slf4j
 @Repository
 public class HechosRepository implements IHechosRepository {
@@ -168,3 +168,4 @@ public class HechosRepository implements IHechosRepository {
         .collect(Collectors.toSet());
   }
 }
+*/
