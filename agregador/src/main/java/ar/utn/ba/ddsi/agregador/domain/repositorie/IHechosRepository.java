@@ -28,12 +28,17 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
    void ocultar(Long id);
    Boolean isOculto(Long id);
    Set<Hecho> getHechosPorCriterio(Criterio criterio);*/
-    @Query("SELECT h FROM Hecho h WHERE h.categoria = :categoria OR (h.data.fechaDeCarga>=:fechaReporteDesde AND h.data.fechaDeCarga<=:fechaReporteHasta) OR (h.data.fechaDeAcontecimiento>=:fechaAcontecimientoDesde AND h.data.fechaDeAcontecimiento<=:fechaAcontecimientoHasta)")
+    @Query("SELECT h FROM Hecho h WHERE " +
+           "(:categoria IS NULL OR h.categoria.nombre = :categoria) AND " +
+           "(:fechaReporteDesde IS NULL OR h.data.fechaDeCarga >= :fechaReporteDesde) AND " +
+           "(:fechaReporteHasta IS NULL OR h.data.fechaDeCarga <= :fechaReporteHasta) AND " +
+           "(:fechaAcontecimientoDesde IS NULL OR h.data.fechaDeAcontecimiento >= :fechaAcontecimientoDesde) AND " +
+           "(:fechaAcontecimientoHasta IS NULL OR h.data.fechaDeAcontecimiento <= :fechaAcontecimientoHasta)")
     List<Hecho>findByFilters(@Param("categoria") String categoria,
                              @Param("fechaReporteDesde") LocalDate fechaReporteDesde,
                              @Param("fechaReporteHasta") LocalDate fechaReporteHasta,
                              @Param("fechaAcontecimientoDesde") LocalDate fechaAcontecimientoDesde,
-                             @Param("fechaAcontcimientoHasta") LocalDate fechaAcontecimientoHasta,
+                             @Param("fechaAcontecimientoHasta") LocalDate fechaAcontecimientoHasta,
                              @Param("ubicacion") String ubicacion); //TODO: filtro de ubicacion
 
     @Modifying
