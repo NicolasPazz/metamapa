@@ -35,10 +35,12 @@ public class Hecho {
   private EstadoHecho estado;
   @Column(name="contribuyente_id", nullable = true)
   private Long contribuyente;  // private Contribuyente contribuyente;
-  @OneToMany(mappedBy = "id")
+  @OneToMany
+  @JoinColumn(name = "hecho_id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
-  @OneToMany(mappedBy = "id")
+  @OneToMany
+  @JoinColumn(name = "hecho_id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
   @ElementCollection

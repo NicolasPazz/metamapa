@@ -32,13 +32,15 @@ public class Coleccion {
   private String titulo;
   @Column(name = "descripcion")
   private String descripcion;
-  @OneToMany(mappedBy = "id")
+  @OneToMany
+  @JoinColumn(name = "coleccion_id")
   private List<Hecho> hechos;
   @Convert(converter = CriterioAttributeConverter.class)
   private Criterio criterioDePertenencia;
   @OneToOne
   private AAlgoritmoConsenso algoritmoConsenso;
-  @OneToMany(mappedBy = "id")
+  @OneToMany
+  @JoinColumn(name = "coleccion_id")
   private List<Hecho> hechosConsensuados;
 
   public Coleccion(String titulo, String descripcion, Criterio criterioDePertenencia, AAlgoritmoConsenso algoritmoConsenso) {
