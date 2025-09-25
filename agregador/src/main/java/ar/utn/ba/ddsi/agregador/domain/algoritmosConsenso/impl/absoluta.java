@@ -9,8 +9,6 @@ import jakarta.persistence.Table;
 
 import java.util.List;
 
-@Entity
-@Table(name = "absoluta")
 public class absoluta extends AAlgoritmoConsenso {
 
     @Override

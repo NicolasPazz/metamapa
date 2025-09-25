@@ -9,8 +9,6 @@ import jakarta.persistence.Table;
 
 import java.util.List;
 
-@Entity
-@Table(name = "mayoriaSimple")
 public class mayoriaSimple extends AAlgoritmoConsenso {
 
     @Override

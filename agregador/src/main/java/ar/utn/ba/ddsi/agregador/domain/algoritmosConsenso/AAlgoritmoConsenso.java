@@ -7,9 +7,6 @@ import jakarta.persistence.*;
 import java.util.List;
 import java.util.Objects;
 
-@Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@Table(name = "coleccion_algoritmo")
 public abstract class AAlgoritmoConsenso {
 
     @Id

@@ -46,7 +46,7 @@ public class Hecho {
   @ElementCollection
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
-  @OneToOne
+  @ManyToOne
   @JoinColumn(name = "id")
   private Categoria categoria;
 

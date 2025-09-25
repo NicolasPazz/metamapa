@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion;
 
+import ar.utn.ba.ddsi.agregador.converter.AlgoritmoAttributeConverter;
 import ar.utn.ba.ddsi.agregador.converter.CriterioAttributeConverter;
 import ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
@@ -37,7 +38,7 @@ public class Coleccion {
   private List<Hecho> hechos;
   @Convert(converter = CriterioAttributeConverter.class)
   private Criterio criterioDePertenencia;
-  @OneToOne
+  @Convert(converter = AlgoritmoAttributeConverter.class)
   private AAlgoritmoConsenso algoritmoConsenso;
   @OneToMany
   @JoinColumn(name = "coleccion_id")
