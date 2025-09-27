@@ -84,7 +84,7 @@ public class FuenteService implements IFuenteService {
       this.hechosRepository.save(hecho);
     }else{
       hecho.setId(busqueda.getId());
-      this.hechosRepository.update(hecho);
+      this.hechosRepository.save(hecho);
     }
   }
 

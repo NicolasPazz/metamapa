@@ -4,11 +4,12 @@ import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudHechoInputContribuyente
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarAdminInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 
 import java.util.List;
 
 public interface ISolicitudesService {
-    Long recibirSolicitudContribuyente(SolicitudHechoInputContribuyenteDTO input);
+    SolicitudHecho recibirSolicitudContribuyente(SolicitudHechoInputContribuyenteDTO input);
 
     SolicitudOutputDTO obtenerSolicitud(Long id);
 

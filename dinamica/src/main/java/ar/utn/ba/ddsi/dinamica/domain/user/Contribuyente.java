@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.dinamica.domain.user;
 
 import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -10,10 +11,16 @@ import java.time.LocalDate;
 @Getter
 @Setter
 @NoArgsConstructor
+@Entity
 public class Contribuyente {
+  @Id
+  @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
+  @Column(name = "nombre")
   private String nombre;
+  @Column(name = "apellido")
   private String apellido;
+  @Column(name = "fechaNacimiento")
   private LocalDate fechaDeNacimiento;  //mejor esto que edad
 
   public Contribuyente(String nombre) {

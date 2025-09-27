@@ -21,6 +21,7 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +41,7 @@ public class SolicitudesService implements ISolicitudesService {
 
 
     @Override
-    public Long recibirSolicitudContribuyente(SolicitudHechoInputContribuyenteDTO input) {
+    public SolicitudHecho recibirSolicitudContribuyente(SolicitudHechoInputContribuyenteDTO input) {
         SolicitudHecho solicitud = new SolicitudHecho();
         solicitud.setIdContribuyente(input.getIdContribuyente());
         solicitud.setTitulo(input.getTitulo());
@@ -76,17 +77,17 @@ public class SolicitudesService implements ISolicitudesService {
         solicitud.setTransiciones(new ArrayList<>());
 
 
-        return solicitudesRepository.save(solicitud);   //asigno id
+        return solicitudesRepository.save(solicitud); //asigno id
     }
 
     @Override
     public SolicitudOutputDTO obtenerSolicitud(Long id) {
         //TODO: cuando se modelen admin y users validar que se cuente con los permisos
-        SolicitudHecho solicitud = solicitudesRepository.findById(id);
+        Optional<SolicitudHecho> solicitud = solicitudesRepository.findById(id);
         if (solicitud == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada");
         }
-        return solicitudOutputDTO(solicitud);
+        return solicitudOutputDTO(solicitud.get());
     }
 
     private SolicitudOutputDTO solicitudOutputDTO(SolicitudHecho solicitud){
@@ -109,7 +110,7 @@ public class SolicitudesService implements ISolicitudesService {
 
     @Override
     public SolicitudOutputDTO modificarSolicitud(Long idSolicitud, SolicitudModificarUserInputDTO inputDTO) {
-        SolicitudHecho solicitud = solicitudesRepository.findById(idSolicitud);
+        Optional<SolicitudHecho> solicitud = solicitudesRepository.findById(idSolicitud);
 
         if (solicitud == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada");
@@ -120,34 +121,34 @@ public class SolicitudesService implements ISolicitudesService {
         }
 
         // Validar que sea el mismo contribuyente(completar al agregar base de datos contribuyente)
-        if (!solicitud.getIdContribuyente().equals(inputDTO.getIdContribuyente())) {
+        if (!solicitud.get().getIdContribuyente().equals(inputDTO.getIdContribuyente())) {
             //throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No autorizado para modificar esta solicitud");
 
         }
 
         // Validar que no hayan pasado más de 7 días desde la fecha de carga
-        if (solicitud.getFechaDeCargaSolicitud().plusDays(7).isBefore(LocalDateTime.now())) {
+        if (solicitud.get().getFechaDeCargaSolicitud().plusDays(7).isBefore(LocalDateTime.now())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La solicitud ya no puede ser modificada");
         }
 
         // Modificar solo si los campos no vienen nulos
         if (inputDTO.getNuevoTitulo() != null)
-            solicitud.setTitulo(inputDTO.getNuevoTitulo());
+            solicitud.get().setTitulo(inputDTO.getNuevoTitulo());
 
         if (inputDTO.getNuevoDescripcion() != null)
-            solicitud.setDescripcion(inputDTO.getNuevoDescripcion());
+            solicitud.get().setDescripcion(inputDTO.getNuevoDescripcion());
 
         if (inputDTO.getNuevoNombreCategoria() != null)
-            solicitud.setCategoria(inputDTO.getNuevoNombreCategoria());
+            solicitud.get().setCategoria(inputDTO.getNuevoNombreCategoria());
 
         if (inputDTO.getNuevoLatitud() != null)
-            solicitud.setLatitud(inputDTO.getNuevoLatitud());
+            solicitud.get().setLatitud(inputDTO.getNuevoLatitud());
 
         if (inputDTO.getNuevoLongitud() != null)
-            solicitud.setLongitud(inputDTO.getNuevoLongitud());
+            solicitud.get().setLongitud(inputDTO.getNuevoLongitud());
 
         if (inputDTO.getNuevoFechaDeAcontecimiento() != null)
-            solicitud.setFechaDeAcontecimiento(LocalDate.parse(inputDTO.getNuevoFechaDeAcontecimiento()));
+            solicitud.get().setFechaDeAcontecimiento(LocalDate.parse(inputDTO.getNuevoFechaDeAcontecimiento()));
 
         /*if (inputDTO.getNuevoContenidoMultimedia() != null)
             solicitud.setMultimedia(inputDTO.getNuevoContenidoMultimedia());*/
@@ -171,35 +172,35 @@ public class SolicitudesService implements ISolicitudesService {
             }
 
             // Solo si pasó la validación se actualiza
-            solicitud.setMultimedia(nuevoMultimedia);
+            solicitud.get().setMultimedia(nuevoMultimedia);
         }
 
 
         // Cambiar estado a PENDIENTE
-        solicitud.setEstado(EstadoSolicitud.PENDIENTE);
+        solicitud.get().setEstado(EstadoSolicitud.PENDIENTE);
 
         // Agregar la transición de estado
-        if (solicitud.getTransiciones() == null) {
-            solicitud.setTransiciones(new ArrayList<>());
+        if (solicitud.get().getTransiciones() == null) {
+            solicitud.get().setTransiciones(new ArrayList<>());
         }
-        solicitud.getTransiciones().add(new TransicionEstadoSolicitud(EstadoSolicitud.PENDIENTE));
+        solicitud.get().getTransiciones().add(new TransicionEstadoSolicitud(EstadoSolicitud.PENDIENTE));
 
         // Guardar cambios
-        solicitudesRepository.update(solicitud);
+        solicitudesRepository.save(solicitud.get());
 
-        return solicitudOutputDTO(solicitud);
+        return solicitudOutputDTO(solicitud.get());
     }
 
     @Override
     public SolicitudOutputDTO revisionSolicitud(Long idSolicitud, SolicitudModificarAdminInputDTO inputDTO) {
-        SolicitudHecho solicitud = solicitudesRepository.findById(idSolicitud);
+        Optional<SolicitudHecho> solicitud = solicitudesRepository.findById(idSolicitud);
 
         if (solicitud == null) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Solicitud no encontrada");
         }
 
         // Validar que la solicitud esté en estado PENDIENTE antes de modificarla
-        if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
+        if (solicitud.get().getEstado() != EstadoSolicitud.PENDIENTE) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Solo solicitudes en estado PENDIENTE pueden ser modificadas por admin");
         }
 
@@ -207,19 +208,19 @@ public class SolicitudesService implements ISolicitudesService {
         EstadoSolicitud estado = EstadoSolicitud.valueOf(estadoStr.toUpperCase());
 
         // Actualizar estado y sugerencia
-        solicitud.setEstado(estado);
-        solicitud.setSugerencia(inputDTO.getNuevoSugerencia());
+        solicitud.get().setEstado(estado);
+        solicitud.get().setSugerencia(inputDTO.getNuevoSugerencia());
 
         // Agregar transición de estado
-        solicitud.getTransiciones().add(new TransicionEstadoSolicitud(estado));
+        solicitud.get().getTransiciones().add(new TransicionEstadoSolicitud(estado));
 
         // Guardar cambios
-        solicitudesRepository.update(solicitud);
+        solicitudesRepository.save(solicitud.get());
 
         // Si el estado es ACEPTADO o ACEPTADO_SUGERIDO, crear el hecho asociado (puede ser otro servicio)
         if (estado == EstadoSolicitud.ACEPTADO || estado == EstadoSolicitud.ACEPTADO_SUGERIDO) {
-            hechosService.crearHechoDesdeSolicitud(solicitud);
+            hechosService.crearHechoDesdeSolicitud(solicitud.get());
         }
-        return solicitudOutputDTO(solicitud);
+        return solicitudOutputDTO(solicitud.get());
     }
 }

@@ -8,10 +8,10 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 
-@Repository
+/*@Repository
 public class SolicitudesRepository implements ISolicitudesRepository {
 
-    private List<SolicitudHecho> solicitudes = new ArrayList<>();
+    /*private List<SolicitudHecho> solicitudes = new ArrayList<>();
     private final AtomicLong idGenerator = new AtomicLong(1);
 
     @Override
@@ -50,4 +50,4 @@ public class SolicitudesRepository implements ISolicitudesRepository {
         }
     }
 
-}
+}*/

@@ -1,29 +1,51 @@
 package ar.utn.ba.ddsi.dinamica.domain.hecho;
 
+import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "hecho")
 public class Hecho {
+  @Id
+  @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
+  @Column(name = "id_solicitud")
   private Long idSolicitud;
+  @Embedded
   private DataHecho data;
+  @Enumerated(EnumType.ORDINAL)
   private OrigenHecho origen;
+  @Enumerated(EnumType.ORDINAL)
   private EstadoHecho estado;
-  private Long idContribuyente;
+  @Column(name="contribuyente_id", nullable = true)
+  private Long idContribuyente;  // private Contribuyente contribuyente;
+  @ElementCollection
+  @CollectionTable(
+          name = "hecho_etiquetas",
+          joinColumns = @JoinColumn(name = "hecho_id")
+  )
+  @Column(name = "etiquetas")
   @Builder.Default
-  private List<String> etiquetas = new ArrayList<>();
+  private Set<String> etiquetas = new HashSet<>();
+  @OneToMany
+  @JoinColumn(name = "multimedia_id")
   @Builder.Default
   private List<ContenidoMultimedia> multimediaPaths = new ArrayList<>();
+  @ElementCollection
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
+  @Column(name = "ultimaActualizacion")
   private LocalDateTime ultimaActualizacion;
 
 
