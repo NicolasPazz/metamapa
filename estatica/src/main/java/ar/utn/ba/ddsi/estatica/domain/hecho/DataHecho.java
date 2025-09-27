@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.estatica.domain.hecho;
 
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvDate;
+import jakarta.persistence.Embeddable;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -11,6 +12,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Embeddable
 public class DataHecho {
   @CsvBindByName(column = "Título")
   private String titulo;

@@ -17,7 +17,7 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Stream;
 
-@Repository
+/*@Repository
 public class HechosRepository implements IHechosRepository {
 
   private final List<Hecho> hechos = new ArrayList<>();
@@ -100,4 +100,4 @@ public class HechosRepository implements IHechosRepository {
       throw new RuntimeException("Error al leer el archivo CSV", e);
     }
   }
-}
+}*/

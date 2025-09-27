@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.estatica.domain.hecho;
 
 import ar.utn.ba.ddsi.estatica.domain.user.Contribuyente;
+import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,18 +15,34 @@ import java.util.Set;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "hecho")
 public class Hecho {
+  @Id
+  @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
+  @Embedded
   private DataHecho data;
+  @Enumerated(EnumType.ORDINAL)
   private OrigenHecho origen;
+  @Enumerated(EnumType.ORDINAL)
   private EstadoHecho estado;
-  private Contribuyente contribuyente;
+  @OneToOne
+  @JoinColumn(name = "contribuyente_id")
+  private Contribuyente contribuyente;  // private Contribuyente contribuyente;
+  @OneToMany
+  @JoinColumn(name = "etiqueta_id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
+  @OneToMany
+  @JoinColumn(name = "multimedia_id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
+  @ElementCollection
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
+  @ManyToOne
+  @JoinColumn(name = "categoria_id")
   private Categoria categoria;
 
   // CSV
