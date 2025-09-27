@@ -36,18 +36,18 @@ public class Hecho {
   @Column(name="contribuyente_id", nullable = true)
   private Long contribuyente;  // private Contribuyente contribuyente;
   @OneToMany
-  @JoinColumn(name = "hecho_id")
+  @JoinColumn(name = "etiqueta_id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
   @OneToMany
-  @JoinColumn(name = "hecho_id")
+  @JoinColumn(name = "multimedia_id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
   @ElementCollection
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
   @ManyToOne
-  @JoinColumn(name = "id")
+  @JoinColumn(name = "categoria_id")
   private Categoria categoria;
 
   public Hecho(String titulo, String descripcion, Categoria categoria,
