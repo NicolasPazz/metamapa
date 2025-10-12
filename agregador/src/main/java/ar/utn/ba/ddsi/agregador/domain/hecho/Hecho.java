@@ -3,6 +3,8 @@ package ar.utn.ba.ddsi.agregador.domain.hecho;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
+import ar.utn.ba.ddsi.agregador.converter.AlgoritmoAttributeConverter;
+import ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.AAlgoritmoConsenso;
 import java.time.LocalDate;
 
 import java.time.LocalDateTime;
@@ -49,6 +51,12 @@ public class Hecho {
   @ManyToOne
   @JoinColumn(name = "categoria_id")
   private Categoria categoria;
+
+  @ElementCollection
+  @CollectionTable(name = "hecho_algoritmo", joinColumns = @JoinColumn(name = "hecho_id"))
+  @Column(name = "algoritmo")
+  @Builder.Default
+  private List<String> algoritmosConsenso = new ArrayList<>();
 
   public Hecho(String titulo, String descripcion, Categoria categoria,
                LocalDate fechaDeAcontecimiento, double latitud, double longitud,
@@ -193,5 +201,40 @@ public class Hecho {
 
   public LocalDateTime getFechaDeCarga() {
     return data.getFechaDeCarga();
+  }
+
+  // Algoritmos de consenso asociados al hecho
+  public void setAlgoritmosConsensoDesdeInstancias(List<AAlgoritmoConsenso> algoritmos) {
+    AlgoritmoAttributeConverter conv = new AlgoritmoAttributeConverter();
+    if (algoritmos == null) {
+      this.algoritmosConsenso = new ArrayList<>();
+    } else {
+      this.algoritmosConsenso = algoritmos.stream()
+          .map(conv::convertToDatabaseColumn)
+          .collect(Collectors.toList());
+    }
+  }
+
+  public List<AAlgoritmoConsenso> obtenerAlgoritmosConsenso() {
+    AlgoritmoAttributeConverter conv = new AlgoritmoAttributeConverter();
+    return this.algoritmosConsenso.stream()
+        .map(conv::convertToEntityAttribute)
+        .collect(Collectors.toList());
+  }
+
+  public void agregarAlgoritmoConsenso(AAlgoritmoConsenso algoritmo) {
+    AlgoritmoAttributeConverter conv = new AlgoritmoAttributeConverter();
+    String code = conv.convertToDatabaseColumn(algoritmo);
+    if (code != null && !code.isBlank() && !this.algoritmosConsenso.contains(code)) {
+      this.algoritmosConsenso.add(code);
+    }
+  }
+
+  public void removerAlgoritmoConsenso(AAlgoritmoConsenso algoritmo) {
+    AlgoritmoAttributeConverter conv = new AlgoritmoAttributeConverter();
+    String code = conv.convertToDatabaseColumn(algoritmo);
+    if (code != null) {
+      this.algoritmosConsenso.remove(code);
+    }
   }
 }
