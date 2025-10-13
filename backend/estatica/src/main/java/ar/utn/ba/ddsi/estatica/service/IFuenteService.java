@@ -5,4 +5,5 @@ import java.util.List;
 
 public interface IFuenteService {
   List<HechoOutputDTO> getAllHechosNuevos();
+  void importarCsvsSiHay();
 }

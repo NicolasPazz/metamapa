@@ -2,8 +2,11 @@ package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
-@AllArgsConstructor public class CriterioIgualdad implements Criterio {
+@NoArgsConstructor(force = true)
+@AllArgsConstructor
+public class CriterioIgualdad implements Criterio {
   private final String cadenaAComparar;
   private final TipoDato tipoDeDato;
 

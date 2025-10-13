@@ -16,4 +16,5 @@ public class SolicitudOutputDTO {
   private EstadoSolicitud estado;
   @JsonProperty("id_contribuyente")
   private Long idContribuyente;
+  private Boolean spam;
 }

@@ -1,13 +1,6 @@
 package ar.utn.ba.ddsi.dinamica.domain.repositorie.impl;
 
-import ar.utn.ba.ddsi.dinamica.domain.repositorie.IContribuyentesRepository;
-import ar.utn.ba.ddsi.dinamica.domain.user.Contribuyente;
-import org.springframework.stereotype.Repository;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
-@Repository
+/*@Repository
 public class ContribuyentesRepository implements IContribuyentesRepository {
     private List<Contribuyente> contribuyentes;
     private final AtomicLong idGenerador = new AtomicLong(1);
@@ -40,4 +33,4 @@ public class ContribuyentesRepository implements IContribuyentesRepository {
     public void delete(Contribuyente contribuyente) {
         this.contribuyentes.remove(contribuyente);
     }
-}
+}*/

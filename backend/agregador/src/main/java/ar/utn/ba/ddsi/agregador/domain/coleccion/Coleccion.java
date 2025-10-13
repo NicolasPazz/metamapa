@@ -1,5 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion;
 
+import ar.utn.ba.ddsi.agregador.converter.AlgoritmoAttributeConverter;
+import ar.utn.ba.ddsi.agregador.converter.CriterioAttributeConverter;
 import ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
@@ -8,29 +10,38 @@ import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 
 import java.util.ArrayList;
 import java.util.UUID;
-import lombok.Getter;
-import lombok.Setter;
+
+import jakarta.persistence.*;
+import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
+
 import java.util.List;
 
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor(force = true)
+@Entity
+@Table(name = "coleccion")
 public class Coleccion {
-  @Getter
+  @Id
+  @GeneratedValue(generator = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private final String handle;
-  @Getter
-  @Setter
+  @Column(name = "titulo")
   private String titulo;
-  @Getter
-  @Setter
+  @Column(name = "descripcion")
   private String descripcion;
-  @Setter
+  @OneToMany
+  @JoinColumn(name = "coleccion_id")
   private List<Hecho> hechos;
-  @Getter
-  @Setter
+  @Convert(converter = CriterioAttributeConverter.class)
   private Criterio criterioDePertenencia;
-  @Getter
-  @Setter
+  @Convert(converter = AlgoritmoAttributeConverter.class)
   private AAlgoritmoConsenso algoritmoConsenso;
-  @Getter
-  @Setter
+  @OneToMany
+  @JoinColumn(name = "coleccion_id")
   private List<Hecho> hechosConsensuados;
 
   public Coleccion(String titulo, String descripcion, Criterio criterioDePertenencia, AAlgoritmoConsenso algoritmoConsenso) {

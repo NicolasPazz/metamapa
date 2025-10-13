@@ -1,21 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.repositorie.impl;
 
-import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
-import ar.utn.ba.ddsi.agregador.domain.hecho.*;
-import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
-import ar.utn.ba.ddsi.agregador.domain.repositorie.IContribuyentesRepository;
-import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
-import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
-import org.springframework.stereotype.Repository;
-import java.util.ArrayList;
-import java.util.List;
-
+/*
 @Slf4j
 @Repository
 public class HechosRepository implements IHechosRepository {
@@ -168,3 +153,4 @@ public class HechosRepository implements IHechosRepository {
         .collect(Collectors.toSet());
   }
 }
+*/

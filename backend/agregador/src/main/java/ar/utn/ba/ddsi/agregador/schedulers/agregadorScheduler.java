@@ -11,36 +11,34 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class agregadorScheduler {
+public class AgregadorScheduler {
 
     private final AgregadorService agregadorService;
     private final ColeccionesService coleccionesService;
 
+
     @PostConstruct
     public void onStartup() {
-        log.info("⌛ onStartup: Scheduler de agregador iniciado, esto puede tardar hasta dos minutos");
-
+        log.info("⌛ onStartup: iniciando actualización de hechos (puede tardar ~2 min)...");
         try {
             agregadorService.actualizarHechos();
-            log.info("✅ onStartup: Scheduler de agregador finalizado, hechos actualizados correctamente");
+            log.info("✅ onStartup: hechos actualizados. Aviso a Estadísticas…");
         } catch (Exception e) {
-            log.error("❌ Error en onStartup al actualizar hechos", e);
+            log.error("❌ onStartup: error actualizando hechos", e);
         }
 
-        this.actualizarColeccionesSegunConsenso();
+        actualizarColeccionesSegunConsenso();
     }
 
     @Scheduled(cron = "0 0 * * * *")
     public void refrescarHechosYColecciones() {
-        new Thread(() -> {
-            try {
-                log.info("⌛ [Scheduler] Iniciando actualización de hechos en hilo separado...");
-                agregadorService.actualizarHechos();
-                log.info("✅ [Scheduler] Actualización de hechos finalizada correctamente.");
-            } catch (Exception e) {
-                log.error("❌ [Scheduler] Error al actualizar hechos", e);
-            }
-        }, "cron-refrescarHechosYColecciones").start();
+        try {
+            log.info("⌛ [Scheduler] Actualizando hechos…");
+            agregadorService.actualizarHechos();
+            log.info("✅ [Scheduler] Hechos actualizados.");
+        } catch (Exception e) {
+            log.error("❌ [Scheduler] Error al actualizar hechos", e);
+        }
     }
 
     /**
@@ -50,20 +48,13 @@ public class agregadorScheduler {
      */
     @Scheduled(cron = "0 0 3 * * *")
     public void actualizarColeccionesSegunConsenso() {
-        new Thread(() -> {
-            try {
-                log.info("⌛ [Scheduler] Iniciando actualización de hechos consensuados de todas las colecciones...");
-                long startTime = System.currentTimeMillis();
-                
-                coleccionesService.actualizarHechosSegunConsenso();
-                
-                long endTime = System.currentTimeMillis();
-                long duration = endTime - startTime;
-                
-                log.info("✅ [Scheduler] Actualización de hechos consensuados finalizada correctamente en {} ms", duration);
-            } catch (Exception e) {
-                log.error("❌ [Scheduler] Error al actualizar hechos consensuados de las colecciones", e);
-            }
-        }, "cron-actualizarColeccionesSegunConsenso").start();
+        try {
+            log.info("⌛ [Scheduler] Actualizando hechos consensuados de todas las colecciones…");
+            long t0 = System.currentTimeMillis();
+            coleccionesService.actualizarHechosSegunConsenso();
+            log.info("✅ [Scheduler] Consenso actualizado en {} ms", System.currentTimeMillis() - t0);
+        } catch (Exception e) {
+            log.error("❌ [Scheduler] Error al actualizar consenso", e);
+        }
     }
 }

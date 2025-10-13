@@ -1,12 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.repositorie.impl;
 
-import ar.utn.ba.ddsi.agregador.domain.repositorie.ISolicitudesRepository;
-import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
-import java.util.concurrent.atomic.AtomicLong;
-import org.springframework.stereotype.Repository;
-import java.util.ArrayList;
-import java.util.List;
-
+/*
 @Repository
 public class SolicitudesRepository implements ISolicitudesRepository {
 
@@ -38,3 +32,4 @@ public class SolicitudesRepository implements ISolicitudesRepository {
   }
 
 }
+*/

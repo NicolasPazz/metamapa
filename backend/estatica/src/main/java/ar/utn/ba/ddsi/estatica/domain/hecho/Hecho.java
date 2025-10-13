@@ -1,107 +1,77 @@
 package ar.utn.ba.ddsi.estatica.domain.hecho;
 
-import ar.utn.ba.ddsi.estatica.domain.user.Contribuyente;
-import lombok.*;
+import ar.utn.ba.ddsi.estatica.domain.dto.output.HechoOutputDTO;
+import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvDate;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@Entity
+@Table(name = "hecho")
 public class Hecho {
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  private DataHecho data;
+
+  @CsvBindByName(column = "Título")
+  private String titulo;
+
+  @CsvBindByName(column = "Descripción")
+  @Column(columnDefinition = "TEXT")
+  private String descripcion;
+
+  @CsvBindByName(column = "Categoría")
+  private String nombreCategoria;
+
+  @CsvBindByName(column = "Latitud")
+  private Double latitud;
+
+  @CsvBindByName(column = "Longitud")
+  private Double longitud;
+
+  @CsvDate("dd/MM/yyyy")
+  @CsvBindByName(column = "Fecha del hecho")
+  private LocalDate fechaDeAcontecimiento;
+
+  private LocalDateTime fechaDeCarga;
+
+  @Enumerated(EnumType.ORDINAL)
   private OrigenHecho origen;
-  private EstadoHecho estado;
-  private Contribuyente contribuyente;
-  @Builder.Default
-  private Set<Etiqueta> etiquetas = new HashSet<>();
-  @Builder.Default
-  private List<ContenidoMultimedia> multimedia = new ArrayList<>();
-  @Builder.Default
-  private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
-  private Categoria categoria;
 
-  // CSV
-  public Hecho(DataHecho data, OrigenHecho origen) {
-    this.data = data;
-    this.origen = origen;
-    this.transiciones = new ArrayList<>();
-    transicionarEstado(EstadoHecho.VISIBLE);
-    // TODO: Los campos que no maneja el CSV como se inicializan?
-    this.contribuyente = null;
-    this.categoria = null;
-    this.etiquetas = new HashSet<>();
-    this.multimedia = new ArrayList<>();
+  private Boolean enviado;
+
+  public Hecho() {
+    this.fechaDeCarga = LocalDateTime.now();
+    this.origen = OrigenHecho.DATASET;
+    this.enviado = false;
   }
 
-  // MANUAL / CONTRIBUYENTE
-  public Hecho(String titulo, String descripcion, Categoria categoria, LocalDate fechaDeAcontecimiento, double latitud, double longitud, List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Contribuyente contribuyente) {
-    DataHecho dataHecho = new DataHecho();
-    dataHecho.setTitulo(titulo);
-    dataHecho.setDescripcion(descripcion);
-    dataHecho.setFechaDeAcontecimiento(fechaDeAcontecimiento);
-    dataHecho.setLatitud(latitud);
-    dataHecho.setLongitud(longitud);
-    dataHecho.setNombreCategoria(categoria.getNombre());
-
-    this.data = dataHecho;
-    this.categoria = categoria;
-    this.multimedia = multimedia;
-    this.etiquetas = etiquetas;
-    this.contribuyente = contribuyente;
-
-    if(contribuyente != null) {
-      this.origen = OrigenHecho.CONTRIBUYENTE;
-    } else {
-      this.origen = OrigenHecho.MANUAL;
-    }
-
-    transicionarEstado(EstadoHecho.VISIBLE);
-  }
-
-  public void transicionarEstado(EstadoHecho estado) {
-    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDateTime.now()));
-    this.estado = estado;
-  }
-
-  public String getTitulo() {
-    return data.getTitulo();
-  }
-
-  public String getDescripcion() {
-    return data.getDescripcion();
-  }
-
-  public Double getLatitud() {
-    return data.getLatitud();
-  }
-
-  public Double getLongitud() {
-    return data.getLongitud();
-  }
-
-  public LocalDate getFechaDeAcontecimiento() {
-    return data.getFechaDeAcontecimiento();
-  }
-
-  public LocalDateTime getFechaDeCarga() {
-    return data.getFechaDeCarga();
-  }
-
-  public String getNombreCategoria() {
-    return data.getNombreCategoria();
-  }
-
-  public List<String> getMultimediaPaths() {
-    return multimedia.stream()
-        .map(ContenidoMultimedia::getPathArchivo)
-        .toList();
+  public HechoOutputDTO toOutputDTO() {
+    return new HechoOutputDTO(
+        this.id,
+        this.titulo,
+        this.descripcion,
+        this.nombreCategoria,
+        this.latitud,
+        this.longitud,
+        this.fechaDeAcontecimiento,
+        this.fechaDeCarga
+    );
   }
 }

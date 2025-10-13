@@ -114,5 +114,9 @@ public class AdminController {
     return coleccionesService.eliminarColeccion(handle);
   }
 
+  @GetMapping("/solicitudes")
+  public ResponseEntity<List<SolicitudOutputDTO>> getAllSolicitudes() {
+    return solicitudesService.getAll();
+  }
 }
 

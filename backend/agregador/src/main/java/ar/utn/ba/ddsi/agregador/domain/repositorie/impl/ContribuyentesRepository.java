@@ -1,10 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.repositorie.impl;
 
-import ar.utn.ba.ddsi.agregador.domain.repositorie.IContribuyentesRepository;
-import org.springframework.stereotype.Repository;
-import java.util.ArrayList;
-import java.util.List;
-
+/*
 @Repository
 public class ContribuyentesRepository implements IContribuyentesRepository {
   private List<Long> contribuyentes;
@@ -38,3 +34,4 @@ public class ContribuyentesRepository implements IContribuyentesRepository {
     this.contribuyentes.remove(contribuyente);
   }
 }
+*/

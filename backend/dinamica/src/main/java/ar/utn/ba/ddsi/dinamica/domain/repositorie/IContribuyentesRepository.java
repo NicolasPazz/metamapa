@@ -1,11 +1,11 @@
 package ar.utn.ba.ddsi.dinamica.domain.repositorie;
 
 import ar.utn.ba.ddsi.dinamica.domain.user.Contribuyente;
-import java.util.List;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface IContribuyentesRepository {
-    public Contribuyente findById(Long id);
+public interface IContribuyentesRepository extends JpaRepository<Contribuyente, Long> {
+    /*public Contribuyente findById(Long id);
     public List<Contribuyente> findAll();
     public void save(Contribuyente contribuyente);
-    public void delete(Contribuyente contribuyente);
+    public void delete(Contribuyente contribuyente);*/
 }

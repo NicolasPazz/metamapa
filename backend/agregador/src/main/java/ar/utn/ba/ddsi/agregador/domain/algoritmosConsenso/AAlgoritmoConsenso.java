@@ -1,53 +1,61 @@
 package ar.utn.ba.ddsi.agregador.domain.algoritmosConsenso;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
-
+import jakarta.persistence.Id;
 import java.util.List;
 import java.util.Objects;
 
 public abstract class AAlgoritmoConsenso {
 
-    public abstract Boolean esConsensuado(Hecho hecho, int fuentesTotales, List<Hecho> hechos);
+  @Id
+  private Long algoritmoId;
 
-    public int contarApariciones(Hecho hecho, List<Hecho> hechos) {
-        int cont = 0;
+  public abstract Boolean esConsensuado(Hecho hecho, int fuentesTotales, List<Hecho> hechos);
 
-        for(Hecho vHecho : hechos) {
-            if(sonSimilares(hecho,vHecho)) cont++;
-        }
+  public int contarApariciones(Hecho hecho, List<Hecho> hechos) {
+    int cont = 0;
 
-        return cont;
+    for (Hecho vHecho : hechos) {
+      if (sonSimilares(hecho, vHecho)) cont++;
     }
 
-    private boolean sonSimilares(Hecho h1, Hecho h2) {
-        return igualesIgnoreCaseTrim(h1.getTitulo(), h2.getTitulo()) &&
-                igualesIgnoreCaseTrim(h1.getDescripcion(), h2.getDescripcion()) &&
-                Objects.equals(h1.getLatitud(), h2.getLatitud()) &&
-                Objects.equals(h1.getLongitud(), h2.getLongitud()) &&
-                Objects.equals(h1.getFechaDeAcontecimiento(), h2.getFechaDeAcontecimiento());
-    }
+    return cont;
+  }
 
-    private boolean igualesIgnoreCaseTrim(String a, String b) {
-        if (a == null || b == null) return Objects.equals(a, b);
-        return a.trim().equalsIgnoreCase(b.trim());
-    }
+  private boolean sonSimilares(Hecho h1, Hecho h2) {
+    return igualesIgnoreCaseTrim(h1.getTitulo(), h2.getTitulo()) &&
+        igualesIgnoreCaseTrim(h1.getDescripcion(), h2.getDescripcion()) &&
+        Objects.equals(h1.getLatitud(), h2.getLatitud()) &&
+        Objects.equals(h1.getLongitud(), h2.getLongitud()) &&
+        Objects.equals(h1.getFechaDeAcontecimiento(), h2.getFechaDeAcontecimiento());
+  }
 
-    public long contarConTituloIgual(Hecho hecho, List<Hecho> hechos) {
-        String titulo = hecho.getTitulo().toLowerCase().trim();
-        return hechos.stream()
-                .filter(h -> h.getTitulo() != null && h.getTitulo().toLowerCase().trim().equals(titulo))
-                .count();
-    }
+  private boolean igualesIgnoreCaseTrim(String a, String b) {
+    if (a == null || b == null) return Objects.equals(a, b);
+    return a.trim().equalsIgnoreCase(b.trim());
+  }
 
-    public boolean tieneConflictosDeTitulo(Hecho hecho, List<Hecho> hechos) {
-        return contarApariciones(hecho, hechos) != contarConTituloIgual(hecho, hechos);
-    }
+  public long contarConTituloIgual(Hecho hecho, List<Hecho> hechos) {
+    String titulo = hecho.getTitulo().toLowerCase().trim();
+    return hechos.stream()
+        .filter(h -> h.getTitulo() != null && h.getTitulo().toLowerCase().trim().equals(titulo))
+        .count();
+  }
+
+  public boolean tieneConflictosDeTitulo(Hecho hecho, List<Hecho> hechos) {
+    return contarApariciones(hecho, hechos) != contarConTituloIgual(hecho, hechos);
+  }
 
 
+  public Boolean aparicionesMayorA(Hecho hecho, int comparador, List<Hecho> hechos) {
+    return this.contarApariciones(hecho, hechos) >= comparador;
+  }
 
+  public Long getId() {
+    return algoritmoId;
+  }
 
-    public Boolean aparicionesMayorA(Hecho hecho, int comparador, List<Hecho> hechos) {
-        return this.contarApariciones(hecho, hechos) >= comparador;
-    }
+  public void setId(Long id) {
+    this.algoritmoId = id;
+  }
 }

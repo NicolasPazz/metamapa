@@ -4,20 +4,16 @@ import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.domain.repositorie.IContribuyentesRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.ISolicitudesRepository;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.EstadoSolicitud;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
-import ar.utn.ba.ddsi.agregador.domain.solicitud.TransicionEstadoSolicitud;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.Validacion;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.ValidacionLongitud;
-import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.detector.DetectorDeSpam;
 import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.detector.DetectorDeSpamTFIDF;
 import ar.utn.ba.ddsi.agregador.service.ISolicitudesService;
-import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,10 +26,9 @@ import org.springframework.stereotype.Service;
 public class SolicitudesService implements ISolicitudesService {
   private final ISolicitudesRepository solicitudesRepository;
   private final IHechosRepository hechosRepository;
-  private final IContribuyentesRepository contribuyentesRepository;
   private final IdService idService;
   private final FuentesService fuentesService;
-  private List<Validacion> validaciones = List.of(
+  private final List<Validacion> validaciones = List.of(
       new ValidacionLongitud(500),
       new DetectorDeSpamTFIDF()
   );
@@ -51,10 +46,11 @@ public class SolicitudesService implements ISolicitudesService {
     Long idHechoUnico = solicitudInputDTO.getIdHecho();
 
     // Buscar el hecho localmente
-    Hecho hecho = hechosRepository.findById(idHechoUnico);
+    Optional<Hecho> hecho = hechosRepository.findById(idHechoUnico);
+    Hecho hechoEncontrado = hecho.get();
     if (hecho != null) {
       SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(
-          hecho, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getIdContribuyente()
+          hechoEncontrado, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getIdContribuyente()
       );
       solicitudesRepository.save(solicitud);
       return ResponseEntity.ok(solicitud.toDTO());
@@ -87,7 +83,7 @@ public class SolicitudesService implements ISolicitudesService {
 
   @Override
   public ResponseEntity<?> actualizarEstado(Long id, SolicitudOutputDTO dto) {
-    if(id == null || dto == null) {
+    if (id == null || dto == null) {
       return ResponseEntity.badRequest().body("Debe proporcionar un ID de solicitud y un DTO válido.");
     }
     if (dto.getEstado() == null) {
@@ -115,25 +111,35 @@ public class SolicitudesService implements ISolicitudesService {
 
   @Override
   public void aceptar(Long idSolicitud) {
-    SolicitudDeEliminacion solicitud = solicitudesRepository.findById(idSolicitud);
+    Optional<SolicitudDeEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
+    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
     if (solicitud == null) {
       throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
     }
 
-    solicitud.aceptar();
-    hechosRepository.ocultar(solicitud.getHecho().getId());
+    solicitudEncontrada.aceptar();
+    hechosRepository.ocultar(solicitudEncontrada.getHecho().getId());
     log.info("[SolicitudesService] Solicitud {} aceptada.", idSolicitud);
   }
 
   @Override
   public void rechazar(Long idSolicitud) {
-    SolicitudDeEliminacion solicitud = solicitudesRepository.findById(idSolicitud);
+    Optional<SolicitudDeEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
+    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
     if (solicitud == null) {
       throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
     }
 
-    solicitud.rechazar();
-    solicitudesRepository.eliminar(idSolicitud);
+    solicitudEncontrada.rechazar();
+    solicitudesRepository.delete(solicitudEncontrada);
     log.info("[SolicitudesService] Solicitud {} rechazada.", idSolicitud);
+  }
+
+  public ResponseEntity<List<SolicitudOutputDTO>> getAll() {
+    List<SolicitudDeEliminacion> solicitudes = solicitudesRepository.findAll();
+    List<SolicitudOutputDTO> dtos = solicitudes.stream()
+        .map(SolicitudDeEliminacion::toDTO)
+        .toList();
+    return ResponseEntity.ok(dtos);
   }
 }

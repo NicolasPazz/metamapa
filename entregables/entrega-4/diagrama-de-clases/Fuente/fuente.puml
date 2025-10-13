@@ -1,0 +1,86 @@
+@startuml
+package "fuente" {
+class Hecho {
+        - id: Long
+        - contenidoMultimedia: List<ContenidoMultimedia>
+        - contribuyente: Contribuyente
+        - data: DataHecho
+        - etiquetas: Set<Etiqueta>
+        - estado: EstadoHecho
+        - origen: OrigenHecho
+        - transicionesDeEstado: List<TransicionEstadoHecho>
+        - categoria: Categoria
+
+        + agregarEtiqueta(Etiqueta): Void
+        + contieneEtiqueta(Etiqueta): Boolean
+        + esDuplicadoDe(Hecho): Boolean
+        + esVisible(): Boolean
+        + ocultar(): Void
+        + esDeCategoria(Categoria): Boolean
+        + trancisionarEstado(EstadoHecho): Void
+        + mapToDTO(): HechoDTO
+    }
+
+class DataHecho {
+        - descripcion: String
+        - fechaDeAcontecimiento: LocalDate
+        - fechaDeCarga: LocalDate
+        - latitud: Double
+        - longitud: Double
+        - titulo: String
+    }
+
+class Categoria {
+        - categoria: String
+    }
+
+class ContenidoMultimedia {
+        - pathArchivo: String
+        - tipoContenido: TipoContenido
+    }
+
+ContenidoMultimedia --> TipoContenido
+
+class Etiqueta {
+        - nombre: String
+    }
+
+Hecho --> Contribuyente
+    Hecho *-- DataHecho
+    Hecho --> EstadoHecho
+    Hecho --> OrigenHecho
+    Hecho --> " * " ContenidoMultimedia
+    Hecho --> " * " Etiqueta
+    Hecho --> " * " TransicionEstadoHecho
+    Hecho --> Categoria
+
+class TransicionEstadoHecho {
+        - estadoFinal: EstadoHecho
+        - fecha: LocalDate
+    }
+
+TransicionEstadoHecho --> EstadoHecho
+
+enum EstadoHecho {
+        OCULTO
+        VISIBLE
+    }
+
+enum TipoContenido {
+        AUDIO
+        IMAGEN
+        VIDEO
+    }
+
+enum OrigenHecho {
+        CONTRIBUYENTE
+        DATASET
+        MANUAL
+    }
+
+}
+
+
+
+
+@enduml

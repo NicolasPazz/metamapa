@@ -1,15 +1,6 @@
 package ar.utn.ba.ddsi.dinamica.domain.repositorie.impl;
 
-import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
-import java.util.concurrent.atomic.AtomicLong;
-import org.springframework.stereotype.Repository;
-
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-
-@Repository
+/*@Repository
 public class HechosRepository implements IHechosRepository {
 
   private final List<Hecho> hechos = new ArrayList<>();
@@ -62,3 +53,4 @@ public class HechosRepository implements IHechosRepository {
     this.hechos.remove(hecho);
   }
 }
+*/

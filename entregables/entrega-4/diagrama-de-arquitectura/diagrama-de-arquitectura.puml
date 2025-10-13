@@ -1,0 +1,88 @@
+@startuml
+!theme plain
+
+skinparam package {
+    BackgroundColor #E8F4FD
+    BorderColor #4472C4
+    FontColor #1F4E79
+}
+
+skinparam component {
+    BackgroundColor #FFF2CC
+    BorderColor #D6B656
+    FontColor #7F6000
+}
+
+skinparam cloud {
+    BackgroundColor #F8CECC
+    BorderColor #B85450
+    FontColor #5F2C29
+}
+
+skinparam database {
+    BackgroundColor #E1D5E7
+    BorderColor #9673A6
+    FontColor #432D54
+}
+
+skinparam interface {
+    BackgroundColor #FFFFFF
+    BorderColor #333333
+    FontColor #000000
+}
+
+title "Diagrama de Arquitectura - MetaMapa"
+
+' Servicios externos
+cloud "API Externa ONG" as external_ong
+cloud "API Externa MetaMapa" as external_metamapa
+
+' Interfaces expuestas
+interface "Hechos\n/api/hechos" as hechos_api
+interface "Hechos\n/api/hechos/nuevos" as hechos_nuevos_api
+interface "Estadisticas\n/api/estadisticas" as estadisticas_api
+
+' Servicios principales
+component "Proxy ONG\n:8083" as proxy_ong
+component "Proxy MetaMapa\n:8086" as proxy_metamapa
+component "Estatica\n:8082" as estatica
+component "Dinamica\n:8081" as dinamica
+component "Agregador\n:8084" as agregador
+component "Estadisticas\n:8085" as estadisticas
+
+' Bases de datos
+database "DB Hechos" as db_hechos
+database "DB Colecciones" as db_colecciones
+database "DB Solicitudes" as db_solicitudes
+database "DB Contribuyentes" as db_contribuyentes
+
+' Conexiones externas
+external_ong --> proxy_ong
+external_metamapa --> proxy_metamapa
+
+' Interfaces expuestas
+proxy_ong .up.> hechos_nuevos_api : expone
+proxy_metamapa .up.> hechos_api : expone
+estatica .up.> hechos_nuevos_api : expone
+dinamica .up.> hechos_nuevos_api : expone
+estadisticas .up.> estadisticas_api : expone
+
+' Conexiones del Agregador
+agregador ..> hechos_api : consume
+agregador ..> hechos_nuevos_api : consume
+
+' Conexiones de Estadisticas
+estadisticas ..> agregador : consume
+
+' Conexiones a bases de datos
+proxy_ong --> db_hechos
+estatica --> db_hechos
+dinamica --> db_hechos
+dinamica --> db_solicitudes
+dinamica --> db_contribuyentes
+agregador --> db_hechos
+agregador --> db_colecciones
+agregador --> db_solicitudes
+agregador --> db_contribuyentes
+
+@enduml
