@@ -13,7 +13,7 @@
         <div th:each="coleccion : ${colecciones}" class="coleccion-card">
           <h3 th:text="${coleccion.nombre}"></h3>
           <p th:text="${coleccion.descripcion}"></p>
-          <a href="#" class="btn primary">Ver más</a>
+          <a th:href="@{/colecciones/{handle}/hechos(handle=${coleccion.handle})}" class="btn primary">Ver más</a>
         </div>
       </div>
     </section>
