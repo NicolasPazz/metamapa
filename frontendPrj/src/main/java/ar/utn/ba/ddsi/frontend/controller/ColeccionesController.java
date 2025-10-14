@@ -18,12 +18,16 @@ public class ColeccionController {
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
         model.addAttribute("colecciones", colecciones);
         model.addAttribute("titulo", "Listado de colecciones");
+
+        return "colecciones/listacolecciones";
     }
 
     @GetMapping("/{handle}/hechos")
     public String listarHechosDeColeccion(Model model, @PathVariable String handle) {
         List<HechoDTO> hechos = coleccionService.getHechosColeccionByHandle(handle);
         model.addAttribute("hechos", hechos);
+
+        return "hechos/hechosencoleccion";
     }
 
 }
