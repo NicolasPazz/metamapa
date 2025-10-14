@@ -1,0 +1,43 @@
+@startuml
+package "Agregador" {
+class Coleccion {
+        - criterioDePertenencia: Criterio
+        - descripcion: String
+        - titulo: String
+        - handle: String
+        - hechos: List<Hecho>
+        - hechosConsensuados: List<Hecho>
+        - algoritmoConsenso: AAlgoritmoConsenso
+
+        + setearHechosConsensuados(fuentesTotales: Int): Void
+        + getHechos(): List<Hecho>
+        + generarHandle(String): String
+        + mapToDTO(): ColeccionDTO
+        + actualizar(): Void
+    }
+
+abstract AAlgoritmoConsenso {
+        {abstract}+ esConsensuado(): Boolean
+        + contarApariciones(hecho: Hecho, hechos: List<Hecho>): Int
+        + aparicionesMayorA(hecho: Hecho, comparador: int, hechos: List<Hecho>)
+        - sonSimilares(h1: Hecho, h2: Hecho): Boolean
+        - igualesIgnoreCaseTrim(a: String, b: String): Boolean
+        - contarConTituloIgual(hecho: Hecho, hechos: List<Hecho>): Long
+        - tieneConflictosDeTitulo(hecho: Hecho, hechos: List<Hecho>)
+}
+
+class Absoluta extends AAlgoritmoConsenso {
+        + esConsensuado(): Boolean
+}
+
+class MayoriaSimple extends AAlgoritmoConsenso {
+        + esConsensuado(): Boolean
+}
+
+class MultiplesMenciones extends AAlgoritmoConsenso {
+        + esConsensuado(): Boolean
+}
+
+Coleccion -->AAlgoritmoConsenso
+}
+@enduml

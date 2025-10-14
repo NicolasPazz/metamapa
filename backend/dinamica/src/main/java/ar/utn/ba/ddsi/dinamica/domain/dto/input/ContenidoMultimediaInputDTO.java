@@ -1,18 +1,18 @@
 package ar.utn.ba.ddsi.dinamica.domain.dto.input;
 
-import jakarta.persistence.*;
+import ar.utn.ba.ddsi.dinamica.domain.hecho.ContenidoMultimedia;
+import ar.utn.ba.ddsi.dinamica.domain.hecho.TipoContenido;
+import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-@Entity
 public class ContenidoMultimediaInputDTO {
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    Long id;
-    @Column(name = "path")
-    String pathArchivo;
-    @Column(name = "tipoContenido")
-    String tipoContenido;
+  String pathArchivo;
+  String tipoContenido;
+
+  public ContenidoMultimedia toContenidoMultimedia(SolicitudHecho solicitud) {
+    return new ContenidoMultimedia(this.pathArchivo, TipoContenido.valueOf(this.tipoContenido), solicitud);
+  }
 }
