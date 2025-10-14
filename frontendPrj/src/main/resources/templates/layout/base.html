@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title th:text="${titulo} + ' - MetaMapa'"></title>
+        <link th:href="@{/css/landing.css}" rel="stylesheet">
+    </head>
+    <body>
+        <!-- Header -->
+        <header class="navbar">
+            <div class="logo">MetaMapa</div>
+            <nav class="nav-buttons">
+                <a th:href="@{/access/login.html}" class="btn secondary">Cerrar sesión</a>
+            </nav>
+        </header>
+
+        <-- Contenido principal -->
+        <div th:replace=":: contenido"></div>
+    </body>
+</html>

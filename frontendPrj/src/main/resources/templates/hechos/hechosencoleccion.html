@@ -1,0 +1,84 @@
+<html th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+
+  <!-- Hechos in a collection -->
+  <section class="hechos-block">
+    <h2>Colección: Derechos Humanos</h2>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input type="date" name="fecha">
+      <select name="ubicacion">
+        <option>Ubicación</option>
+        <option>Buenos Aires</option>
+        <option>Córdoba</option>
+        <option>Rosario</option>
+      </select>
+      <select name="multimedia">
+        <option>Multimedia</option>
+        <option>Con imágenes</option>
+        <option>Con video</option>
+        <option>Sin multimedia</option>
+      </select>
+      <select name="fuente">
+        <option>Fuente</option>
+        <option>ONG</option>
+        <option>Medios</option>
+        <option>Ciudadanía</option>
+      </select>
+    </div>
+
+    <!-- Toggle navigation -->
+    <div class="toggle">
+      <a href="#" class="active">Irrestricta</a>
+      <a href="#">Curada</a>
+    </div>
+
+    <!-- Hechos list -->
+    <div class="hechos-grid">
+      <div th:each="hecho : ${hechos}" class="hecho-card">
+        <h3>${hecho.nombre}</h3>
+        <p>${hecho.descripcion}</p>
+        <a th:href="#hecho">Ver detalles</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Details panels -->
+  <div id="hecho1" class="details-panel">
+    <h3>Hecho 1</h3>
+    <p><strong>Ubicación:</strong> Buenos Aires</p>
+    <p><strong>Multimedia:</strong> 2 imágenes</p>
+    <p><strong>Fuente:</strong> Ciudadanía</p>
+
+    <label for="req1">Solicitud de eliminación (máx 500 caracteres)</label>
+    <textarea id="req1" maxlength="500" placeholder="Escribe tu justificación..."></textarea>
+    <button>Enviar solicitud</button>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+
+  <div id="hecho2" class="details-panel">
+    <h3>Hecho 2</h3>
+    <p><strong>Ubicación:</strong> Córdoba</p>
+    <p><strong>Multimedia:</strong> Video</p>
+    <p><strong>Fuente:</strong> ONG</p>
+
+    <label for="req2">Solicitud de eliminación (máx 500 caracteres)</label>
+    <textarea id="req2" maxlength="500" placeholder="Escribe tu justificación..."></textarea>
+    <button>Enviar solicitud</button>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+
+  <div id="hecho3" class="details-panel">
+    <h3>Hecho 3</h3>
+    <p><strong>Ubicación:</strong> Rosario</p>
+    <p><strong>Multimedia:</strong> Ninguno</p>
+    <p><strong>Fuente:</strong> Medios</p>
+
+    <label for="req3">Solicitud de eliminación (máx 500 caracteres)</label>
+    <textarea id="req3" maxlength="500" placeholder="Escribe tu justificación..."></textarea>
+    <button>Enviar solicitud</button>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+</div>
+</html>
