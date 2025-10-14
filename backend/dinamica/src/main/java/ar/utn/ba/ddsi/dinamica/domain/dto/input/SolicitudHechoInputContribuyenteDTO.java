@@ -24,5 +24,4 @@ public class SolicitudHechoInputContribuyenteDTO {
     private String fechaDeAcontecimiento;
     @JsonProperty("multimedia")
     private List<ContenidoMultimediaInputDTO> multimedia;
-
 }

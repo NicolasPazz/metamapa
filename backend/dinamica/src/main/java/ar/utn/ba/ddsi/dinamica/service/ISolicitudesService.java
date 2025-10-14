@@ -13,9 +13,9 @@ public interface ISolicitudesService {
 
     SolicitudOutputDTO obtenerSolicitud(Long id);
 
-    SolicitudOutputDTO modificarSolicitud(Long idSolicitud, SolicitudModificarUserInputDTO inputDTO);
+    SolicitudOutputDTO modificarSolicitud(Long id, SolicitudModificarUserInputDTO inputDTO);
 
     List<SolicitudOutputDTO> buscarTodas();
 
-    SolicitudOutputDTO revisionSolicitud(Long idSolicitud, SolicitudModificarAdminInputDTO inputDTO);
+    SolicitudOutputDTO revisionSolicitud(Long id, SolicitudModificarAdminInputDTO inputDTO);
 }

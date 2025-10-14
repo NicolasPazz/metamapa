@@ -36,11 +36,8 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class FuenteService implements IFuenteService {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(FuenteService.class);
-
   private final IHechosRepository hechosRepository;
-
   private final Map<String, String> csvHashes = new HashMap<>();
 
   public FuenteService(IHechosRepository hechosRepository) {
@@ -58,6 +55,7 @@ public class FuenteService implements IFuenteService {
     }
     LOGGER.info("Importación automática de CSV finalizada.");
   }
+
 
   @Override
   @Transactional

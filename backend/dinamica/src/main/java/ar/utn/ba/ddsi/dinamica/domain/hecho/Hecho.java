@@ -1,9 +1,8 @@
 package ar.utn.ba.ddsi.dinamica.domain.hecho;
 
-import jakarta.persistence.CollectionTable;
+import ar.utn.ba.ddsi.dinamica.domain.dto.output.HechoOutputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -11,14 +10,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,71 +34,76 @@ public class Hecho {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  @Column(name = "id_solicitud")
-  private Long idSolicitud;
-  @Embedded
-  private DataHecho data;
+
+  @Column(name = "titulo")
+  private String titulo;
+
+  @Column(name = "descripcion")
+  private String descripcion;
+
+  @Column(name = "categoria")
+  private String nombreCategoria;
+
+  @Column(name = "latitud")
+  private Double latitud;
+
+  @Column(name = "longitud")
+  private Double longitud;
+
+  @Column(name = "fecha_de_acontecimiento")
+  private LocalDate fechaDeAcontecimiento;
+
+  @Column(name = "fecha_de_carga")
+  @Builder.Default
+  private LocalDateTime fechaDeCarga = LocalDateTime.now();
+
   @Enumerated(EnumType.ORDINAL)
   private OrigenHecho origen;
+
   @Enumerated(EnumType.ORDINAL)
   private EstadoHecho estado;
+
   @Column(name = "contribuyente_id", nullable = true)
-  private Long idContribuyente;  // private Contribuyente contribuyente;
-  @ElementCollection
-  @CollectionTable(
-      name = "hecho_etiquetas",
-      joinColumns = @JoinColumn(name = "hecho_id")
-  )
-  @Column(name = "etiquetas")
+  private Long idContribuyente;
+
+  private Boolean enviado;
+
+  @OneToOne
+  @JoinColumn(name = "solicitud_id")
+  private SolicitudHecho solicitud;
+
+  @Transient
   @Builder.Default
-  private Set<String> etiquetas = new HashSet<>();
-  @OneToMany
-  @JoinColumn(name = "multimedia_id")
-  @Builder.Default
-  private List<ContenidoMultimedia> multimediaPaths = new ArrayList<>();
-  @ElementCollection
+  private List<ContenidoMultimedia> multimedia = new ArrayList<>();
+
+  /*@ElementCollection
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
-  @Column(name = "ultimaActualizacion")
-  private LocalDateTime ultimaActualizacion;
 
+
+  @Column(name = "ultimaModificacion")
+  private LocalDateTime ultimaModificacion;
 
   public void transicionarEstado(EstadoHecho estado) {
     this.transiciones.add(new TransicionEstadoHecho(estado, LocalDateTime.now()));
     this.estado = estado;
-  }
+  }*/
 
-  public String getTitulo() {
-    return data.getTitulo();
+  public HechoOutputDTO toOutputDTO() {
+    return new HechoOutputDTO(
+        this.id,
+        this.titulo,
+        this.descripcion,
+        this.nombreCategoria,
+        this.latitud,
+        this.longitud,
+        this.fechaDeAcontecimiento,
+        this.fechaDeCarga,
+        this.fechaDeCarga,
+        this.idContribuyente,
+        this.multimedia.stream()
+            .map(ContenidoMultimedia::toOutputDTO)
+            .toList()
+    );
   }
-
-  public String getDescripcion() {
-    return data.getDescripcion();
-  }
-
-  public Double getLatitud() {
-    return data.getLatitud();
-  }
-
-  public Double getLongitud() {
-    return data.getLongitud();
-  }
-
-  public LocalDate getFechaDeAcontecimiento() {
-    return data.getFechaDeAcontecimiento();
-  }
-
-  public LocalDateTime getFechaDeCarga() {
-    return data.getFechaDeCarga();
-  }
-
-  public String getNombreCategoria() {
-    return data.getNombreCategoria();
-  }
-
-  /* public List<String> getMultimediaPaths() {
-    return this.multimediaPaths.stream()
-      .map(ContenidoMultimedia::getPathArchivo)
-      .toList();
-  } */
 }
