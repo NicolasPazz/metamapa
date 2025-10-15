@@ -31,7 +31,7 @@ public class SolicitudDeEliminacion {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   @OneToOne
-  @JoinColumn(name = "id")
+  @JoinColumn(name = "hecho_id")
   private Hecho hecho;
   @Column(name = "textoFundamentos", nullable = false)
   private String textoFundamentos;

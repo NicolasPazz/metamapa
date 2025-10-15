@@ -1,8 +1,8 @@
 package ar.utn.ba.ddsi.estadistica.service.impl;
 
-import ar.utn.ba.ddsi.estadistica.domain.HechosCategoriaHora;
-import ar.utn.ba.ddsi.estadistica.domain.HechosCategoriaProvincia;
-import ar.utn.ba.ddsi.estadistica.domain.HechosColeccionProvincia;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.HechosCategoriaHora;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.HechosCategoriaProvincia;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.HechosColeccionProvincia;
 import ar.utn.ba.ddsi.estadistica.domain.dto.output.CategoriaEstadisticaDTO;
 import ar.utn.ba.ddsi.estadistica.domain.dto.output.HoraEstadisticaDTO;
 import ar.utn.ba.ddsi.estadistica.domain.dto.output.ProvinciaPorCategoriaDTO;

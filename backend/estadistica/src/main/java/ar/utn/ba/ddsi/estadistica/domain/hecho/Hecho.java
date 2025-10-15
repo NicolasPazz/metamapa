@@ -1,5 +1,6 @@
-package ar.utn.ba.ddsi.estadistica.domain;
+package ar.utn.ba.ddsi.estadistica.domain.hecho;
 
+import ar.utn.ba.ddsi.estadistica.domain.provincia.ProvinciaEnum;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

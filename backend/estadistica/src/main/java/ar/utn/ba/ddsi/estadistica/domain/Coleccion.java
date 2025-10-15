@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.estadistica.domain;
 
+import ar.utn.ba.ddsi.estadistica.domain.hecho.Hecho;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

@@ -1,17 +1,16 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
@@ -30,7 +29,7 @@ public class FuentesService {
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde,LocalDate fecha_acontecimiento_hasta,
+      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
       String ubicacion) {
     List<HechoDTO> resultados = new ArrayList<>();
     for (IFuente fuente : fuentes) {
@@ -68,7 +67,7 @@ public class FuentesService {
       // Setear ID unico
       hechos.forEach(h -> {
         if (h.getId() != null) {
-          h.setId(idService.getId(idFuente, h.getId()));
+          //h.setId(idService.getId(idFuente, h.getId()));
         } else {
           log.warn("Hecho sin id recibido desde fuente {}", idFuente);
         }

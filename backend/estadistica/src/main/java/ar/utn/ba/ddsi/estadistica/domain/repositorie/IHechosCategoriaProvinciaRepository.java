@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.estadistica.domain.repositorie;
 
-import ar.utn.ba.ddsi.estadistica.domain.HechosCategoriaProvincia;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.HechosCategoriaProvincia;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

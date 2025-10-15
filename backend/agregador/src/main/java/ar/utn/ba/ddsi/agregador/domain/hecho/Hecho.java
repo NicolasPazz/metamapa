@@ -27,25 +27,33 @@ public class Hecho {
   @Id
   @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
+
   @Embedded
   private DataHecho data;
+
   @Enumerated(EnumType.ORDINAL)
   private OrigenHecho origen;
+
   @Enumerated(EnumType.ORDINAL)
   private EstadoHecho estado;
+
   @Column(name="contribuyente_id", nullable = true)
   private Long contribuyente;  // private Contribuyente contribuyente;
+
   @OneToMany
   @JoinColumn(name = "etiqueta_id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
+
   @OneToMany
   @JoinColumn(name = "multimedia_id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
+
   @ElementCollection
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
+
   @ManyToOne
   @JoinColumn(name = "categoria_id")
   private Categoria categoria;

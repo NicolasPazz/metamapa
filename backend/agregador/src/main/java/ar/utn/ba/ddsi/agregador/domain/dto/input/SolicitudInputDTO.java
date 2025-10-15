@@ -5,10 +5,10 @@ import lombok.Data;
 
 @Data
 public class SolicitudInputDTO {
-  @JsonProperty("id_hecho")
+  @JsonProperty("idHecho")
   private Long idHecho;
-  @JsonProperty("texto_fundamentos")
+  @JsonProperty("textoFundamentos")
   private String textoFundamentos;
-  @JsonProperty("id_contribuyente")
+  @JsonProperty("idContribuyente")
   private Long idContribuyente;
 }
