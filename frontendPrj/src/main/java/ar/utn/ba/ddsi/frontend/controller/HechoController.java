@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Controller
 @RequestMapping("/hechos")
 public class HechoController {
-    private final HechoService hechoService;
+    //private final HechoService hechoService;
 
-    @GetMapping("/{idHecho}")
-    verHechos();
+    //@GetMapping("/{idHecho}")
+    //verHechos();
 }
