@@ -1,10 +1,6 @@
 // java
 package ar.utn.ba.ddsi.frontend.controller;
 
-import com.metamapa.dtos.CrearColeccionInputDTO;
-import com.metamapa.dtos.SolicitudModificarAdminInputDTO;
-import com.metamapa.dtos.ActualizarFuentesColeccionDTO;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -16,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 @Controller
 public class AdminController {
 
-    @GetMapping("/dashboard")
+    /*@GetMapping("/dashboard")
     public String mostrarDashboard(Model model) {
         return "dashboard";
     }
@@ -60,5 +56,5 @@ public class AdminController {
     public String procesarRevisionSolicitud(@PathVariable Long id,
                                             @ModelAttribute SolicitudModificarAdminInputDTO dto) {
         return "redirect:/solicitudes/revisar";
-    }
+    }*/
 }

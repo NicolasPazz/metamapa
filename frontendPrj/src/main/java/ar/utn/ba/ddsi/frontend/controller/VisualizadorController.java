@@ -2,9 +2,6 @@
 package ar.utn.ba.ddsi.frontend.controller;
 
 import ar.utn.ba.ddsi.frontend.service.VisualizadorService;
-import com.metamapa.dtos.HechoOutputDTO;
-import com.metamapa.dtos.SolicitudInputDTO;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class VisualizadorController {
-
+/*
     private final VisualizadorService service;
 
     public VisualizadorController(VisualizadorService service) {
@@ -62,5 +59,5 @@ public class VisualizadorController {
         }
         // service.procesarSolicitudEliminacion(dto);
         return "redirect:/dashboard";
-    }
+    }*/
 }

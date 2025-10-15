@@ -2,9 +2,6 @@
 package ar.utn.ba.ddsi.frontend.controller;
 
 import ar.utn.ba.ddsi.frontend.service.ContribuyenteService;
-import com.metamapa.dtos.SolicitudHechoInputContribuyenteDTO;
-import com.metamapa.dtos.SolicitudModificarUserInputDTO;
-import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -15,7 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @Controller
 public class ContribuyenteController {
-
+/*
     private final ContribuyenteService service;
 
     public ContribuyenteController(ContribuyenteService service) {
@@ -54,5 +51,5 @@ public class ContribuyenteController {
         }
         service.actualizarHecho(id, dto);
         return "redirect:/hechos/" + id;
-    }
+    }*/
 }
