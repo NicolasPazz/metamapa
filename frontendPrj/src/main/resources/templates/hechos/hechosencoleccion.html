@@ -1,0 +1,61 @@
+<html th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+
+  <!-- Hechos in a collection -->
+  <section class="hechos-block">
+    <h2>Colección: Derechos Humanos</h2>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input type="date" name="fecha">
+      <select name="ubicacion">
+        <option>Ubicación</option>
+        <option>Buenos Aires</option>
+        <option>Córdoba</option>
+        <option>Rosario</option>
+      </select>
+      <select name="multimedia">
+        <option>Multimedia</option>
+        <option>Con imágenes</option>
+        <option>Con video</option>
+        <option>Sin multimedia</option>
+      </select>
+      <select name="fuente">
+        <option>Fuente</option>
+        <option>ONG</option>
+        <option>Medios</option>
+        <option>Ciudadanía</option>
+      </select>
+    </div>
+
+    <!-- Toggle navigation -->
+    <div class="toggle">
+      <a href="#" class="active">Irrestricta</a>
+      <a href="#">Curada</a>
+    </div>
+
+    <!-- Hechos list -->
+    <div class="hechos-grid">
+      <div th:each="hecho : ${hechos}" class="hecho-card">
+        <h3>${hecho.nombre}</h3>
+        <p>${hecho.descripcion}</p>
+        <a th:href="@{'#hecho' + ${hecho.id}}">Ver detalles</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Details panels -->
+  <div th:each="hecho : ${hechos}" th:id="@{'hecho' + hecho.id}" class="details-panel">
+    <h3>${hecho.nombre}</h3>
+    <p th:utext="'<strong>Ubicación:</strong>' + ${hecho.latitud} + ', ' + ${hecho.longitud}"></p>
+    <p th:utext="'<strong>Multimedia:</strong>' + ${#lists.size(hecho.multimedia)} + ' archivos multimedia'"></p>
+    <p th:utext="'<strong>Fuente:</strong>' + ${hecho.fuente}"></p>
+
+    <label th:for="@{'req' + hecho.id}">Solicitud de eliminación (máx 500 caracteres)</label>
+    <textarea th:id="@{'req' + hecho.id}" maxlength="500" placeholder="Escribe tu justificación..."></textarea>
+    <button>Enviar solicitud</button>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+  </div>
+</div>
+</html>
