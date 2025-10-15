@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.estadistica.domain.repositorie;
 
-import ar.utn.ba.ddsi.estadistica.domain.Provincia;
-import ar.utn.ba.ddsi.estadistica.domain.ProvinciaEnum;
+import ar.utn.ba.ddsi.estadistica.domain.provincia.Provincia;
+import ar.utn.ba.ddsi.estadistica.domain.provincia.ProvinciaEnum;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

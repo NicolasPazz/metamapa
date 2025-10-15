@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.estadistica.domain;
+package ar.utn.ba.ddsi.estadistica.domain.provincia;
 
 public enum ProvinciaEnum {
   BUENOS_AIRES,

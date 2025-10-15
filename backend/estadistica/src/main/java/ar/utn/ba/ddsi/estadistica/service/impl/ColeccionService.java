@@ -1,14 +1,14 @@
 package ar.utn.ba.ddsi.estadistica.service.impl;
 
 import ar.utn.ba.ddsi.estadistica.client.AgregadorClient;
-import ar.utn.ba.ddsi.estadistica.domain.Categoria;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.Categoria;
 import ar.utn.ba.ddsi.estadistica.domain.Coleccion;
-import ar.utn.ba.ddsi.estadistica.domain.Hecho;
-import ar.utn.ba.ddsi.estadistica.domain.HechosCategoriaHora;
-import ar.utn.ba.ddsi.estadistica.domain.HechosCategoriaProvincia;
-import ar.utn.ba.ddsi.estadistica.domain.HechosColeccionProvincia;
-import ar.utn.ba.ddsi.estadistica.domain.Provincia;
-import ar.utn.ba.ddsi.estadistica.domain.ProvinciaEnum;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.HechosCategoriaHora;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.HechosCategoriaProvincia;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.HechosColeccionProvincia;
+import ar.utn.ba.ddsi.estadistica.domain.provincia.Provincia;
+import ar.utn.ba.ddsi.estadistica.domain.provincia.ProvinciaEnum;
 import ar.utn.ba.ddsi.estadistica.domain.dto.input.ColeccionDTO;
 import ar.utn.ba.ddsi.estadistica.domain.dto.input.HechoDTO;
 import ar.utn.ba.ddsi.estadistica.domain.repositorie.ICategoriaRepository;

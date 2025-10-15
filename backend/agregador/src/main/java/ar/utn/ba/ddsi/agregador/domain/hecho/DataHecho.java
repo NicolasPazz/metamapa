@@ -16,7 +16,7 @@ import lombok.*;
 public class DataHecho {
   @Column(name = "titulo")
   private String titulo;
-  @Column(name = "descripcion")
+  @Column(name = "descripcion", columnDefinition = "TEXT")
   private String descripcion;
   @Column(name = "latitud")
   private Double latitud;

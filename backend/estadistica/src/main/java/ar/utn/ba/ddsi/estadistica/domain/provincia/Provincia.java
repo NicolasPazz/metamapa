@@ -1,13 +1,12 @@
-package ar.utn.ba.ddsi.estadistica.domain;
+package ar.utn.ba.ddsi.estadistica.domain.provincia;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,19 +18,17 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "categoria_hora")
-public class HechosCategoriaHora {
+@Table(name = "provincia")
+public class Provincia {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "categoria_id")
-  private Categoria categoria;
+  @Enumerated(EnumType.STRING)
+  @Column(name = "nombre", length = 100, nullable = false, unique = true)
+  private ProvinciaEnum nombre;
 
-  @Column(name = "hora")
-  private Integer hora;
-
-  @Column(name = "cantidad_hechos")
-  private Long cantidadHechos;
+  public Provincia(ProvinciaEnum nombre) {
+    this.nombre = nombre;
+  }
 }

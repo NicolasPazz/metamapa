@@ -39,7 +39,7 @@ public class HechoDTO {
   public Hecho mapToHecho() {
     Hecho hecho = new Hecho();
 
-    hecho.setId(this.id);
+    //hecho.setId(this.id);
     hecho.setContribuyente(this.contribuyente);
 
     // Cargar DataHecho
