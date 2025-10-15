@@ -12,18 +12,18 @@ public class AccessController {
     @GetMapping("/hechos/mapa")
     public String mostrarMapaHechos(Model model) {
         // model.addAttribute("hechos", service.obtenerHechosParaMapa());
-        return "mapa-hechos"; // plantilla: ‘src/main/resources/templates/mapa-hechos.html’
+        return "mapa/mapa"; // plantilla: ‘src/main/resources/templates/mapa-hechos.html’
     }
 
     // Registro de Contribuyentes
     @GetMapping("/registro")
     public String mostrarFormularioRegistro(Model model) {
-        return "registro"; // plantilla: ‘src/main/resources/templates/registro.html’
+        return "acces/register"; // plantilla: ‘src/main/resources/templates/registro.html’
     }
 
     // Inicio de Sesión
     @GetMapping("/login")
     public String mostrarLogin(Model model) {
-        return "login"; // plantilla: ‘src/main/resources/templates/login.html’
+        return "access/login"; // plantilla: ‘src/main/resources/templates/login.html’
     }
 }
