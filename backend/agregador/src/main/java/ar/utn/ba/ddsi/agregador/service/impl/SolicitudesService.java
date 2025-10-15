@@ -181,11 +181,6 @@ public class SolicitudesService implements ISolicitudesService {
     List<SolicitudDeEliminacion> solicitudes = solicitudesRepository.findAll();
     log.info("[SolicitudesService] Encontradas {} solicitudes en la base de datos", solicitudes.size());
     
-    // Debug: verificar hechos locales
-    List<Hecho> hechosLocales = hechosRepository.findAll();
-    log.info("[SolicitudesService] Hechos locales en BD: {}", hechosLocales.size());
-    hechosLocales.forEach(h -> log.info("[SolicitudesService] Hecho local ID: {}", h.getId()));
-    
     List<SolicitudOutputDTO> dtos = solicitudes.stream()
         .map(SolicitudDeEliminacion::toDTO)
         .toList();
