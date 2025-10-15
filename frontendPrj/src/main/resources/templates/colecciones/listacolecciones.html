@@ -11,7 +11,7 @@
       <div th:if="${!#lists.isEmpty(colecciones) and colecciones != null}" class="colecciones-grid">
         <!-- Mock colecciones -->
         <div th:each="coleccion : ${colecciones}" class="coleccion-card">
-          <h3 th:text="${coleccion.nombre}"></h3>
+          <h3 th:text="${coleccion.titulo}"></h3>
           <p th:text="${coleccion.descripcion}"></p>
           <a th:href="@{/colecciones/{handle}/hechos(handle=${coleccion.handle})}" class="btn primary">Ver más</a>
         </div>

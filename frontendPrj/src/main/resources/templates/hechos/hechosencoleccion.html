@@ -47,9 +47,9 @@
   <!-- Details panels -->
   <div th:each="hecho : ${hechos}" th:id="@{'hecho' + hecho.id}" class="details-panel">
     <h3>${hecho.nombre}</h3>
-    <p><strong>Ubicación:</strong>${hecho.ubicacion}</p>
-    <p><strong>Multimedia:</strong> ${#lists.size(hecho.multimedia)}</p>
-    <p><strong>Fuente:</strong> ${hecho.fuente}</p>
+    <p th:utext="'<strong>Ubicación:</strong>' + ${hecho.latitud} + ', ' + ${hecho.longitud}"></p>
+    <p th:utext="'<strong>Multimedia:</strong>' + ${#lists.size(hecho.multimedia)} + ' archivos multimedia'"></p>
+    <p th:utext="'<strong>Fuente:</strong>' + ${hecho.fuente}"></p>
 
     <label th:for="@{'req' + hecho.id}">Solicitud de eliminación (máx 500 caracteres)</label>
     <textarea th:id="@{'req' + hecho.id}" maxlength="500" placeholder="Escribe tu justificación..."></textarea>
