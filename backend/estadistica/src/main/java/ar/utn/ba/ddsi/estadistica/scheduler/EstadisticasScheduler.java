@@ -15,9 +15,9 @@ public class EstadisticasScheduler {
 
     private final IEstadisticasService estadisticas;
 
-    @Scheduled(cron = "0 0 3 * * *")
+    @Scheduled(cron = "0 0 4 * * *")
     public void recalcularPeriodicamente() {
-            log.info("Recalculo de estadísticas programado (3am) - {}", LocalDateTime.now());
+            log.info("Recalculo de estadísticas programado (4am) - {}", LocalDateTime.now());
             estadisticas.refrescoEstadisticas();
     }
 }

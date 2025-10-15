@@ -77,7 +77,7 @@ public class AdminController {
     return coleccionesService.actualizarFuentesDeColeccion(handle, dto);
   }
 
-  @PutMapping("/colecciones/{handle}/criterios")
+  @PatchMapping("/colecciones/{handle}/criterios")
   public ResponseEntity<?> modificarCriterioColeccion(
       @PathVariable String handle,
       @RequestBody ModificarCriterioColeccionDTO dto

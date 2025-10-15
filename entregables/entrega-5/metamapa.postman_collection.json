@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "f7a6e148-a01e-4fee-97fd-608a1b865e73",
+		"_postman_id": "08692d4a-87a3-4d94-a679-b9679b94bf85",
 		"name": "metamapa",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "43637471",
-		"_collection_link": "https://nicolaspaz-7741775.postman.co/workspace/Nicolas-Paz's-Workspace~290c9eb3-6d31-4de4-8a70-01f6b216242d/collection/43637471-f7a6e148-a01e-4fee-97fd-608a1b865e73?action=share&source=collection_link&creator=43637471"
+		"_exporter_id": "43301126"
 	},
 	"item": [
 		{
@@ -121,41 +120,6 @@
 												{
 													"key": "id",
 													"value": "10"
-												}
-											]
-										}
-									},
-									"response": []
-								},
-								{
-									"name": "Login DDSI API (Copy)",
-									"request": {
-										"auth": {
-											"type": "noauth"
-										},
-										"method": "POST",
-										"header": [],
-										"url": {
-											"raw": "https://api-ddsi.disilab.ar/public/api/login?email={{ddsi_email}}&password={{ddsi_password}}",
-											"protocol": "https",
-											"host": [
-												"api-ddsi",
-												"disilab",
-												"ar"
-											],
-											"path": [
-												"public",
-												"api",
-												"login"
-											],
-											"query": [
-												{
-													"key": "email",
-													"value": "{{ddsi_email}}"
-												},
-												{
-													"key": "password",
-													"value": "{{ddsi_password}}"
 												}
 											]
 										}
@@ -393,7 +357,7 @@
 									"variable": [
 										{
 											"key": "handle",
-											"value": "desastres-naturales-ar-2025-474f6e65"
+											"value": "desastres-naturales-ar-2025-78c61a4a"
 										}
 									]
 								}
@@ -407,10 +371,15 @@
 									"type": "noauth"
 								},
 								"method": "POST",
-								"header": [],
+								"header": [
+									{
+										"key": "Content-Type",
+										"value": "application/json"
+									}
+								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"id_hecho\": 1,\r\n  \"texto_fundamentos\": \"hola\",\r\n  \"id_contribuyente\": 1\r\n}",
+									"raw": "{\r\n  \"idHecho\": 1,\r\n  \"idContribuyente\": 1234,\r\n  \"textoFundamentos\": \"Este hecho contiene información incorrecta y debe ser eliminado.\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -510,7 +479,7 @@
 							"query": [
 								{
 									"key": "categoria",
-									"value": "desastre tecnológico - contaminación",
+									"value": "Incendio forestal",
 									"disabled": true
 								},
 								{
@@ -535,7 +504,7 @@
 								},
 								{
 									"key": "ubicacion",
-									"value": "-34.647167,-58.343773",
+									"value": "-31.42,-64.19",
 									"disabled": true
 								}
 							]
@@ -575,7 +544,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8084/api/colecciones/:handle/hechos?modo=curada",
+							"raw": "http://localhost:8084/api/colecciones/:handle/hechos",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -620,14 +589,118 @@
 								},
 								{
 									"key": "modo",
-									"value": "curada"
+									"value": "IRRESTRICTA",
+									"disabled": true
 								}
 							],
 							"variable": [
 								{
 									"key": "handle",
-									"value": "colecci-n-de-desastres-tecnol-gicos-e5ef7652"
+									"value": "desastres-naturales-ar-2025-78c61a4a"
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Coleccion by Handle (Modo CURADA)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/colecciones/:handle/hechos?modo=CURADA",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"colecciones",
+								":handle",
+								"hechos"
+							],
+							"query": [
+								{
+									"key": "modo",
+									"value": "CURADA"
+								}
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "desastres-naturales-ar-2025-78c61a4a"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Solicitud Agregador",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"idHecho\": 400001,\r\n  \"idContribuyente\": 1,\r\n  \"textoFundamentos\": \"Hola la eliminación del hecho titulado “Anomalía en los registros de calidad del agua en la cuenca norte” debido a que el contenido publicado contiene información errónea, desactualizada y carente de respaldo técnico verificable. Tras realizar una revisión exhaustiva de los documentos y reportes oficiales emitidos por el ente regulador de recursos hídricos, se constató que los datos mencionados en dicho hecho no corresponden con las mediciones reales realizadas durante el período señalado.\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "http://localhost:8084/api/solicitudes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "agregador-admin",
+			"item": [
+				{
+					"name": "Get All Colecciones (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/admin/colecciones",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
+								"colecciones"
 							]
 						}
 					},
@@ -690,7 +763,7 @@
 							"variable": [
 								{
 									"key": "handle",
-									"value": ""
+									"value": "desastres-naturales-ar-2025-78c61a4a"
 								}
 							]
 						}
@@ -698,16 +771,21 @@
 					"response": []
 				},
 				{
-					"name": "Create Solicitud Agregador",
+					"name": "Create Coleccion (Admin)",
 					"request": {
 						"auth": {
 							"type": "noauth"
 						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_hecho\": 100001,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho porque contiene datos sensibles que, de permanecer públicos, podrían poner en riesgo la seguridad e integridad de las personas involucradas. La publicación menciona información que permite identificar ubicaciones específicas, horarios y nombres propios sin el debido consentimiento explícito de los afectados. Además, existen distintos errores fácticos que ya fueron reportados a la organización responsable y cuya divulgación genera confusión, desinformación y estigmatización de la comunidad a la que se refiere el incidente.\",\r\n  \"id_contribuyente\": 2\r\n}",
+							"raw": "{\r\n  \"titulo\": \"Colección de Prueba\",\r\n  \"descripcion\": \"Colección creada para testing\",\r\n  \"criterioDePertenencia\": {\r\n    \"tipo\": \"CRITERIO_FUENTE\",\r\n    \"fuentesExcluidas\": []\r\n  },\r\n  \"algoritmoConsenso\": \"MAYORIA\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -715,7 +793,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/solicitudes",
+							"raw": "http://localhost:8084/api/admin/colecciones",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -723,6 +801,62 @@
 							"port": "8084",
 							"path": [
 								"api",
+								"admin",
+								"colecciones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/admin/colecciones/:handle",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
+								"colecciones",
+								":handle"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "d8add1cb-9ff8-4822-922f-38730ded5b06"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Solicitudes (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8084/api/admin/solicitudes",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8084",
+							"path": [
+								"api",
+								"admin",
 								"solicitudes"
 							]
 						}
@@ -736,7 +870,12 @@
 							"type": "noauth"
 						},
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n  \"estado\": \"ACEPTADA\"\r\n}",
@@ -762,7 +901,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "3"
+									"value": "1"
 								}
 							]
 						}
@@ -776,10 +915,15 @@
 							"type": "noauth"
 						},
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_fuente\": 1,\r\n  \"accion\": \"ELIMINAR\"\r\n}",
+							"raw": "{\r\n  \"idFuente\": 1,\r\n  \"accion\": \"ELIMINAR\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -804,7 +948,7 @@
 							"variable": [
 								{
 									"key": "handle",
-									"value": "desastres-naturales-ar-2025-474f6e65"
+									"value": "72810602-2dbc-4657-a285-8993051e3d4f"
 								}
 							]
 						}
@@ -818,10 +962,15 @@
 							"type": "noauth"
 						},
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_fuente\": 1,\r\n  \"accion\": \"ELIMINAR\"\r\n}",
+							"raw": "{\r\n  \"criterio\": {\r\n    \"tipo\": \"origen\",\r\n    \"origen\": \"METAMAPA\"\r\n  }\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -829,7 +978,7 @@
 							}
 						},
 						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/:handle/criterios/fuentes",
+							"raw": "http://localhost:8084/api/admin/colecciones/:handle/criterios",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -840,166 +989,12 @@
 								"admin",
 								"colecciones",
 								":handle",
-								"criterios",
-								"fuentes"
+								"criterios"
 							],
 							"variable": [
 								{
 									"key": "handle",
-									"value": "coleccion-de-ejemplo-b9cbbde4"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Coleccion (Admin)",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/:handle",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8084",
-							"path": [
-								"api",
-								"admin",
-								"colecciones",
-								":handle"
-							],
-							"variable": [
-								{
-									"key": "handle",
-									"value": "coleccion-de-ejemplo-b9cbbde4"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Create Coleccion (Admin)",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"titulo\": \"Colección de desastres tecnológicos\",\r\n  \"descripcion\": \"Incluye hechos cuya categoría es 'desastre tecnológico - evento sanitario'\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"igualdad\",\r\n    \"cadena_a_comparar\": \"desastre tecnológico - evento sanitario\",\r\n    \"tipo_dato\": \"CATEGORIA\"\r\n  },\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8084",
-							"path": [
-								"api",
-								"admin",
-								"colecciones"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update Coleccion (Admin)",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "PATCH",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "// {\r\n//   \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n//   \"criterio_pertenencia\": {\r\n//     \"tipo\": \"lugar\",\r\n//     \"latitud\": -38.825939, \r\n//     \"longitud\": -62.069268\r\n//   }\r\n// }\r\n\r\n{\r\n  \"descripcion\": \"Cambio algoritmo de consenso\",\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/:handle",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8084",
-							"path": [
-								"api",
-								"admin",
-								"colecciones",
-								":handle"
-							],
-							"variable": [
-								{
-									"key": "handle",
-									"value": "colecci-n-de-desastres-tecnol-gicos-c4c03d97"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete Coleccion (Admin)",
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "DELETE",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}\r\n",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:8084/api/admin/colecciones/:handle",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8084",
-							"path": [
-								"api",
-								"admin",
-								"colecciones",
-								":handle"
-							],
-							"variable": [
-								{
-									"key": "handle",
-									"value": "coleccion-de-ejemplo-b9cbbde4"
+									"value": "72810602-2dbc-4657-a285-8993051e3d4f"
 								}
 							]
 						}
@@ -1018,7 +1013,12 @@
 							"type": "noauth"
 						},
 						"method": "POST",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Crisis sanitaria afecta a Tilcara, Jujuy\",\r\n  \"descripcion\": \"Grave crisis sanitaria ocurrió en las inmediaciones de Tilcara, Jujuy. El incidente afectando gravemente la infraestructura local. Se ha declarado estado de emergencia en la región para facilitar la asistencia.\",\r\n  \"categoria\": \"desastre tecnológico - evento sanitario\",\r\n  \"latitud\": -23.574039,\r\n  \"longitud\": -65.36991,\r\n  \"fecha_de_acontecimiento\": \"2013-11-11\",\r\n  \"multimedia\": []\r\n}",
@@ -1050,7 +1050,12 @@
 							"type": "noauth"
 						},
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Corte prolongado de energía eléctrica\",\r\n  \"descripcion\": \"La zona estuvo sin suministro eléctrico por más de 12 horas, afectando a cientos de hogares.\",\r\n  \"categoria\": \"Servicio Público\"\r\n}",
@@ -1090,7 +1095,12 @@
 							"type": "noauth"
 						},
 						"method": "PATCH",
-						"header": [],
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
 						"body": {
 							"mode": "raw",
 							"raw": "{\r\n  \"estado_solicitud\": \"ACEPTADO_MODIFICADO\",\r\n  \"categoria\": \"Modificado por el admin\",\r\n  \"multimedia\": [\r\n    {\r\n      \"pathArchivo\": \"path\",\r\n      \"tipoContenido\": \"IMAGEN\"\r\n    }\r\n  ]\r\n}",
@@ -1437,12 +1447,12 @@
 			"name": "estadisticas",
 			"item": [
 				{
-					"name": "Get Provincia Mas Hechos por Coleccion",
+					"name": "Health Check Estadisticas",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "http://localhost:8085/api/estadisticas/coleccion/:handle/provincia-mas-hechos",
+							"raw": "http://localhost:8085/api/estadisticas/health",
 							"protocol": "http",
 							"host": [
 								"localhost"
@@ -1451,15 +1461,7 @@
 							"path": [
 								"api",
 								"estadisticas",
-								"coleccion",
-								":handle",
-								"provincia-mas-hechos"
-							],
-							"variable": [
-								{
-									"key": "handle",
-									"value": "desastres-naturales-ar-2025-a971f2c2"
-								}
+								"health"
 							]
 						}
 					},
@@ -1481,6 +1483,56 @@
 								"api",
 								"estadisticas",
 								"categoria-mas-hechos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Solicitudes Spam",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8085/api/estadisticas/solicitudes-spam",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"api",
+								"estadisticas",
+								"solicitudes-spam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Provincia Mas Hechos por Coleccion",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8085/api/estadisticas/coleccion/:handle/provincia-mas-hechos",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8085",
+							"path": [
+								"api",
+								"estadisticas",
+								"coleccion",
+								":handle",
+								"provincia-mas-hechos"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "desastres-naturales-ar-2025-78c61a4a"
+								}
 							]
 						}
 					},
@@ -1545,27 +1597,6 @@
 					"response": []
 				},
 				{
-					"name": "Get Solicitudes Spam",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8085/api/estadisticas/solicitudes-spam",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8085",
-							"path": [
-								"api",
-								"estadisticas",
-								"solicitudes-spam"
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Export Estadisticas CSV",
 					"request": {
 						"method": "GET",
@@ -1611,27 +1642,6 @@
 									"key": "tipo_estadistica",
 									"value": "spam"
 								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Health Check Estadisticas",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:8085/api/estadisticas/health",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "8085",
-							"path": [
-								"api",
-								"estadisticas",
-								"health"
 							]
 						}
 					},

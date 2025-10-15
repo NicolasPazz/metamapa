@@ -1,9 +1,7 @@
-package ar.utn.ba.ddsi.estadistica.domain;
+package ar.utn.ba.ddsi.estadistica.domain.hecho;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -18,17 +16,12 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "provincia")
-public class Provincia {
+@Table(name = "categoria")
+public class Categoria {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "nombre", length = 100, nullable = false, unique = true)
-  private ProvinciaEnum nombre;
-
-  public Provincia(ProvinciaEnum nombre) {
-    this.nombre = nombre;
-  }
+  @Column(name = "nombre", nullable = false, unique = true)
+  private String nombre;
 }
