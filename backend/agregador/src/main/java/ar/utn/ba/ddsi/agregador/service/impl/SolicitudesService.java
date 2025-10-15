@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -29,7 +30,7 @@ public class SolicitudesService implements ISolicitudesService {
   private final IdService idService;
   private final FuentesService fuentesService;
   private final List<Validacion> validaciones = List.of(
-      new ValidacionLongitud(500),
+      new ValidacionLongitud(50),
       new DetectorDeSpamTFIDF()
   );
 
@@ -39,6 +40,7 @@ public class SolicitudesService implements ISolicitudesService {
   }
 
   @Override
+  @Transactional
   public ResponseEntity<?> crear(SolicitudInputDTO solicitudInputDTO) {
     if (!esValida(solicitudInputDTO.getTextoFundamentos())) {
       return ResponseEntity.badRequest().body("El texto de fundamentos no cumplió con las validaciones.");
@@ -47,8 +49,8 @@ public class SolicitudesService implements ISolicitudesService {
 
     // Buscar el hecho localmente
     Optional<Hecho> hecho = hechosRepository.findById(idHechoUnico);
-    Hecho hechoEncontrado = hecho.get();
-    if (hecho != null) {
+    if (hecho.isPresent()) {
+      Hecho hechoEncontrado = hecho.get();
       SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(
           hechoEncontrado, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getIdContribuyente()
       );
@@ -110,12 +112,13 @@ public class SolicitudesService implements ISolicitudesService {
   }
 
   @Override
+  @Transactional
   public void aceptar(Long idSolicitud) {
     Optional<SolicitudDeEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
-    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
-    if (solicitud == null) {
+    if (solicitud.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
     }
+    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
 
     solicitudEncontrada.aceptar();
     hechosRepository.ocultar(solicitudEncontrada.getHecho().getId());
@@ -123,12 +126,13 @@ public class SolicitudesService implements ISolicitudesService {
   }
 
   @Override
+  @Transactional
   public void rechazar(Long idSolicitud) {
     Optional<SolicitudDeEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
-    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
-    if (solicitud == null) {
+    if (solicitud.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
     }
+    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
 
     solicitudEncontrada.rechazar();
     solicitudesRepository.delete(solicitudEncontrada);
