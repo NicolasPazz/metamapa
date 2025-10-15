@@ -69,7 +69,7 @@ public class ColeccionesService implements IColeccionesService {
 
     if (local.isPresent()) {
       // Si el modo es CURADA, se obtienen los hechos consensuados
-      List<Hecho> hechos = modo.equalsIgnoreCase(ModoNavegacion.CURADA.name()) ? local.get().getHechosConsensuados() : local.get().getHechos();
+      List<Hecho> hechos = (modo != null && modo.equalsIgnoreCase(ModoNavegacion.CURADA.name())) ? local.get().getHechosConsensuados() : local.get().getHechos();
 
       List<Hecho> hechosFiltrados = hechos.stream()
           .filter(h -> categoria == null || (h.getCategoria() != null &&

@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 @Slf4j
 @Service
@@ -103,7 +104,7 @@ public class StubAgregadorClient implements AgregadorClient {
   @Override
   public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
     SolicitudOutputDTO solicitudOutputDTO = new SolicitudOutputDTO();
-    solicitudOutputDTO.setId(1L);
+    solicitudOutputDTO.setId(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE);
     solicitudOutputDTO.setIdHecho(solicitud.getIdHecho());
     solicitudOutputDTO.setTextoFundamentos(solicitud.getTextoFundamentos());
     solicitudOutputDTO.setFecha(LocalDate.now());

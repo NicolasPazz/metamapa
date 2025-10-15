@@ -30,10 +30,9 @@ public class SolicitudDeEliminacion {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  @OneToOne
-  @JoinColumn(name = "hecho_id")
-  private Hecho hecho;
-  @Column(name = "textoFundamentos", nullable = false)
+  @Column(name = "hecho_id")
+  private Long hechoId;
+  @Column(name = "textoFundamentos", nullable = false, length = 2000)
   private String textoFundamentos;
   @Column(name = "fecha")
   private LocalDate fecha;
@@ -47,13 +46,13 @@ public class SolicitudDeEliminacion {
   private List<TransicionEstadoSolicitud> transicionesDeEstado = new ArrayList<>();
 
   public SolicitudDeEliminacion(Hecho hecho, String textoFundamentos, Long contribuyente) {
-    this.hecho = hecho;
+    this.hechoId = hecho != null ? hecho.getId() : null;
     this.textoFundamentos = textoFundamentos;
     this.fecha = LocalDate.now();
     this.estado = EstadoSolicitud.PENDIENTE;
     this.contribuyente = contribuyente;
     this.transicionesDeEstado.add(new TransicionEstadoSolicitud(EstadoSolicitud.PENDIENTE));
-    this.spam = new DetectorDeSpamTFIDF().esSpam(textoFundamentos);
+    this.spam = false; // Temporalmente, no detectar spam
   }
 
   public void aceptar() {
@@ -69,7 +68,7 @@ public class SolicitudDeEliminacion {
   public SolicitudOutputDTO toDTO() {
     SolicitudOutputDTO dto = new SolicitudOutputDTO();
     dto.setId(this.id);
-    dto.setIdHecho(this.hecho != null ? this.hecho.getId() : null);
+    dto.setIdHecho(this.hechoId);
     dto.setTextoFundamentos(this.textoFundamentos);
     dto.setFecha(this.fecha);
     dto.setEstado(this.estado);
