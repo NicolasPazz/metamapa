@@ -1,5 +1,7 @@
-package ar.utn.ba.ddsi.estadistica.domain;
+package ar.utn.ba.ddsi.estadistica.domain.hecho;
 
+import ar.utn.ba.ddsi.estadistica.domain.Coleccion;
+import ar.utn.ba.ddsi.estadistica.domain.provincia.Provincia;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -19,15 +21,15 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "categoria_provincia")
-public class HechosCategoriaProvincia {
+@Table(name = "coleccion_provincia")
+public class HechosColeccionProvincia {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "categoria_id")
-  private Categoria categoria;
+  @JoinColumn(name = "coleccion_handle")
+  private Coleccion coleccion;
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "provincia_id")
