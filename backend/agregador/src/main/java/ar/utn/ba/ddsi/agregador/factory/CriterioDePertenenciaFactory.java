@@ -68,7 +68,7 @@ public class CriterioDePertenenciaFactory {
             throw new IllegalArgumentException("Valor inválido para 'tipo_dato'. Debe ser uno de: " +
                     Arrays.toString(TipoDato.values()));
         }
-        return new CriterioIgualdad(dto.getCadenaAComparar().trim(), tipoDato);
+        return new CriterioIgualdad("igualdad", dto.getCadenaAComparar().trim(), tipoDato);
     }
 
     private static Criterio crearCriterioLugar(CriterioInputDTO dto) {
