@@ -12,8 +12,9 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor(force = true)
 public class CriterioFuente implements Criterio {
+    private String tipo = "fuente";
     private Set<Long> fuentesExcluidas = new HashSet<>();
-    private final IdService idService;
+    private IdService idService;
 
     public CriterioFuente(Long idFuenteExcluida, IdService idService) {
         this.fuentesExcluidas.add(idFuenteExcluida);

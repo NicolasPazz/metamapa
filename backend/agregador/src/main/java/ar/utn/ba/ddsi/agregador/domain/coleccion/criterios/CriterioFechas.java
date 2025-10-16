@@ -1,12 +1,17 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho ;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.LocalDate;
 
 @NoArgsConstructor
+@Getter
+@Setter
 public class CriterioFechas implements Criterio {
+    private String tipo = "fechas";
     private LocalDate fechaInicial;
     private LocalDate fechaFinal;
     private TipoFecha tipoFecha;
