@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ar.utn.ba.ddsi</groupId>
-	<artifactId>frontend</artifactId>
+	<artifactId>frontendPrj</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>frontendPrj</name>
 	<description>Frontend TP DDSI</description>

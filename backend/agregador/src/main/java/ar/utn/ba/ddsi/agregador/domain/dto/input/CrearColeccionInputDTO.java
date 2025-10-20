@@ -19,9 +19,9 @@ public class CrearColeccionInputDTO {
     @JsonProperty("descripcion")
     private String descripcion;
 
-    @JsonProperty("criterio_pertenencia")
+    @JsonProperty("criterioDePertenencia")
     private CriterioInputDTO criterioDePertenencia;
 
-    @JsonProperty("algoritmo_consenso")
+    @JsonProperty("algoritmoConsenso")
     private String algoritmoConsenso;
 }

@@ -10,12 +10,16 @@ import ar.utn.ba.ddsi.agregador.domain.dto.input.ActualizarFuentesColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.ModificarCriterioColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.CrearColeccionInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IColeccionesRepository;
+import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import ar.utn.ba.ddsi.agregador.factory.AAlgoritmoDeConsensoFactory;
 import ar.utn.ba.ddsi.agregador.factory.CriterioDePertenenciaFactory;
 import ar.utn.ba.ddsi.agregador.service.IColeccionesService;
@@ -33,6 +37,7 @@ import java.util.List;
 public class ColeccionesService implements IColeccionesService {
 
     private final IColeccionesRepository coleccionesRepository;
+    private final IHechosRepository hechosRepository;
     private final FuentesService fuentesService;
     //private AAlgoritmoConsenso algoritmoConsenso;
     private final AAlgoritmoDeConsensoFactory algoritmoConsensoFactory;
@@ -68,10 +73,32 @@ public class ColeccionesService implements IColeccionesService {
     Optional<Coleccion> local = coleccionesRepository.findById(handle);
 
     if (local.isPresent()) {
-      // Si el modo es CURADA, se obtienen los hechos consensuados
-      List<Hecho> hechos = modo.equalsIgnoreCase(ModoNavegacion.CURADA.name()) ? local.get().getHechosConsensuados() : local.get().getHechos();
-
-      List<Hecho> hechosFiltrados = hechos.stream()
+      Coleccion coleccion = local.get();
+      Criterio criterio = coleccion.getCriterioDePertenencia();
+      
+      // Obtener hechos
+      List<Hecho> hechos = hechosRepository.findAll().stream()
+          .filter(Hecho::esVisible)
+          .collect(Collectors.toList());
+      
+      // Obtener hechos externos y convertirlos a entidades
+      ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(null, null, null, null, null, null);
+      List<HechoDTO> hechosExternosDTO = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
+      List<Hecho> hechosExternos = hechosExternosDTO.stream()
+          .map(HechoDTO::mapToHecho)
+          .toList();
+      hechos.addAll(hechosExternos);
+      
+      // Filtrar hechos según el criterio de la colección
+      List<Hecho> hechosFiltrados = hechos;
+      if (criterio != null) {
+        hechosFiltrados = hechos.stream()
+            .filter(criterio::cumple)
+            .toList();
+      }
+      
+      // Aplicar filtros adicionales
+      hechosFiltrados = hechosFiltrados.stream()
           .filter(h -> categoria == null || (h.getCategoria() != null &&
               h.getCategoria().getNombre() != null &&
               h.getCategoria().getNombre().toLowerCase().contains(categoria.toLowerCase())))
@@ -173,13 +200,39 @@ public class ColeccionesService implements IColeccionesService {
       if (dto.getAlgoritmoConsenso() != null && !dto.getAlgoritmoConsenso().isBlank()) {
           algoritmoConsenso = algoritmoConsensoFactory.crearAlgoritmo(dto.getAlgoritmoConsenso().toUpperCase());
       }
+      
+      // Obtener todos los hechos disponibles
+      List<Hecho> hechosDisponibles = new ArrayList<>();
+      
+      // Obtener hechos locales
+      List<Hecho> hechosLocales = hechosRepository.findAll().stream()
+          .filter(Hecho::esVisible)
+          .toList();
+      hechosDisponibles.addAll(hechosLocales);
+      
+      // Obtener hechos externos y convertirlos a entidades
+      ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(null, null, null, null, null, null);
+      List<HechoDTO> hechosExternosDTO = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
+      List<Hecho> hechosExternos = hechosExternosDTO.stream()
+          .map(HechoDTO::mapToHecho)
+          .toList();
+      hechosDisponibles.addAll(hechosExternos);
+      
+      // Filtrar hechos según el criterio
+      List<Hecho> hechosFiltrados = hechosDisponibles;
+      if (criterio != null) {
+        hechosFiltrados = hechosDisponibles.stream()
+            .filter(criterio::cumple)
+            .toList();
+      }
+      
       // Si es null o vacío, algoritmoConsenso queda null
       Coleccion coleccion = Coleccion.builder()
               .titulo(dto.getTitulo())
               .descripcion(dto.getDescripcion())
               .criterioDePertenencia(criterio)
               .algoritmoConsenso(algoritmoConsenso)
-              .hechos(new ArrayList<>())
+              .hechos(hechosFiltrados)
               .hechosConsensuados(new ArrayList<>())
               .build();
 

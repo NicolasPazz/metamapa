@@ -1,10 +1,15 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor
+@Getter
+@Setter
 public class CriterioLugar implements Criterio {
+  private String tipo = "lugar";
   private Double lat;
   private Double lng;
 

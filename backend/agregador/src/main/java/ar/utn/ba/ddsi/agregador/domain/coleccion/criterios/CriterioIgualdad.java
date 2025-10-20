@@ -2,13 +2,18 @@ package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @NoArgsConstructor(force = true)
 @AllArgsConstructor
+@Getter
+@Setter
 public class CriterioIgualdad implements Criterio {
-  private final String cadenaAComparar;
-  private final TipoDato tipoDeDato;
+  private String tipo = "igualdad";
+  private String cadenaAComparar;
+  private TipoDato tipoDeDato;
 
   @Override
   public boolean cumple(Hecho hecho) {
