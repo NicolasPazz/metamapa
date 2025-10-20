@@ -18,7 +18,7 @@ public class AccessController {
     // Registro de Contribuyentes
     @GetMapping("/registro")
     public String mostrarFormularioRegistro(Model model) {
-        return "acces/register"; // plantilla: ‘src/main/resources/templates/registro.html’
+        return "access/register"; // plantilla: ‘src/main/resources/templates/registro.html’
     }
 
     // Inicio de Sesión
