@@ -15,6 +15,10 @@
           <p th:text="${coleccion.descripcion}"></p>
           <a th:href="@{/colecciones/{handle}/hechos(handle=${coleccion.handle})}" class="btn primary">Ver más</a>
         </div>
+
+        <div class="coleccion-card">
+          <a th:href="@{/hechos}" class="btn primary" style="margin:auto;">Ver todos los hechos</a>
+        </div>
       </div>
     </section>
   </div>

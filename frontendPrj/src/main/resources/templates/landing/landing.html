@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMapa</title>
-  <link rel="stylesheet" href="../styles/landing.css">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
 </head>
 <body>
   <!-- Header -->
   <header class="navbar">
     <div class="logo">MetaMapa</div>
     <nav class="nav-buttons">
-      <a href="#" class="btn secondary">Ingresar</a>
-      <a href="#" class="btn primary">Registrarse</a>
+      <a th:href="@{/login}" class="btn secondary">Ingresar</a>
+      <a th:href="@{/registro}" class="btn primary">Registrarse</a>
     </nav>
   </header>
 
@@ -40,19 +40,19 @@
       <div class="grid">
         <div class="card">
           <div class="image-placeholder"></div>
-          <p>Colección</p>
+          <p>Colección: Desastres Naturales</p>
         </div>
         <div class="card">
           <div class="image-placeholder"></div>
-          <p>Hecho</p>
+          <p>Hecho: Incendio forestal en Córdoba</p>
         </div>
         <div class="card">
           <div class="image-placeholder"></div>
-          <p>Colección</p>
+          <p>Colección: Abusos de autoridad</p>
         </div>
         <div class="card">
           <div class="image-placeholder"></div>
-          <p>Hecho</p>
+          <p>Hecho: Inundación repentina en Misiones</p>
         </div>
       </div>
     </div>

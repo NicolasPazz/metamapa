@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMapa - Registrarse</title>
-  <link rel="stylesheet" href="../styles/landing.css">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
 </head>
 <body>
   <!-- Header -->
@@ -38,7 +38,7 @@
       </form>
 
       <div class="login-options">
-        <a href="login.html">¿Ya tienes cuenta? Ingresar</a>
+        <a th:href="@{/login}">¿Ya tienes cuenta? Ingresar</a>
       </div>
     </div>
   </section>

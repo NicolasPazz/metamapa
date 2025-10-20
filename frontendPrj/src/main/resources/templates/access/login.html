@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMapa - Ingresar</title>
-  <link rel="stylesheet" href="../styles/landing.css">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
 </head>
 <body>
   <!-- Header -->
@@ -28,7 +28,7 @@
 
       <div class="login-options">
         <a href="#">Registrarse</a>
-        <a href="#">Ingresar como anónimo</a>
+        <a th:href="@{/colecciones}">Ingresar como anónimo</a>
       </div>
     </div>
   </section>
