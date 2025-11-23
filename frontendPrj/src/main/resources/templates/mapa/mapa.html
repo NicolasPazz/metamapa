@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMapa - Mapa Anónimo</title>
-  <link rel="stylesheet" href="../styles/landing.css">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
 </head>
@@ -21,9 +21,9 @@
   <!-- Map -->
   <div id="map"></div>
 
-  <!-- Leaflet JS -->
+  <!-- Funciona, se traba por la cantidad de hechos-->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-  <script>
+  <script th:inline="javascript">
     // Init map centered on Latin America
     const map = L.map('map').setView([-34.6, -58.4], 5); // Buenos Aires approx
 
@@ -33,37 +33,16 @@
     }).addTo(map);
 
     // Mock hechos data
-    const hechos = [
-      {
-        title: "Hecho 1",
-        description: "Descripción del hecho 1. Reportado en Buenos Aires.",
-        coords: [-34.6037, -58.3816]
-      },
-      {
-        title: "Hecho 2",
-        description: "Descripción del hecho 2. Reportado en Córdoba.",
-        coords: [-31.4201, -64.1888]
-      },
-      {
-        title: "Hecho 3",
-        description: "Descripción del hecho 3. Reportado en Rosario.",
-        coords: [-32.9587, -60.6939]
-      },
-      {
-        title: "Hecho 4",
-        description: "Descripción del hecho 4. Reportado en Montevideo.",
-        coords: [-34.9011, -56.1645]
-      }
-    ];
+    const hechos = /*[[${hechos}]]*/ [];
 
     // Add markers
     hechos.forEach(hecho => {
-      const marker = L.marker(hecho.coords).addTo(map);
+      const marker = L.marker([hecho.latitud, hecho.longitud]).addTo(map);;
       marker.bindPopup(`
         <div class="popup-content">
-          <h3>${hecho.title}</h3>
-          <p>${hecho.description}</p>
-          <button onclick="alert('Más detalles de ${hecho.title}')"
+          <h3>${hecho.titulo}</h3>
+          <p>${hecho.descripcion}</p>
+          <button onclick="alert('Más detalles de ${hecho.titulo}')"
                   style="padding:0.4rem 0.6rem;
                          border:none;
                          border-radius:5px;
