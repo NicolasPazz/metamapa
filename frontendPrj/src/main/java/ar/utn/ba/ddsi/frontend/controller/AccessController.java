@@ -8,12 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AccessController {
 
-    // Visualización de Hechos en Mapa Interactivo
-    @GetMapping("/hechos/mapa")
-    public String mostrarMapaHechos(Model model) {
-        // model.addAttribute("hechos", service.obtenerHechosParaMapa());
-        return "mapa/mapa"; // plantilla: ‘src/main/resources/templates/mapa-hechos.html’
-    }
 
     // Registro de Contribuyentes
     @GetMapping("/registro")
