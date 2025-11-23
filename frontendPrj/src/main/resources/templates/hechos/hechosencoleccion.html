@@ -51,16 +51,17 @@
     <p th:utext="${'<strong>Multimedia:</strong>' + #lists.size(hecho.contenidoMultimedia) + ' archivos multimedia'}"></p>
     <p th:utext="${'<strong>Fuente:</strong>' + hecho.origen}"></p>
 
-    <form th:action="@{/solicitudes}" th:object="${solicitud}" method="post">
+    <!-- TODO: esto funciona a nivel codigo pero rompe por la cantidad de hechos. Habría que buscar la forma de paginar -->
+    <!--<form th:action="@{/solicitudes}" th:object="${solicitud}" method="post">
       <label th:for="${'req' + hecho.id}">Solicitud de eliminación (máx 500 caracteres)</label>
       <textarea th:field="*{textoFundamentos}" th:id="${'req' + hecho.id}" maxlength="500" placeholder="Escribe tu justificación..."></textarea>
 
       <input type="hidden" th:field="*{idHecho}" th:value="${hecho.id}" />
-      <!-- TODO: agregar otro input hidden para id de contribuyente -->
+       TODO: agregar otro input hidden para id de contribuyente
 
       <button type="submit">Enviar solicitud</button>
       <a href="#" class="close">Cerrar</a>
-    </form>
+    </form>-->
   </div>
   </div>
 </div>
