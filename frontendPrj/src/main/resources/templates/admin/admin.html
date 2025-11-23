@@ -1,5 +1,6 @@
 <html th:replace="~{layout/base :: html}">
 <div th:fragment="contenido">
+  <div class="main-container">
   <!-- Sidebar -->
   <nav class="sidebar">
     <h2>MetaMapa Admin</h2>
@@ -8,7 +9,6 @@
     <a href="#hechos">Moderación de Hechos</a>
     <a href="#eliminaciones">Solicitudes de Eliminación</a>
     <a href="#carga">Carga Masiva</a>
-    <a href="logout.html">Cerrar Sesión</a>
   </nav>
 
   <!-- Main Content -->
@@ -20,22 +20,19 @@
         <div class="summary-card">
           <h3>Últimas Colecciones</h3>
           <ul>
-            <li>Colección "Medio Ambiente" actualizada</li>
-            <li>Nueva colección "Educación Rural"</li>
+            <li th:each="coleccion:${coleccionesLimit}" th:text="${coleccion.titulo}"></li>
           </ul>
         </div>
         <div class="summary-card">
           <h3>Últimos Hechos</h3>
           <ul>
-            <li>"Manifestación en plaza central" pendiente</li>
-            <li>"Reporte de agua contaminada" aceptado</li>
+            <li th:each="hecho:${hechosLimit}" th:text="${hecho.titulo}"></li>
           </ul>
         </div>
         <div class="summary-card">
           <h3>Solicitudes de Eliminación</h3>
           <ul>
-            <li>Hecho #1032 — Solicitud pendiente</li>
-            <li>Hecho #980 — Denegada</li>
+            <li th:each="solicitud:${solicitudesLimit}" th:text="@{'Hecho #'+solicitud.idHecho}"></li>
           </ul>
         </div>
       </div>
@@ -46,10 +43,10 @@
       <h2>Gestión de Colecciones</h2>
       <a href="#nueva-coleccion" class="btn">+ Crear Nueva Colección</a>
       <div class="colecciones-grid">
-        <div class="coleccion-card">
-          <h3>Colección: Medio Ambiente</h3>
-          <p>Fuentes: Dinámicas (API Verde), Estáticas (Reporte ONGs)</p>
-          <p>Algoritmo de consenso: Mayoría Simple</p>
+        <div th:each="coleccion:${colecciones}" class="coleccion-card">
+          <h3 th:text="${coleccion.titulo}"></h3>
+          <p>Fuentes: Dinámicas (API Verde), Estáticas (Reporte ONGs)</p> <!-- TODO: agregar fuentes de coleccion a DTO -->
+          <p>Algoritmo de consenso: Mayoría Simple</p> <!-- TODO: agregar algoritmo de coleccion a DTO -->
           <a href="#edit-colection1" class="btn">Editar</a>
         </div>
       </div>
@@ -59,10 +56,10 @@
     <section id="hechos">
       <h2>Moderación de Hechos</h2>
       <div class="hechos-grid">
-        <div class="hecho-card">
-          <h3>Manifestación en plaza central</h3>
-          <p>Subido por: Usuario #34</p>
-          <p>Estado: Pendiente</p>
+        <div th:each="hecho:${hechos}" class="hecho-card">
+          <h3 th:text="${hecho.titulo}"></h3>
+          <p th:text="${'Subido por usuario ' + hecho.contribuyente}"></p>
+          <p th:text="${'Estado: ' + hecho.estado}"></p>
           <button>Aceptar</button>
           <button>Denegar</button>
           <button>Aceptar con cambios</button>
@@ -72,15 +69,20 @@
 
     <!-- Eliminaciones -->
     <section id="eliminaciones">
+
       <h2>Solicitudes de Eliminación</h2>
       <div class="hechos-grid">
-        <div class="hecho-card">
-          <h3>Hecho #1032</h3>
-          <p>Justificación: "Este hecho afecta mi privacidad personal..."</p>
-          <button>Aceptar</button>
-          <button>Denegar</button>
+        <div th:each="solicitud:${solicitudes}" class="hecho-card">
+          <h3 th:text="${'Hecho #' + solicitud.idHecho}"></h3>
+          <p th:text="${'Justificacion: ' + solicitud.textoFundamentos}"></p>
+          <form th:action="@{'/admin/actualizarSolicitud'}" method="post">
+            <input type="hidden" name="id" th:value="${solicitud.id}">
+            <button type="submit" name="estado" value="ACEPTADA">Aceptar</button>
+            <button type="submit" name="estado" value="RECHAZADA">Denegar</button>
+          </form>
         </div>
       </div>
+
     </section>
 
     <!-- Carga Masiva -->
@@ -92,6 +94,7 @@
         <button type="submit">Procesar</button>
       </form>
     </section>
+  </div>
   </div>
 
   <!-- Nueva Colección Panel -->
