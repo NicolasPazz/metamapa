@@ -481,8 +481,15 @@ svg {
 
 body {
   display: flex;
+  flex-direction: column; /* Stack vertically */
   min-height: 100vh;
   background: var(--light-gray);
+}
+
+.main-container {
+  display: flex;       /* This makes Sidebar and Content sit side-by-side */
+  flex: 1;             /* This makes it fill the remaining height of the screen */
+  width: 100%;
 }
 
 /* Sidebar */
@@ -491,6 +498,8 @@ body {
   background: var(--primary);
   color: white;
   padding: 2rem 1rem;
+  /* Remove any height or position properties if present */
+  flex-shrink: 0; /* Prevents sidebar from squishing */
 }
 
 .sidebar h2 {
