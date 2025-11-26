@@ -3,15 +3,15 @@ package ar.utn.ba.ddsi.agregador.controller;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.service.ISeederService;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.impl.HechosService;
 import ar.utn.ba.ddsi.agregador.service.impl.SolicitudesService;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+
 
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
@@ -20,11 +20,13 @@ import java.util.List;
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
+@Slf4j
 public class AgregadorController {
     private final SolicitudesService solicitudesService;
     private final HechosService hechosService;
     private final ColeccionesService coleccionesService;
     private final ISeederService seederService;
+
 
     /**
      * GET /hechos
@@ -39,20 +41,45 @@ public class AgregadorController {
      * @param ubicacion ubicación del hecho (formato: lat,log)
      * @return lista de hechos visibles según los filtros
      */
+    // Asegurate de tener @Slf4j al inicio de la clase
     @GetMapping("/hechos")
-    public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
-        @RequestParam(required = false) String categoria,
-        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
-        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
-        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
-        @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
-        @RequestParam(required = false) String ubicacion) {
-        return hechosService.getAll(
-            categoria,
-            fecha_reporte_desde, fecha_reporte_hasta,
-            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-            ubicacion);
+    public ResponseEntity<?> getAllHechosVisibles( // Cambié a <?> para poder devolver error de texto si falla
+                                                   @RequestParam(required = false) String categoria,
+                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
+                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
+                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
+                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
+                                                   @RequestParam(required = false) String ubicacion) {
+
+        // 1. LOG DE ENTRADA: Si ves esto en consola, la petición llegó.
+        log.info(">>> INGRESANDO A GET /hechos");
+        log.info("Params recibidos: Categoria={}, FechaDesde={}, Ubicacion={}",
+                categoria, fecha_reporte_desde, ubicacion);
+
+        try {
+            // Tu lógica original
+            var resultado = hechosService.getAll(
+                    categoria,
+                    fecha_reporte_desde, fecha_reporte_hasta,
+                    fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+                    ubicacion
+            );
+
+            log.info("<<< Saliendo exitosamente con 5 hechos encontrados");
+            return ResponseEntity.ok(resultado);
+
+        } catch (Exception e) {
+            // 2. LOG DEL ERROR REAL: Aquí verás por qué explotó
+            log.error("!!! ERROR FATAL EN GET /hechos: ", e);
+
+            // Devolvemos el error en el body para que lo veas en Postman/Navegador
+            return ResponseEntity.internalServerError()
+                    .body("Error interno procesando la solicitud: " + e.getMessage());
+        }
     }
+
+
+
 
     /**
      *   GET /colecciones
@@ -101,7 +128,8 @@ public class AgregadorController {
      */
     @PostMapping("/solicitudes")
     public ResponseEntity<?> crear(@RequestBody SolicitudInputDTO solicitudInputDTO) {
-        return solicitudesService.crear(solicitudInputDTO);
+      return solicitudesService.crear(solicitudInputDTO);
+
     }
 
     /*@PostMapping("/etiquetas")
