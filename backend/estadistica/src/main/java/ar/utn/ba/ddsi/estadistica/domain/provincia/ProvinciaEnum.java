@@ -1,0 +1,28 @@
+package ar.utn.ba.ddsi.estadistica.domain.provincia;
+
+public enum ProvinciaEnum {
+  BUENOS_AIRES,
+  CORDOBA,
+  SALTA,
+  TUCUMAN,
+  MISIONES,
+  CORRIENTES,
+  ENTRE_RIOS,
+  SANTA_FE,
+  JUJUY,
+  CATAMARCA,
+  LA_RIOJA,
+  SANTIAGO_DEL_ESTERO,
+  FORMOSA,
+  CHACO,
+  SAN_JUAN,
+  SAN_LUIS,
+  MENDOZA,
+  NEUQUEN,
+  RIO_NEGRO,
+  CHUBUT,
+  SANTA_CRUZ,
+  TIERRA_DEL_FUEGO,
+  LA_PAMPA,
+  INVALIDA
+}

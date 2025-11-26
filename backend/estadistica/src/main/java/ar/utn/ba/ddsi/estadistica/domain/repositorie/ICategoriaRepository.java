@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.estadistica.domain.repositorie;
 
-import ar.utn.ba.ddsi.estadistica.domain.Categoria;
+import ar.utn.ba.ddsi.estadistica.domain.hecho.Categoria;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

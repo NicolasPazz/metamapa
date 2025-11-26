@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.estadistica.service.impl;
 
-import ar.utn.ba.ddsi.estadistica.domain.ProvinciaEnum;
+import ar.utn.ba.ddsi.estadistica.domain.provincia.ProvinciaEnum;
 import ar.utn.ba.ddsi.estadistica.service.IGeolocalizacion;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

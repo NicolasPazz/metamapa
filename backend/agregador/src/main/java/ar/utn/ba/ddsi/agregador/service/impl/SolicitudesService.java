@@ -19,6 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
@@ -29,7 +30,7 @@ public class SolicitudesService implements ISolicitudesService {
   private final IdService idService;
   private final FuentesService fuentesService;
   private final List<Validacion> validaciones = List.of(
-      new ValidacionLongitud(500),
+      new ValidacionLongitud(50),
       new DetectorDeSpamTFIDF()
   );
 
@@ -38,7 +39,16 @@ public class SolicitudesService implements ISolicitudesService {
     return validaciones.stream().allMatch(validacion -> validacion.esValida(textoFundamentos));
   }
 
+  private String truncarTextoFundamentos(String texto) {
+    if (texto != null && texto.length() > 2000) {
+      log.warn("[SolicitudesService] Texto de fundamentos truncado por exceder 2000 caracteres");
+      return texto.substring(0, 1997) + "...";
+    }
+    return texto;
+  }
+
   @Override
+  @Transactional
   public ResponseEntity<?> crear(SolicitudInputDTO solicitudInputDTO) {
     if (!esValida(solicitudInputDTO.getTextoFundamentos())) {
       return ResponseEntity.badRequest().body("El texto de fundamentos no cumplió con las validaciones.");
@@ -46,14 +56,23 @@ public class SolicitudesService implements ISolicitudesService {
     Long idHechoUnico = solicitudInputDTO.getIdHecho();
 
     // Buscar el hecho localmente
+    log.info("[SolicitudesService] Buscando hecho con ID único: {}", idHechoUnico);
     Optional<Hecho> hecho = hechosRepository.findById(idHechoUnico);
-    Hecho hechoEncontrado = hecho.get();
-    if (hecho != null) {
+    if (hecho.isPresent()) {
+      Hecho hechoEncontrado = hecho.get();
+      log.info("[SolicitudesService] Hecho encontrado localmente: {}", hechoEncontrado.getId());
+      
+      // Truncar el texto si es muy largo para evitar errores de BD
+      String textoTruncado = truncarTextoFundamentos(solicitudInputDTO.getTextoFundamentos());
+      
       SolicitudDeEliminacion solicitud = new SolicitudDeEliminacion(
-          hechoEncontrado, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getIdContribuyente()
+          hechoEncontrado, textoTruncado, solicitudInputDTO.getIdContribuyente()
       );
-      solicitudesRepository.save(solicitud);
-      return ResponseEntity.ok(solicitud.toDTO());
+      SolicitudDeEliminacion solicitudGuardada = solicitudesRepository.save(solicitud);
+      log.info("[SolicitudesService] Solicitud creada localmente con ID: {}", solicitudGuardada.getId());
+      return ResponseEntity.ok(solicitudGuardada.toDTO());
+    } else {
+      log.info("[SolicitudesService] Hecho con ID {} no encontrado localmente, derivando a fuente externa", idHechoUnico);
     }
 
     // Si no existe localmente, derivar a la fuente externa
@@ -78,10 +97,29 @@ public class SolicitudesService implements ISolicitudesService {
     SolicitudOutputDTO dto = respuesta.getBody();
     dto.setIdHecho(idHechoUnico);
 
+    // Guardar la solicitud localmente
+    try {
+      // Truncar el texto si es muy largo para evitar errores de BD
+      String textoTruncado = truncarTextoFundamentos(solicitudInputDTO.getTextoFundamentos());
+      
+      SolicitudDeEliminacion solicitudLocal = new SolicitudDeEliminacion(
+          null, // No hay hecho local
+          textoTruncado,
+          solicitudInputDTO.getIdContribuyente()
+      );
+      solicitudLocal.setHechoId(idHechoUnico);
+      SolicitudDeEliminacion solicitudGuardada = solicitudesRepository.save(solicitudLocal);
+      log.info("[SolicitudesService] Solicitud de fuente externa guardada localmente con ID: {} (ID externo: {})", 
+               solicitudGuardada.getId(), dto.getId());
+    } catch (Exception e) {
+      log.warn("[SolicitudesService] No se pudo guardar la solicitud localmente: {}", e.getMessage());
+    }
+
     return ResponseEntity.ok(dto);
   }
 
   @Override
+  @Transactional
   public ResponseEntity<?> actualizarEstado(Long id, SolicitudOutputDTO dto) {
     if (id == null || dto == null) {
       return ResponseEntity.badRequest().body("Debe proporcionar un ID de solicitud y un DTO válido.");
@@ -105,38 +143,44 @@ public class SolicitudesService implements ISolicitudesService {
     } catch (IllegalArgumentException e) {
       return ResponseEntity.status(HttpStatus.NOT_FOUND).body("ERROR: " + e.getMessage());
     } catch (Exception e) {
+      log.error("[SolicitudesService] Error al actualizar estado de solicitud {}: {}", id, e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("ERROR inesperado: " + e.getMessage());
     }
   }
 
   @Override
+  @Transactional
   public void aceptar(Long idSolicitud) {
     Optional<SolicitudDeEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
-    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
-    if (solicitud == null) {
+    if (solicitud.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
     }
+    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
 
     solicitudEncontrada.aceptar();
-    hechosRepository.ocultar(solicitudEncontrada.getHecho().getId());
+    solicitudesRepository.save(solicitudEncontrada);
+    hechosRepository.ocultar(solicitudEncontrada.getHechoId());
     log.info("[SolicitudesService] Solicitud {} aceptada.", idSolicitud);
   }
 
   @Override
+  @Transactional
   public void rechazar(Long idSolicitud) {
     Optional<SolicitudDeEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
-    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
-    if (solicitud == null) {
+    if (solicitud.isEmpty()) {
       throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
     }
+    SolicitudDeEliminacion solicitudEncontrada = solicitud.get();
 
     solicitudEncontrada.rechazar();
-    solicitudesRepository.delete(solicitudEncontrada);
+    solicitudesRepository.save(solicitudEncontrada);
     log.info("[SolicitudesService] Solicitud {} rechazada.", idSolicitud);
   }
 
   public ResponseEntity<List<SolicitudOutputDTO>> getAll() {
     List<SolicitudDeEliminacion> solicitudes = solicitudesRepository.findAll();
+    log.info("[SolicitudesService] Encontradas {} solicitudes en la base de datos", solicitudes.size());
+    
     List<SolicitudOutputDTO> dtos = solicitudes.stream()
         .map(SolicitudDeEliminacion::toDTO)
         .toList();

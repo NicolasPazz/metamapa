@@ -1,0 +1,25 @@
+
+<html th:replace="~{layout/base :: html}">
+  <div th:fragment="contenido">
+    <!-- Colecciones list -->
+    <section class="colecciones-block">
+      <h2>Colecciones disponibles</h2>
+      <!-- verificar si hay colecciones -->
+      <div th:if="${#lists.isEmpty(colecciones)}">No hay colecciones disponibles.</div>
+
+      <!-- colecciones -->
+      <div th:if="${!#lists.isEmpty(colecciones) and colecciones != null}" class="colecciones-grid">
+        <!-- Mock colecciones -->
+        <div th:each="coleccion : ${colecciones}" class="coleccion-card">
+          <h3 th:text="${coleccion.titulo}"></h3>
+          <p th:text="${coleccion.descripcion}"></p>
+          <a th:href="@{/colecciones/{handle}/hechos(handle=${coleccion.handle})}" class="btn primary">Ver más</a>
+        </div>
+
+        <div class="coleccion-card">
+          <a th:href="@{/hechos}" class="btn primary" style="margin:auto;">Ver todos los hechos</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</html>

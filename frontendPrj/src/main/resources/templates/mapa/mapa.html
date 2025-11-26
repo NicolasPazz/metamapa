@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMapa - Mapa Anónimo</title>
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <div class="logo">MetaMapa</div>
+    <nav class="nav-buttons">
+      <a href="login.html" class="btn secondary">Ingresar</a>
+      <a href="register.html" class="btn primary">Registrarse</a>
+    </nav>
+  </header>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Funciona, se traba por la cantidad de hechos-->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script th:inline="javascript">
+    // Init map centered on Latin America
+    const map = L.map('map').setView([-34.6, -58.4], 5); // Buenos Aires approx
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Mock hechos data
+    const hechos = /*[[${hechos}]]*/ [];
+
+    // Add markers
+    hechos.forEach(hecho => {
+      const marker = L.marker([hecho.latitud, hecho.longitud]).addTo(map);;
+      marker.bindPopup(`
+        <div class="popup-content">
+          <h3>${hecho.titulo}</h3>
+          <p>${hecho.descripcion}</p>
+          <button onclick="alert('Más detalles de ${hecho.titulo}')"
+                  style="padding:0.4rem 0.6rem;
+                         border:none;
+                         border-radius:5px;
+                         background:var(--primary);
+                         color:white;
+                         cursor:pointer;">
+            Ver más
+          </button>
+        </div>
+      `);
+    });
+  </script>
+</body>
+</html>

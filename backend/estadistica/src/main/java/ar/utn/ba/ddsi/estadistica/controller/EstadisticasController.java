@@ -38,6 +38,7 @@ public class EstadisticasController {
 
     /**
      * GET /api/estadisticas/coleccion/{handle}/provincia-mas-hechos
+     * De una colección, ¿en qué provincia se agrupan la mayor cantidad de hechos reportados?
      * Obtiene la provincia con mayor cantidad de hechos reportados para una coleccion especifica
      */
     @GetMapping("/coleccion/{handle}/provincia-mas-hechos")
@@ -57,6 +58,7 @@ public class EstadisticasController {
 
     /**
      * GET /api/estadisticas/categoria-mas-hechos
+     * ¿Cuál es la categoría con mayor cantidad de hechos reportados?
      * Obtiene la categoria con mayor cantidad de hechos reportados
      */
     @GetMapping("/categoria-mas-hechos")
@@ -75,6 +77,7 @@ public class EstadisticasController {
 
     /**
      * GET /api/estadisticas/categoria/{categoria}/provincia-mas-hechos
+     * ¿En qué provincia se presenta la mayor cantidad de hechos de una cierta categoría?
      * Obtiene la provincia con mayor cantidad de hechos para una categoria especifica
      */
     @GetMapping("/categoria/{categoria}/provincia-mas-hechos")
@@ -94,6 +97,7 @@ public class EstadisticasController {
 
     /**
      * GET /api/estadisticas/categoria/{categoria}/hora-mas-hechos
+     *  ¿A qué hora del día ocurren la mayor cantidad de hechos de una cierta categoría?
      * Obtiene la hora del dia con mayor cantidad de hechos para una categoria especifica
      */
     @GetMapping("/categoria/{categoria}/hora-mas-hechos")
@@ -113,6 +117,7 @@ public class EstadisticasController {
 
     /**
      * GET /api/estadisticas/solicitudes-spam
+     * ¿Cuántas solicitudes de eliminación son spam?
      * Obtiene estadisticas sobre solicitudes de eliminacion que son spam
      */
     @GetMapping("/solicitudes-spam")
@@ -129,6 +134,7 @@ public class EstadisticasController {
         }
     }
 
+    //------------------------------------------------ CSV ---------------------------------------------------------
     /**
      * GET /api/estadisticas/export/csv
      * Exporta todas las estadisticas a un archivo CSV
@@ -176,15 +182,5 @@ public class EstadisticasController {
             log.error("Tipo de estadistica no valido: {}", tipo);
             return ResponseEntity.badRequest().build();
         }
-    }
-
-    /**
-     * GET /api/estadisticas/health
-     * Endpoint de salud del servicio
-     */
-    @GetMapping("/health")
-    public ResponseEntity<String> health() {
-        log.debug("Verificando salud del servicio de estadisticas");
-        return ResponseEntity.ok("Servicio de estadisticas funcionando correctamente");
     }
 }

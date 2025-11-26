@@ -31,7 +31,7 @@ public class Coleccion {
   private final String handle;
   @Column(name = "titulo")
   private String titulo;
-  @Column(name = "descripcion")
+  @Column(name = "descripcion", columnDefinition = "TEXT")
   private String descripcion;
   @OneToMany
   @JoinColumn(name = "coleccion_id")

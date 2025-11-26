@@ -1,0 +1,129 @@
+<html th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+  <div class="main-container">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <h2>MetaMapa Admin</h2>
+    <a href="#dashboard" class="active">Panel de Control</a>
+    <a href="#colecciones">Colecciones</a>
+    <a href="#hechos">Moderación de Hechos</a>
+    <a href="#eliminaciones">Solicitudes de Eliminación</a>
+    <a href="#carga">Carga Masiva</a>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="content">
+    <!-- Dashboard -->
+    <section id="dashboard">
+      <h2>Panel de Control</h2>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <h3>Últimas Colecciones</h3>
+          <ul>
+            <li th:each="coleccion:${coleccionesLimit}" th:text="${coleccion.titulo}"></li>
+          </ul>
+        </div>
+        <div class="summary-card">
+          <h3>Últimos Hechos</h3>
+          <ul>
+            <li th:each="hecho:${hechosLimit}" th:text="${hecho.titulo}"></li>
+          </ul>
+        </div>
+        <div class="summary-card">
+          <h3>Solicitudes de Eliminación</h3>
+          <ul>
+            <li th:each="solicitud:${solicitudesLimit}" th:text="@{'Hecho #'+solicitud.idHecho}"></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Colecciones -->
+    <section id="colecciones">
+      <h2>Gestión de Colecciones</h2>
+      <a href="#nueva-coleccion" class="btn">+ Crear Nueva Colección</a>
+      <div class="colecciones-grid">
+        <div th:each="coleccion:${colecciones}" class="coleccion-card">
+          <h3 th:text="${coleccion.titulo}"></h3>
+          <p>Fuentes: Dinámicas (API Verde), Estáticas (Reporte ONGs)</p> <!-- TODO: agregar fuentes de coleccion a DTO -->
+          <p>Algoritmo de consenso: Mayoría Simple</p> <!-- TODO: agregar algoritmo de coleccion a DTO -->
+          <a href="#edit-colection1" class="btn">Editar</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hechos -->
+    <section id="hechos">
+      <h2>Moderación de Hechos</h2>
+      <div class="hechos-grid">
+        <div th:each="hecho:${hechos}" class="hecho-card">
+          <h3 th:text="${hecho.titulo}"></h3>
+          <p th:text="${'Subido por usuario ' + hecho.contribuyente}"></p>
+          <p th:text="${'Estado: ' + hecho.estado}"></p>
+          <button>Aceptar</button>
+          <button>Denegar</button>
+          <button>Aceptar con cambios</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Eliminaciones -->
+    <section id="eliminaciones">
+
+      <h2>Solicitudes de Eliminación</h2>
+      <div class="hechos-grid">
+        <div th:each="solicitud:${solicitudes}" class="hecho-card">
+          <h3 th:text="${'Hecho #' + solicitud.idHecho}"></h3>
+          <p th:text="${'Justificacion: ' + solicitud.textoFundamentos}"></p>
+          <form th:action="@{'/admin/actualizarSolicitud'}" method="post">
+            <input type="hidden" name="id" th:value="${solicitud.id}">
+            <button type="submit" name="estado" value="ACEPTADA">Aceptar</button>
+            <button type="submit" name="estado" value="RECHAZADA">Denegar</button>
+          </form>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- Carga Masiva -->
+    <section id="carga">
+      <h2>Carga Masiva de Hechos</h2>
+      <form>
+        <label for="csv">Subir archivo CSV (máx 50MB)</label>
+        <input type="file" id="csv" accept=".csv" required>
+        <button type="submit">Procesar</button>
+      </form>
+    </section>
+  </div>
+  </div>
+
+  <!-- Nueva Colección Panel -->
+  <div id="nueva-coleccion" class="panel">
+    <h3>Crear Nueva Colección</h3>
+    <form>
+      <label for="nombre">Nombre*</label>
+      <input type="text" id="nombre" required>
+
+      <label for="descripcion">Descripción*</label>
+      <textarea id="descripcion" required></textarea>
+
+      <label for="fuentes">Fuentes*</label>
+      <select id="fuentes" multiple>
+        <option>Dinámica</option>
+        <option>Estática</option>
+        <option>Proxy</option>
+      </select>
+
+      <label for="consenso">Algoritmo de Consenso*</label>
+      <select id="consenso" required>
+        <option>Mayoría Simple</option>
+        <option>Ponderado</option>
+        <option>Curaduría Experta</option>
+      </select>
+
+      <button type="submit">Guardar</button>
+    </form>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+</div>
+</html>

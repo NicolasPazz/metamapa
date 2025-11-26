@@ -12,5 +12,6 @@
 
 	<modules>
 		<module>backend</module>
-	</modules>
+        <module>frontendPrj</module>
+    </modules>
 </project>
