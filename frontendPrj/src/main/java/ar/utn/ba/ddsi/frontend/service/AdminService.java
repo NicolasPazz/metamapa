@@ -3,7 +3,11 @@ package ar.utn.ba.ddsi.frontend.service;
 import ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudOutputDTO;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
@@ -33,5 +37,21 @@ public class AdminService {
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
+    }
+
+    public void enviarArchivoAlBackend(MultipartFile archivo) {
+
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+
+        builder.part("file", archivo.getResource());
+
+        // 2. Enviamos el POST
+        webClient.post()
+                .uri("/api/carga-masiva") // La ruta del OTRO servicio
+                .contentType(MediaType.MULTIPART_FORM_DATA) // Importante
+                .body(BodyInserters.fromMultipartData(builder.build()))
+                .retrieve()
+                .toBodilessEntity() // No esperamos cuerpo de respuesta, solo que no falle (200 OK)
+                .block(); // Bloqueamos para esperar que termine (o usas subscribe si es reactivo)
     }
 }

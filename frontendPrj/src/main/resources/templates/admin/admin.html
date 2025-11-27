@@ -88,11 +88,12 @@
     <!-- Carga Masiva -->
     <section id="carga">
       <h2>Carga Masiva de Hechos</h2>
-      <form>
+      <form method="post" th:action="@{/admin/subir-csv}" enctype="multipart/form-data">
         <label for="csv">Subir archivo CSV (máx 50MB)</label>
-        <input type="file" id="csv" accept=".csv" required>
+        <input type="file" id="csv" name="archivo" accept=".csv" required>
         <button type="submit">Procesar</button>
       </form>
+      <div th:if="${mensaje}" th:text="${mensaje}" class="alert"></div>
     </section>
   </div>
   </div>

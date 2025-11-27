@@ -8,10 +8,7 @@ import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/hechos")
@@ -36,6 +33,11 @@ public class FuenteController {
   public ResponseEntity<List<HechoOutputDTO>> getAllHechosVisibles() {
     List<HechoOutputDTO> hechosNuevos = this.fuenteService.getAllHechosNuevos();
     return ResponseEntity.ok(hechosNuevos);
+  }
+  @PostMapping(value = "/api/carga-masiva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<String> recibirCsv(@RequestPart("file") MultipartFile file) {
+    // Lógica de leer el CSV...
+    return ResponseEntity.ok("Recibido");
   }
 
 

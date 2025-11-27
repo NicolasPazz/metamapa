@@ -9,16 +9,21 @@ import ar.utn.ba.ddsi.frontend.service.ColeccionService;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.logging.log4j.Logger;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
+@Slf4j
+
 public class AdminController {
     private final ColeccionService coleccionService;
     private final HechoService hechoService;
@@ -52,4 +57,23 @@ public class AdminController {
         }
         return "redirect:/admin/admin";
     }
+
+
+    @PostMapping("/admin/subir-csv")
+    public String procesarCsv(@RequestParam("archivo") MultipartFile archivo, Model model) {
+        log.info("Recibiendo archivo: {}, tamaño: {} bytes", archivo.getOriginalFilename(), archivo.getSize());
+
+        try {
+            // Llamamos al servicio que se comunica con el otro sistema
+            adminService.enviarArchivoAlBackend(archivo);
+
+            model.addAttribute("mensaje", "Archivo enviado exitosamente para procesamiento.");
+        } catch (Exception e) {
+            log.error("Error al subir archivo", e);
+            model.addAttribute("mensaje", "Error: " + e.getMessage());
+        }
+
+        return "/admin/admin"; // Volvemos a la vista admin.html
+    }
 }
+
