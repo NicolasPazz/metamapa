@@ -54,9 +54,11 @@ public class HechoController {
 
 
         List<HechoDTO> hechos = hechoService.getAllHechosFilter(modo, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria);
+        List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
 
         model.addAttribute("hechos", hechos);
         model.addAttribute("titulo", "Hechos");
+        model.addAttribute("categorias", listaCategorias);
         //model.addAttribute("solicitud", new SolicitudDTO());
         return "hechos/hechosencoleccion";
 

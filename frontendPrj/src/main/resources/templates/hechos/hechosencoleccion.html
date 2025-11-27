@@ -32,7 +32,12 @@
 
       <select name="categoria">
         <option value="">Todas las categorías</option>
-        <option value="Incendio">Incendio</option>
+
+        <option th:each="cat : ${categorias}"
+                th:value="${cat}"
+                th:text="${cat}"
+                th:selected="${param.categoria != null and param.categoria[0] == cat}">
+        </option>
       </select>
 
       <select name="modo">

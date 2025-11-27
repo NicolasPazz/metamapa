@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 
 
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
@@ -55,6 +56,19 @@ public class AgregadorController {
                 fecha_reporte_desde, fecha_reporte_hasta,
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
                 ubicacion);
+    }
+    @PostMapping("/hechos") // para crear hechos con post y tener la base de datos linda
+    public ResponseEntity<?> crearHecho(@RequestBody HechoDTO nuevoHecho) {
+
+        try {
+
+            HechoDTO hechoCreado = hechosService.crearHecho(nuevoHecho);
+            return ResponseEntity.status(HttpStatus.CREATED).body(hechoCreado);
+
+        } catch (Exception e) {
+            log.error("Error al crear el hecho", e);
+            return ResponseEntity.internalServerError().body("Error al crear: " + e.getMessage());
+        }
     }
 
 

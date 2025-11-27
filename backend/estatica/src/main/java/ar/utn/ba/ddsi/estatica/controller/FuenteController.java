@@ -2,10 +2,15 @@ package ar.utn.ba.ddsi.estatica.controller;
 
 import ar.utn.ba.ddsi.estatica.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.estatica.service.IFuenteService;
+
+import java.time.LocalDate;
 import java.util.List;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -27,4 +32,11 @@ public class FuenteController {
     List<HechoOutputDTO> hechosNuevos = this.fuenteService.getAllHechosNuevos();
     return ResponseEntity.ok(hechosNuevos);
   }
+  @GetMapping("/hechos")
+  public ResponseEntity<List<HechoOutputDTO>> getAllHechosVisibles() {
+    List<HechoOutputDTO> hechosNuevos = this.fuenteService.getAllHechosNuevos();
+    return ResponseEntity.ok(hechosNuevos);
+  }
+
+
 }

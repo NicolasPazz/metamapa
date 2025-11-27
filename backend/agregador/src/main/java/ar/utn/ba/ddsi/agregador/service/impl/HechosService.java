@@ -3,11 +3,12 @@ package ar.utn.ba.ddsi.agregador.service.impl;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
+
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.http.ResponseEntity;
 
@@ -15,9 +16,11 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class HechosService {
+public class HechosService{
 
+    @Autowired
     private final IHechosRepository hechosRepository;
+    @Autowired
     private final FuentesService fuentesService;
 
     public ResponseEntity<List<HechoDTO>> getAll(
@@ -48,5 +51,10 @@ public class HechosService {
         combinados.addAll(externos);
 
         return ResponseEntity.of(Optional.of(combinados));
+    }
+    public HechoDTO crearHecho(HechoDTO hechoInputDTO){
+        Hecho hechoNuevo = hechoInputDTO.mapToHecho();
+        hechosRepository.save(hechoNuevo);
+        return hechoInputDTO;
     }
 }
