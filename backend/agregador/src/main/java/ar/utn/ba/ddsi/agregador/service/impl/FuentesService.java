@@ -57,6 +57,9 @@ public class FuentesService {
     return ResponseEntity.of(Optional.of(resultados));
   }
 
+
+
+
   public ResponseEntity<List<HechoDTO>> getAllHechosNuevos() {
     List<HechoDTO> resultados = new ArrayList<>();
     for (IFuente fuente : fuentes) {

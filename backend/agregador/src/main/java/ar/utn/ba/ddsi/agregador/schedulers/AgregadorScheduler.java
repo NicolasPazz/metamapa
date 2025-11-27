@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class agregadorScheduler {
+public class AgregadorScheduler {
 
     private final AgregadorService agregadorService;
     private final ColeccionesService coleccionesService;

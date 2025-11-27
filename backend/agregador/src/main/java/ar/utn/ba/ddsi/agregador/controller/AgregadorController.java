@@ -41,41 +41,20 @@ public class AgregadorController {
      * @param ubicacion ubicación del hecho (formato: lat,log)
      * @return lista de hechos visibles según los filtros
      */
-    // Asegurate de tener @Slf4j al inicio de la clase
+
     @GetMapping("/hechos")
-    public ResponseEntity<?> getAllHechosVisibles( // Cambié a <?> para poder devolver error de texto si falla
-                                                   @RequestParam(required = false) String categoria,
-                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
-                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
-                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
-                                                   @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
-                                                   @RequestParam(required = false) String ubicacion) {
-
-        // 1. LOG DE ENTRADA: Si ves esto en consola, la petición llegó.
-        log.info(">>> INGRESANDO A GET /hechos");
-        log.info("Params recibidos: Categoria={}, FechaDesde={}, Ubicacion={}",
-                categoria, fecha_reporte_desde, ubicacion);
-
-        try {
-            // Tu lógica original
-            var resultado = hechosService.getAll(
-                    categoria,
-                    fecha_reporte_desde, fecha_reporte_hasta,
-                    fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-                    ubicacion
-            );
-
-            log.info("<<< Saliendo exitosamente con 5 hechos encontrados");
-            return ResponseEntity.ok(resultado);
-
-        } catch (Exception e) {
-            // 2. LOG DEL ERROR REAL: Aquí verás por qué explotó
-            log.error("!!! ERROR FATAL EN GET /hechos: ", e);
-
-            // Devolvemos el error en el body para que lo veas en Postman/Navegador
-            return ResponseEntity.internalServerError()
-                    .body("Error interno procesando la solicitud: " + e.getMessage());
-        }
+    public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
+            @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_desde,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_acontecimiento_hasta,
+            @RequestParam(required = false) String ubicacion) {
+        return hechosService.getAll(
+                categoria,
+                fecha_reporte_desde, fecha_reporte_hasta,
+                fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+                ubicacion);
     }
 
 

@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.HechosFiltroDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
@@ -22,13 +23,14 @@ public class FuenteCron implements IFuente {
   private final WebClient webClient;
   private final Long id;
 
+
   @Override
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
-      String categoria,
-      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
-      String ubicacion) {
-    return ResponseEntity.ok(List.of()); 
+          String categoria,
+          LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+          LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+          String ubicacion) {
+    return ResponseEntity.ok(List.of());
   }
 
   @Override

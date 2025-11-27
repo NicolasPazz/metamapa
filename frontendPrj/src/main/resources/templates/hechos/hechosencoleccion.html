@@ -5,34 +5,31 @@
   <section class="hechos-block">
     <!--<h2>Colección: Derechos Humanos</h2> -->
 
-    <!-- Filters -->
-    <div class="filters">
-      <input type="date" name="fecha">
-      <select name="ubicacion">
-        <option>Ubicación</option>
-        <option>Buenos Aires</option>
-        <option>Córdoba</option>
-        <option>Rosario</option>
-      </select>
-      <select name="multimedia">
-        <option>Multimedia</option>
-        <option>Con imágenes</option>
-        <option>Con video</option>
-        <option>Sin multimedia</option>
-      </select>
-      <select name="fuente">
-        <option>Fuente</option>
-        <option>ONG</option>
-        <option>Medios</option>
-        <option>Ciudadanía</option>
-      </select>
-    </div>
+    <form method="get" class="filters">
 
-    <!-- Toggle navigation -->
-    <div class="toggle">
-      <a href="#" class="active">Irrestricta</a>
-      <a href="#">Curada</a>
-    </div>
+      <input type="date" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}">
+
+      <select name="ubicacion">
+        <option value="">Todas las ubicaciones</option> <option value="Buenos Aires" th:selected="${param.ubicacion != null and param.ubicacion[0] == 'Buenos Aires'}">Buenos Aires</option>
+        <option value="Córdoba" th:selected="${param.ubicacion != null and param.ubicacion[0] == 'Córdoba'}">Córdoba</option>
+        <option value="Rosario" th:selected="${param.ubicacion != null and param.ubicacion[0] == 'Rosario'}">Rosario</option>
+      </select>
+
+      <select name="categoria">
+        <option value="">Todas las categorías</option>
+        <option value="Incendio">Incendio</option>
+      </select>
+
+      <select name="modo">
+        <option value="irrestricto" th:selected="${param.modo != null and param.modo[0] == 'irrestricto'}">Irrestricta</option>
+        <option value="curado" th:selected="${param.modo != null and param.modo[0] == 'curado'}">Curada</option>
+      </select>
+
+      <button type="submit">Aplicar Filtros</button>
+
+      <a th:href="@{/colecciones/{handle}/hechos(handle=${handle})}" class="btn-reset">Limpiar</a>
+
+    </form>
 
     <!-- Hechos list -->
     <div class="hechos-grid">
