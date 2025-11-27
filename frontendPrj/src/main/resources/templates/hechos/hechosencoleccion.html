@@ -1,13 +1,28 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMapa - Hechos</title>
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+</head>
+
+
 <html th:replace="~{layout/base :: html}">
 <div th:fragment="contenido">
-
   <!-- Hechos in a collection -->
   <section class="hechos-block">
     <!--<h2>Colección: Derechos Humanos</h2> -->
 
     <form method="get" class="filters">
 
-      <input type="date" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}">
+      <div class="filtro-fecha">
+        <label for="fechaDesde">Desde:</label>
+        <input type="date" id="fechaDesde" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}">
+      </div>
+
+      <div class="filtro-fecha">
+        <label for="fechaHasta">Hasta:</label>
+        <input type="date" id="fechaHasta" name="fecha_reporte_hasta" th:value="${param.fecha_reporte_hasta}">
+      </div>
 
       <select name="ubicacion">
         <option value="">Todas las ubicaciones</option> <option value="Buenos Aires" th:selected="${param.ubicacion != null and param.ubicacion[0] == 'Buenos Aires'}">Buenos Aires</option>
@@ -27,7 +42,7 @@
 
       <button type="submit">Aplicar Filtros</button>
 
-      <a th:href="@{/colecciones/{handle}/hechos(handle=${handle})}" class="btn-reset">Limpiar</a>
+      <a th:href="@{/hechos}" class="btn primary">Limpiar</a>
 
     </form>
 
@@ -47,18 +62,25 @@
     <p th:utext="${'<strong>Ubicación:</strong>' + hecho.latitud + ', ' + hecho.longitud}"></p>
     <p th:utext="${'<strong>Multimedia:</strong>' + #lists.size(hecho.contenidoMultimedia) + ' archivos multimedia'}"></p>
     <p th:utext="${'<strong>Fuente:</strong>' + hecho.origen}"></p>
+    <p th:utext="${'<strong>Fecha Acontecimiento: </strong>' + hecho.FechaDeAcontecimiento}"></p>
+    <p th:utext="${'<strong>Fecha Acontecimiento: </strong>' }"></p>
 
-    <!-- TODO: esto funciona a nivel codigo pero rompe por la cantidad de hechos. Habría que buscar la forma de paginar -->
-    <!--<form th:action="@{/solicitudes}" th:object="${solicitud}" method="post">
+
+    <!-- TODO: esto funciona a nivel codigo pero rompe por la cantidad de hechos. Habría que buscar la forma de paginar
+
+    <form th:action="@{/solicitudes}" th:object="${solicitud}" method="post">
       <label th:for="${'req' + hecho.id}">Solicitud de eliminación (máx 500 caracteres)</label>
       <textarea th:field="*{textoFundamentos}" th:id="${'req' + hecho.id}" maxlength="500" placeholder="Escribe tu justificación..."></textarea>
 
       <input type="hidden" th:field="*{idHecho}" th:value="${hecho.id}" />
-       TODO: agregar otro input hidden para id de contribuyente
+
+      //TODO: agregar otro input hidden para id de contribuyente
+
+      -->
 
       <button type="submit">Enviar solicitud</button>
       <a href="#" class="close">Cerrar</a>
-    </form>-->
+    </form>
   </div>
   </div>
 </div>
