@@ -50,7 +50,7 @@ public class parseadorCSV {
         }
         return Base64.getEncoder().encodeToString(digest.digest());
     }
-    private List<Hecho> parsearCsvAHechos(Path path) throws Exception {
+    public List<Hecho> parsearCsvAHechos(Path path) throws Exception {
         File file = path.toFile();
         if (file.exists() && file.isFile() && file.canRead()) {
             try (FileReader reader = new FileReader(file)) {

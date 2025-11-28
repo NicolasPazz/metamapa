@@ -106,8 +106,7 @@ public class FuenteService implements IFuenteService {
         }
 
         csvHashes.put(canonicalPath, currentHash);
-
-        List<Hecho> hechos_parsed = parsearCsvAHechos(path);
+        List<Hecho> hechos_parsed = parseadorCSV.parsearCsvAHechos(path);
         log.info("Parseados {} registros desde '{}'", hechos_parsed.size(), path);
 
         int processed = 0;
@@ -150,33 +149,6 @@ public class FuenteService implements IFuenteService {
   }
 
 
-
-  private List<Hecho> parsearCsvAHechos(Path path) throws Exception {
-    File file = path.toFile();
-    if (file.exists() && file.isFile() && file.canRead()) {
-      try (FileReader reader = new FileReader(file)) {
-        CsvToBean<Hecho> csvToBean = new CsvToBeanBuilder<Hecho>(reader)
-                .withType(Hecho.class)
-                .withIgnoreLeadingWhiteSpace(true)
-                .build();
-        return csvToBean.parse();
-      }
-    }
-
-    String resourceRel = path.getFileName().toString();
-    InputStream is = getClass().getClassLoader().getResourceAsStream("csv-files/" + resourceRel);
-    if (is != null) {
-      try (InputStreamReader isr = new InputStreamReader(is)) {
-        CsvToBean<Hecho> csvToBean = new CsvToBeanBuilder<Hecho>(isr)
-                .withType(Hecho.class)
-                .withIgnoreLeadingWhiteSpace(true)
-                .build();
-        return csvToBean.parse();
-      }
-    }
-    throw new IllegalArgumentException("No se pudo leer el CSV: " + path);
-  }
-
   private List<Hecho> parsearMultipartAHechos(MultipartFile file) throws Exception {
     // Convertimos el flujo de bytes del upload en un Reader de texto
     try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
@@ -191,6 +163,7 @@ public class FuenteService implements IFuenteService {
     }
   }
 
+
   private void saveListaHechos(List<Hecho> hechos) {
     int processed = 0;
 
@@ -202,12 +175,8 @@ public class FuenteService implements IFuenteService {
         log.warn("Fila {} sin título — se omite", processed);
         continue;
       }
-
-      // Tu lógica original de búsqueda por título
       Optional<Hecho> optExistente = hechosRepository.findFirstByTituloIgnoreCase(titulo);
-
       if (optExistente.isPresent()) {
-        // Lógica de actualización
         Hecho existente = optExistente.get();
         boolean changed = parseadorCSV.actualizarSiCambio(existente, csvHecho); // Tu método existente
 
