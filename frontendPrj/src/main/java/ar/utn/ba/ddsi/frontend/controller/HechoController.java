@@ -49,20 +49,19 @@ public class HechoController {
             @RequestParam(required = false) String categoria
             )
     {
-
-
-
-
         List<HechoDTO> hechos = hechoService.getAllHechosFilter(modo, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria);
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
 
         model.addAttribute("hechos", hechos);
+        model.addAttribute("hechos_encontrados", hechos.size());
         model.addAttribute("titulo", "Hechos");
         model.addAttribute("categorias", listaCategorias);
         //model.addAttribute("solicitud", new SolicitudDTO());
         return "hechos/hechosencoleccion";
 
-    } // TODO: hay algo que no esta funcionando, tendria que llamar al hecho service y traer con los filtros aplicados
+    } // TODO: No se deberia hacer el filtrado en el front, deberia venir filtrado del agregador
+    // TODO: Por el momento funciona pero esta mal.
+
 
 
 

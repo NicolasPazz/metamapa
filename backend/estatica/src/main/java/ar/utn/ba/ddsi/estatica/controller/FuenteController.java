@@ -7,8 +7,10 @@ import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/hechos")
@@ -36,7 +38,7 @@ public class FuenteController {
   }
   @PostMapping(value = "/api/carga-masiva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> recibirCsv(@RequestPart("file") MultipartFile file) {
-    // Lógica de leer el CSV...
+
     return ResponseEntity.ok("Recibido");
   }
 

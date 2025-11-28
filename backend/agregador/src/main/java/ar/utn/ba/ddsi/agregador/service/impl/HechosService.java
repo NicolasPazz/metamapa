@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.service.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.EtiquetaInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.repositorie.IHechosRepository;
 
@@ -56,5 +57,14 @@ public class HechosService{
         Hecho hechoNuevo = hechoInputDTO.mapToHecho();
         hechosRepository.save(hechoNuevo);
         return hechoInputDTO;
+    }
+
+    public ResponseEntity<HechoDTO> agregarEtiqueta(EtiquetaInputDTO etiquetaInputDTO) {
+        Hecho hecho = hechosRepository.findById(etiquetaInputDTO.getIdHecho())
+                .orElseThrow(() -> new RuntimeException("No se encontró el Hecho con ese ID"));
+        hecho.agregarEtiqueta(etiquetaInputDTO.getNombreEtiqueta());
+        hechosRepository.save(hecho);
+        return ResponseEntity.ok(hecho.mapToDTO());
+
     }
 }

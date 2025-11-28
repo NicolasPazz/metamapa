@@ -80,7 +80,6 @@ public class Hecho {
     } else {
       this.origen = OrigenHecho.MANUAL;
     }
-
     transicionarEstado(EstadoHecho.VISIBLE);
   }
 
@@ -93,12 +92,14 @@ public class Hecho {
     return this.estado == EstadoHecho.VISIBLE;
   }
 
+  // TODO: Verificar que no existe la etiqueta [RESUELTO]
   public void agregarEtiqueta(String etiq) {
-    //TODO: verificar que la etiqueta no exista
+
     if (etiq != null && !etiq.isBlank()) {
       Etiqueta nueva = new Etiqueta(etiq);
-      this.etiquetas.add(nueva);
+        this.etiquetas.add(nueva);
     }
+
   }
 
   public boolean contieneEtiqueta(String etiqueta) {

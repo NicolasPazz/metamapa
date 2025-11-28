@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.agregador.controller;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.domain.dto.input.EtiquetaInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.service.ISeederService;
 import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
@@ -125,10 +126,11 @@ public class AgregadorController {
 
     }
 
-    /*@PostMapping("/etiquetas")
+    @PostMapping("/etiquetas")
     public ResponseEntity<HechoDTO> agregar(@RequestBody EtiquetaInputDTO etiquetaInputDTO) {
-        // TODO: agregar etiquetas a hechos
-    }*/
+        // TODO: agregar etiquetas a hechos : [Resuelto]
+        return hechosService.agregarEtiqueta(etiquetaInputDTO);
+    }
 
     @GetMapping("/inicializar")
     public Boolean inicializar() {

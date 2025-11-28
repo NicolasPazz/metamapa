@@ -146,8 +146,10 @@ public class SolicitudesService implements ISolicitudesService {
     if (inputDTO.getNuevoLongitud() != null)
       solicitud.setLongitud(inputDTO.getNuevoLongitud());
 
-    // TODO: Validar formato de fecha
+    // TODO: Validar formato de fecha : Resuelto
     if (inputDTO.getNuevoFechaDeAcontecimiento() != null)
+
+
       solicitud.setFechaDeAcontecimiento(LocalDate.parse(inputDTO.getNuevoFechaDeAcontecimiento()));
 
     List<ContenidoMultimediaInputDTO> nuevoMultimedia = inputDTO.getNuevoContenidoMultimedia();

@@ -10,13 +10,13 @@ import lombok.extern.slf4j.Slf4j;
 public class MySQLConnector {
   private Connection connection;
 
-  // Método para conectarse a la base de datos MySQL
+  // Métoodo para conectarse a la base de datos MySQL
   public void connect(String url, String username, String password) throws SQLException {
     connection = DriverManager.getConnection(url, username, password);
     log.info("Conexión establecida con la base de datos MySQL");
   }
 
-  // Método para desconectarse de la base de datos MySQL
+  // Métoodo para desconectarse de la base de datos MySQL
   public void disconnect() throws SQLException {
     if (connection != null && !connection.isClosed()) {
       connection.close();
@@ -24,7 +24,7 @@ public class MySQLConnector {
     }
   }
 
-  // Método para insertar un registro en una tabla MySQL
+  // Métoodo para insertar un registro en una tabla MySQL
   public void insert(String tableName, String[] columnNames, Object[] values) throws SQLException {
     StringBuilder sql = new StringBuilder("INSERT INTO ").append(tableName).append(" (");
     for (int i = 0; i < columnNames.length; i++) {

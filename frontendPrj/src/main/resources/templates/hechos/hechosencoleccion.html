@@ -14,6 +14,7 @@
 
     <form method="get" class="filters">
 
+
       <div class="filtro-fecha">
         <label for="fechaDesde">Desde:</label>
         <input type="date" id="fechaDesde" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}">
@@ -50,6 +51,9 @@
       <a th:href="@{/hechos}" class="btn primary">Limpiar</a>
 
     </form>
+    <span class="btn primary disabled" style="cursor: default; opacity: 1; margin-top: 10px; display: inline-block;">
+    Hechos encontrados: <strong th:text="${hechos_encontrados}">0</strong>
+</span>
 
     <!-- Hechos list -->
     <div class="hechos-grid">

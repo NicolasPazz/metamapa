@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.dinamica.domain.dto.input;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class SolicitudModificarUserInputDTO {
   private Double nuevoLatitud;
   @JsonProperty("longitud")
   private Double nuevoLongitud;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
   @JsonProperty("fecha_de_acontecimiento")
   private String nuevoFechaDeAcontecimiento;
   @JsonProperty("multimedia")
