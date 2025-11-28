@@ -6,6 +6,9 @@ import ar.utn.ba.ddsi.estatica.service.IFuenteService;
 import java.time.LocalDate;
 import java.util.List;
 
+import ar.utn.ba.ddsi.estatica.service.impl.FuenteService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -14,12 +17,12 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/hechos")
+@RequiredArgsConstructor
 public class FuenteController {
-  private final IFuenteService fuenteService;
+  private final FuenteService fuenteService;
 
-  public FuenteController(IFuenteService hechosService) {
-    this.fuenteService = hechosService;
-  }
+
+
 
   /**
    * Devuelve todos los hechos que todavia no se habian enviado.
@@ -36,10 +39,20 @@ public class FuenteController {
     List<HechoOutputDTO> hechosNuevos = this.fuenteService.getAllHechosNuevos();
     return ResponseEntity.ok(hechosNuevos);
   }
-  @PostMapping(value = "/api/carga-masiva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  public ResponseEntity<String> recibirCsv(@RequestPart("file") MultipartFile file) {
+  @PostMapping(value = "/carga-masiva", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<String> recibirCsv(@RequestPart("archivo") MultipartFile file) {
+    if (file.isEmpty()) {
+      return ResponseEntity.badRequest().body("Archivo vacio");
 
-    return ResponseEntity.ok("Recibido");
+    }
+    try {
+      fuenteService.parsearMultipartAHechos(file); //TODO: Este creo que no es el metodo que hay que llamar, pero momentaneamente puse este para que no de errores
+
+      return ResponseEntity.ok("Archivo processado");
+    }
+    catch (Exception e) {
+      return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+    }
   }
 
 

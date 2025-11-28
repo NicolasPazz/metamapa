@@ -66,7 +66,6 @@ public class AdminController {
         try {
             // Llamamos al servicio que se comunica con el otro sistema
             adminService.enviarArchivoAlBackend(archivo);
-
             model.addAttribute("mensaje", "Archivo enviado exitosamente para procesamiento.");
         } catch (Exception e) {
             log.error("Error al subir archivo", e);

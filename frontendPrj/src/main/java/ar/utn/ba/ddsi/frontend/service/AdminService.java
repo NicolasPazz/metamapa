@@ -15,14 +15,17 @@ import java.util.Objects;
 
 @Service
 public class AdminService {
-    private final WebClient webClient;
+    private final WebClient webClientAgregador;
+    private final WebClient webClientEstatica;
 
     public AdminService(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://localhost:8084/api/admin").build();
+        this.webClientAgregador = builder.baseUrl("http://localhost:8084/api/admin").build();
+        this.webClientEstatica = builder.baseUrl("http://localhost:8082/api/hechos").build(); //Se tiene que establecer una conexion con la estatica
+        // porque la carga de CSV tiene que ir directamente a la estatica
     }
 
     public List<SolicitudDTO> getAllSolicitudes() {
-        return webClient.get().uri("/solicitudes").retrieve().bodyToFlux(SolicitudDTO.class).collectList().block();
+        return webClientAgregador.get().uri("/solicitudes").retrieve().bodyToFlux(SolicitudDTO.class).collectList().block();
     }
 
     public void actualizarSolicitud(Long id, String estado) {
@@ -31,7 +34,7 @@ public class AdminService {
         if(Objects.equals(estado, "RECHAZADA")) dtoBack.setEstado(EstadoSolicitud.RECHAZADA);
         else dtoBack.setEstado(EstadoSolicitud.ACEPTADA);
 
-        webClient.patch()
+        webClientAgregador.patch()
                 .uri("/solicitudes/" + id)
                 .bodyValue(dtoBack)
                 .retrieve()
@@ -40,18 +43,17 @@ public class AdminService {
     }
 
     public void enviarArchivoAlBackend(MultipartFile archivo) {
-
+        if (archivo.isEmpty()) {
+            throw new RuntimeException("El archivo está vacío");
+        }
         MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("archivo", archivo.getResource());
 
-        builder.part("file", archivo.getResource());
-
-        // 2. Enviamos el POST
-        webClient.post()
-                .uri("/api/carga-masiva") // La ruta del OTRO servicio
-                .contentType(MediaType.MULTIPART_FORM_DATA) // Importante
+        webClientEstatica.post()
+                .uri("/carga-masiva") //
                 .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
-                .toBodilessEntity() // No esperamos cuerpo de respuesta, solo que no falle (200 OK)
-                .block(); // Bloqueamos para esperar que termine (o usas subscribe si es reactivo)
+                .toBodilessEntity()
+                .block();
     }
 }

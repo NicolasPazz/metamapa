@@ -29,27 +29,7 @@ import java.util.stream.Stream;
 @Component
 public class parseadorCSV {
 
-    private String normalize(String s) {
-        if (s == null) return null;
-        String trimmed = s.trim().toLowerCase();
-        return Normalizer.normalize(trimmed, Normalizer.Form.NFKC);
-    }
-    private boolean doubleChanged(Double a, Double b) {
-        if (a == null && b == null) return false;
-        if (a == null || b == null) return true;
-        return Math.abs(a - b) > 1e-6; // tolerancia 0.000001
-    }
-    public String calcularHashArchivo(File file) throws Exception {
-        MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        try (InputStream is = Files.newInputStream(file.toPath())) {
-            byte[] buffer = new byte[8192];
-            int read;
-            while ((read = is.read(buffer)) != -1) {
-                digest.update(buffer, 0, read);
-            }
-        }
-        return Base64.getEncoder().encodeToString(digest.digest());
-    }
+
     public List<Hecho> parsearCsvAHechos(Path path) throws Exception {
         File file = path.toFile();
         if (file.exists() && file.isFile() && file.canRead()) {
@@ -75,6 +55,9 @@ public class parseadorCSV {
 
         throw new IllegalArgumentException("No se pudo leer el CSV: " + path);
     }
+
+
+
     public List<Path> encontrarArchivosCsv() {
         final int MAX_UP = 6;
 
@@ -147,55 +130,28 @@ public class parseadorCSV {
         return List.of();
     }
 
-    public boolean actualizarSiCambio(Hecho existente, Hecho csvHecho) {
-        boolean changed = false;
 
-        if (!Objects.equals(normalize(existente.getTitulo()), normalize(csvHecho.getTitulo()))) {
-            log.info("Cambio detectado en 'titulo' para '{}': '{}' -> '{}'",
-                    existente.getId(), existente.getTitulo(), csvHecho.getTitulo());
-            existente.setTitulo(csvHecho.getTitulo());
-            changed = true;
-        }
-
-        if (!Objects.equals(normalize(existente.getDescripcion()), normalize(csvHecho.getDescripcion()))) {
-            log.info("Cambio detectado en 'descripcion' para '{}': '{}' -> '{}'",
-                    existente.getId(), existente.getDescripcion(), csvHecho.getDescripcion());
-            existente.setDescripcion(csvHecho.getDescripcion());
-            changed = true;
-        }
-
-        if (!Objects.equals(normalize(existente.getNombreCategoria()), normalize(csvHecho.getNombreCategoria()))) {
-            log.info("Cambio detectado en 'nombreCategoria' para '{}': '{}' -> '{}'",
-                    existente.getId(), existente.getNombreCategoria(), csvHecho.getNombreCategoria());
-            existente.setNombreCategoria(csvHecho.getNombreCategoria());
-            changed = true;
-        }
-
-        if (doubleChanged(existente.getLatitud(), csvHecho.getLatitud())) {
-            log.info("Cambio detectado en 'latitud' para '{}': '{}' -> '{}'",
-                    existente.getId(), existente.getLatitud(), csvHecho.getLatitud());
-            existente.setLatitud(csvHecho.getLatitud());
-            changed = true;
-        }
-
-        if (doubleChanged(existente.getLongitud(), csvHecho.getLongitud())) {
-            log.info("Cambio detectado en 'longitud' para '{}': '{}' -> '{}'",
-                    existente.getId(), existente.getLongitud(), csvHecho.getLongitud());
-            existente.setLongitud(csvHecho.getLongitud());
-            changed = true;
-        }
-
-        if (!Objects.equals(existente.getFechaDeAcontecimiento(), csvHecho.getFechaDeAcontecimiento())) {
-            log.info("Cambio detectado en 'fechaDeAcontecimiento' para '{}': '{}' -> '{}'",
-                    existente.getId(), existente.getFechaDeAcontecimiento(), csvHecho.getFechaDeAcontecimiento());
-            existente.setFechaDeAcontecimiento(csvHecho.getFechaDeAcontecimiento());
-            changed = true;
-        }
-
-        if (changed) {
-            log.info("Hecho '{}' con titulo '{}' marcado como modificado", existente.getId(), existente.getTitulo());
-        }
-
-        return changed;
+    // Metodos extras
+    public String normalize(String s) {
+        if (s == null) return null;
+        String trimmed = s.trim().toLowerCase();
+        return Normalizer.normalize(trimmed, Normalizer.Form.NFKC);
     }
+    public boolean doubleChanged(Double a, Double b) {
+        if (a == null && b == null) return false;
+        if (a == null || b == null) return true;
+        return Math.abs(a - b) > 1e-6; // tolerancia 0.000001
+    }
+    public String calcularHashArchivo(File file) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        try (InputStream is = Files.newInputStream(file.toPath())) {
+            byte[] buffer = new byte[8192];
+            int read;
+            while ((read = is.read(buffer)) != -1) {
+                digest.update(buffer, 0, read);
+            }
+        }
+        return Base64.getEncoder().encodeToString(digest.digest());
+    }
+
 }

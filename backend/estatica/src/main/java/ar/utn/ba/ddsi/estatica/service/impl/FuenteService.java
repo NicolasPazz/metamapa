@@ -11,33 +11,15 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.security.CodeSource;
-import java.security.MessageDigest;
-import java.text.Normalizer;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -121,7 +103,7 @@ public class FuenteService implements IFuenteService {
           Optional<Hecho> optExistente = hechosRepository.findFirstByTituloIgnoreCase(titulo);
           if (optExistente.isPresent()) {
             Hecho existente = optExistente.get();
-            boolean changed = parseadorCSV.actualizarSiCambio(existente, csvHecho);
+            boolean changed = actualizarSiCambio(existente, csvHecho);
             if (changed) {
               existente.setEnviado(Boolean.FALSE);
               existente.setFechaDeCarga(LocalDateTime.now());
@@ -148,22 +130,57 @@ public class FuenteService implements IFuenteService {
     }
   }
 
+  public boolean actualizarSiCambio(Hecho existente, Hecho csvHecho) {
+    boolean changed = false;
 
-  private List<Hecho> parsearMultipartAHechos(MultipartFile file) throws Exception {
-    // Convertimos el flujo de bytes del upload en un Reader de texto
-    try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
-
-      CsvToBean<Hecho> csvToBean = new CsvToBeanBuilder<Hecho>(reader)
-              .withType(Hecho.class)
-              .withIgnoreLeadingWhiteSpace(true)
-              .withSeparator(',') // Asegúrate que sea coma o punto y coma según tu CSV
-              .build();
-
-      return csvToBean.parse();
+    if (!Objects.equals(parseadorCSV.normalize(existente.getTitulo()), parseadorCSV.normalize(csvHecho.getTitulo()))) {
+      log.info("Cambio detectado en 'titulo' para '{}': '{}' -> '{}'",
+              existente.getId(), existente.getTitulo(), csvHecho.getTitulo());
+      existente.setTitulo(csvHecho.getTitulo());
+      changed = true;
     }
+
+    if (!Objects.equals(parseadorCSV.normalize(existente.getDescripcion()), parseadorCSV.normalize(csvHecho.getDescripcion()))) {
+      log.info("Cambio detectado en 'descripcion' para '{}': '{}' -> '{}'",
+              existente.getId(), existente.getDescripcion(), csvHecho.getDescripcion());
+      existente.setDescripcion(csvHecho.getDescripcion());
+      changed = true;
+    }
+
+    if (!Objects.equals(parseadorCSV.normalize(existente.getNombreCategoria()), parseadorCSV.normalize(csvHecho.getNombreCategoria()))) {
+      log.info("Cambio detectado en 'nombreCategoria' para '{}': '{}' -> '{}'",
+              existente.getId(), existente.getNombreCategoria(), csvHecho.getNombreCategoria());
+      existente.setNombreCategoria(csvHecho.getNombreCategoria());
+      changed = true;
+    }
+
+    if (parseadorCSV.doubleChanged(existente.getLatitud(), csvHecho.getLatitud())) {
+      log.info("Cambio detectado en 'latitud' para '{}': '{}' -> '{}'",
+              existente.getId(), existente.getLatitud(), csvHecho.getLatitud());
+      existente.setLatitud(csvHecho.getLatitud());
+      changed = true;
+    }
+
+    if (parseadorCSV.doubleChanged(existente.getLongitud(), csvHecho.getLongitud())) {
+      log.info("Cambio detectado en 'longitud' para '{}': '{}' -> '{}'",
+              existente.getId(), existente.getLongitud(), csvHecho.getLongitud());
+      existente.setLongitud(csvHecho.getLongitud());
+      changed = true;
+    }
+
+    if (!Objects.equals(existente.getFechaDeAcontecimiento(), csvHecho.getFechaDeAcontecimiento())) {
+      log.info("Cambio detectado en 'fechaDeAcontecimiento' para '{}': '{}' -> '{}'",
+              existente.getId(), existente.getFechaDeAcontecimiento(), csvHecho.getFechaDeAcontecimiento());
+      existente.setFechaDeAcontecimiento(csvHecho.getFechaDeAcontecimiento());
+      changed = true;
+    }
+
+    if (changed) {
+      log.info("Hecho '{}' con titulo '{}' marcado como modificado", existente.getId(), existente.getTitulo());
+    }
+
+    return changed;
   }
-
-
   private void saveListaHechos(List<Hecho> hechos) {
     int processed = 0;
 
@@ -178,7 +195,7 @@ public class FuenteService implements IFuenteService {
       Optional<Hecho> optExistente = hechosRepository.findFirstByTituloIgnoreCase(titulo);
       if (optExistente.isPresent()) {
         Hecho existente = optExistente.get();
-        boolean changed = parseadorCSV.actualizarSiCambio(existente, csvHecho); // Tu método existente
+        boolean changed = this.actualizarSiCambio(existente, csvHecho); // Tu método existente
 
         if (changed) {
           existente.setEnviado(Boolean.FALSE);
@@ -200,18 +217,19 @@ public class FuenteService implements IFuenteService {
     log.info("Procesamiento de lista finalizado. Total procesados: {}", processed);
   }
 
+
   @Transactional
-  public void procesarCsvUpload(MultipartFile file_csv) {
-    log.info("Procesando archivo subido: {}", file_csv.getOriginalFilename());
+  public List<Hecho> parsearMultipartAHechos(MultipartFile file) throws Exception {
+    // Convertimos el flujo de bytes del upload en un Reader de texto
+    try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
 
-    try {
-      List<Hecho> hechosParseados = parsearMultipartAHechos(file_csv);
-      log.info("Se encontraron {} hechos en el archivo. Iniciando guardado...", hechosParseados.size());
-      saveListaHechos(hechosParseados);
+      CsvToBean<Hecho> csvToBean = new CsvToBeanBuilder<Hecho>(reader)
+              .withType(Hecho.class)
+              .withIgnoreLeadingWhiteSpace(true)
+              .withSeparator(',') // Asegúrate que sea coma o punto y coma según tu CSV
+              .build();
 
-    } catch (Exception e) {
-      log.error("Error procesando el archivo subido: {}", e.getMessage(), e);
-      throw new RuntimeException("Error al procesar el CSV: " + e.getMessage());
+      return csvToBean.parse();
     }
   }
 
