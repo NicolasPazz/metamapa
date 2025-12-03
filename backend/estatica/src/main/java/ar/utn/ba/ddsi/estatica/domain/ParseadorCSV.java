@@ -6,12 +6,11 @@ import com.opencsv.bean.CsvToBean;
 import com.opencsv.bean.CsvToBeanBuilder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URISyntaxException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,34 +26,44 @@ import java.util.stream.Stream;
 
 @Slf4j
 @Component
-public class parseadorCSV {
+public class ParseadorCSV {
 
 
-    public List<Hecho> parsearCsvAHechos(Path path) throws Exception {
+
+    public List<Hecho> parsearCsvPathAHechos(Path path) throws Exception {
         File file = path.toFile();
+
         if (file.exists() && file.isFile() && file.canRead()) {
             try (FileReader reader = new FileReader(file)) {
-                CsvToBean<Hecho> csvToBean = new CsvToBeanBuilder<Hecho>(reader)
-                        .withType(Hecho.class)
-                        .withIgnoreLeadingWhiteSpace(true)
-                        .build();
-                return csvToBean.parse();
+                return parsear(reader);
             }
         }
-        String resourceRel = path.getFileName().toString();
-        InputStream is = getClass().getClassLoader().getResourceAsStream("csv-files/" + resourceRel);
+        String fileName = path.getFileName().toString();
+        InputStream is = getClass().getClassLoader().getResourceAsStream("csv-files/" + fileName);
         if (is != null) {
-            try (InputStreamReader isr = new InputStreamReader(is)) {
-                CsvToBean<Hecho> csvToBean = new CsvToBeanBuilder<Hecho>(isr)
-                        .withType(Hecho.class)
-                        .withIgnoreLeadingWhiteSpace(true)
-                        .build();
-                return csvToBean.parse();
+            try (InputStreamReader reader = new InputStreamReader(is, StandardCharsets.UTF_8)){
+                return parsear(reader);
             }
         }
-
         throw new IllegalArgumentException("No se pudo leer el CSV: " + path);
     }
+    public List<Hecho> parsearFileAHechos(MultipartFile file) {
+        try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
+            return parsear(reader); //
+        } catch (Exception e) {
+            log.error("Error parseando MultipartFile", e);
+            throw new RuntimeException("Error al leer el CSV subido");
+        }
+    }
+
+    private List<Hecho> parsear(Reader reader) throws Exception {
+        CsvToBean<Hecho> csvToBean = new CsvToBeanBuilder<Hecho>(reader)
+                .withType(Hecho.class)
+                .withIgnoreLeadingWhiteSpace(true)
+                .build();
+        return csvToBean.parse();
+    }
+
 
 
 
@@ -155,3 +164,8 @@ public class parseadorCSV {
     }
 
 }
+
+
+
+
+

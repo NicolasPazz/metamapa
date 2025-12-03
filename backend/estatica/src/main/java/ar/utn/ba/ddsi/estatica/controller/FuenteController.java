@@ -43,11 +43,9 @@ public class FuenteController {
   public ResponseEntity<String> recibirCsv(@RequestPart("archivo") MultipartFile file) {
     if (file.isEmpty()) {
       return ResponseEntity.badRequest().body("Archivo vacio");
-
     }
     try {
-      fuenteService.parsearMultipartAHechos(file); //TODO: Este creo que no es el metodo que hay que llamar, pero momentaneamente puse este para que no de errores
-
+      fuenteService.parsearMultipartAHechos(file); //
       return ResponseEntity.ok("Archivo processado");
     }
     catch (Exception e) {

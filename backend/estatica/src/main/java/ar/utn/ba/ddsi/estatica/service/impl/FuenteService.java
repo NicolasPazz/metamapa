@@ -3,7 +3,7 @@ package ar.utn.ba.ddsi.estatica.service.impl;
 import ar.utn.ba.ddsi.estatica.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.estatica.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.estatica.domain.hecho.OrigenHecho;
-import ar.utn.ba.ddsi.estatica.domain.parseadorCSV;
+import ar.utn.ba.ddsi.estatica.domain.ParseadorCSV;
 import ar.utn.ba.ddsi.estatica.domain.repositories.IHechosRepository;
 import ar.utn.ba.ddsi.estatica.service.IFuenteService;
 import com.opencsv.bean.CsvToBean;
@@ -11,8 +11,6 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import java.io.File;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -30,7 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class FuenteService implements IFuenteService {
   private final IHechosRepository hechosRepository;
   private final Map<String, String> csvHashes = new HashMap<>();
-  private final parseadorCSV parseadorCSV;
+  private final ParseadorCSV parseadorCSV;
 
 
   @PostConstruct
@@ -88,7 +86,7 @@ public class FuenteService implements IFuenteService {
         }
 
         csvHashes.put(canonicalPath, currentHash);
-        List<Hecho> hechos_parsed = parseadorCSV.parsearCsvAHechos(path);
+        List<Hecho> hechos_parsed = parseadorCSV.parsearCsvPathAHechos(path);
         log.info("Parseados {} registros desde '{}'", hechos_parsed.size(), path);
 
         int processed = 0;
@@ -195,7 +193,7 @@ public class FuenteService implements IFuenteService {
       Optional<Hecho> optExistente = hechosRepository.findFirstByTituloIgnoreCase(titulo);
       if (optExistente.isPresent()) {
         Hecho existente = optExistente.get();
-        boolean changed = this.actualizarSiCambio(existente, csvHecho); // Tu método existente
+        boolean changed = this.actualizarSiCambio(existente, csvHecho); //
 
         if (changed) {
           existente.setEnviado(Boolean.FALSE);
@@ -210,7 +208,6 @@ public class FuenteService implements IFuenteService {
         if (nuevo.getOrigen() == null) nuevo.setOrigen(OrigenHecho.DATASET);
         nuevo.setEnviado(Boolean.FALSE);
         if (nuevo.getFechaDeCarga() == null) nuevo.setFechaDeCarga(LocalDateTime.now());
-
         hechosRepository.save(nuevo);
       }
     }
@@ -220,17 +217,8 @@ public class FuenteService implements IFuenteService {
 
   @Transactional
   public List<Hecho> parsearMultipartAHechos(MultipartFile file) throws Exception {
-    // Convertimos el flujo de bytes del upload en un Reader de texto
-    try (InputStreamReader reader = new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8)) {
-
-      CsvToBean<Hecho> csvToBean = new CsvToBeanBuilder<Hecho>(reader)
-              .withType(Hecho.class)
-              .withIgnoreLeadingWhiteSpace(true)
-              .withSeparator(',') // Asegúrate que sea coma o punto y coma según tu CSV
-              .build();
-
-      return csvToBean.parse();
+    List<Hecho> hechosParseados = parseadorCSV.parsearFileAHechos(file);
+    this.saveListaHechos(hechosParseados);
+    return hechosParseados;
     }
   }
-
-}
