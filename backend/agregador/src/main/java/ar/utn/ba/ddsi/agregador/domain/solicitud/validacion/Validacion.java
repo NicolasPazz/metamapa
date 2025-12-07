@@ -1,7 +1,5 @@
 package ar.utn.ba.ddsi.agregador.domain.solicitud.validacion;
 
-import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
-
 public interface Validacion {
     /**
      * Valida si la solicitud es válida.

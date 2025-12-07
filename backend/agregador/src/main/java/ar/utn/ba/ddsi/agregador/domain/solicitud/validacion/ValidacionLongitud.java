@@ -1,7 +1,5 @@
 package ar.utn.ba.ddsi.agregador.domain.solicitud.validacion;
 
-import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
-
 public class ValidacionLongitud implements Validacion {
     private final long longitudMinima;
 

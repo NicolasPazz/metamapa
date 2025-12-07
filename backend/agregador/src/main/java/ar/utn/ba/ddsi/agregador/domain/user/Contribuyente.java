@@ -6,6 +6,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import java.time.LocalDate;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -13,6 +14,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 public class Contribuyente {
   @Id
@@ -25,13 +27,6 @@ public class Contribuyente {
   @Column(name = "fechaNacimiento")
   private LocalDate fechaDeNacimiento;
 
-  public Contribuyente(String nombre) {
-    if (nombre == null) {
-      throw new IllegalArgumentException("El nombre del contribuyente es obligatorio.");
-    }
-    this.nombre = nombre;
-  }
-
   public Contribuyente(String nombre, String apellido, LocalDate fechaDeNacimiento) {
     if (nombre == null) {
       throw new IllegalArgumentException("El nombre del contribuyente es obligatorio.");
@@ -42,13 +37,6 @@ public class Contribuyente {
   }
 
   public boolean esAnonimo() {
-    return this.nombre != null;
-  }
-
-  public Integer edad() {
-    if (fechaDeNacimiento == null) {
-      return null; // No se puede calcular la edad si no hay fecha de nacimiento
-    }
-    return LocalDate.now().getYear() - fechaDeNacimiento.getYear();
+    return this.nombre == null;
   }
 }

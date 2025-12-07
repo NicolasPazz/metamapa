@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.domain.hecho;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia;
 import java.time.LocalDate;
 
 import java.time.LocalDateTime;
@@ -11,9 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import java.util.stream.Collectors;
-
 import jakarta.persistence.*;
+import java.util.stream.Collectors;
 import lombok.*;
 
 @Getter
@@ -28,8 +28,23 @@ public class Hecho {
   @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
 
-  @Embedded
-  private DataHecho data;
+  @Column(name = "titulo")
+  private String titulo;
+
+  @Column(name = "descripcion", columnDefinition = "TEXT")
+  private String descripcion;
+
+  @Column(name = "latitud")
+  private Double latitud;
+
+  @Column(name = "longitud")
+  private Double longitud;
+
+  @Column(name = "fecha_de_acontecimiento")
+  private LocalDate fechaDeAcontecimiento;
+
+  @Column(name = "fecha_de_carga")
+  private LocalDateTime fechaDeCarga = LocalDateTime.now();
 
   @Enumerated(EnumType.ORDINAL)
   private OrigenHecho origen;
@@ -38,7 +53,7 @@ public class Hecho {
   private EstadoHecho estado;
 
   @Column(name="contribuyente_id", nullable = true)
-  private Long contribuyente;  // private Contribuyente contribuyente;
+  private Long contribuyente;
 
   @OneToMany
   @JoinColumn(name = "etiqueta_id")
@@ -57,58 +72,6 @@ public class Hecho {
   @ManyToOne
   @JoinColumn(name = "categoria_id")
   private Categoria categoria;
-
-  public Hecho(String titulo, String descripcion, Categoria categoria,
-               LocalDate fechaDeAcontecimiento, double latitud, double longitud,
-               List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Long contribuyente) {
-
-    DataHecho dataHecho = new DataHecho();
-    dataHecho.setTitulo(titulo);
-    dataHecho.setDescripcion(descripcion);
-    dataHecho.setFechaDeAcontecimiento(fechaDeAcontecimiento);
-    dataHecho.setLatitud(latitud);
-    dataHecho.setLongitud(longitud);
-
-    this.data = dataHecho;
-    this.categoria = categoria;
-    this.multimedia = multimedia;
-    this.etiquetas = etiquetas;
-    this.contribuyente = contribuyente;
-
-    if(contribuyente != null) { //TODO: corregir, si el contribuyente es anonimo esto seria null y la carga seria CONTRIBUYENTE
-      this.origen = OrigenHecho.CONTRIBUYENTE;
-    } else {
-      this.origen = OrigenHecho.MANUAL;
-    }
-    transicionarEstado(EstadoHecho.VISIBLE);
-  }
-
-  public boolean esDuplicadoDe(Hecho otroHecho) {
-    return this.getTitulo().equalsIgnoreCase(otroHecho.getTitulo());
-  }
-
-  public boolean esVisible() {
-    // TODO: verificar que no haya una solicitud de eliminacion aceptada
-    return this.estado == EstadoHecho.VISIBLE;
-  }
-
-  // TODO: Verificar que no existe la etiqueta [RESUELTO]
-  public void agregarEtiqueta(String etiq) {
-
-    if (etiq != null && !etiq.isBlank()) {
-      Etiqueta nueva = new Etiqueta(etiq);
-        this.etiquetas.add(nueva);
-    }
-
-  }
-
-  public boolean contieneEtiqueta(String etiqueta) {
-    return this.etiquetas.contains(new Etiqueta(etiqueta));
-  }
-
-  public boolean esDeCategoria(Categoria categoria) {
-    return this.categoria.equals(categoria);
-  }
 
   public void transicionarEstado(EstadoHecho estado) {
     this.transiciones.add(new TransicionEstadoHecho(estado));
@@ -162,45 +125,5 @@ public class Hecho {
         }).collect(Collectors.toList()));
 
     return dto;
-  }
-
-  // TODO: revisar si no conviene hacer una clase en estos dos casos
-  public List<Long> getIdEtiquetas() {
-    List<Long> ids = new ArrayList<>();
-    for (Etiqueta etiqueta : this.etiquetas) {
-      ids.add(etiqueta.getId());
-    }
-    return ids;
-  }
-  public List<String> getMultimediaPaths() {
-    List<String> paths = new ArrayList<>();
-    for (ContenidoMultimedia multim : this.multimedia) {
-      paths.add(multim.getPathArchivo());
-    }
-    return paths;
-  }
-
-  public String getTitulo() {
-    return data.getTitulo();
-  }
-
-  public String getDescripcion() {
-    return data.getDescripcion();
-  }
-
-  public Double getLatitud() {
-    return data.getLatitud();
-  }
-
-  public Double getLongitud() {
-    return data.getLongitud();
-  }
-
-  public LocalDate getFechaDeAcontecimiento() {
-    return data.getFechaDeAcontecimiento();
-  }
-
-  public LocalDateTime getFechaDeCarga() {
-    return data.getFechaDeCarga();
   }
 }
