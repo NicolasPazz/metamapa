@@ -29,11 +29,18 @@ public class EstadisticasController {
     @PostMapping("/recalcular")
     public void recalcular() {
         log.info("Solicitud recibida para recalcular todas las estadísticas");
-        try {
+        new Thread(() -> {
+          try {
+            Thread.sleep(60_000);
             estadisticas.refrescoEstadisticas();
-        } catch (Exception e) {
+            log.info("Recalculo de estadísticas completado");
+          } catch (InterruptedException e) {
+            log.error("El hilo fue interrumpido: {}", e.getMessage(), e);
+            Thread.currentThread().interrupt();
+          } catch (Exception e) {
             log.error("Error durante el recálculo de estadísticas: {}", e.getMessage(), e);
-        }
+          }
+        }).start();
     }
 
     /**
