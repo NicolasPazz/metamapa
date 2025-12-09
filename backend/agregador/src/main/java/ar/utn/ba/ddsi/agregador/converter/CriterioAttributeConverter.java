@@ -9,7 +9,9 @@ import jakarta.persistence.Converter;
 
 @Converter
 public class CriterioAttributeConverter implements AttributeConverter<Criterio, String> {
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper()
+            .registerModule(new com.fasterxml.jackson.datatype.jsr310.JavaTimeModule())
+            .disable(com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     @Override
     public String convertToDatabaseColumn(Criterio criterio) {

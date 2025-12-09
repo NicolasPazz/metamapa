@@ -55,13 +55,13 @@ public class AdminService {
                 .block();
     }
 
-    public ColeccionDTO crearColeccion(CrearColeccionDTO dto) {
+    public Void crearColeccion(CrearColeccionDTO dto) {
         return webClientAgregador
                 .post()
                 .uri("/colecciones")
                 .bodyValue(dto)
                 .retrieve()
-                .bodyToMono(ColeccionDTO.class) // Deserialize the response
+                .bodyToMono(Void.class) // Deserialize the response
                 .block();
     }
 }

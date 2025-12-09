@@ -29,11 +29,11 @@ public class CriterioInputDTO {
     @PastOrPresent(message = "La fecha no puede ser futura")
     @JsonProperty("fecha_inicial")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    LocalDate fechaInicial;
+    private LocalDate fechaInicial;
     //@PastOrPresent(message = "La fecha no puede ser futura")
     @JsonProperty("fecha_final")
     @JsonFormat(pattern = "yyyy-MM-dd")
-    LocalDate fechaFinal;
+    private LocalDate fechaFinal;
     @JsonProperty("tipo_fecha")
     private String tipoFecha;
 
