@@ -643,3 +643,9 @@ button:hover, .btn:hover {
   text-decoration: none;
   font-weight: bold;
 }
+
+.conditional-section {
+  display: none; /* Oculto por defecto */
+  border-top: 1px solid #eee;
+  padding-top: 15px;
+}
