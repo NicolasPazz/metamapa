@@ -71,8 +71,8 @@
     <p th:utext="${'<strong>Ubicación:</strong>' + hecho.latitud + ', ' + hecho.longitud}"></p>
     <p th:utext="${'<strong>Multimedia:</strong>' + #lists.size(hecho.contenidoMultimedia) + ' archivos multimedia'}"></p>
     <p th:utext="${'<strong>Fuente:</strong>' + hecho.origen}"></p>
-    <p th:utext="${'<strong>Fecha Acontecimiento: </strong>' + hecho.FechaDeAcontecimiento}"></p>
-    <p th:utext="${'<strong>Fecha Acontecimiento: </strong>' }"></p>
+    <p th:utext="${'<strong>Fecha Acontecimiento: </strong>' + hecho.fechaDeAcontecimiento}"></p>
+    <p th:utext="${'<strong>Fecha Carga: </strong>' + hecho.fechaDeCarga}"></p>
 
 
     <!-- TODO: esto funciona a nivel codigo pero rompe por la cantidad de hechos. Habría que buscar la forma de paginar
