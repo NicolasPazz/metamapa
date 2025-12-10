@@ -1,8 +1,8 @@
-package ar.utn.ba.ddsi.agregador.domain.solicitud;
+package ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.detector.DetectorDeSpamTFIDF;
+import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.validacion.detector.DetectorDeSpamTFIDF;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
@@ -26,19 +26,23 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "solicitud_de_eliminacion")
 public class SolicitudDeEliminacion {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  @Column(name = "hecho_id")
+  @Column(name = "hecho_id", nullable = false)
   private Long hechoId;
   @Column(name = "textoFundamentos", nullable = false, length = 2000)
   private String textoFundamentos;
-  @Column(name = "fecha")
+  @Column(name = "fecha", nullable = false)
   private LocalDate fecha;
-  @Enumerated(EnumType.ORDINAL)
+
+  @Enumerated(EnumType.STRING)
+  @Column(name="estado", nullable = false)
   private EstadoSolicitud estado;
-  @Column(name = "contribuyenteId")
+
+  @Column(name = "contribuyenteId", nullable = true)
   private Long contribuyente;
 
   private Boolean spam;

@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.repositorie;
 
-import ar.utn.ba.ddsi.agregador.domain.solicitud.SolicitudDeEliminacion;
+import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.SolicitudDeEliminacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface ISolicitudesRepository extends JpaRepository<SolicitudDeEliminacion, Long> {

@@ -1,26 +1,22 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia;
 import java.time.LocalDate;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-
 import jakarta.persistence.*;
-import java.util.stream.Collectors;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "hecho")
 public class Hecho {
@@ -28,102 +24,98 @@ public class Hecho {
   @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "titulo")
+  @Column(name = "titulo", nullable = false)
   private String titulo;
 
-  @Column(name = "descripcion", columnDefinition = "TEXT")
+  @Column(name = "descripcion", columnDefinition = "TEXT", nullable = false)
   private String descripcion;
 
-  @Column(name = "latitud")
+  @Column(name = "latitud", nullable = false)
   private Double latitud;
 
-  @Column(name = "longitud")
+  @Column(name = "longitud", nullable = false)
   private Double longitud;
 
-  @Column(name = "fecha_de_acontecimiento")
+  @Column(name = "fecha_de_acontecimiento", nullable = false)
   private LocalDate fechaDeAcontecimiento;
 
-  @Column(name = "fecha_de_carga")
-  private LocalDateTime fechaDeCarga = LocalDateTime.now();
+  @Column(name = "fecha_de_carga", nullable = false, updatable = false)
+  @CreationTimestamp
+  private LocalDateTime fechaDeCarga;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="origen", nullable = false)
   private OrigenHecho origen;
 
-  @Enumerated(EnumType.ORDINAL)
-  private EstadoHecho estado;
+  @Enumerated(EnumType.STRING)
+  @Column(name="estado", nullable = false)
+  @Builder.Default
+  private EstadoHecho estado = EstadoHecho.VISIBLE;
 
-  @Column(name="contribuyente_id", nullable = true)
-  private Long contribuyente;
+  @Column(name = "contribuyente_id", nullable = true)
+  @Builder.Default
+  private Long contribuyenteId = null;
 
-  @OneToMany
-  @JoinColumn(name = "etiqueta_id")
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
 
-  @OneToMany
-  @JoinColumn(name = "multimedia_id")
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
 
-  @ElementCollection
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
 
-  @ManyToOne
-  @JoinColumn(name = "categoria_id")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "categoria_id", referencedColumnName = "id")
   private Categoria categoria;
 
-  public void transicionarEstado(EstadoHecho estado) {
+  @Column(name = "fuente_id", nullable = false)
+  private Long fuenteId;
+
+  public Hecho(String titulo, String descripcion, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento,
+               OrigenHecho origen, Long contribuyenteId, Categoria categoria, Long fuenteId) {
+    this.titulo = titulo;
+    this.descripcion = descripcion;
+    this.latitud = latitud;
+    this.longitud = longitud;
+    this.fechaDeAcontecimiento = fechaDeAcontecimiento;
+    this.origen = origen;
+    this.contribuyenteId = contribuyenteId;
+    this.categoria = categoria;
+    this.fuenteId = fuenteId;
+    this.transicionarEstado(EstadoHecho.VISIBLE);
+  }
+
+  private void transicionarEstado(EstadoHecho estado) {
     this.transiciones.add(new TransicionEstadoHecho(estado));
     this.estado = estado;
   }
 
-  public HechoDTO mapToDTO() {
-    HechoDTO dto = new HechoDTO();
-    dto.setId(this.getId());
-    dto.setTitulo(this.getTitulo());
-    dto.setDescripcion(this.getDescripcion());
-    dto.setCategoria(this.getCategoria().getNombre());
-    dto.setLatitud(this.getLatitud());
-    dto.setLongitud(this.getLongitud());
-    dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento());
-    dto.setFechaDeCarga(this.getFechaDeCarga());
-    dto.setOrigen(this.getOrigen().name());
-    dto.setEstado(this.getEstado().name());
+  public void ocultar() {
+    this.transicionarEstado(EstadoHecho.OCULTO);
+  }
 
-    /*
-    if (this.getContribuyente() != null) {
-      ContribuyenteDTO contribuyenteDTO = new ContribuyenteDTO();
-      contribuyenteDTO.setNombre(this.getContribuyente().getNombre());
-      contribuyenteDTO.setApellido(this.getContribuyente().getApellido());
-      contribuyenteDTO.setFechaDeNacimiento(
-          Optional.ofNullable(this.getContribuyente().getFechaDeNacimiento())
-              .orElse(null));
-      dto.setContribuyente(contribuyenteDTO);
-    }
-    */
-    dto.setContribuyente(this.getContribuyente());
+  public void visibilizar() {
+    this.transicionarEstado(EstadoHecho.VISIBLE);
+  }
 
-    dto.setEtiquetas(this.getEtiquetas().stream()
+  public boolean esVisible() {
+    return this.estado == EstadoHecho.VISIBLE;
+  }
+
+  public boolean contieneEtiqueta(String etiquetaBuscada) {
+    if (etiquetaBuscada == null || etiquetaBuscada.isBlank()) return false;
+
+    return this.etiquetas.stream()
         .map(Etiqueta::getNombre)
-        .collect(Collectors.toList()));
-
-    dto.setContenidoMultimedia(this.getMultimedia().stream()
-        .map(m -> {
-          ContenidoMultimediaDTO dtoMultimedia = new ContenidoMultimediaDTO();
-          dtoMultimedia.setPathArchivo(m.getPathArchivo());
-          dtoMultimedia.setTipoContenido(m.getTipoContenido().name());
-          return dtoMultimedia;
-        }).collect(Collectors.toList()));
-
-    dto.setTransicionesDeEstado(this.getTransiciones().stream()
-        .map(t -> {
-          TransicionEstadoHechoDTO tDto = new TransicionEstadoHechoDTO();
-          tDto.setEstadoFinal(t.getEstadoFinal().name());
-          tDto.setFecha(t.getFechaTransicion());
-          return tDto;
-        }).collect(Collectors.toList()));
-
-    return dto;
+        .filter(Objects::nonNull)
+        .map(String::toLowerCase)
+        .anyMatch(nombre -> nombre.equals(etiquetaBuscada.trim().toLowerCase()));
   }
 }

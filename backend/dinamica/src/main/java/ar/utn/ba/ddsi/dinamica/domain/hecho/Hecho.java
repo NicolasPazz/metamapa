@@ -35,32 +35,34 @@ public class Hecho {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "titulo")
+  @Column(name = "titulo", nullable = false)
   private String titulo;
 
-  @Column(name = "descripcion")
+  @Column(name = "descripcion", nullable = false)
   private String descripcion;
 
-  @Column(name = "categoria")
+  @Column(name = "categoria", nullable = false)
   private String nombreCategoria;
 
-  @Column(name = "latitud")
+  @Column(name = "latitud", nullable = false)
   private Double latitud;
 
-  @Column(name = "longitud")
+  @Column(name = "longitud", nullable = false)
   private Double longitud;
 
-  @Column(name = "fecha_de_acontecimiento")
+  @Column(name = "fecha_de_acontecimiento", nullable = false)
   private LocalDate fechaDeAcontecimiento;
 
-  @Column(name = "fecha_de_carga")
+  @Column(name = "fecha_de_carga", nullable = false)
   @Builder.Default
   private LocalDateTime fechaDeCarga = LocalDateTime.now();
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="origen", nullable = false)
   private OrigenHecho origen;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="estado", nullable = false)
   private EstadoHecho estado;
 
   @Column(name = "contribuyente_id", nullable = true)
@@ -69,7 +71,7 @@ public class Hecho {
   private Boolean enviado;
 
   @OneToOne
-  @JoinColumn(name = "solicitud_id")
+  @JoinColumn(name = "solicitud_id", referencedColumnName = "id")
   private SolicitudHecho solicitud;
 
   @Transient

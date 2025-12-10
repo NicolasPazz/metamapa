@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.dto;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.hecho.EstadoHecho;
+import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -18,9 +18,9 @@ public class HechoDTO {
   private Double longitud;
   private LocalDate fechaDeAcontecimiento;
   private LocalDateTime fechaDeCarga;
-  private String origen;
-  private String estado;
-  private ContribuyenteDTO contribuyente;
+  private OrigenHecho origen;
+  private EstadoHecho estado;
+  private Long contribuyenteId;
   private List<String> etiquetas;
   private List<ContenidoMultimediaDTO> multimedia;
   private List<TransicionEstadoHechoDTO> transiciones;

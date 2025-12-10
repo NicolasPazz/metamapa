@@ -31,22 +31,24 @@ public class Hecho {
   @Embedded
   private DataHecho data;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="origen", nullable = false)
   private OrigenHecho origen;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="estado", nullable = false)
   private EstadoHecho estado;
 
   @Column(name="contribuyente_id", nullable = true)
   private Long contribuyente;  // private Contribuyente contribuyente;
 
   @OneToMany
-  @JoinColumn(name = "etiqueta_id")
+  @JoinColumn(name = "etiqueta_id", referencedColumnName = "id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
 
   @OneToMany
-  @JoinColumn(name = "multimedia_id")
+  @JoinColumn(name = "multimedia_id", referencedColumnName = "id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
 
@@ -55,7 +57,7 @@ public class Hecho {
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
 
   @ManyToOne
-  @JoinColumn(name = "categoria_id")
+  @JoinColumn(name = "categoria_id", referencedColumnName = "id")
   private Categoria categoria;
 
   public Hecho(String titulo, String descripcion, Categoria categoria,

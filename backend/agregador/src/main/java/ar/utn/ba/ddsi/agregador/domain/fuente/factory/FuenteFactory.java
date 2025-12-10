@@ -1,10 +1,9 @@
 package ar.utn.ba.ddsi.agregador.domain.fuente.factory;
 
-import ar.utn.ba.ddsi.agregador.config.FuenteConfig;
+import ar.utn.ba.ddsi.agregador.domain.fuente.config.FuenteConfig;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteCron;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

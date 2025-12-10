@@ -33,7 +33,7 @@ public class Hecho {
   private String titulo;
 
   @CsvBindByName(column = "Descripción")
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT", nullable = false)
   private String descripcion;
 
   @CsvBindByName(column = "Categoría")
@@ -51,7 +51,8 @@ public class Hecho {
 
   private LocalDateTime fechaDeCarga;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="origen", nullable = false)
   private OrigenHecho origen;
 
   private Boolean enviado;

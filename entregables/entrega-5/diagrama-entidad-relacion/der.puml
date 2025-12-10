@@ -1,7 +1,7 @@
 @startuml
 entity "HECHO" as h {
 id: INT<<PK>>
-coleccion_id: UUID2 <<FK>>
+coleccion_handle: UUID2 <<FK>>
 titulo: VARCHAR(255)
 descripcion: VARCHAR(255)
 latitud: FLOAT

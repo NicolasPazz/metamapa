@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.fuente.factory;
 
-import ar.utn.ba.ddsi.agregador.config.FuentesProperties;
-import ar.utn.ba.ddsi.agregador.service.impl.FuentesService;
+import ar.utn.ba.ddsi.agregador.domain.fuente.config.FuentesProperties;
+import ar.utn.ba.ddsi.agregador.service.FuentesService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

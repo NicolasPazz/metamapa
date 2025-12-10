@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.agregador.domain.solicitud;
+package ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion;
 
 public enum EstadoSolicitud {
   PENDIENTE,

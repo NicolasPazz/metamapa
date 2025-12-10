@@ -14,16 +14,16 @@ import lombok.*;
 @AllArgsConstructor
 @Embeddable
 public class DataHecho {
-  @Column(name = "titulo")
+  @Column(name = "titulo", nullable = false)
   private String titulo;
-  @Column(name = "descripcion", columnDefinition = "TEXT")
+  @Column(name = "descripcion", columnDefinition = "TEXT", nullable = false)
   private String descripcion;
-  @Column(name = "latitud")
+  @Column(name = "latitud", nullable = false)
   private Double latitud;
-  @Column(name = "longitud")
+  @Column(name = "longitud", nullable = false)
   private Double longitud;
-  @Column(name = "fecha_de_acontecimiento")
+  @Column(name = "fecha_de_acontecimiento", nullable = false)
   private LocalDate fechaDeAcontecimiento;
-  @Column(name = "fecha_de_carga")
+  @Column(name = "fecha_de_carga", nullable = false)
   private LocalDateTime fechaDeCarga = LocalDateTime.now();
 }

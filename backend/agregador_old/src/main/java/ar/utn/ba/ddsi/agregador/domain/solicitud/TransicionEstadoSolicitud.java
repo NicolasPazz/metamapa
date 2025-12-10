@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.agregador.domain.solicitud;
+package ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion;
 
 import jakarta.persistence.Embeddable;
 import lombok.Getter;

@@ -11,6 +11,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -26,42 +27,44 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "solicitud_hecho")
 @Builder
 public class SolicitudHecho {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "id_contribuyente")
+  @Column(name = "id_contribuyente", nullable = false)
   private Long idContribuyente;
 
-  @Column(name = "titulo")
+  @Column(name = "titulo", nullable = false)
   private String titulo;
 
-  @Column(name = "descripcion")
+  @Column(name = "descripcion", nullable = false)
   private String descripcion;
 
-  @Column(name = "categoria")
+  @Column(name = "categoria", nullable = false)
   private String categoria;
 
-  @Column(name = "latitud")
+  @Column(name = "latitud", nullable = false)
   private double latitud;
 
-  @Column(name = "longitud")
+  @Column(name = "longitud", nullable = false)
   private double longitud;
 
-  @Column(name = "fechaDeAcontecimiento")
+  @Column(name = "fechaDeAcontecimiento", nullable = false)
   private LocalDate fechaDeAcontecimiento;
 
   @OneToMany(mappedBy = "solicitudHecho", cascade = CascadeType.ALL, orphanRemoval = true)
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
 
-  @Column(name = "fechaDeCarga")
+  @Column(name = "fechaDeCarga", nullable = false)
   @Builder.Default
   private LocalDateTime fechaDeCargaSolicitud = LocalDateTime.now();
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="estado", nullable = false)
   @Builder.Default
   private EstadoSolicitud estado = EstadoSolicitud.PENDIENTE; //pendiente-aceptado-rechazado
 

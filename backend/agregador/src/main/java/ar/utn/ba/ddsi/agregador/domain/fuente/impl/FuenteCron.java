@@ -2,13 +2,12 @@ package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 
 import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.input.HechosFiltroDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -51,7 +50,7 @@ public class FuenteCron implements IFuente {
 
   @Override
   public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
-      String handle,
+      UUID handle,
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,

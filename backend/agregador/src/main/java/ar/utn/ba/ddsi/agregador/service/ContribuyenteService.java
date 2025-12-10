@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.agregador.service;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.ContribuyenteDTO;
 import ar.utn.ba.ddsi.agregador.domain.user.Contribuyente;
 import java.time.LocalDate;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +18,6 @@ public class ContribuyenteService {
     // TODO: Implementación para buscar un contribuyente por ID
     log.info("Buscando contribuyente con ID: {}", id);
     // TODO: Aquí iría la lógica para obtener el contribuyente, por ejemplo, una llamada a otro servicio
-    return new Contribuyente(id, "Nombre", "Apellido", LocalDate.of(2025, 1, 1));
+    return new Contribuyente(/*id, */"Nombre", "Apellido", LocalDate.of(2025, 1, 1));
   }
 }

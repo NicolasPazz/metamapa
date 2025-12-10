@@ -21,27 +21,26 @@ import java.util.List;
 @Setter
 @Builder
 @AllArgsConstructor
-@NoArgsConstructor(force = true)
-@Entity
+@NoArgsConstructor@Entity
 @Table(name = "coleccion")
 public class Coleccion {
   @Id
   @GeneratedValue(generator = "uuid2")
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
-  private final String handle;
-  @Column(name = "titulo")
+  private String handle;
+  @Column(name = "titulo", nullable = false)
   private String titulo;
-  @Column(name = "descripcion", columnDefinition = "TEXT")
+  @Column(name = "descripcion", columnDefinition = "TEXT", nullable = false)
   private String descripcion;
   @OneToMany
-  @JoinColumn(name = "coleccion_id")
+  @JoinColumn(name = "coleccion_handle", referencedColumnName = "handle")
   private List<Hecho> hechos;
   @Convert(converter = CriterioAttributeConverter.class)
   private Criterio criterioDePertenencia;
   @Convert(converter = AlgoritmoAttributeConverter.class)
   private AAlgoritmoConsenso algoritmoConsenso;
   @OneToMany
-  @JoinColumn(name = "coleccion_id")
+  @JoinColumn(name = "coleccion_handle", referencedColumnName = "handle")
   private List<Hecho> hechosConsensuados;
 
   public Coleccion(String titulo, String descripcion, Criterio criterioDePertenencia, AAlgoritmoConsenso algoritmoConsenso) {

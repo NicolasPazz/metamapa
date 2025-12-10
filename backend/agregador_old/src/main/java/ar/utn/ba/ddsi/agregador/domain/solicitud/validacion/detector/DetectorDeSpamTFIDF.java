@@ -1,6 +1,6 @@
-package ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.detector;
+package ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.validacion.detector;
 
-import ar.utn.ba.ddsi.agregador.domain.solicitud.validacion.Validacion;
+import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.validacion.Validacion;
 import org.springframework.stereotype.Component;
 import java.util.*;
 

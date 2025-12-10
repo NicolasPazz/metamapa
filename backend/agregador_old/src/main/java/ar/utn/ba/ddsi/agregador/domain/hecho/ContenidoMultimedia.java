@@ -9,13 +9,17 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "contenido_multimedia")
 public class ContenidoMultimedia {
   @Id
   @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
-  @Column(name = "nombre")
+
+  @Column(name = "path", nullable = false)
   private String pathArchivo;
-  @Enumerated(EnumType.ORDINAL)
+
+  @Enumerated(EnumType.STRING)
+  @Column(name="tipo_contenido", nullable = false)
   private TipoContenido tipoContenido;
 
   public ContenidoMultimedia(String pathArchivo, TipoContenido tipoContenido) {

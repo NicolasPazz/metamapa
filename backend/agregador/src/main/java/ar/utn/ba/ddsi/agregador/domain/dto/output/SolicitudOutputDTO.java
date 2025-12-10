@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.dto.output;
 
-import ar.utn.ba.ddsi.agregador.domain.solicitud.EstadoSolicitud;
+import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.EstadoSolicitud;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.time.LocalDate;

@@ -4,9 +4,9 @@ import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.input.SolicitudInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.dto.output.SolicitudOutputDTO;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.ModoNavegacion;
 import java.time.LocalDate;
 
+import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import java.util.List;
 
@@ -26,7 +26,7 @@ public interface IFuente {
   ResponseEntity<List<ColeccionDTO>> getAllColecciones();
 
   ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
-      String handle,
+      UUID handle,
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,

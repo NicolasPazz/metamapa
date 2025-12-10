@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor(force = true)
+@NoArgsConstructor
 public class CriterioFuente implements Criterio {
     private String tipo = "fuente";
     private Set<Long> fuentesExcluidas = new HashSet<>();

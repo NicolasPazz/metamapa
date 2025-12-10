@@ -11,6 +11,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,19 +22,21 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "contenido_multimedia")
 public class ContenidoMultimedia {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "nombre")
+  @Column(name = "path", nullable = false)
   private String pathArchivo;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="tipo_contenido", nullable = false)
   private TipoContenido tipoContenido;
 
   @ManyToOne
-  @JoinColumn(name = "solicitud_id")
+  @JoinColumn(name = "solicitud_id", referencedColumnName = "id")
   private SolicitudHecho solicitudHecho;
 
   public ContenidoMultimedia(String pathArchivo, TipoContenido tipoContenido, SolicitudHecho solicitud) {

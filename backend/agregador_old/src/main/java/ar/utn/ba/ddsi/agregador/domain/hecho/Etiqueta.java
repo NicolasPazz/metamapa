@@ -11,11 +11,12 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
+@Table(name = "etiqueta")
 public class Etiqueta {
   @Id
   @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
-  @Column(name = "nombre")
+  @Column(name = "nombre", nullable = false)
   private String nombre;
 
   public Etiqueta(String nombre) {

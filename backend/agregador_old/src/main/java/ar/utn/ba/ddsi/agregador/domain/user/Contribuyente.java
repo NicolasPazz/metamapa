@@ -14,15 +14,16 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @Entity
+@Table(name = "contribuyente")
 public class Contribuyente {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  @Column(name = "nombre")
+  @Column(name = "nombre", nullable = true)
   private String nombre;
-  @Column(name = "apellido")
+  @Column(name = "apellido", nullable = true)
   private String apellido;
-  @Column(name = "fechaNacimiento")
+  @Column(name = "fechaNacimiento", nullable = true)
   private LocalDate fechaDeNacimiento;
 
   public Contribuyente(String nombre) {
