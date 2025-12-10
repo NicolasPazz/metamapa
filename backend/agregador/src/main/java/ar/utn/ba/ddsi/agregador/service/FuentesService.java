@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.service;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.dto.external.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import java.time.LocalDate;
 import java.util.ArrayList;

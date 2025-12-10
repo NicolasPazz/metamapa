@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion;
 
-import ar.utn.ba.ddsi.agregador.converter.AlgoritmoAttributeConverter;
-import ar.utn.ba.ddsi.agregador.converter.CriterioAttributeConverter;
+import ar.utn.ba.ddsi.agregador.repositorie.converter.AlgoritmoAttributeConverter;
+import ar.utn.ba.ddsi.agregador.repositorie.converter.CriterioAttributeConverter;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioCombinado;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
