@@ -7,6 +7,9 @@ import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioIgualdad;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioLugar;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioOrigen;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.TipoDato;
+import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.TipoFecha;
+import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.dto.CriterioCombinadoDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioFechasDTO;
@@ -14,6 +17,7 @@ import ar.utn.ba.ddsi.agregador.dto.CriterioFuenteDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioIgualdadDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioLugarDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioOrigenDTO;
+import ar.utn.ba.ddsi.agregador.dto.input.CriterioInputDTO;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -41,8 +45,8 @@ public class CriterioMapper {
 
   private CriterioLugarDTO toLugarDTO(CriterioLugar c) {
     CriterioLugarDTO dto = new CriterioLugarDTO();
-    dto.setLat(c.getLat());
-    dto.setLon(c.getLon());
+    dto.setLatitud(c.getLat());
+    dto.setLongitud(c.getLon());
     return dto;
   }
 
@@ -89,7 +93,7 @@ public class CriterioMapper {
   }
 
   private CriterioLugar fromLugarDTO(CriterioLugarDTO dto) {
-    return new CriterioLugar(dto.getLat(), dto.getLon());
+    return new CriterioLugar(dto.getLatitud(), dto.getLongitud());
   }
 
   /*private CriterioFuente fromFuenteDTO(CriterioFuenteDTO dto) {
@@ -114,5 +118,36 @@ public class CriterioMapper {
 
   private CriterioOrigen fromOrigenDTO(CriterioOrigenDTO dto) {
     return new CriterioOrigen(dto.getOrigen());
+  }
+
+  public Criterio fromDTO(CriterioInputDTO dto) {
+    if (dto == null || dto.getTipo() == null) {
+      throw new IllegalArgumentException("CriterioInputDTO o tipo no puede ser null");
+    }
+
+    String tipo = dto.getTipo().toUpperCase();
+
+    return switch (tipo) {
+      case "FECHAS" -> new CriterioFechas(
+          dto.getFechaInicial(),
+          dto.getFechaFinal(),
+          dto.getTipoFecha() != null ?
+              TipoFecha.valueOf(dto.getTipoFecha().toUpperCase()) :
+              null
+      );
+      case "LUGAR" -> new CriterioLugar(dto.getLat(), dto.getLng());
+      case "IGUALDAD" -> new CriterioIgualdad(
+          dto.getCadenaAComparar(),
+          dto.getTipoDeDato() != null ?
+              TipoDato.valueOf(dto.getTipoDeDato().toUpperCase()) :
+              null
+      );
+      case "ORIGEN" -> new CriterioOrigen(
+          dto.getOrigen() != null ?
+              OrigenHecho.valueOf(dto.getOrigen().toUpperCase()) :
+              null
+      );
+      default -> throw new IllegalArgumentException("Tipo de criterio desconocido: " + tipo);
+    };
   }
 }

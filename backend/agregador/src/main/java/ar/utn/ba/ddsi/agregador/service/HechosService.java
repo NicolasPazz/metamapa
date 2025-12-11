@@ -1,0 +1,135 @@
+package ar.utn.ba.ddsi.agregador.service;
+
+import ar.utn.ba.ddsi.agregador.domain.hecho.Etiqueta;
+import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.dto.input.EtiquetaInputDTO;
+import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
+import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+@Slf4j
+@Service
+@RequiredArgsConstructor
+public class HechosService {
+
+    private final IHechosRepository hechosRepository;
+    private final FuentesService fuentesService;
+    private final HechoMapper hechoMapper;
+    private final CategoriasService categoriasService;
+
+    public ResponseEntity<List<HechoDTO>> getAll(
+        String categoria,
+        LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
+        LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+        String ubicacion) {
+
+        log.info("[HechosService] Obteniendo todos los hechos con filtros: categoria={}, ubicacion={}",
+            categoria, ubicacion);
+
+        // Obtener hechos de fuentes externas (proxy)
+        ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
+            categoria,
+            fecha_reporte_desde, fecha_reporte_hasta,
+            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+            ubicacion);
+
+        List<HechoDTO> externos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
+        log.debug("[HechosService] Se obtuvieron {} hechos externos", externos.size());
+
+        // Obtener hechos locales desde la BD
+        List<Hecho> hechosLocales = hechosRepository.findByFilters(
+            categoria,
+            fecha_reporte_desde, fecha_reporte_hasta,
+            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+            ubicacion,
+            null); // modo = null para todos los hechos visibles
+
+        List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
+        log.debug("[HechosService] Se obtuvieron {} hechos locales", locales.size());
+
+        // Combinar hechos locales y externos
+        List<HechoDTO> combinados = new ArrayList<>(locales);
+        combinados.addAll(externos);
+
+        log.info("[HechosService] Total de hechos agregados: {}", combinados.size());
+        return ResponseEntity.ok(combinados);
+    }
+
+    @Transactional
+    public ResponseEntity<?> crearHecho(HechoDTO hechoInputDTO) {
+        if (hechoInputDTO == null) {
+            log.warn("[HechosService] Intento de crear hecho con DTO null");
+            return ResponseEntity.badRequest().body("El DTO del hecho no puede ser null");
+        }
+
+        try {
+            log.info("[HechosService] Creando nuevo hecho: {}", hechoInputDTO.getTitulo());
+
+            // Convertir DTO a entidad
+            Hecho hechoNuevo = hechoMapper.fromDTO(hechoInputDTO);
+
+            // Normalizar categoría antes de persistir
+            categoriasService.persistirCategoriasDesdeHechos(List.of(hechoNuevo));
+
+            // Persistir el hecho
+            Hecho hechoGuardado = hechosRepository.save(hechoNuevo);
+
+            log.info("[HechosService] Hecho creado exitosamente con ID: {}", hechoGuardado.getId());
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(hechoMapper.toDTO(hechoGuardado));
+
+        } catch (Exception e) {
+            log.error("[HechosService] Error al crear hecho: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al crear el hecho: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public ResponseEntity<?> agregarEtiqueta(EtiquetaInputDTO etiquetaInputDTO) {
+        if (etiquetaInputDTO == null || etiquetaInputDTO.getIdHecho() == null) {
+            log.warn("[HechosService] Intento de agregar etiqueta sin datos válidos");
+            return ResponseEntity.badRequest().body("Debe proporcionar el ID del hecho y el nombre de la etiqueta");
+        }
+
+        if (etiquetaInputDTO.getNombreEtiqueta() == null || etiquetaInputDTO.getNombreEtiqueta().trim().isEmpty()) {
+            log.warn("[HechosService] Intento de agregar etiqueta vacía");
+            return ResponseEntity.badRequest().body("El nombre de la etiqueta no puede estar vacío");
+        }
+
+        try {
+            Hecho hecho = hechosRepository.findById(etiquetaInputDTO.getIdHecho())
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "No se encontró el Hecho con ID " + etiquetaInputDTO.getIdHecho()));
+
+            // Crear y agregar la etiqueta
+            Etiqueta nuevaEtiqueta = new Etiqueta(etiquetaInputDTO.getNombreEtiqueta().trim());
+            hecho.getEtiquetas().add(nuevaEtiqueta);
+
+            Hecho hechoActualizado = hechosRepository.save(hecho);
+
+            log.info("[HechosService] Etiqueta '{}' agregada al hecho {}",
+                etiquetaInputDTO.getNombreEtiqueta(), etiquetaInputDTO.getIdHecho());
+
+            return ResponseEntity.ok(hechoMapper.toDTO(hechoActualizado));
+
+        } catch (IllegalArgumentException e) {
+            log.warn("[HechosService] {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("[HechosService] Error al agregar etiqueta: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al agregar la etiqueta: " + e.getMessage());
+        }
+    }
+}

@@ -2,51 +2,48 @@ package ar.utn.ba.ddsi.agregador.dto.mapper;
 
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
+/**
+ * Mapper encargado de la conversión entre Coleccion y ColeccionDTO.
+ */
 @Component
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ColeccionMapper {
 
-  private final HechoMapper hechoMapper;
-  private final CriterioMapper criterioMapper;
+    private final HechoMapper hechoMapper;
 
-  public ColeccionDTO toDTO(Coleccion coleccion) {
-    if (coleccion == null) return null;
+    /**
+     * Convierte una entidad Coleccion a su representación DTO.
+     *
+     * @param coleccion Entidad Coleccion a convertir
+     * @return ColeccionDTO con todos los campos mapeados, o null si la colección es null
+     */
+    public ColeccionDTO toDTO(Coleccion coleccion) {
+        if (coleccion == null) return null;
 
-    ColeccionDTO dto = new ColeccionDTO();
-    dto.setHandle(coleccion.getHandle());
-    dto.setTitulo(coleccion.getTitulo());
-    dto.setDescripcion(coleccion.getDescripcion());
-    dto.setHechos(coleccion.getHechos() != null
-        ? hechoMapper.toDTO(coleccion.getHechos())
-        : List.of());
-    dto.setHechosConsensuados(coleccion.getHechosConsensuados() != null
-        ? hechoMapper.toDTO(coleccion.getHechosConsensuados())
-        : List.of());
-    if (coleccion.getCriterioDePertenencia() != null) {
-      dto.setCriterioDePertenencia(
-          criterioMapper.toDTO(coleccion.getCriterioDePertenencia())
-      );
+        ColeccionDTO dto = new ColeccionDTO();
+        dto.setHandle(coleccion.getHandle());
+        dto.setTitulo(coleccion.getTitulo());
+        dto.setDescripcion(coleccion.getDescripcion());
+        dto.setFechaDeCarga(coleccion.getFechaDeCarga());
+        dto.setFuenteId(coleccion.getFuenteId());
+        dto.setIdOrigen(coleccion.getIdOrigen());
+
+        if (coleccion.getHechos() != null) {
+            dto.setHechos(hechoMapper.toDTO(coleccion.getHechos()));
+        }
+
+        if (coleccion.getHechosConsensuados() != null) {
+            dto.setHechosConsensuados(hechoMapper.toDTO(coleccion.getHechosConsensuados()));
+        }
+
+        if (coleccion.getAlgoritmoConsenso() != null) {
+            dto.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso().getNombre());
+        }
+
+        return dto;
     }
-    if (coleccion.getAlgoritmoConsenso() != null) {
-      dto.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso().getNombre());
-    }
-
-    return dto;
-  }
-
-  public List<ColeccionDTO> toDTO(List<Coleccion> colecciones) {
-    if (colecciones == null) return List.of();
-
-    return colecciones.stream()
-        .map(this::toDTO)
-        .collect(Collectors.toList());
-  }
-
 }
 

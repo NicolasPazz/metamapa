@@ -78,6 +78,9 @@ public class Hecho {
   @Column(name = "fuente_id", nullable = false)
   private Long fuenteId;
 
+  @Column(name = "id_origen", nullable = false)
+  private Long idOrigen;
+
   public Hecho(String titulo, String descripcion, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento,
                OrigenHecho origen, Long contribuyenteId, Categoria categoria, Long fuenteId) {
     this.titulo = titulo;

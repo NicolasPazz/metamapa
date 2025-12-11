@@ -18,10 +18,14 @@ public class CriterioIgualdad implements Criterio {
   @Override
   public boolean cumple(Hecho hecho) {
     return switch (tipoDeDato) {
-      case CATEGORIA -> hecho.getCategoria().getNombre().equalsIgnoreCase(cadenaAComparar.trim());
-      case DESCRIPCION -> hecho.getDescripcion().equalsIgnoreCase(cadenaAComparar.trim());
+      case CATEGORIA -> hecho.getCategoria() != null &&
+                        hecho.getCategoria().getNombre() != null &&
+                        hecho.getCategoria().getNombre().equalsIgnoreCase(cadenaAComparar.trim());
+      case DESCRIPCION -> hecho.getDescripcion() != null &&
+                          hecho.getDescripcion().equalsIgnoreCase(cadenaAComparar.trim());
       case ETIQUETA -> hecho.contieneEtiqueta(cadenaAComparar);
-      case TITULO -> hecho.getTitulo().equalsIgnoreCase(cadenaAComparar.trim());
+      case TITULO -> hecho.getTitulo() != null &&
+                     hecho.getTitulo().equalsIgnoreCase(cadenaAComparar.trim());
       default -> throw new IllegalArgumentException("Tipo de dato no soportado: " + tipoDeDato);
     };
   }

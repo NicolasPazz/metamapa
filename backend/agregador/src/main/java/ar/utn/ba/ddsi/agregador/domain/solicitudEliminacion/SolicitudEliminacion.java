@@ -33,10 +33,10 @@ public class SolicitudEliminacion {
   private Long id;
 
   @ManyToOne
-  @JoinColumn(name = "hecho_id", referencedColumnName = "id", nullable = false)
+  @JoinColumn(name = "hecho_id", referencedColumnName = "id", nullable = true)
   private Hecho hecho;
 
-  @Column(name = "textoFundamentos", nullable = false, length = 5000)
+  @Column(name = "textoFundamentos", nullable = false, length = 2000)
   private String textoFundamentos;
 
   @Column(name = "fecha", nullable = false, updatable = false)
@@ -57,10 +57,19 @@ public class SolicitudEliminacion {
   @JoinColumn(name = "solicitud_eliminacion_id", referencedColumnName = "id")
   private List<TransicionEstadoSolicitud> transiciones = new ArrayList<>();
 
-  public SolicitudEliminacion(Hecho hecho, String textoFundamentos, Long contribuyenteId) {
+  @Column(name = "fuente_id", nullable = true)
+  private Long fuenteId = null;
+
+  @Column(name = "id_origen", nullable = true)
+  private Long idOrigen = null;
+
+  public SolicitudEliminacion(Hecho hecho, String textoFundamentos, Long contribuyenteId, Long fuenteId,
+                              Long idOrigen) {
     this.hecho = hecho;
     this.textoFundamentos = textoFundamentos;
     this.contribuyenteId = contribuyenteId;
+    this.fuenteId = fuenteId;
+    this.idOrigen = idOrigen;
   }
 
   public void transicionarEstado(EstadoSolicitud estado) {
@@ -70,6 +79,9 @@ public class SolicitudEliminacion {
 
   public void aceptar() {
     this.transicionarEstado(EstadoSolicitud.ACEPTADA);
+    if (this.hecho != null) {
+      this.hecho.ocultar();
+    }
   }
 
   public void rechazar() {

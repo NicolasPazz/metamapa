@@ -26,13 +26,13 @@ public class TransicionEstadoSolicitud {
 
   @Enumerated(EnumType.STRING)
   @Column(name="estado", nullable = false)
-  private EstadoSolicitud estadoSolicitud;
+  private EstadoSolicitud estadoFinal;
 
   @Column(name = "fecha_transicion", nullable = false, updatable = false)
   @CreationTimestamp
   private LocalDate fecha;
 
   public TransicionEstadoSolicitud(EstadoSolicitud estadoSolicitud) {
-    this.estadoSolicitud = estadoSolicitud;
+    this.estadoFinal = estadoSolicitud;
   }
 }

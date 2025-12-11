@@ -1,9 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.fuente;
 
-import ar.utn.ba.ddsi.agregador.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.dto.input.SolicitudInputDTO;
-import ar.utn.ba.ddsi.agregador.dto.output.SolicitudOutputDTO;
 import java.time.LocalDate;
 
 import java.util.UUID;
@@ -32,6 +30,4 @@ public interface IFuente {
       LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
       String ubicacion,
       String modo);
-
-  ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud);
 }

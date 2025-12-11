@@ -7,8 +7,10 @@ import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.exception.Validacion
 import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.validacion.Validacion;
 import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.validacion.detector.DetectorDeSpam;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class SolicitudEliminacionFactory {
 
@@ -18,8 +20,10 @@ public class SolicitudEliminacionFactory {
     this.validaciones = validaciones;
   }
 
-  public SolicitudEliminacion crearSolicitud(Hecho hecho, String textoFundamentos, Long contribuyenteId) {
-    SolicitudEliminacion solicitud = new SolicitudEliminacion(hecho, textoFundamentos, contribuyenteId);
+  public SolicitudEliminacion crearSolicitud(Hecho hecho, String textoFundamentos, Long contribuyenteId,
+                                             Long fuenteId, Long idOrigen) {
+    SolicitudEliminacion solicitud = new SolicitudEliminacion(hecho, truncarTextoFundamentos(textoFundamentos),
+        contribuyenteId, fuenteId, idOrigen);
 
     boolean esSpam = false;
 
@@ -40,5 +44,13 @@ public class SolicitudEliminacionFactory {
     }
 
     return solicitud;
+  }
+
+  private String truncarTextoFundamentos(String texto) {
+    if (texto != null && texto.length() > 2000) {
+      log.warn("[SolicitudEliminacionFactory] Texto de fundamentos truncado por exceder 2000 caracteres");
+      return texto.substring(0, 1997) + "...";
+    }
+    return texto;
   }
 }

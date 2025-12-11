@@ -1,7 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.service.IdService;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -14,11 +13,9 @@ import lombok.Setter;
 public class CriterioFuente implements Criterio {
     private final TipoCriterio tipo = TipoCriterio.FUENTE;
     private Set<Long> fuentesExcluidas = new HashSet<>();
-    private IdService idService;
 
-    public CriterioFuente(Long idFuenteExcluida, IdService idService) {
+    public CriterioFuente(Long idFuenteExcluida) {
         this.fuentesExcluidas.add(idFuenteExcluida);
-        this.idService = idService;
     }
 
     public void agregarExclusion(Long idFuente) {
@@ -31,7 +28,7 @@ public class CriterioFuente implements Criterio {
 
     @Override
     public boolean cumple(Hecho hecho){
-        Long idFuente = idService.getIdFuente(hecho.getId());
+        Long idFuente = hecho.getFuenteId();
         return !fuentesExcluidas.contains(idFuente);
     }
 }

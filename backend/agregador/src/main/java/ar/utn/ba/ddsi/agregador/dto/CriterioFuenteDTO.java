@@ -1,9 +1,11 @@
 package ar.utn.ba.ddsi.agregador.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Set;
 import lombok.Data;
 
 @Data
 public class CriterioFuenteDTO implements CriterioDTO {
+  @JsonProperty("fuentes_excluidas")
   private Set<Long> fuentesExcluidas;
 }

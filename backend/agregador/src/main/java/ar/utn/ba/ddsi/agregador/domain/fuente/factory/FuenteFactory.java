@@ -12,17 +12,21 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Slf4j
 @Component
 public class FuenteFactory {
-
-  private static final AtomicLong contadorId = new AtomicLong(1);
-
   public IFuente crearFuente(FuenteConfig config) {
-    WebClient webClient = WebClient.builder().baseUrl(config.getUrl()).build();
-    Long idAsignado = contadorId.getAndIncrement();
+
+    WebClient webClient = WebClient.builder()
+        .baseUrl(config.getUrl())
+        .build();
+
+    Long idAsignado = config.getId();
+
     IFuente fuente = switch (config.getTipo()) {
       case CRON -> new FuenteCron(webClient, idAsignado);
       case TIEMPO_REAL -> new FuenteTiempoReal(webClient, idAsignado);
     };
-    log.info("Fuente {} creada con ID: {} y URL: {}", config.getTipo(), idAsignado, config.getUrl());
+
+    log.info("Fuente {} creada con ID fijo: {} y URL: {}",
+        config.getTipo(), idAsignado, config.getUrl());
 
     return fuente;
   }

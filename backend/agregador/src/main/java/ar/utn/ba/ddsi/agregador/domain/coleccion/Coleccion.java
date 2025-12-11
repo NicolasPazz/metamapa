@@ -60,6 +60,12 @@ public class Coleccion {
   @CreationTimestamp
   private LocalDateTime fechaDeCarga;
 
+  @Column(name = "fuente_id", nullable = false)
+  private Long fuenteId;
+
+  @Column(name = "id_origen", nullable = false)
+  private UUID idOrigen;
+
   public void actualizarHechos() {
     if (this.criterioDePertenencia != null && this.hechos != null) {
       this.hechos = this.hechos.parallelStream()

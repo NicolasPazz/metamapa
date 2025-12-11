@@ -1,13 +1,16 @@
 package ar.utn.ba.ddsi.agregador.service;
 
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -19,7 +22,7 @@ import org.springframework.stereotype.Service;
 public class FuentesService {
 
   private final List<IFuente> fuentes = new ArrayList<>();
-  private final IdService idService;
+  private final SolicitudesService solicitudesService;
 
   public void agregarFuente(IFuente fuente) {
     if (!fuentes.contains(fuente)) {
@@ -29,58 +32,73 @@ public class FuentesService {
 
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       String categoria,
-      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
+      LocalDate fechaAcontecimientoDesde, LocalDate fechaAcontecimientoHasta,
       String ubicacion) {
+
     List<HechoDTO> resultados = new ArrayList<>();
+
     for (IFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
+
       List<HechoDTO> hechos = Optional.ofNullable(
-          fuente.getAllHechosVisibles(categoria,
-              fecha_reporte_desde, fecha_reporte_hasta,
-              fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-              ubicacion).getBody()
+          fuente.getAllHechosVisibles(
+              categoria,
+              fechaReporteDesde, fechaReporteHasta,
+              fechaAcontecimientoDesde, fechaAcontecimientoHasta,
+              ubicacion
+          ).getBody()
       ).orElse(List.of());
-      // Setear ID unico
-      hechos.forEach(h -> {
-        if (h.getId() != null) {
-          h.setId(idService.getId(idFuente, h.getId()));
-        } else {
-          log.warn("Hecho sin id recibido desde fuente {}", idFuente);
-        }
-      });
+
+      hechos.forEach(h -> normalizarHecho(h, idFuente));
+
       resultados.addAll(hechos);
     }
 
-    log.info("[FuentesService] Se obtuvieron {} hechos visibles combinados de todas las fuentes tiempo real.",
+    log.info("[FuentesService] {} hechos visibles combinados desde todas las fuentes.",
         resultados.size());
 
-    return ResponseEntity.of(Optional.of(resultados));
+    return ResponseEntity.ok(filtrarBlacklist(resultados));
   }
 
+  private List<HechoDTO> filtrarBlacklist(List<HechoDTO> hechos) {
+  
+    Map<Long, Set<Long>> blacklist = solicitudesService.blacklist();
 
+    if (blacklist.isEmpty()) {
+      log.info("[FuentesService] No hay elementos en la blacklist, no se filtra nada.");
+      return hechos; // no hay nada que filtrar
+    }
 
+    return hechos.stream()
+        .filter(h -> {
+          if (h.getFuenteId() == null || h.getIdOrigen() == null) {
+            return true; // mantener hechos sin fuenteId o idOrigen
+          }
+          Set<Long> idsProhibidos = blacklist.get(h.getFuenteId());
+          return idsProhibidos == null || !idsProhibidos.contains(h.getIdOrigen());
+        })
+        .collect(Collectors.toList());
+  }
 
   public ResponseEntity<List<HechoDTO>> getAllHechosNuevos() {
     List<HechoDTO> resultados = new ArrayList<>();
+
     for (IFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
+
       List<HechoDTO> hechos = Optional.ofNullable(
           fuente.getAllHechosNuevos().getBody()
       ).orElse(List.of());
-      // Setear ID unico
-      hechos.forEach(h -> {
-        if (h.getId() != null) {
-          //h.setId(idService.getId(idFuente, h.getId()));
-        } else {
-          log.warn("Hecho sin id recibido desde fuente {}", idFuente);
-        }
-      });
+
+      hechos.forEach(h -> normalizarHecho(h, idFuente));
+
       resultados.addAll(hechos);
     }
 
-    return ResponseEntity.of(Optional.of(resultados));
+    return ResponseEntity.ok(resultados);
   }
+
 
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     List<ColeccionDTO> resultados = new ArrayList<>();
@@ -92,53 +110,41 @@ public class FuentesService {
           fuente.getAllColecciones().getBody()
       ).orElse(List.of());
 
-      // Setear ID unico para cada hecho dentro de las colecciones
-      for (ColeccionDTO coleccion : colecciones) {
-        if (coleccion.getHechos() != null) {
-          coleccion.getHechos().forEach(h ->
-              h.setId(idService.getId(idFuente, h.getId()))
-          );
-        }
-      }
+      colecciones.forEach(c -> normalizarColeccion(c, idFuente));
 
       resultados.addAll(colecciones);
     }
 
-    return ResponseEntity.of(Optional.of(resultados));
+    return ResponseEntity.ok(resultados);
   }
+
 
   public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
       UUID handle,
       String categoria,
-      LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
+      LocalDate fechaAcontecimientoDesde, LocalDate fechaAcontecimientoHasta,
       String ubicacion,
       String modo
   ) {
+
     for (IFuente fuente : fuentes) {
+      Long idFuente = fuente.getId();
+
       ResponseEntity<List<HechoDTO>> respuesta = fuente.getHechosColeccionByHandle(
           handle,
           categoria,
-          fecha_reporte_desde, fecha_reporte_hasta,
-          fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-          ubicacion, modo
+          fechaReporteDesde, fechaReporteHasta,
+          fechaAcontecimientoDesde, fechaAcontecimientoHasta,
+          ubicacion,
+          modo
       );
 
-      List<HechoDTO> hechos = respuesta.getBody();
+      List<HechoDTO> hechos = Optional.ofNullable(respuesta.getBody()).orElse(List.of());
 
-      // Setear ID unico para cada hecho
-      if (hechos != null) {
-        Long idFuente = fuente.getId();
-        hechos.forEach(h -> {
-          if (h.getId() != null) {
-            h.setId(idService.getId(idFuente, h.getId()));
-          } else {
-            log.warn("Hecho sin id recibido desde fuente {}", idFuente);
-          }
-        });
+      hechos.forEach(h -> normalizarHecho(h, idFuente));
 
-        return ResponseEntity.ok(hechos);
-      }
+      return ResponseEntity.ok(hechos);
     }
 
     return ResponseEntity.notFound().build();
@@ -153,5 +159,27 @@ public class FuentesService {
 
   public int cantidadDeFuentes() {
     return fuentes.size();
+  }
+
+  private void normalizarHecho(HechoDTO h, Long idFuente) {
+    if (h.getId() == null) {
+      log.warn("Hecho sin id recibido desde fuente {}", idFuente);
+    } else {
+      h.setIdOrigen(h.getId());
+      h.setId(null);
+    }
+
+    h.setFuenteId(idFuente);
+  }
+
+  private void normalizarColeccion(ColeccionDTO c, Long idFuente) {
+    if (c.getHandle() == null) {
+      log.warn("Colección sin handle recibido desde fuente {}", idFuente);
+    } else {
+      c.setIdOrigen(c.getHandle());
+      c.setHandle(null);
+    }
+
+    c.setFuenteId(idFuente);
   }
 }

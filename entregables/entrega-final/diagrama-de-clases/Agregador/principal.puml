@@ -80,7 +80,6 @@ interface IFuente {
 +getAllHechosVisibles(...): List<HechoDTO>
 +getAllColecciones(): List<ColeccionDTO>
 +getHechosColeccionByHandle(...): List<HechoDTO>
-+crearSolicitudDeEliminacion(SolicitudInputDTO): SolicitudOutputDTO
 }
 class FuenteCron implements IFuente {
 -id: Long
@@ -89,27 +88,29 @@ class FuenteCron implements IFuente {
 class FuenteTiempoReal implements IFuente {
 -id: Long
 -webClient: WebClient
+
 }
 class FuenteFactory {
-- contadorId: AtomicLong
 + crearFuente(FuenteConfig): IFuente
 }
 note left of FuenteFactory
   public IFuente crearFuente(FuenteConfig config) {
-    WebClient webClient =
-        WebClient.builder().baseUrl(config.getUrl()).build();
-    Long idAsignado = contadorId.getAndIncrement();
+    WebClient webClient = WebClient.builder()
+        .baseUrl(config.getUrl())
+        .build();
+    Long idAsignado = config.getId();
     IFuente fuente = switch (config.getTipo()) {
-      case CRON ->
-          new FuenteCron(webClient, idAsignado);
-      case TIEMPO_REAL ->
-          new FuenteTiempoReal(webClient, idAsignado);
+      case CRON -> new FuenteCron(webClient, idAsignado);
+      case TIEMPO_REAL -> new FuenteTiempoReal(webClient, idAsignado);
     };
+    log.info("Fuente {} creada con ID fijo: {} y URL: {}",
+        config.getTipo(), idAsignado, config.getUrl());
     return fuente;
   }
 end note
 FuenteFactory ..> IFuente
 class FuenteConfig {
+- id: Long
 - url: String
 - tipo: TipoFuente
 }
@@ -168,7 +169,6 @@ CriterioFuente --> TipoCriterio
 class CriterioFuente implements Criterio {
 - tipo: TipoCriterio
 - fuentesExcluidas: Set<Long>
-- idService: IdService
 + agregarExclusion(Long): void
 + eliminarExclusion(Long): void
 + cumple(Hecho): Boolean

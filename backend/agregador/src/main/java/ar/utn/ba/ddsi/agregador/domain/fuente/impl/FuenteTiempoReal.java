@@ -1,9 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 
-import ar.utn.ba.ddsi.agregador.dto.external.ColeccionDTO;
+import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.dto.input.SolicitudInputDTO;
-import ar.utn.ba.ddsi.agregador.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
 import java.time.LocalDate;
 import java.util.List;
@@ -88,17 +86,5 @@ public class FuenteTiempoReal implements IFuente {
         .block();
 
     return ResponseEntity.ok(hechos);
-  }
-
-  @Override
-  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
-    log.info("[FuenteTiempoReal] Creando solicitud de eliminacion: {}", solicitud);
-    SolicitudOutputDTO resultado = webClient.post()
-        .uri("/solicitudes")
-        .bodyValue(solicitud)
-        .retrieve()
-        .bodyToMono(SolicitudOutputDTO.class)
-        .block();
-    return ResponseEntity.of(Optional.ofNullable(resultado));
   }
 }

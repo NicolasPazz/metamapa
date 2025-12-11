@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.agregador.dto.mapper;
 
+import ar.utn.ba.ddsi.agregador.domain.hecho.Categoria;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import java.util.List;
@@ -40,6 +41,8 @@ public class HechoMapper {
           ? transicionEstadoHechoMapper.toDTO(hecho.getTransiciones())
           : List.of());
       dto.setCategoria(hecho.getCategoria() != null ? hecho.getCategoria().getNombre() : null);
+      dto.setFuenteId(hecho.getFuenteId());
+      dto.setIdOrigen(hecho.getIdOrigen());
 
       return dto;
     }
@@ -49,6 +52,37 @@ public class HechoMapper {
 
     return hechos.stream()
         .map(this::toDTO)
+        .toList();
+  }
+
+  public Hecho fromDTO(HechoDTO dto) {
+    if (dto == null) return null;
+
+    Categoria categoria = null;
+    if (dto.getCategoria() != null && !dto.getCategoria().trim().isEmpty()) {
+      categoria = new Categoria(dto.getCategoria().trim());
+    }
+
+    return Hecho.builder()
+        .id(dto.getId())
+        .titulo(dto.getTitulo())
+        .descripcion(dto.getDescripcion())
+        .latitud(dto.getLatitud())
+        .longitud(dto.getLongitud())
+        .fechaDeAcontecimiento(dto.getFechaDeAcontecimiento())
+        .origen(dto.getOrigen())
+        .contribuyenteId(dto.getContribuyenteId())
+        .categoria(categoria)
+        .fuenteId(dto.getFuenteId())
+        .idOrigen(dto.getIdOrigen())
+        .build();
+  }
+
+  public List<Hecho> fromDTO(List<HechoDTO> dtos) {
+    if (dtos == null) return List.of();
+
+    return dtos.stream()
+        .map(this::fromDTO)
         .toList();
   }
 }
