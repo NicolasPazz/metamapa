@@ -95,5 +95,6 @@ public class AdminController {
 
         return "redirect:/admin"; // Volvemos a la vista admin.html
     }
+
 }
 

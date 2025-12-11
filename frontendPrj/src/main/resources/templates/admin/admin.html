@@ -7,7 +7,7 @@
     <a href="#dashboard" class="active">Panel de Control</a>
     <a href="#colecciones">Colecciones</a>
     <a href="#hechos">Moderación de Hechos</a>
-    <a href="#eliminaciones">Solicitudes de Eliminación</a>
+    <a href="#solicitudes">Solicitudes de Eliminación</a>
     <a href="#carga">Carga Masiva</a>
   </nav>
 
@@ -67,22 +67,65 @@
       </div>
     </section>
 
-    <!-- Eliminaciones -->
-    <section id="eliminaciones">
+    <section id="solicitudes" class="mt-5 mb-5">
 
-      <h2>Solicitudes de Eliminación</h2>
-      <div class="hechos-grid">
-        <div th:each="solicitud:${solicitudes}" class="hecho-card">
-          <h3 th:text="${'Hecho #' + solicitud.idHecho}"></h3>
-          <p th:text="${'Justificacion: ' + solicitud.textoFundamentos}"></p>
-          <form th:action="@{'/admin/actualizarSolicitud'}" method="post">
-            <input type="hidden" name="id" th:value="${solicitud.id}">
-            <button type="submit" name="estado" value="ACEPTADA">Aceptar</button>
-            <button type="submit" name="estado" value="RECHAZADA">Denegar</button>
-          </form>
+      <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+          <h4 class="mb-0 text-dark fw-bold">
+            <i class="bi bi-trash"></i> Solicitudes de Eliminación
+          </h4>
+          <span class="badge rounded-pill"
+                th:classappend="${#lists.isEmpty(solicitudes)} ? 'bg-success' : 'bg-danger'"
+                th:text="${#lists.isEmpty(solicitudes)} ? 'Al día' : ${#lists.size(solicitudes) + ' Pendientes'}">
+            </span>
         </div>
-      </div>
 
+        <div class="card-body bg-light">
+
+          <div th:if="${#lists.isEmpty(solicitudes)}" class="text-center py-5">
+            <div class="mb-3">
+              <span style="font-size: 4rem;"></span>
+            </div>
+            <h3 class="text-muted fw-normal">¡Todo limpio!</h3>
+            <p class="text-secondary">No hay solicitudes de eliminación pendientes de revisión en este momento.</p>
+            <button class="btn btn-outline-primary btn-sm mt-2" onclick="location.reload()">Actualizar</button>
+          </div>
+
+          <div th:unless="${#lists.isEmpty(solicitudes)}" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+            <div th:each="solicitud : ${solicitudes}" class="col">
+              <div class="card h-100 border-start border-4 border-warning shadow-sm">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span class="badge bg-warning text-dark">PENDIENTE</span>
+                    <small class="text-muted" th:text="'ID #' + ${solicitud.id}"></small>
+                  </div>
+
+                  <h5 class="card-title text-danger mb-1" th:text="'Hecho #' + ${solicitud.idHecho}"></h5>
+                  <p class="text-muted small mb-3">Solicitado por Usuario: <strong th:text="${solicitud.idUsuarioSolicitante}"></strong></p>
+
+                  <div class="bg-light p-2 rounded border mb-3">
+                    <small class="d-block text-secondary fw-bold" style="font-size: 0.7rem;">JUSTIFICACIÓN:</small>
+                    <p class="mb-0 fst-italic small text-dark" th:text="${solicitud.textoFundamentos}"></p>
+                  </div>
+
+                  <form th:action="@{'/admin/actualizarSolicitud'}" method="post" class="d-grid gap-2">
+                    <input type="hidden" name="id" th:value="${solicitud.id}">
+                    <button type="submit" name="estado" value="ACEPTADA"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('¿Eliminar definitivamente este hecho?');">
+                      Aprobar Eliminación
+                    </button>
+                    <button type="submit" name="estado" value="RECHAZADA" class="btn btn-outline-secondary btn-sm">
+                      Rechazar Solicitud
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+          </div> </div> </div>
     </section>
 
     <!-- Carga Masiva -->
@@ -103,7 +146,7 @@
     <h3>Crear Nueva Colección</h3>
     <form method="post" th:action="@{/admin/crear-coleccion}">
       <label for="nombre">Nombre*</label>
-      <input name="titulo" type="text" id="nombre" required>
+      <input name="titulo" type="text" id="nombre" required>1
 
       <label for="descripcion">Descripción*</label>
       <textarea name="descripcion" id="descripcion" required></textarea>
