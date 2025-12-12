@@ -6,11 +6,6 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.stream.Collectors;
 
-/**
- * Detector de spam usando TF-IDF (Term Frequency - Inverse Document Frequency)
- * Analiza la relevancia de las palabras en el texto comparado con un corpus de referencia.
- * También detecta patrones típicos de spam.
- */
 @Slf4j
 @Component
 public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
@@ -34,10 +29,10 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
       "gratis", "oferta", "descuento", "promoción", "premio", "ganador",
       "click", "aquí", "enlace", "link", "visita", "página",
       "dinero", "efectivo", "ganar", "millones", "urgente", "ahora",
-      "compra", "venta", "producto", "servicio", "contacto", "teléfono",
+      "compra", "venta", "producto", "servicio", "contacto", "teléfono", "www",
       "whatsapp", "telegram", "email", "correo", "suscríbete", "registrate",
       "xxx", "sexo", "casino", "apuesta", "juego", "lotería",
-      "viagra", "medicamento", "pastilla", "tratamiento", "cura"
+      "viagra", "medicamento", "pastilla", "tratamiento", "cura", "http", ".com"
   ));
 
   // Patrones sospechosos (caracteres repetidos, mayúsculas excesivas, etc.)

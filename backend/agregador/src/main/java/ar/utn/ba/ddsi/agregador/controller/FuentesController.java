@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.controller;
 
 import ar.utn.ba.ddsi.agregador.dto.FuenteDTO;
-import ar.utn.ba.ddsi.agregador.service.FuentesConfigService;
+import ar.utn.ba.ddsi.agregador.service.FuentesService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -16,18 +16,12 @@ import java.util.List;
 @CrossOrigin(origins = "*")
 public class FuentesController {
 
-    private final FuentesConfigService fuentesConfigService;
+    private final FuentesService fuentesService;
 
     @GetMapping
     public ResponseEntity<List<FuenteDTO>> getAllFuentes() {
         log.info("[FuentesController] GET /api/fuentes");
-        return fuentesConfigService.getAllFuentes();
-    }
-
-    @GetMapping("/activas")
-    public ResponseEntity<List<FuenteDTO>> getFuentesActivas() {
-        log.info("[FuentesController] GET /api/fuentes/activas");
-        return fuentesConfigService.getFuentesActivas();
+        return fuentesService.getAllFuentes();
     }
 }
 

@@ -6,9 +6,8 @@ import java.util.List;
 import java.util.UUID;
 @Data
 public class ColeccionDTO {
-    private UUID handle;
-    private String titulo;
-    private String handle;
-    private List<HechoDTO> hechos;
-
-    private List<HechoDTO> hechosConsensuados;
+  private UUID handle;
+  private String titulo;
+  private List<HechoDTO> hechos;
+  private List<HechoDTO> hechosConsensuados;
+}

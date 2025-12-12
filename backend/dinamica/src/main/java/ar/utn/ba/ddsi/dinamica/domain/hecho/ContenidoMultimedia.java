@@ -12,6 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,9 +30,11 @@ public class ContenidoMultimedia {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
+  @NotBlank(message = "El path del archivo no puede estar vacío")
   @Column(name = "path", nullable = false)
   private String pathArchivo;
 
+  @NotNull(message = "El tipo de contenido es obligatorio")
   @Enumerated(EnumType.STRING)
   @Column(name="tipo_contenido", nullable = false)
   private TipoContenido tipoContenido;

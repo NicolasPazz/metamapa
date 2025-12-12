@@ -75,31 +75,30 @@ VIDEO
 }
 
 
-interface IFuente {
-+getAllHechosNuevos(...): List<HechoDTO>
-+getAllHechosVisibles(...): List<HechoDTO>
-+getAllColecciones(): List<ColeccionDTO>
-+getHechosColeccionByHandle(...): List<HechoDTO>
-}
-class FuenteCron implements IFuente {
+abstract class AFuente {
 -id: Long
+-nombre: String
+{abstract} +getAllHechosNuevos(...): List<HechoDTO>
+{abstract}+getAllHechosVisibles(...): List<HechoDTO>
+{abstract}+getAllColecciones(): List<ColeccionDTO>
+{abstract}+getHechosColeccionByHandle(...): List<HechoDTO>
+}
+class FuenteCron implements AFuente {
 -webClient: WebClient
 }
-class FuenteTiempoReal implements IFuente {
--id: Long
+class FuenteTiempoReal implements AFuente {
 -webClient: WebClient
-
 }
 class FuenteFactory {
-+ crearFuente(FuenteConfig): IFuente
++ crearFuente(FuenteConfig): AFuente
 }
 note left of FuenteFactory
-  public IFuente crearFuente(FuenteConfig config) {
+  public AFuente crearFuente(FuenteConfig config) {
     WebClient webClient = WebClient.builder()
         .baseUrl(config.getUrl())
         .build();
     Long idAsignado = config.getId();
-    IFuente fuente = switch (config.getTipo()) {
+    AFuente fuente = switch (config.getTipo()) {
       case CRON -> new FuenteCron(webClient, idAsignado);
       case TIEMPO_REAL -> new FuenteTiempoReal(webClient, idAsignado);
     };
@@ -108,7 +107,7 @@ note left of FuenteFactory
     return fuente;
   }
 end note
-FuenteFactory ..> IFuente
+FuenteFactory ..> AFuente
 class FuenteConfig {
 - id: Long
 - url: String

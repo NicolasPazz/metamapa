@@ -32,15 +32,13 @@ public class EstadisticasService {
     private final IHechosRepository hechosRepository;
     private final IColeccionesRepository coleccionesRepository;
     private final ISolicitudesRepository solicitudesRepository;
-
+    private final GeocodificacionService geocodificacionService;
     @Value("${estadisticas.base-url:http://localhost:8085/api/estadisticas}")
     private String estadisticasBaseUrl;
-
     private EstadisticasDTO estadisticasCache;
     private LocalDateTime ultimaActualizacion;
 
     @Scheduled(fixedRate = 3600000)
-    @Transactional(readOnly = true)
     public void recalcularEstadisticas() {
         log.info("[EstadisticasService] Iniciando recálculo de estadísticas");
         estadisticasCache = calcularEstadisticas();
@@ -51,7 +49,8 @@ public class EstadisticasService {
     public EstadisticasDTO obtenerEstadisticas() {
         if (estadisticasCache == null) {
             log.info("[EstadisticasService] No hay estadísticas en caché, calculando...");
-            recalcularEstadisticas();
+            estadisticasCache = calcularEstadisticas();
+            ultimaActualizacion = LocalDateTime.now();
         }
         return estadisticasCache;
     }
@@ -82,6 +81,7 @@ public class EstadisticasService {
         }
     }
 
+    @Transactional(readOnly = true)
     public CategoriaEstadisticaDTO obtenerCategoriaConMasHechos() {
         log.info("[EstadisticasService] Calculando categoría con más hechos");
 
@@ -105,6 +105,7 @@ public class EstadisticasService {
             .orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, ProvinciaEstadisticaDTO> obtenerProvinciaConMasHechosPorColeccion() {
         log.info("[EstadisticasService] Calculando provincia con más hechos por colección");
 
@@ -138,6 +139,7 @@ public class EstadisticasService {
         return resultado;
     }
 
+    @Transactional(readOnly = true)
     public ProvinciaEstadisticaDTO obtenerProvinciaConMasHechosPorCategoria(String categoria) {
         log.info("[EstadisticasService] Calculando provincia con más hechos para categoría: {}", categoria);
 
@@ -164,6 +166,7 @@ public class EstadisticasService {
             .orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, ProvinciaEstadisticaDTO> obtenerProvinciaPorTodasLasCategorias() {
         log.info("[EstadisticasService] Calculando provincia con más hechos para todas las categorías");
 
@@ -188,6 +191,7 @@ public class EstadisticasService {
         return resultado;
     }
 
+    @Transactional(readOnly = true)
     public HoraEstadisticaDTO obtenerHoraPicoPorCategoria(String categoria) {
         log.info("[EstadisticasService] Calculando hora pico para categoría: {}", categoria);
 
@@ -214,6 +218,7 @@ public class EstadisticasService {
             .orElse(null);
     }
 
+    @Transactional(readOnly = true)
     public Map<String, HoraEstadisticaDTO> obtenerHoraPicoParaTodasLasCategorias() {
         log.info("[EstadisticasService] Calculando hora pico para todas las categorías");
 
@@ -263,6 +268,7 @@ public class EstadisticasService {
             )
             .build();
     }
+
 
     private String obtenerProvincia(Hecho hecho) {
         return geocodificacionService.obtenerProvinciaPorCoordenadas(

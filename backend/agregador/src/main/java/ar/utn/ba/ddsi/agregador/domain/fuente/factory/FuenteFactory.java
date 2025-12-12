@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.fuente.factory;
 
 import ar.utn.ba.ddsi.agregador.domain.fuente.config.FuenteConfig;
-import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
+import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteCron;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
 import java.util.concurrent.atomic.AtomicLong;
@@ -12,21 +12,22 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Slf4j
 @Component
 public class FuenteFactory {
-  public IFuente crearFuente(FuenteConfig config) {
+  public AFuente crearFuente(FuenteConfig config) {
 
     WebClient webClient = WebClient.builder()
         .baseUrl(config.getUrl())
         .build();
 
     Long idAsignado = config.getId();
+    String nombre = config.getNombre() != null ? config.getNombre() : "Fuente " + idAsignado;
 
-    IFuente fuente = switch (config.getTipo()) {
-      case CRON -> new FuenteCron(webClient, idAsignado);
-      case TIEMPO_REAL -> new FuenteTiempoReal(webClient, idAsignado);
+    AFuente fuente = switch (config.getTipo()) {
+      case CRON -> new FuenteCron(idAsignado, nombre, webClient);
+      case TIEMPO_REAL -> new FuenteTiempoReal(idAsignado, nombre, webClient);
     };
 
-    log.info("Fuente {} creada con ID fijo: {} y URL: {}",
-        config.getTipo(), idAsignado, config.getUrl());
+    log.info("Fuente {} creada: {} (ID: {}, URL: {})",
+        config.getTipo(), nombre, idAsignado, config.getUrl());
 
     return fuente;
   }

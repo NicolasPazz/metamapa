@@ -12,23 +12,23 @@ import lombok.Setter;
 @NoArgsConstructor
 public class CriterioFuente implements Criterio {
     private final TipoCriterio tipo = TipoCriterio.FUENTE;
-    private Set<Long> fuentesExcluidas = new HashSet<>();
+    private Set<Long> fuentes = new HashSet<>();
 
     public CriterioFuente(Long idFuenteExcluida) {
-        this.fuentesExcluidas.add(idFuenteExcluida);
+        this.fuentes.add(idFuenteExcluida);
     }
 
     public void agregarExclusion(Long idFuente) {
-        fuentesExcluidas.add(idFuente);
+        fuentes.add(idFuente);
     }
 
     public void eliminarExclusion(Long idFuente) {
-        fuentesExcluidas.remove(idFuente);
+        fuentes.remove(idFuente);
     }
 
     @Override
     public boolean cumple(Hecho hecho){
         Long idFuente = hecho.getFuenteId();
-        return !fuentesExcluidas.contains(idFuente);
+        return !fuentes.contains(idFuente);
     }
 }

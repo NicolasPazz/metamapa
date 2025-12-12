@@ -2,7 +2,10 @@ package ar.utn.ba.ddsi.agregador.service;
 
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
-import ar.utn.ba.ddsi.agregador.domain.fuente.IFuente;
+import ar.utn.ba.ddsi.agregador.dto.FuenteDTO;
+import ar.utn.ba.ddsi.agregador.dto.mapper.FuenteMapper;
+import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
+import ar.utn.ba.ddsi.agregador.repositorie.IFuentesRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,10 +24,12 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class FuentesService {
 
-  private final List<IFuente> fuentes = new ArrayList<>();
+  private final List<AFuente> fuentes = new ArrayList<>();
   private final SolicitudesService solicitudesService;
+  private final IFuentesRepository fuentesRepository;
+  private final FuenteMapper fuenteMapper;
 
-  public void agregarFuente(IFuente fuente) {
+  public void agregarFuente(AFuente fuente) {
     if (!fuentes.contains(fuente)) {
       fuentes.add(fuente);
     }
@@ -38,7 +43,7 @@ public class FuentesService {
 
     List<HechoDTO> resultados = new ArrayList<>();
 
-    for (IFuente fuente : fuentes) {
+    for (AFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
 
       List<HechoDTO> hechos = Optional.ofNullable(
@@ -84,7 +89,7 @@ public class FuentesService {
   public ResponseEntity<List<HechoDTO>> getAllHechosNuevos() {
     List<HechoDTO> resultados = new ArrayList<>();
 
-    for (IFuente fuente : fuentes) {
+    for (AFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
 
       List<HechoDTO> hechos = Optional.ofNullable(
@@ -103,7 +108,7 @@ public class FuentesService {
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     List<ColeccionDTO> resultados = new ArrayList<>();
 
-    for (IFuente fuente : fuentes) {
+    for (AFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
 
       List<ColeccionDTO> colecciones = Optional.ofNullable(
@@ -128,7 +133,7 @@ public class FuentesService {
       String modo
   ) {
 
-    for (IFuente fuente : fuentes) {
+    for (AFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
 
       ResponseEntity<List<HechoDTO>> respuesta = fuente.getHechosColeccionByHandle(
@@ -150,7 +155,15 @@ public class FuentesService {
     return ResponseEntity.notFound().build();
   }
 
-  public IFuente getFuenteById(Long idFuente) {
+  public ResponseEntity<List<FuenteDTO>> getAllFuentes() {
+    log.info("[FuentesService] Obteniendo todas las fuentes desde BD");
+    List<AFuente> fuentesPersistidas = fuentesRepository.findAll();
+    List<FuenteDTO> dtos = fuenteMapper.toDTO(fuentesPersistidas);
+    log.info("[FuentesService] Se encontraron {} fuentes", dtos.size());
+    return ResponseEntity.ok(dtos);
+  }
+
+  public AFuente getFuenteById(Long idFuente) {
     return fuentes.stream()
         .filter(fuente -> fuente.getId().equals(idFuente))
         .findFirst()

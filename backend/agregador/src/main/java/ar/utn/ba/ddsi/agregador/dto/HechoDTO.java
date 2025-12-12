@@ -17,11 +17,9 @@ public class HechoDTO {
   private Long id;
   private String titulo;
   private String descripcion;
-
   @DecimalMin(value = "-90.0", message = "La latitud debe estar entre -90 y 90 grados")
   @DecimalMax(value = "90.0", message = "La latitud debe estar entre -90 y 90 grados")
   private Double latitud;
-
   @DecimalMin(value = "-180.0", message = "La longitud debe estar entre -180 y 180 grados")
   @DecimalMax(value = "180.0", message = "La longitud debe estar entre -180 y 180 grados")
   private Double longitud;
