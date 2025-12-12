@@ -9,6 +9,7 @@ import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -21,6 +22,7 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/hechos")
+@Slf4j
 public class HechoController {
 
     private final HechoService hechoService;
@@ -55,11 +57,14 @@ public class HechoController {
     public String crearHecho(Model model, HechoFormDTO HechoInput)
             {
                 HechoDTO hechoDTO = new HechoDTO();
-                hechoDTO.FormtoDTO(HechoInput);
-
-                hechoService.guardaHecho(hechoDTO);
-
-
+                try{
+                    hechoDTO.FormtoDTO(HechoInput);
+                    hechoService.guardaHecho(hechoDTO);
+                }
+                catch (Exception e) {
+                    log.error("Error al crear Hecho", e);
+                    model.addAttribute("mensaje", "Error: " + e.getMessage());
+                }
                 return "hechos/nuevo";
     }
 
