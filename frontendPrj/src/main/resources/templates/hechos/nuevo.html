@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Nuevo Hecho | Metamapa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+  <style>
+    body {
+      background-color: #f0f4f8; /* Azul grisáceo muy suave */
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .card-custom {
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+    }
+    .form-label {
+      color: #0d6efd; /* Azul Bootstrap */
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .btn-primary-custom {
+      background-color: #0d6efd;
+      border: none;
+      padding: 10px 20px;
+      transition: all 0.3s;
+    }
+    .btn-primary-custom:hover {
+      background-color: #0b5ed7;
+      transform: translateY(-2px);
+    }
+    .preview-images img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 8px;
+      margin-right: 10px;
+      margin-top: 10px;
+      border: 2px solid #e9ecef;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-8 col-lg-6">
+
+      <div class="card card-custom bg-white">
+        <div class="card-body p-4 p-md-5">
+
+          <div class="text-center mb-4">
+            <h2 class="fw-bold text-dark">Nuevo Hecho</h2>
+            <p class="text-muted">Reporta un nuevo suceso en el mapa</p>
+          </div>
+
+          <form th:action="@{/hechos/crear}" method="POST" enctype="multipart/form-data">
+
+            <div class="mb-4">
+              <label for="titulo" class="form-label">1. Título del Hecho</label>
+              <input type="text" class="form-control form-control-lg bg-light" id="titulo" name="titulo" placeholder="Ej: Inundación en Av. Corrientes" required>
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label d-flex justify-content-between align-items-center">
+                <span>2. Ubicación</span>
+                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="obtenerUbicacion()">
+                  <i class="bi bi-geo-alt-fill"></i> Usar mi ubicación
+                </button>
+              </label>
+              <div class="row g-2">
+                <div class="col-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-globe"></i></span>
+                    <input type="number" step="any" class="form-control bg-light border-start-0" id="latitud" name="latitud" placeholder="Latitud" required>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-globe"></i></span>
+                    <input type="number" step="any" class="form-control bg-light border-start-0" id="longitud" name="longitud" placeholder="Longitud" required>
+                  </div>
+                </div>
+              </div>
+              <div class="form-text text-muted" id="location-status">Ingresa coordenadas o usa el botón.</div>
+            </div>
+
+            <div class="mb-4">
+              <label for="fotos" class="form-label">3. Evidencia Fotográfica</label>
+              <input class="form-control" type="file" id="fotos" name="archivos" multiple accept="image/*" onchange="previewImages()">
+              <div class="preview-images d-flex flex-wrap" id="preview-container"></div>
+            </div>
+
+            <div class="mb-4">
+              <label for="descripcion" class="form-label">4. Descripción Detallada</label>
+              <textarea class="form-control bg-light" id="descripcion" name="descripcion" rows="4" placeholder="Describe qué sucedió, hora aproximada, daños, etc..." required></textarea>
+            </div>
+
+            <div class="d-grid gap-2 mt-5">
+              <button type="submit" class="btn btn-primary-custom text-white fw-bold shadow-sm">
+                Publicar Hecho
+              </button>
+              <a href="/" class="btn btn-link text-muted text-decoration-none text-center">Cancelar</a>
+            </div>
+
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // 1. Función para obtener ubicación del navegador
+  function obtenerUbicacion() {
+    const status = document.getElementById('location-status');
+    if (!navigator.geolocation) {
+      status.textContent = "La geolocalización no es soportada por tu navegador.";
+    } else {
+      status.textContent = "Localizando...";
+      navigator.geolocation.getCurrentPosition(
+              (position) => {
+                document.getElementById('latitud').value = position.coords.latitude;
+                document.getElementById('longitud').value = position.coords.longitude;
+                status.textContent = "¡Ubicación encontrada!";
+                status.classList.add('text-success');
+              },
+              () => {
+                status.textContent = "No se pudo obtener la ubicación.";
+                status.classList.add('text-danger');
+              }
+      );
+    }
+  }
+
+  // 2. Función para previsualizar imágenes antes de subir
+  function previewImages() {
+    const preview = document.getElementById('preview-container');
+    const fileInput = document.getElementById('fotos');
+    preview.innerHTML = ""; // Limpiar previos
+
+    if (fileInput.files) {
+      [].forEach.call(fileInput.files, readAndPreview);
+    }
+
+    function readAndPreview(file) {
+      if (!/\.(jpe?g|png|gif)$/i.test(file.name)) return; // Solo imágenes
+
+      const reader = new FileReader();
+      reader.addEventListener("load", function() {
+        const image = new Image();
+        image.title = file.name;
+        image.src = this.result;
+        preview.appendChild(image);
+      });
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

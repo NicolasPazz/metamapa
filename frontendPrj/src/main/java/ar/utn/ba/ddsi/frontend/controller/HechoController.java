@@ -1,20 +1,19 @@
 package ar.utn.ba.ddsi.frontend.controller;
+import ar.utn.ba.ddsi.frontend.models.dtos.ContenidoMultimediaDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.*;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -23,22 +22,8 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/hechos")
 public class HechoController {
+
     private final HechoService hechoService;
-
-    /* @GetMapping
-    public String listarHechos(Model model) {
-        List<HechoDTO> hechos = hechoService.getAllHechos();
-        model.addAttribute("hechos", hechos);
-        model.addAttribute("titulo", "Hechos");
-        model.addAttribute("solicitud", new SolicitudDTO());
-
-        return "hechos/hechosencoleccion";
-    }*/
-
-
-
-
-
     @GetMapping
     public String listarHechos(Model model,
 
@@ -62,7 +47,21 @@ public class HechoController {
     } // TODO: No se deberia hacer el filtrado en el front, deberia venir filtrado del agregador
     // TODO: Por el momento funciona pero esta mal.
 
+    @GetMapping("/nuevo")
+    public String nuevoHecho(Model model){
+        return "hechos/nuevo";
+    }
+    @PostMapping("/crear")
+    public String crearHecho(Model model, HechoFormDTO HechoInput)
+            {
+                HechoDTO hechoDTO = new HechoDTO();
+                hechoDTO.FormtoDTO(HechoInput);
 
+                hechoService.guardaHecho(hechoDTO);
+
+
+                return "hechos/nuevo";
+    }
 
 
     @GetMapping("/mapa")
