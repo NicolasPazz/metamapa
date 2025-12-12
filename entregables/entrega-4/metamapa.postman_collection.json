@@ -1020,7 +1020,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Crisis sanitaria afecta a Tilcara, Jujuy\",\r\n  \"descripcion\": \"Grave crisis sanitaria ocurrió en las inmediaciones de Tilcara, Jujuy. El incidente afectando gravemente la infraestructura local. Se ha declarado estado de emergencia en la región para facilitar la asistencia.\",\r\n  \"categoria\": \"desastre tecnológico - evento sanitario\",\r\n  \"latitud\": -23.574039,\r\n  \"longitud\": -65.36991,\r\n  \"fecha_de_acontecimiento\": \"2013-11-11\",\r\n  \"multimedia\": []\r\n}",
+							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Crisis sanitaria afecta a Tilcara, Jujuy\",\r\n  \"descripcion\": \"Grave crisis sanitaria ocurrió en las inmediaciones de Tilcara, Jujuy. El incidente afectando gravemente la infraestructura local. Se ha declarado estado de emergencia en la región para facilitar la asistencia.\",\r\n  \"categoria\": \"desastre tecnológico - evento sanitario\",\r\n  \"latitud\": -23.574039,\r\n  \"longitud\": -65.36991,\r\n  \"fecha_acontecimiento\": \"2013-11-11\",\r\n  \"multimedia\": []\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

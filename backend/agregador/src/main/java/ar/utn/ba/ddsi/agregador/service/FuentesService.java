@@ -162,6 +162,9 @@ public class FuentesService {
   }
 
   private void normalizarHecho(HechoDTO h, Long idFuente) {
+    if (h.getFechaDeAcontecimiento() == null) {
+      log.warn("DTO idOrigen {} sin fecha_acontecimiento recibido desde fuente {}", h.getId(), idFuente);
+    }
     if (h.getId() == null) {
       log.warn("Hecho sin id recibido desde fuente {}", idFuente);
     } else {

@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.dinamica.service.impl;
 
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.HechoOutputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.ContenidoMultimedia;
+import ar.utn.ba.ddsi.dinamica.domain.hecho.EstadoHecho;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
@@ -97,6 +98,7 @@ public class FuenteService implements IFuenteService {
     hecho.setIdContribuyente(solicitud.getIdContribuyente());
     hecho.setEnviado(Boolean.FALSE);
     hecho.setSolicitud(solicitud);
+    hecho.setEstado(EstadoHecho.VISIBLE);
 
     // CLONAR multimedia: crear nuevas entidades para el Hecho (NO reutilizar instancias de la Solicitud)
     List<ContenidoMultimedia> multimediaSolicitud = solicitud.getMultimedia();

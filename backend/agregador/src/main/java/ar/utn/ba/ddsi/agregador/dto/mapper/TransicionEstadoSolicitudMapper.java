@@ -19,10 +19,9 @@ public class TransicionEstadoSolicitudMapper {
 
     public List<TransicionEstadoSolicitudDTO> toDTO(List<TransicionEstadoSolicitud> transiciones) {
         if (transiciones == null) return List.of();
-
+        
         return transiciones.stream()
             .map(this::toDTO)
             .toList();
     }
 }
-

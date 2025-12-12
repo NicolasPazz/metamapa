@@ -6,7 +6,9 @@ import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @AllArgsConstructor
 public class HechoMapper {
@@ -63,6 +65,11 @@ public class HechoMapper {
       categoria = new Categoria(dto.getCategoria().trim());
     }
 
+    if (dto.getFechaDeAcontecimiento() == null) {
+      log.warn("[HechoMapper] DTO sin fecha_acontecimiento. idOrigen={}, fuenteId={}, titulo={}",
+          dto.getIdOrigen(), dto.getFuenteId(), dto.getTitulo());
+    }
+
     return Hecho.builder()
         .id(dto.getId())
         .titulo(dto.getTitulo())
@@ -70,6 +77,7 @@ public class HechoMapper {
         .latitud(dto.getLatitud())
         .longitud(dto.getLongitud())
         .fechaDeAcontecimiento(dto.getFechaDeAcontecimiento())
+        .fechaDeCarga(dto.getFechaDeCarga()) // Usar la fecha provista por la fuente, si existe
         .origen(dto.getOrigen())
         .contribuyenteId(dto.getContribuyenteId())
         .categoria(categoria)

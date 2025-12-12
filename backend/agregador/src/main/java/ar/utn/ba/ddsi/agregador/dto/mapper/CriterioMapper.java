@@ -17,7 +17,7 @@ import ar.utn.ba.ddsi.agregador.dto.CriterioFuenteDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioIgualdadDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioLugarDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioOrigenDTO;
-import ar.utn.ba.ddsi.agregador.dto.input.CriterioInputDTO;
+import ar.utn.ba.ddsi.agregador.dto.CriterioInputDTO;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
@@ -52,7 +52,7 @@ public class CriterioMapper {
 
   private CriterioFuenteDTO toFuenteDTO(CriterioFuente c) {
     CriterioFuenteDTO dto = new CriterioFuenteDTO();
-    dto.setFuentesExcluidas(c.getFuentesExcluidas());
+    dto.setFuentes(c.getFuentes());
     return dto;
   }
 

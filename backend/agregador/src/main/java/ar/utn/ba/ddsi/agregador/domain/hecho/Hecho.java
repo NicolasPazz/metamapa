@@ -36,11 +36,10 @@ public class Hecho {
   @Column(name = "longitud", nullable = false)
   private Double longitud;
 
-  @Column(name = "fecha_de_acontecimiento", nullable = false)
+  @Column(name = "fecha_acontecimiento", nullable = false)
   private LocalDate fechaDeAcontecimiento;
 
-  @Column(name = "fecha_de_carga", nullable = false, updatable = false)
-  @CreationTimestamp
+  @Column(name = "fecha_carga", nullable = false, updatable = false)
   private LocalDateTime fechaDeCarga;
 
   @Enumerated(EnumType.STRING)
@@ -93,6 +92,14 @@ public class Hecho {
     this.categoria = categoria;
     this.fuenteId = fuenteId;
     this.transicionarEstado(EstadoHecho.VISIBLE);
+  }
+
+  @jakarta.persistence.PrePersist
+  protected void onPrePersist() {
+    // Solo establecer fechaDeCarga si no fue provista (por ejemplo, desde fuentes externas)
+    if (this.fechaDeCarga == null) {
+      this.fechaDeCarga = LocalDateTime.now();
+    }
   }
 
   private void transicionarEstado(EstadoHecho estado) {

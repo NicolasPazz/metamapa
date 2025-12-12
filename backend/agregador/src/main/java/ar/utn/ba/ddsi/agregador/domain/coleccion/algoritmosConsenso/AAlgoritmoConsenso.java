@@ -14,7 +14,7 @@ public abstract class AAlgoritmoConsenso {
   public abstract Boolean esConsensuado(Hecho hecho, int fuentesTotales, List<Hecho> hechos);
 
   public int contarApariciones(Hecho hecho, List<Hecho> hechos) {
-    return (int) hechos.parallelStream()
+    return (int) hechos.stream()
         .filter(h -> sonSimilares(hecho, h))
         .count();
   }

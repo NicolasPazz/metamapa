@@ -22,11 +22,11 @@ public class SolicitudOutputDTO {
   private Double latitud;
   @JsonProperty("longitud")
   private Double longitud;
-  @JsonProperty("fecha_de_acontecimiento")
+  @JsonProperty("fecha_acontecimiento")
   private String fechaDeAcontecimiento;
   @JsonProperty("multimedia")
   private List<ContenidoMultimediaOutputDTO> contenidoMultimedia;
-  @JsonProperty("fecha_de_carga_solicitud")
+  @JsonProperty("fecha_carga")
   private String fechaDeCargaSolicitud;
   @JsonProperty("estado")
   private String estado;

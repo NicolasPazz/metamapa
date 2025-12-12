@@ -89,11 +89,11 @@ public class SolicitudesService {
                 Collectors.toSet()
             )
         ));
-
-    log.debug("[SolicitudesService] Blacklist generada con {} fuentes y {} hechos externos eliminados",
-        blacklistMap.size(),
+    
+    log.debug("[SolicitudesService] Blacklist generada con {} fuentes y {} hechos externos eliminados", 
+        blacklistMap.size(), 
         blacklistMap.values().stream().mapToInt(Set::size).sum());
-
+    
     return blacklistMap;
   }
 

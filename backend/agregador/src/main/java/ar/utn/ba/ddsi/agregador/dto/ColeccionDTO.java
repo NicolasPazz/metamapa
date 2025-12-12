@@ -23,7 +23,7 @@ public class ColeccionDTO {
   @JsonProperty("hechos_consensuados")
   private List<HechoDTO> hechosConsensuados;
 
-  @JsonProperty("fecha_de_carga")
+  @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
 
   @JsonProperty("fuente_id")

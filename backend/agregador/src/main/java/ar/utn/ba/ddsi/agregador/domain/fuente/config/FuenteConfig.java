@@ -6,6 +6,7 @@ import lombok.Data;
 @Data
 public class FuenteConfig {
   private Long id;
+  private String nombre;
   private String url;
   private TipoFuente tipo;
 }

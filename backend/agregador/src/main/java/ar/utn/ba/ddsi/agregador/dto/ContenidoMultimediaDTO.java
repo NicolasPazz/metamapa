@@ -8,6 +8,6 @@ import lombok.Data;
 public class ContenidoMultimediaDTO {
   @JsonProperty("path")
   private String pathArchivo;
-  @JsonProperty("tipo_contenido")
+  @JsonProperty("tipo")
   private TipoContenido tipoContenido;
 }

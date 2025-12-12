@@ -2,7 +2,6 @@ package ar.utn.ba.ddsi.agregador.service;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Etiqueta;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.dto.input.EtiquetaInputDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
 import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
@@ -96,30 +95,35 @@ public class HechosService {
     }
 
     @Transactional
-    public ResponseEntity<?> agregarEtiqueta(EtiquetaInputDTO etiquetaInputDTO) {
-        if (etiquetaInputDTO == null || etiquetaInputDTO.getIdHecho() == null) {
-            log.warn("[HechosService] Intento de agregar etiqueta sin datos válidos");
-            return ResponseEntity.badRequest().body("Debe proporcionar el ID del hecho y el nombre de la etiqueta");
+    public ResponseEntity<?> actualizarEtiquetas(Long idHecho, List<String> etiquetas) {
+        if (idHecho == null) {
+            log.warn("[HechosService] Intento de actualizar etiquetas sin ID de hecho");
+            return ResponseEntity.badRequest().body("Debe proporcionar el ID del hecho");
         }
 
-        if (etiquetaInputDTO.getNombreEtiqueta() == null || etiquetaInputDTO.getNombreEtiqueta().trim().isEmpty()) {
-            log.warn("[HechosService] Intento de agregar etiqueta vacía");
-            return ResponseEntity.badRequest().body("El nombre de la etiqueta no puede estar vacío");
+        if (etiquetas == null) {
+            log.warn("[HechosService] Lista de etiquetas es null");
+            return ResponseEntity.badRequest().body("Debe proporcionar una lista de etiquetas");
         }
 
         try {
-            Hecho hecho = hechosRepository.findById(etiquetaInputDTO.getIdHecho())
+            Hecho hecho = hechosRepository.findById(idHecho)
                 .orElseThrow(() -> new IllegalArgumentException(
-                    "No se encontró el Hecho con ID " + etiquetaInputDTO.getIdHecho()));
+                    "No se encontró el Hecho con ID " + idHecho));
 
-            // Crear y agregar la etiqueta
-            Etiqueta nuevaEtiqueta = new Etiqueta(etiquetaInputDTO.getNombreEtiqueta().trim());
-            hecho.getEtiquetas().add(nuevaEtiqueta);
+            hecho.getEtiquetas().clear();
+
+            List<Etiqueta> nuevasEtiquetas = etiquetas.stream()
+                .filter(nombre -> nombre != null && !nombre.trim().isEmpty())
+                .map(nombre -> new Etiqueta(nombre.trim()))
+                .toList();
+
+            hecho.getEtiquetas().addAll(nuevasEtiquetas);
 
             Hecho hechoActualizado = hechosRepository.save(hecho);
 
-            log.info("[HechosService] Etiqueta '{}' agregada al hecho {}",
-                etiquetaInputDTO.getNombreEtiqueta(), etiquetaInputDTO.getIdHecho());
+            log.info("[HechosService] Etiquetas actualizadas para el hecho {}: {} etiquetas",
+                idHecho, nuevasEtiquetas.size());
 
             return ResponseEntity.ok(hechoMapper.toDTO(hechoActualizado));
 
@@ -127,9 +131,9 @@ public class HechosService {
             log.warn("[HechosService] {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
-            log.error("[HechosService] Error al agregar etiqueta: {}", e.getMessage(), e);
+            log.error("[HechosService] Error al actualizar etiquetas: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body("Error al agregar la etiqueta: " + e.getMessage());
+                .body("Error al actualizar las etiquetas: " + e.getMessage());
         }
     }
 }

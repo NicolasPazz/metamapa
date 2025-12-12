@@ -46,6 +46,6 @@ public class ContenidoMultimedia {
   }
 
   public ContenidoMultimediaOutputDTO toOutputDTO() {
-    return new ContenidoMultimediaOutputDTO(this.pathArchivo, this.tipoContenido.name());
+    return new ContenidoMultimediaOutputDTO(this.pathArchivo, this.tipoContenido);
   }
 }

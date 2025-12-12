@@ -8,9 +8,7 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.function.client.WebClient;
 
 @Slf4j
 @Service
@@ -20,14 +18,10 @@ public class AgregadorService {
   private final CategoriasService categoriasService;
   private final IHechosRepository hechosRepository;
   private final HechoMapper hechoMapper;
-
-  @Value("${estadisticas.base-url}")
-  private String baseUrl;
+  private final EstadisticasService estadisticasService;
 
   public void actualizarHechos() {
     try {
-      WebClient webClient = WebClient.builder().baseUrl(baseUrl).build();
-
       log.info("[Agregador] Iniciando actualización de hechos...");
 
       List<HechoDTO> nuevosDTOs = Optional.ofNullable(
@@ -43,14 +37,7 @@ public class AgregadorService {
       hechosRepository.saveAll(hechosNuevos);
       log.info("[Agregador] Se guardaron {} hechos nuevos.", hechosNuevos.size());
 
-      log.info("Aviso a Estadísticas…");
-
-      webClient.post()
-          .uri("/recalcular")
-          .retrieve()
-          .toBodilessEntity()
-          .doOnError(ex -> log.warn("⚠️ Aviso a Estadísticas falló: {}", ex.toString()))
-          .subscribe();
+      estadisticasService.notificarRecalculo();
 
     } catch (Exception e) {
       log.error("[Agregador] Error al actualizar hechos: {}", e.getMessage(), e);

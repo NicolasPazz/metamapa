@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class SolicitudModificarAdminInputDTO {
-  @JsonProperty("estado_solicitud")
+  @JsonProperty("estado")
   private String nuevoEstadoSolicitud;
   @JsonProperty("titulo")
   private String nuevoTitulo;
@@ -18,7 +18,7 @@ public class SolicitudModificarAdminInputDTO {
   private Double nuevoLatitud;
   @JsonProperty("longitud")
   private Double nuevoLongitud;
-  @JsonProperty("fecha_de_acontecimiento")
+  @JsonProperty("fecha_acontecimiento")
   private String nuevoFechaDeAcontecimiento;
   @JsonProperty("multimedia")
   private List<ContenidoMultimediaInputDTO> nuevoContenidoMultimedia;

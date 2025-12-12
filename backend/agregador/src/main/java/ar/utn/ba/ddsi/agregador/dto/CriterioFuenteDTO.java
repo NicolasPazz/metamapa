@@ -6,6 +6,6 @@ import lombok.Data;
 
 @Data
 public class CriterioFuenteDTO implements CriterioDTO {
-  @JsonProperty("fuentes_excluidas")
-  private Set<Long> fuentesExcluidas;
+  @JsonProperty("fuentes")
+  private Set<Long> fuentes;
 }

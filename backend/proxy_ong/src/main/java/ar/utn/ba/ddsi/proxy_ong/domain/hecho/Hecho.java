@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.proxy_ong.domain.hecho;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -16,7 +17,9 @@ public class Hecho {
   private String categoria;
   private Double latitud;
   private Double longitud;
+  @JsonProperty("fecha_acontecimiento")
   private LocalDate fechaDeAcontecimiento;
+  @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
   private LocalDateTime ultimaModificacion;
 

@@ -30,15 +30,15 @@ public class ColeccionMapper {
         dto.setFechaDeCarga(coleccion.getFechaDeCarga());
         dto.setFuenteId(coleccion.getFuenteId());
         dto.setIdOrigen(coleccion.getIdOrigen());
-
+        
         if (coleccion.getHechos() != null) {
             dto.setHechos(hechoMapper.toDTO(coleccion.getHechos()));
         }
-
+        
         if (coleccion.getHechosConsensuados() != null) {
             dto.setHechosConsensuados(hechoMapper.toDTO(coleccion.getHechosConsensuados()));
         }
-
+        
         if (coleccion.getAlgoritmoConsenso() != null) {
             dto.setAlgoritmoConsenso(coleccion.getAlgoritmoConsenso().getNombre());
         }

@@ -26,14 +26,14 @@ public class EstadisticasController {
 
     @GetMapping
     public ResponseEntity<EstadisticasDTO> obtenerEstadisticasCompletas() {
-        log.info("[EstadisticasController] GET /api/estadisticas - Obteniendo estadísticas completas");
+        log.info("[EstadisticasController] GET /api/estadisticas");
         EstadisticasDTO estadisticas = estadisticasService.obtenerEstadisticas();
         return ResponseEntity.ok(estadisticas);
     }
 
     @PostMapping("/recalcular")
     public ResponseEntity<String> recalcularEstadisticas() {
-        log.info("[EstadisticasController] POST /api/estadisticas/recalcular - Recalculando estadísticas");
+        log.info("[EstadisticasController] POST /api/estadisticas/recalcular");
         estadisticasService.recalcularEstadisticas();
         return ResponseEntity.ok("Estadísticas recalculadas exitosamente");
     }

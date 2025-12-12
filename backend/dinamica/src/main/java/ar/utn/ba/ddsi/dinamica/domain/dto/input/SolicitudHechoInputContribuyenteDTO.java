@@ -20,7 +20,7 @@ public class SolicitudHechoInputContribuyenteDTO {
     private double latitud;
     @JsonProperty("longitud")
     private double longitud;
-    @JsonProperty("fecha_de_acontecimiento")
+    @JsonProperty("fecha_acontecimiento")
     private String fechaDeAcontecimiento;
     @JsonProperty("multimedia")
     private List<ContenidoMultimediaInputDTO> multimedia;

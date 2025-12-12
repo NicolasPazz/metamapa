@@ -50,10 +50,10 @@ public class Hecho {
   @Column(name = "longitud", nullable = false)
   private Double longitud;
 
-  @Column(name = "fecha_de_acontecimiento", nullable = false)
+  @Column(name = "fecha_acontecimiento", nullable = false)
   private LocalDate fechaDeAcontecimiento;
 
-  @Column(name = "fecha_de_carga", nullable = false)
+  @Column(name = "fecha_carga", nullable = false)
   @Builder.Default
   private LocalDateTime fechaDeCarga = LocalDateTime.now();
 

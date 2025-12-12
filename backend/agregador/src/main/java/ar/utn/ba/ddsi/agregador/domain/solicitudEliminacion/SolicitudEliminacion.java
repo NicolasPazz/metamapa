@@ -87,4 +87,8 @@ public class SolicitudEliminacion {
   public void rechazar() {
     this.transicionarEstado(EstadoSolicitud.RECHAZADA);
   }
+
+  public boolean esSpam() {
+    return this.spam;
+  }
 }

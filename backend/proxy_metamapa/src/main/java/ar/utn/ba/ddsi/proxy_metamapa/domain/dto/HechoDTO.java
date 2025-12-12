@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.proxy_metamapa.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,8 +15,8 @@ import lombok.Data;
     "categoria",
     "latitud",
     "longitud",
-    "fechaDeAcontecimiento",
-    "fechaDeCarga",
+    "fecha_contecimiento",
+    "fecha_carga",
     "ultimaModificacion",
     "origen",
     "estado",
@@ -35,7 +36,9 @@ public class HechoDTO {
   private String categoria;
   private Double latitud;
   private Double longitud;
+  @JsonProperty("fecha_acontecimiento")
   private LocalDate fechaDeAcontecimiento;
+  @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
   private LocalDateTime ultimaModificacion;
   private List<ContenidoMultimediaDTO> contenidoMultimedia;

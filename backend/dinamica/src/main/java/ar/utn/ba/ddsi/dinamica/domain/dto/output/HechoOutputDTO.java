@@ -11,7 +11,7 @@ import lombok.Data;
 
 @JsonPropertyOrder({
     "id", "titulo", "descripcion", "categoria", "latitud", "longitud",
-    "fechaDeAcontecimiento", "fechaDeCarga", "ultimaModificacion",
+    "fecha_acontecimiento", "fecha_carga", "ultimaModificacion",
     "origen", "estado", "contribuyente", "etiquetas",
     "contenidoMultimedia", "transicionesDeEstado"
 })
@@ -36,10 +36,10 @@ public class HechoOutputDTO {
   @JsonProperty("longitud")
   private Double longitud;
 
-  @JsonProperty("fechaDeAcontecimiento")
+  @JsonProperty("fecha_acontecimiento")
   private LocalDate fechaDeAcontecimiento;
 
-  @JsonProperty("fechaDeCarga")
+  @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
 
   @JsonProperty("ultimaModificacion")

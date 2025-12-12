@@ -56,7 +56,7 @@ public class Coleccion {
   )
   private List<Hecho> hechosConsensuados;
 
-  @Column(name = "fecha_de_carga", nullable = false, updatable = false)
+  @Column(name = "fecha_carga", nullable = false, updatable = false)
   @CreationTimestamp
   private LocalDateTime fechaDeCarga;
 
@@ -79,7 +79,7 @@ public class Coleccion {
 
   public void actualizarHechosConsensuados(int fuentesTotales) {
     if (this.algoritmoConsenso != null && this.hechos != null) {
-      this.hechosConsensuados = this.hechos.parallelStream()
+      this.hechosConsensuados = this.hechos.stream()
           .filter(hecho -> algoritmoConsenso.esConsensuado(hecho, fuentesTotales, this.hechos))
           .filter(Hecho::esVisible)
           .toList();

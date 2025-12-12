@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.proxy_ong.domain.dto.output;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -18,7 +19,9 @@ public class HechoOutputDTO {
   private String categoria;
   private Double latitud;
   private Double longitud;
+  @JsonProperty("fecha_acontecimiento")
   private LocalDate fechaDeAcontecimiento;
+  @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
   private LocalDateTime ultimaModificacion;
   private List<String> contenidoMultimedia;

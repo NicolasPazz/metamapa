@@ -30,7 +30,7 @@ public class MultiplesMenciones extends AAlgoritmoConsenso {
   }
 
   private long contarConTituloIgual(Hecho hecho, List<Hecho> hechos) {
-    return (int)  hechos.parallelStream()
+    return (int)  hechos.stream()
         .filter(h -> normalizar(h.getTitulo()).equals(normalizar(hecho.getTitulo())))
         .count();
   }

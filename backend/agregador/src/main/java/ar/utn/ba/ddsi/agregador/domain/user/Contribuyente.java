@@ -32,10 +32,6 @@ public class Contribuyente {
   @Column(name = "fecha_nacimiento", nullable = true)
   private LocalDate fechaDeNacimiento;
 
-  @Column(name = "fecha_de_carga", nullable = false, updatable = false)
-  @CreationTimestamp
-  private LocalDateTime fechaDeCarga;
-
   public Contribuyente(String nombre, String apellido, LocalDate fechaDeNacimiento) {
     if (nombre == null) {
       throw new IllegalArgumentException("El nombre del contribuyente es obligatorio.");

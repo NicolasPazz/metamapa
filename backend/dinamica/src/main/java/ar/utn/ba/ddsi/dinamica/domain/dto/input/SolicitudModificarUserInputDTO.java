@@ -20,7 +20,7 @@ public class SolicitudModificarUserInputDTO {
   @JsonProperty("longitud")
   private Double nuevoLongitud;
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd/MM/yyyy")
-  @JsonProperty("fecha_de_acontecimiento")
+  @JsonProperty("fecha_acontecimiento")
   private String nuevoFechaDeAcontecimiento;
   @JsonProperty("multimedia")
   private List<ContenidoMultimediaInputDTO> nuevoContenidoMultimedia;

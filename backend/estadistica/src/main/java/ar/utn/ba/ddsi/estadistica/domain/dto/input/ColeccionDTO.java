@@ -3,10 +3,12 @@ package ar.utn.ba.ddsi.estadistica.domain.dto.input;
 import lombok.Data;
 
 import java.util.List;
-
+import java.util.UUID;
 @Data
 public class ColeccionDTO {
-    private String handle;
+    private UUID handle;
     private String titulo;
+    private String handle;
     private List<HechoDTO> hechos;
-}
+
+    private List<HechoDTO> hechosConsensuados;

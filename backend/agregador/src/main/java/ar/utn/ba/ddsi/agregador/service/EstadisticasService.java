@@ -3,7 +3,6 @@ package ar.utn.ba.ddsi.agregador.service;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.EstadoSolicitud;
-import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.SolicitudEliminacion;
 import ar.utn.ba.ddsi.agregador.dto.CategoriaEstadisticaDTO;
 import ar.utn.ba.ddsi.agregador.dto.EstadisticasDTO;
 import ar.utn.ba.ddsi.agregador.dto.HoraEstadisticaDTO;
@@ -13,9 +12,13 @@ import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.agregador.repositorie.ISolicitudesRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -30,10 +33,14 @@ public class EstadisticasService {
     private final IColeccionesRepository coleccionesRepository;
     private final ISolicitudesRepository solicitudesRepository;
 
+    @Value("${estadisticas.base-url:http://localhost:8085/api/estadisticas}")
+    private String estadisticasBaseUrl;
+
     private EstadisticasDTO estadisticasCache;
     private LocalDateTime ultimaActualizacion;
 
     @Scheduled(fixedRate = 3600000)
+    @Transactional(readOnly = true)
     public void recalcularEstadisticas() {
         log.info("[EstadisticasService] Iniciando recálculo de estadísticas");
         estadisticasCache = calcularEstadisticas();
@@ -49,10 +56,36 @@ public class EstadisticasService {
         return estadisticasCache;
     }
 
+    public void notificarRecalculo() {
+        try {
+            log.info("[EstadisticasService] Notificando recálculo al microservicio de Estadísticas...");
+
+            WebClient webClient = WebClient.builder()
+                .baseUrl(estadisticasBaseUrl)
+                .build();
+
+            webClient.post()
+                .uri("/recalcular")
+                .retrieve()
+                .toBodilessEntity()
+                .timeout(Duration.ofSeconds(5))
+                .doOnSuccess(response ->
+                    log.info("✅ [EstadisticasService] Notificación de recálculo exitosa"))
+                .doOnError(ex ->
+                    log.warn("⚠️ [EstadisticasService] No se pudo notificar al microservicio de Estadísticas (puede no estar disponible): {}",
+                        ex.getMessage()))
+                .onErrorComplete()
+                .subscribe();
+
+        } catch (Exception e) {
+            log.warn("⚠️ [EstadisticasService] Error al intentar notificar recálculo: {}", e.getMessage());
+        }
+    }
+
     public CategoriaEstadisticaDTO obtenerCategoriaConMasHechos() {
         log.info("[EstadisticasService] Calculando categoría con más hechos");
 
-        List<Hecho> hechos = hechosRepository.findAll().stream()
+        List<Hecho> hechos = hechosRepository.findAllWithCategoria().stream()
             .filter(Hecho::esVisible)
             .toList();
 
@@ -108,7 +141,7 @@ public class EstadisticasService {
     public ProvinciaEstadisticaDTO obtenerProvinciaConMasHechosPorCategoria(String categoria) {
         log.info("[EstadisticasService] Calculando provincia con más hechos para categoría: {}", categoria);
 
-        List<Hecho> hechos = hechosRepository.findAll().stream()
+        List<Hecho> hechos = hechosRepository.findAllWithCategoria().stream()
             .filter(Hecho::esVisible)
             .filter(h -> h.getCategoria() != null &&
                          h.getCategoria().getNombre() != null &&
@@ -134,7 +167,7 @@ public class EstadisticasService {
     public Map<String, ProvinciaEstadisticaDTO> obtenerProvinciaPorTodasLasCategorias() {
         log.info("[EstadisticasService] Calculando provincia con más hechos para todas las categorías");
 
-        List<Hecho> hechos = hechosRepository.findAll().stream()
+        List<Hecho> hechos = hechosRepository.findAllWithCategoria().stream()
             .filter(Hecho::esVisible)
             .filter(h -> h.getCategoria() != null && h.getCategoria().getNombre() != null)
             .toList();
@@ -158,7 +191,7 @@ public class EstadisticasService {
     public HoraEstadisticaDTO obtenerHoraPicoPorCategoria(String categoria) {
         log.info("[EstadisticasService] Calculando hora pico para categoría: {}", categoria);
 
-        List<Hecho> hechos = hechosRepository.findAll().stream()
+        List<Hecho> hechos = hechosRepository.findAllWithCategoria().stream()
             .filter(Hecho::esVisible)
             .filter(h -> h.getCategoria() != null &&
                          h.getCategoria().getNombre() != null &&
@@ -184,7 +217,7 @@ public class EstadisticasService {
     public Map<String, HoraEstadisticaDTO> obtenerHoraPicoParaTodasLasCategorias() {
         log.info("[EstadisticasService] Calculando hora pico para todas las categorías");
 
-        List<Hecho> hechos = hechosRepository.findAll().stream()
+        List<Hecho> hechos = hechosRepository.findAllWithCategoria().stream()
             .filter(Hecho::esVisible)
             .filter(h -> h.getCategoria() != null && h.getCategoria().getNombre() != null)
             .filter(h -> h.getFechaDeCarga() != null)
@@ -210,7 +243,7 @@ public class EstadisticasService {
         log.info("[EstadisticasService] Contando solicitudes de eliminación marcadas como spam");
 
         return solicitudesRepository.findAll().stream()
-            .filter(s -> s.getEstadoActual() == EstadoSolicitud.RECHAZADA_SPAM)
+            .filter(s -> s.getEstado() == EstadoSolicitud.RECHAZADA && s.esSpam())
             .count();
     }
 
@@ -232,33 +265,10 @@ public class EstadisticasService {
     }
 
     private String obtenerProvincia(Hecho hecho) {
-        // Lógica simplificada de mapeo de coordenadas a provincia
-        // En producción, esto debería usar un servicio de geocodificación inversa
-        // o una base de datos de provincias con sus límites geográficos
-
-        Double lat = hecho.getLatitud();
-        Double lon = hecho.getLongitud();
-
-        // Rangos aproximados de provincias argentinas (ejemplo simplificado)
-        if (lat >= -35 && lat <= -34 && lon >= -59 && lon <= -58) {
-            return "Buenos Aires";
-        } else if (lat >= -32 && lat <= -31 && lon >= -61 && lon <= -60) {
-            return "Córdoba";
-        } else if (lat >= -33 && lat <= -32 && lon >= -69 && lon <= -68) {
-            return "Mendoza";
-        } else if (lat >= -27 && lat <= -26 && lon >= -55 && lon <= -54) {
-            return "Misiones";
-        } else if (lat >= -55 && lat <= -54 && lon >= -69 && lon <= -67) {
-            return "Tierra del Fuego";
-        } else if (lat >= -25 && lat <= -24 && lon >= -66 && lon <= -65) {
-            return "Salta";
-        } else if (lat >= -29 && lat <= -28 && lon >= -67 && lon <= -66) {
-            return "La Rioja";
-        } else if (lat >= -32 && lat <= -31 && lon >= -65 && lon <= -64) {
-            return "San Luis";
-        }
-
-        return "Provincia Desconocida";
+        return geocodificacionService.obtenerProvinciaPorCoordenadas(
+            hecho.getLatitud(),
+            hecho.getLongitud()
+        );
     }
 
     public String exportarEstadisticasCSV() {
