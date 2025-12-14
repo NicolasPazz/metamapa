@@ -20,6 +20,9 @@ public class HechoService {
     public List<HechoDTO> getAllHechos() {
         return webClient.get().uri("/hechos").retrieve().bodyToFlux(HechoDTO.class).collectList().block();
     }
+    public void guardaHecho(HechoDTO hechoDTO) {
+
+    }
 
 
     public List<HechoDTO> getAllHechosFilter(String modo, String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria ) {

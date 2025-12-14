@@ -175,7 +175,7 @@ public class ColeccionService implements IColeccionService {
 
   private Coleccion mapearColeccion(ColeccionDTO dto) {
     var c = new Coleccion();
-    c.setHandle(dto.getHandle());
+    //c.setHandle(dto.getHandle());
     c.setTitulo(dto.getTitulo());
 
     if (dto.getHechos() == null || dto.getHechos().isEmpty()) {

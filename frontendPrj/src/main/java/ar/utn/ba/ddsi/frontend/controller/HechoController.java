@@ -11,10 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,20 +22,38 @@ import java.util.List;
 public class HechoController {
     private final HechoService hechoService;
 
-    /* @GetMapping
+     @GetMapping
     public String listarHechos(Model model) {
         List<HechoDTO> hechos = hechoService.getAllHechos();
         model.addAttribute("hechos", hechos);
         model.addAttribute("titulo", "Hechos");
-        model.addAttribute("solicitud", new SolicitudDTO());
+        //model.addAttribute("solicitud", new SolicitudDTO());
 
         return "hechos/hechosencoleccion";
-    }*/
+    }
+    @GetMapping("/nuevo")
+    public String nuevoHecho(Model model){
+        return "hechos/nuevo";
+    }
+    @PostMapping("/crear")
+    public String crearHecho(Model model, HechoFormDTO HechoInput)
+    {
+        HechoDTO hechoDTO = new HechoDTO();
+        try{
+            hechoDTO.FormtoDTO(HechoInput);
+            hechoService.guardaHecho(hechoDTO);
+        }
+        catch (Exception e) {
+            log.error("Error al crear Hecho", e);
+            model.addAttribute("mensaje", "Error: " + e.getMessage());
+        }
+        return "hechos/nuevo";
+    }
 
 
 
 
-
+/*
     @GetMapping
     public String listarHechos(Model model,
 
@@ -49,7 +64,9 @@ public class HechoController {
             @RequestParam(required = false) String categoria
             )
     {
+
         List<HechoDTO> hechos = hechoService.getAllHechosFilter(modo, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria);
+
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
 
         model.addAttribute("hechos", hechos);
@@ -57,9 +74,14 @@ public class HechoController {
         model.addAttribute("titulo", "Hechos");
         model.addAttribute("categorias", listaCategorias);
         //model.addAttribute("solicitud", new SolicitudDTO());
+
+
         return "hechos/hechosencoleccion";
 
-    } // TODO: No se deberia hacer el filtrado en el front, deberia venir filtrado del agregador
+    }
+
+    */
+    // TODO: No se deberia hacer el filtrado en el front, deberia venir filtrado del agregador
     // TODO: Por el momento funciona pero esta mal.
 
 
