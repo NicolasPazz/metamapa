@@ -1,4 +1,5 @@
 package ar.utn.ba.ddsi.frontend.controller;
+import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -8,6 +9,7 @@ import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -19,20 +21,30 @@ import java.util.List;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/hechos")
+@Slf4j
 public class HechoController {
     private final HechoService hechoService;
 
      @GetMapping
     public String listarHechos(Model model) {
-        List<HechoDTO> hechos = hechoService.getAllHechos();
-        model.addAttribute("hechos", hechos);
-        model.addAttribute("titulo", "Hechos");
-        //model.addAttribute("solicitud", new SolicitudDTO());
+         try {
+             List<HechoDTO> hechos = hechoService.getAllHechos();
+             model.addAttribute("hechos", hechos);
+             model.addAttribute("titulo", "Hechos");
+             model.addAttribute("solicitud", new SolicitudDTO());
 
-        return "hechos/hechosencoleccion";
-    }
+             return "hechos/hechosencoleccion";
+
+         }
+         catch (Exception e) {
+             log.error(e.getMessage());
+         }
+         return "/hechos/nuevo";
+            }
+
     @GetMapping("/nuevo")
     public String nuevoHecho(Model model){
+
         return "hechos/nuevo";
     }
     @PostMapping("/crear")
