@@ -20,19 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class FuenteController {
   private final AgregadorClient agregador;
 
-  /**
-   * GET /hechos
-   * Esta ruta expone todos los hechos del sistema y los devuelve como una lista en formato JSON.
-   * Acepta parámetros opcionales para filtrar los resultados:
-   *
-   * @param categoria nombre de la categoría del hecho
-   * @param fecha_reporte_desde fecha mínima de reporte (formato: dd-MM-yyyy)
-   * @param fecha_reporte_hasta fecha máxima de reporte (formato: dd-MM-yyyy)
-   * @param fecha_acontecimiento_desde fecha mínima de acontecimiento (formato: dd-MM-yyyy)
-   * @param fecha_acontecimiento_hasta fecha máxima de acontecimiento (formato: dd-MM-yyyy)
-   * @param ubicacion ubicación del hecho (formato: lat,log)
-   * @return lista de hechos visibles según los filtros
-   */
   @GetMapping("/hechos")
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       @RequestParam(required = false) String categoria,
@@ -61,19 +48,11 @@ public class FuenteController {
         ubicacion);
   }
 
-  /**
-   *   GET /colecciones
-   *   Esta ruta expone todas las colecciones disponibles, independientemente del origen de sus fuentes.
-   */
   @GetMapping("/colecciones")
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     return agregador.getAllColecciones();
   }
 
-  /**
-   * GET /colecciones/:identificador/hechos
-   *   Esta ruta, permite obtener los hechos asociados a una colección. Acepta los mismos parámetros y devuelve los resultados en el mismo formato.
-   */
   @GetMapping("/colecciones/{handle}/hechos")
   public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
       @PathVariable("handle") String handle,
