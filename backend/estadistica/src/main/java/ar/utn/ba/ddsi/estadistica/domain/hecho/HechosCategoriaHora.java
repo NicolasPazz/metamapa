@@ -2,7 +2,6 @@ package ar.utn.ba.ddsi.estadistica.domain.hecho;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -25,13 +24,13 @@ public class HechosCategoriaHora {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "categoria_id")
+  @ManyToOne
+  @JoinColumn(name = "categoria_id", referencedColumnName = "id")
   private Categoria categoria;
 
-  @Column(name = "hora")
+  @Column(name = "hora", nullable = false)
   private Integer hora;
 
-  @Column(name = "cantidad_hechos")
+  @Column(name = "cantidad_hechos", nullable = false)
   private Long cantidadHechos;
 }

@@ -4,6 +4,7 @@ import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ContenidoMultimediaDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.TransicionEstadoHechoDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.enums.EstadoHecho;
 import lombok.Getter;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 @Profile({"dev"})
@@ -26,58 +28,254 @@ public class StubDataFixture {
   }
 
   private void cargarHechos() {
-
-    ContenidoMultimediaDTO imgIncendio =
-        new ContenidoMultimediaDTO("/stub/img/incendio-1.jpg", "IMAGEN");
-    TransicionEstadoHechoDTO transIncendio =
-        new TransicionEstadoHechoDTO("OCULTO", "2025-03-21T15:00:00");
-
-    HechoDTO incendioCordoba = new HechoDTO(
-        /* contribuyente */             6775L,
-        /* etiquetas      */            List.of("incendio", "córdoba"),
-        /* titulo         */            "Incendio forestal en Córdoba",
-        /* descripcion    */            "Fuego controlado luego de 3 h.",
-        /* categoria      */            "Incendio forestal",
-        /* latitud        */            -31.42,
-        /* longitud       */            -64.19,
-        /* fecha acontec. */            LocalDate.of(2025, 3, 21),
-        /* fecha carga    */            LocalDateTime.of(2025, 3, 21, 14, 30),
-        /* última modif.  */            LocalDateTime.of(2025, 3, 21, 14, 31),
-        /* multimedia     */            List.of(imgIncendio),
-        /* transiciones   */            List.of(transIncendio)
+    TransicionEstadoHechoDTO transVisible = new TransicionEstadoHechoDTO(
+        EstadoHecho.VISIBLE,
+        LocalDateTime.of(2025, 1, 1, 10, 0, 0)
     );
-    incendioCordoba.setId(2L);
 
-    ContenidoMultimediaDTO imgInundacion =
-        new ContenidoMultimediaDTO("/stub/vid/inundacion-1.mp4", "VIDEO");
-    TransicionEstadoHechoDTO transInundacion =
-        new TransicionEstadoHechoDTO("VISIBLE", "2025-04-02T17:40:00");
+    // Hecho 1: Incendio Córdoba
+    HechoDTO incendioCordoba = new HechoDTO(
+        6775L,
+        List.of("incendio", "córdoba", "forestal"),
+        "Incendio forestal en Córdoba",
+        "Fuego controlado luego de 3 horas de trabajo intenso de bomberos.",
+        "Incendio forestal",
+        -31.42,
+        -64.19,
+        LocalDate.of(2025, 3, 21),
+        LocalDateTime.of(2025, 3, 21, 14, 30),
+        LocalDateTime.of(2025, 3, 21, 14, 31),
+        List.of(new ContenidoMultimediaDTO("/stub/img/incendio-1.jpg", "IMAGEN")),
+        List.of(transVisible)
+    );
+    incendioCordoba.setId(1L);
 
+    // Hecho 2: Inundación La Plata
     HechoDTO inundacionLaPlata = new HechoDTO(
         1002L,
-        List.of("inundación", "la plata"),
+        List.of("inundación", "la plata", "evacuados"),
         "Inundación en La Plata",
-        "Evacuados y cortes de luz.",
+        "Evacuados y cortes de luz debido a intensas lluvias.",
         "Inundación",
         -34.92,
         -57.95,
         LocalDate.of(2025, 4, 2),
         LocalDateTime.of(2025, 4, 2, 16, 0),
         LocalDateTime.of(2025, 4, 2, 16, 10),
-        List.of(imgInundacion),
-        List.of(transIncendio, transInundacion)
+        List.of(new ContenidoMultimediaDTO("/stub/vid/inundacion-1.mp4", "VIDEO")),
+        List.of(transVisible)
     );
-    inundacionLaPlata.setId(1L);
-    hechos.addAll(List.of(incendioCordoba, inundacionLaPlata));
+    inundacionLaPlata.setId(2L);
+
+    // Hecho 3: Terremoto Mendoza
+    HechoDTO terremotoMendoza = new HechoDTO(
+        2345L,
+        List.of("terremoto", "mendoza", "sismo"),
+        "Terremoto de 4.2 grados en Mendoza",
+        "Sismo de mediana intensidad sin víctimas reportadas.",
+        "Terremoto",
+        -32.89,
+        -68.83,
+        LocalDate.of(2025, 5, 15),
+        LocalDateTime.of(2025, 5, 15, 8, 45),
+        LocalDateTime.of(2025, 5, 15, 9, 0),
+        List.of(new ContenidoMultimediaDTO("/stub/img/terremoto-1.jpg", "IMAGEN")),
+        List.of(transVisible)
+    );
+    terremotoMendoza.setId(3L);
+
+    // Hecho 4: Tornado Santa Fe
+    HechoDTO tornadoSantaFe = new HechoDTO(
+        3456L,
+        List.of("tornado", "santa fe", "vientos"),
+        "Tornado en zona rural de Santa Fe",
+        "Tornado F2 causa daños materiales en campos agrícolas.",
+        "Tornado",
+        -31.62,
+        -60.69,
+        LocalDate.of(2025, 6, 10),
+        LocalDateTime.of(2025, 6, 10, 17, 20),
+        LocalDateTime.of(2025, 6, 10, 18, 0),
+        List.of(
+            new ContenidoMultimediaDTO("/stub/img/tornado-1.jpg", "IMAGEN"),
+            new ContenidoMultimediaDTO("/stub/vid/tornado-1.mp4", "VIDEO")
+        ),
+        List.of(transVisible)
+    );
+    tornadoSantaFe.setId(4L);
+
+    // Hecho 5: Contaminación Riachuelo
+    HechoDTO contaminacionRiachuelo = new HechoDTO(
+        4567L,
+        List.of("contaminación", "riachuelo", "ambiental"),
+        "Derrame tóxico en el Riachuelo",
+        "Derrame de sustancias químicas detectado en la cuenca del Riachuelo.",
+        "Contaminación hídrica",
+        -34.64,
+        -58.37,
+        LocalDate.of(2025, 7, 5),
+        LocalDateTime.of(2025, 7, 5, 11, 30),
+        LocalDateTime.of(2025, 7, 5, 12, 0),
+        List.of(new ContenidoMultimediaDTO("/stub/img/contaminacion-1.jpg", "IMAGEN")),
+        List.of(transVisible)
+    );
+    contaminacionRiachuelo.setId(5L);
+
+    // Hecho 6: Granizo Rosario
+    HechoDTO granizoRosario = new HechoDTO(
+        5678L,
+        List.of("granizo", "rosario", "tormenta"),
+        "Intensa tormenta de granizo en Rosario",
+        "Granizo del tamaño de pelotas de golf causa daños en autos y techos.",
+        "Granizo",
+        -32.95,
+        -60.64,
+        LocalDate.of(2025, 8, 20),
+        LocalDateTime.of(2025, 8, 20, 19, 15),
+        LocalDateTime.of(2025, 8, 20, 19, 45),
+        List.of(new ContenidoMultimediaDTO("/stub/vid/granizo-1.mp4", "VIDEO")),
+        List.of(transVisible)
+    );
+    granizoRosario.setId(6L);
+
+    // Hecho 7: Sequía Salta
+    HechoDTO sequiaSalta = new HechoDTO(
+        6789L,
+        List.of("sequía", "salta", "agricultura"),
+        "Sequía severa afecta cultivos en Salta",
+        "Tres meses sin lluvias generan pérdidas en la producción agrícola.",
+        "Sequía",
+        -24.78,
+        -65.41,
+        LocalDate.of(2025, 9, 1),
+        LocalDateTime.of(2025, 9, 1, 10, 0),
+        LocalDateTime.of(2025, 9, 1, 10, 30),
+        List.of(new ContenidoMultimediaDTO("/stub/img/sequia-1.jpg", "IMAGEN")),
+        List.of(transVisible)
+    );
+    sequiaSalta.setId(7L);
+
+    // Hecho 8: Deslizamiento Tucumán
+    HechoDTO deslizamientoTucuman = new HechoDTO(
+        7890L,
+        List.of("deslizamiento", "tucumán", "tierra"),
+        "Deslizamiento de tierra en ruta tucumana",
+        "Lluvias intensas provocan deslizamiento que bloquea ruta provincial.",
+        "Deslizamiento",
+        -26.82,
+        -65.22,
+        LocalDate.of(2025, 10, 12),
+        LocalDateTime.of(2025, 10, 12, 14, 0),
+        LocalDateTime.of(2025, 10, 12, 14, 30),
+        List.of(new ContenidoMultimediaDTO("/stub/img/deslizamiento-1.jpg", "IMAGEN")),
+        List.of(transVisible)
+    );
+    deslizamientoTucuman.setId(8L);
+
+    hechos.addAll(List.of(
+        incendioCordoba,
+        inundacionLaPlata,
+        terremotoMendoza,
+        tornadoSantaFe,
+        contaminacionRiachuelo,
+        granizoRosario,
+        sequiaSalta,
+        deslizamientoTucuman
+    ));
   }
 
   private void cargarColecciones() {
-    ColeccionDTO desastres2025 = new ColeccionDTO(
-        "Desastres naturales AR 2025",
-        "Eventos reportados en 2025",
-        hechos
-    );
+    // Colección 1: Todos los desastres
+    ColeccionDTO todosDesastres = ColeccionDTO.builder()
+        .handle(UUID.fromString("11111111-1111-1111-1111-111111111111"))
+        .titulo("Desastres Naturales Argentina 2025")
+        .descripcion("Compilación de todos los eventos climáticos y geológicos reportados en Argentina durante 2025")
+        .fechaDeCarga(LocalDateTime.of(2025, 1, 1, 0, 0))
+        .hechos(new ArrayList<>(hechos))
+        .hechosConsensuados(new ArrayList<>(hechos))
+        .build();
 
-    colecciones.add(desastres2025);
+    // Colección 2: Eventos climáticos
+    List<HechoDTO> eventosClimaticos = hechos.stream()
+        .filter(h -> h.getCategoria().contains("Inundación") ||
+                     h.getCategoria().contains("Granizo") ||
+                     h.getCategoria().contains("Tornado") ||
+                     h.getCategoria().contains("Sequía"))
+        .toList();
+
+    ColeccionDTO climaticos = ColeccionDTO.builder()
+        .handle(UUID.fromString("22222222-2222-2222-2222-222222222222"))
+        .titulo("Eventos Climáticos Extremos")
+        .descripcion("Fenómenos meteorológicos severos: inundaciones, tornados, granizo y sequías")
+        .fechaDeCarga(LocalDateTime.of(2025, 1, 15, 0, 0))
+        .hechos(new ArrayList<>(eventosClimaticos))
+        .hechosConsensuados(new ArrayList<>(eventosClimaticos))
+        .build();
+
+    // Colección 3: Incendios forestales
+    List<HechoDTO> incendios = hechos.stream()
+        .filter(h -> h.getCategoria().contains("Incendio"))
+        .toList();
+
+    ColeccionDTO forestales = ColeccionDTO.builder()
+        .handle(UUID.fromString("33333333-3333-3333-3333-333333333333"))
+        .titulo("Incendios Forestales")
+        .descripcion("Registro de incendios en zonas forestales y rurales")
+        .fechaDeCarga(LocalDateTime.of(2025, 2, 1, 0, 0))
+        .hechos(new ArrayList<>(incendios))
+        .hechosConsensuados(new ArrayList<>(incendios))
+        .build();
+
+    // Colección 4: Eventos geológicos
+    List<HechoDTO> geologicos = hechos.stream()
+        .filter(h -> h.getCategoria().contains("Terremoto") ||
+                     h.getCategoria().contains("Deslizamiento"))
+        .toList();
+
+    ColeccionDTO sismicos = ColeccionDTO.builder()
+        .handle(UUID.fromString("44444444-4444-4444-4444-444444444444"))
+        .titulo("Eventos Geológicos")
+        .descripcion("Terremotos, sismos y deslizamientos de tierra en territorio argentino")
+        .fechaDeCarga(LocalDateTime.of(2025, 3, 1, 0, 0))
+        .hechos(new ArrayList<>(geologicos))
+        .hechosConsensuados(new ArrayList<>(geologicos))
+        .build();
+
+    // Colección 5: Contaminación ambiental
+    List<HechoDTO> contaminacion = hechos.stream()
+        .filter(h -> h.getCategoria().contains("Contaminación"))
+        .toList();
+
+    ColeccionDTO ambiental = ColeccionDTO.builder()
+        .handle(UUID.fromString("55555555-5555-5555-5555-555555555555"))
+        .titulo("Alertas de Contaminación")
+        .descripcion("Incidentes de contaminación hídrica y ambiental")
+        .fechaDeCarga(LocalDateTime.of(2025, 4, 1, 0, 0))
+        .hechos(new ArrayList<>(contaminacion))
+        .hechosConsensuados(new ArrayList<>(contaminacion))
+        .build();
+
+    // Colección 6: Eventos del primer semestre
+    List<HechoDTO> primerSemestre = hechos.stream()
+        .filter(h -> h.getFechaDeAcontecimiento().getMonthValue() <= 6)
+        .toList();
+
+    ColeccionDTO semestre1 = ColeccionDTO.builder()
+        .handle(UUID.fromString("66666666-6666-6666-6666-666666666666"))
+        .titulo("Primer Semestre 2025")
+        .descripcion("Eventos ocurridos entre enero y junio de 2025")
+        .fechaDeCarga(LocalDateTime.of(2025, 7, 1, 0, 0))
+        .hechos(new ArrayList<>(primerSemestre))
+        .hechosConsensuados(new ArrayList<>(primerSemestre))
+        .build();
+
+    colecciones.addAll(List.of(
+        todosDesastres,
+        climaticos,
+        forestales,
+        sismicos,
+        ambiental,
+        semestre1
+    ));
   }
 }

@@ -620,7 +620,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Inundación en el barrio\",\r\n  \"descripcion\": \"Las calles principales del barrio se inundaron tras la tormenta.\",\r\n  \"categoria\": \"Desastre Natural\",\r\n  \"latitud\": -34.6037,\r\n  \"longitud\": -58.3816,\r\n  \"fecha_de_acontecimiento\": \"2024-05-10\",\r\n  \"multimedia\": []\r\n}",
+							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Inundación en el barrio\",\r\n  \"descripcion\": \"Las calles principales del barrio se inundaron tras la tormenta.\",\r\n  \"categoria\": \"Desastre Natural\",\r\n  \"latitud\": -34.6037,\r\n  \"longitud\": -58.3816,\r\n  \"fecha_acontecimiento\": \"2024-05-10\",\r\n  \"multimedia\": []\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

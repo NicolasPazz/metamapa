@@ -10,7 +10,7 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CriterioOrigen implements Criterio{
-  private String tipo = "origen";
+  private final TipoCriterio tipo = TipoCriterio.ORIGEN;
   private OrigenHecho origen;
 
   public CriterioOrigen(OrigenHecho origen) {

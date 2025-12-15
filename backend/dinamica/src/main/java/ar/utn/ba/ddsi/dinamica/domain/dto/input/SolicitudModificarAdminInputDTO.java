@@ -1,25 +1,44 @@
 package ar.utn.ba.ddsi.dinamica.domain.dto.input;
 
+import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
 
 @Data
 public class SolicitudModificarAdminInputDTO {
-  @JsonProperty("estado_solicitud")
-  private String nuevoEstadoSolicitud;
+  @NotNull(message = "El estado es obligatorio")
+  @JsonProperty("estado")
+  private EstadoSolicitud nuevoEstadoSolicitud;
+
   @JsonProperty("titulo")
   private String nuevoTitulo;
+
   @JsonProperty("descripcion")
   private String nuevoDescripcion;
+
   @JsonProperty("categoria")
   private String nuevoNombreCategoria;
+
+  @DecimalMin(value = "-90.0", message = "La latitud debe estar entre -90 y 90")
+  @DecimalMax(value = "90.0", message = "La latitud debe estar entre -90 y 90")
   @JsonProperty("latitud")
   private Double nuevoLatitud;
+
+  @DecimalMin(value = "-180.0", message = "La longitud debe estar entre -180 y 180")
+  @DecimalMax(value = "180.0", message = "La longitud debe estar entre -180 y 180")
   @JsonProperty("longitud")
   private Double nuevoLongitud;
-  @JsonProperty("fecha_de_acontecimiento")
-  private String nuevoFechaDeAcontecimiento;
+
+  @JsonProperty("fecha_acontecimiento")
+  private LocalDate nuevoFechaDeAcontecimiento;
+
+  @Valid
   @JsonProperty("multimedia")
   private List<ContenidoMultimediaInputDTO> nuevoContenidoMultimedia;
 }

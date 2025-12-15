@@ -1,29 +1,35 @@
 package ar.utn.ba.ddsi.proxy_metamapa.domain.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ColeccionDTO {
-  public String handle;
-  public String titulo;
-  public String descripcion;
-  public List<HechoDTO> hechos;
+  @JsonProperty("handle")
+  private UUID handle;
 
-  public ColeccionDTO(String titulo, String descripcion, List<HechoDTO> hechos) {
-    this.handle = generarHandle(titulo);
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.hechos = hechos;
-  }
+  @JsonProperty("titulo")
+  private String titulo;
 
-  private String generarHandle(String titulo) {
-    String base = titulo.toLowerCase()
-        .replaceAll("[^a-z0-9]+", "-")
-        .replaceAll("^-|-$", "");
+  @JsonProperty("descripcion")
+  private String descripcion;
 
-    String sufijo = UUID.randomUUID().toString().substring(0, 8);
-    return base + "-" + sufijo;
-  }
+  @JsonProperty("fecha_carga")
+  private LocalDateTime fechaDeCarga;
+
+  @JsonProperty("hechos")
+  private List<HechoDTO> hechos;
+
+  @JsonProperty("hechos_consensuados")
+  private List<HechoDTO> hechosConsensuados;
 }
+

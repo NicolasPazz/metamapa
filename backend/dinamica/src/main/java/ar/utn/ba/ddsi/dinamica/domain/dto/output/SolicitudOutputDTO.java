@@ -1,6 +1,9 @@
 package ar.utn.ba.ddsi.dinamica.domain.dto.output;
 
+import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,7 +11,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class SolicitudOutputDTO {
-  @JsonProperty("id_solicitud")
+  @JsonProperty("id")
   private Long id;
   @JsonProperty("id_contribuyente")
   private Long idContribuyente;
@@ -22,12 +25,14 @@ public class SolicitudOutputDTO {
   private Double latitud;
   @JsonProperty("longitud")
   private Double longitud;
-  @JsonProperty("fecha_de_acontecimiento")
-  private String fechaDeAcontecimiento;
+  @JsonProperty("fecha_acontecimiento")
+  private LocalDate fechaDeAcontecimiento;
   @JsonProperty("multimedia")
   private List<ContenidoMultimediaOutputDTO> contenidoMultimedia;
-  @JsonProperty("fecha_de_carga_solicitud")
-  private String fechaDeCargaSolicitud;
+  @JsonProperty("fecha_carga")
+  private LocalDateTime fechaDeCargaSolicitud;
   @JsonProperty("estado")
-  private String estado;
+  private EstadoSolicitud estado;
+  @JsonProperty("transiciones")
+  private List<TransicionEstadoOutputDTO> transiciones;
 }

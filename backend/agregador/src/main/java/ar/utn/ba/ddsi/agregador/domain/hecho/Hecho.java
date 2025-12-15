@@ -1,26 +1,21 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
-import ar.utn.ba.ddsi.agregador.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.ContenidoMultimediaDTO;
-import ar.utn.ba.ddsi.agregador.domain.dto.external.TransicionEstadoHechoDTO;
+import ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia;
 import java.time.LocalDate;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
-
-import java.util.stream.Collectors;
-
 import jakarta.persistence.*;
 import lombok.*;
 
 @Getter
 @Setter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Table(name = "hecho")
 public class Hecho {
@@ -28,179 +23,108 @@ public class Hecho {
   @GeneratedValue(strategy= GenerationType.IDENTITY)
   private Long id;
 
-  @Embedded
-  private DataHecho data;
+  @Column(name = "titulo", nullable = false)
+  private String titulo;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Column(name = "descripcion", columnDefinition = "TEXT", nullable = false)
+  private String descripcion;
+
+  @Column(name = "latitud", nullable = false)
+  private Double latitud;
+
+  @Column(name = "longitud", nullable = false)
+  private Double longitud;
+
+  @Column(name = "fecha_acontecimiento", nullable = false)
+  private LocalDate fechaDeAcontecimiento;
+
+  @Column(name = "fecha_carga", nullable = false, updatable = false)
+  private LocalDateTime fechaDeCarga;
+
+  @Enumerated(EnumType.STRING)
+  @Column(name="origen", nullable = false)
   private OrigenHecho origen;
 
-  @Enumerated(EnumType.ORDINAL)
-  private EstadoHecho estado;
+  @Enumerated(EnumType.STRING)
+  @Column(name="estado", nullable = false)
+  @Builder.Default
+  private EstadoHecho estado = EstadoHecho.VISIBLE;
 
-  @Column(name="contribuyente_id", nullable = true)
-  private Long contribuyente;  // private Contribuyente contribuyente;
+  @Column(name = "contribuyente_id", nullable = true)
+  @Builder.Default
+  private Long contribuyenteId = null;
 
-  @OneToMany
-  @JoinColumn(name = "etiqueta_id")
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
 
-  @OneToMany
-  @JoinColumn(name = "multimedia_id")
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
 
-  @ElementCollection
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
 
-  @ManyToOne
-  @JoinColumn(name = "categoria_id")
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "categoria_id", referencedColumnName = "id")
   private Categoria categoria;
 
-  public Hecho(String titulo, String descripcion, Categoria categoria,
-               LocalDate fechaDeAcontecimiento, double latitud, double longitud,
-               List<ContenidoMultimedia> multimedia, Set<Etiqueta> etiquetas, Long contribuyente) {
+  @Column(name = "fuente_id", nullable = false)
+  private Long fuenteId;
 
-    DataHecho dataHecho = new DataHecho();
-    dataHecho.setTitulo(titulo);
-    dataHecho.setDescripcion(descripcion);
-    dataHecho.setFechaDeAcontecimiento(fechaDeAcontecimiento);
-    dataHecho.setLatitud(latitud);
-    dataHecho.setLongitud(longitud);
+  @Column(name = "id_origen", nullable = false)
+  private Long idOrigen;
 
-    this.data = dataHecho;
+  public Hecho(String titulo, String descripcion, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento,
+               OrigenHecho origen, Long contribuyenteId, Categoria categoria, Long fuenteId) {
+    this.titulo = titulo;
+    this.descripcion = descripcion;
+    this.latitud = latitud;
+    this.longitud = longitud;
+    this.fechaDeAcontecimiento = fechaDeAcontecimiento;
+    this.origen = origen;
+    this.contribuyenteId = contribuyenteId;
     this.categoria = categoria;
-    this.multimedia = multimedia;
-    this.etiquetas = etiquetas;
-    this.contribuyente = contribuyente;
+    this.fuenteId = fuenteId;
+    this.transicionarEstado(EstadoHecho.VISIBLE);
+  }
 
-    if(contribuyente != null) { //TODO: corregir, si el contribuyente es anonimo esto seria null y la carga seria CONTRIBUYENTE
-      this.origen = OrigenHecho.CONTRIBUYENTE;
-    } else {
-      this.origen = OrigenHecho.MANUAL;
+  @PrePersist
+  protected void onPrePersist() {
+    // Solo establecer fechaDeCarga si no fue provista (por ejemplo, desde fuentes externas)
+    if (this.fechaDeCarga == null) {
+      this.fechaDeCarga = LocalDateTime.now();
     }
-    transicionarEstado(EstadoHecho.VISIBLE);
   }
 
-  public boolean esDuplicadoDe(Hecho otroHecho) {
-    return this.getTitulo().equalsIgnoreCase(otroHecho.getTitulo());
-  }
-
-  public boolean esVisible() {
-    // TODO: verificar que no haya una solicitud de eliminacion aceptada
-    return this.estado == EstadoHecho.VISIBLE;
-  }
-
-  // TODO: Verificar que no existe la etiqueta [RESUELTO]
-  public void agregarEtiqueta(String etiq) {
-
-    if (etiq != null && !etiq.isBlank()) {
-      Etiqueta nueva = new Etiqueta(etiq);
-        this.etiquetas.add(nueva);
-    }
-
-  }
-
-  public boolean contieneEtiqueta(String etiqueta) {
-    return this.etiquetas.contains(new Etiqueta(etiqueta));
-  }
-
-  public boolean esDeCategoria(Categoria categoria) {
-    return this.categoria.equals(categoria);
-  }
-
-  public void transicionarEstado(EstadoHecho estado) {
+  private void transicionarEstado(EstadoHecho estado) {
     this.transiciones.add(new TransicionEstadoHecho(estado));
     this.estado = estado;
   }
 
-  public HechoDTO mapToDTO() {
-    HechoDTO dto = new HechoDTO();
-    dto.setId(this.getId());
-    dto.setTitulo(this.getTitulo());
-    dto.setDescripcion(this.getDescripcion());
-    dto.setCategoria(this.getCategoria().getNombre());
-    dto.setLatitud(this.getLatitud());
-    dto.setLongitud(this.getLongitud());
-    dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento());
-    dto.setFechaDeCarga(this.getFechaDeCarga());
-    dto.setOrigen(this.getOrigen().name());
-    dto.setEstado(this.getEstado().name());
+  public void ocultar() {
+    this.transicionarEstado(EstadoHecho.OCULTO);
+  }
 
-    /*
-    if (this.getContribuyente() != null) {
-      ContribuyenteDTO contribuyenteDTO = new ContribuyenteDTO();
-      contribuyenteDTO.setNombre(this.getContribuyente().getNombre());
-      contribuyenteDTO.setApellido(this.getContribuyente().getApellido());
-      contribuyenteDTO.setFechaDeNacimiento(
-          Optional.ofNullable(this.getContribuyente().getFechaDeNacimiento())
-              .orElse(null));
-      dto.setContribuyente(contribuyenteDTO);
-    }
-    */
-    dto.setContribuyente(this.getContribuyente());
+  public void visibilizar() {
+    this.transicionarEstado(EstadoHecho.VISIBLE);
+  }
 
-    dto.setEtiquetas(this.getEtiquetas().stream()
+  public boolean esVisible() {
+    return this.estado == EstadoHecho.VISIBLE;
+  }
+
+  public boolean contieneEtiqueta(String etiquetaBuscada) {
+    if (etiquetaBuscada == null || etiquetaBuscada.isBlank()) return false;
+
+    return this.etiquetas.stream()
         .map(Etiqueta::getNombre)
-        .collect(Collectors.toList()));
-
-    dto.setContenidoMultimedia(this.getMultimedia().stream()
-        .map(m -> {
-          ContenidoMultimediaDTO dtoMultimedia = new ContenidoMultimediaDTO();
-          dtoMultimedia.setPathArchivo(m.getPathArchivo());
-          dtoMultimedia.setTipoContenido(m.getTipoContenido().name());
-          return dtoMultimedia;
-        }).collect(Collectors.toList()));
-
-    dto.setTransicionesDeEstado(this.getTransiciones().stream()
-        .map(t -> {
-          TransicionEstadoHechoDTO tDto = new TransicionEstadoHechoDTO();
-          tDto.setEstadoFinal(t.getEstadoFinal().name());
-          tDto.setFecha(t.getFechaTransicion());
-          return tDto;
-        }).collect(Collectors.toList()));
-
-    return dto;
-  }
-
-  // TODO: revisar si no conviene hacer una clase en estos dos casos
-  public List<Long> getIdEtiquetas() {
-    List<Long> ids = new ArrayList<>();
-    for (Etiqueta etiqueta : this.etiquetas) {
-      ids.add(etiqueta.getId());
-    }
-    return ids;
-  }
-  public List<String> getMultimediaPaths() {
-    List<String> paths = new ArrayList<>();
-    for (ContenidoMultimedia multim : this.multimedia) {
-      paths.add(multim.getPathArchivo());
-    }
-    return paths;
-  }
-
-  public String getTitulo() {
-    return data.getTitulo();
-  }
-
-  public String getDescripcion() {
-    return data.getDescripcion();
-  }
-
-  public Double getLatitud() {
-    return data.getLatitud();
-  }
-
-  public Double getLongitud() {
-    return data.getLongitud();
-  }
-
-  public LocalDate getFechaDeAcontecimiento() {
-    return data.getFechaDeAcontecimiento();
-  }
-
-  public LocalDateTime getFechaDeCarga() {
-    return data.getFechaDeCarga();
+        .filter(Objects::nonNull)
+        .map(String::toLowerCase)
+        .anyMatch(nombre -> nombre.equals(etiquetaBuscada.trim().toLowerCase()));
   }
 }

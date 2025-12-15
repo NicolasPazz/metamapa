@@ -2,16 +2,14 @@ package ar.utn.ba.ddsi.proxy_metamapa.service.impl;
 
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.http.ResponseEntity;
 
 @Slf4j
 @Service
@@ -85,16 +83,4 @@ public class FuenteService {
     return ResponseEntity.of(Optional.ofNullable(hechos));
   }
 
-  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
-    log.info("Creando solicitud de eliminacion: {}", solicitud);
-    SolicitudOutputDTO resultado = webClient
-        .post()
-        .uri("/solicitudes")
-        .bodyValue(solicitud)
-        .retrieve()
-        .bodyToMono(SolicitudOutputDTO.class)
-        .block();
-
-    return ResponseEntity.of(Optional.ofNullable(resultado));
-  }
 }

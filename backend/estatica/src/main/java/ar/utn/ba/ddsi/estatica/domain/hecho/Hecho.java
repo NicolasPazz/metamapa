@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.estatica.domain.hecho;
 
-import ar.utn.ba.ddsi.estatica.domain.dto.output.HechoOutputDTO;
+import ar.utn.ba.ddsi.estatica.dto.output.HechoOutputDTO;
 import com.opencsv.bean.CsvBindByName;
 import com.opencsv.bean.CsvDate;
 import jakarta.persistence.Column;
@@ -33,11 +33,11 @@ public class Hecho {
   private String titulo;
 
   @CsvBindByName(column = "Descripción")
-  @Column(columnDefinition = "TEXT")
+  @Column(columnDefinition = "TEXT", nullable = false)
   private String descripcion;
 
   @CsvBindByName(column = "Categoría")
-  private String nombreCategoria;
+  private String categoria;
 
   @CsvBindByName(column = "Latitud")
   private Double latitud;
@@ -49,9 +49,11 @@ public class Hecho {
   @CsvBindByName(column = "Fecha del hecho")
   private LocalDate fechaDeAcontecimiento;
 
+  @Column(name = "fecha_carga", nullable = false)
   private LocalDateTime fechaDeCarga;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="origen", nullable = false)
   private OrigenHecho origen;
 
   private Boolean enviado;
@@ -67,7 +69,7 @@ public class Hecho {
         this.id,
         this.titulo,
         this.descripcion,
-        this.nombreCategoria,
+        this.categoria,
         this.latitud,
         this.longitud,
         this.fechaDeAcontecimiento,
@@ -75,3 +77,4 @@ public class Hecho {
     );
   }
 }
+

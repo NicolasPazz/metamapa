@@ -3,20 +3,16 @@ package ar.utn.ba.ddsi.proxy_metamapa.controller;
 import ar.utn.ba.ddsi.proxy_metamapa.client.AgregadorClient;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.ResponseEntity;
 
 @RestController
 @RequestMapping("/api")
@@ -104,15 +100,5 @@ public class FuenteController {
         fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
         ubicacion
     );
-  }
-
-
-  /**
-   *   POST /solicitudes
-   *   Permite crear solicitudes de eliminación, enviando los datos de la solicitud como un JSON a través del cuerpo (body) de la misma.
-   */
-  @PostMapping("/solicitudes")
-  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(@RequestBody SolicitudInputDTO solicitud) {
-    return agregador.crearSolicitudDeEliminacion(solicitud);
   }
 }

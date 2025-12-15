@@ -4,7 +4,6 @@ import ar.utn.ba.ddsi.estadistica.domain.Coleccion;
 import ar.utn.ba.ddsi.estadistica.domain.provincia.Provincia;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -27,14 +26,14 @@ public class HechosColeccionProvincia {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "coleccion_handle")
+  @ManyToOne
+  @JoinColumn(name = "coleccion_handle", referencedColumnName = "handle")
   private Coleccion coleccion;
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "provincia_id")
+  @ManyToOne
+  @JoinColumn(name = "provincia_id", referencedColumnName = "id")
   private Provincia provincia;
 
-  @Column(name = "cantidad_hechos")
+  @Column(name = "cantidad_hechos", nullable = false)
   private Long cantidadHechos;
 }

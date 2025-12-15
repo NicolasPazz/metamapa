@@ -1,0 +1,1643 @@
+{
+	"info": {
+		"_postman_id": "f7a6e148-a01e-4fee-97fd-608a1b865e73",
+		"name": "metamapa",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "43637471",
+		"_collection_link": "https://nicolaspaz-7741775.postman.co/workspace/290c9eb3-6d31-4de4-8a70-01f6b216242d/collection/43637471-f7a6e148-a01e-4fee-97fd-608a1b865e73?action=share&source=collection_link&creator=43637471"
+	},
+	"item": [
+		{
+			"name": "proxy",
+			"item": [
+				{
+					"name": "ong",
+					"item": [
+						{
+							"name": "api ddsi",
+							"item": [
+								{
+									"name": "Login DDSI API",
+									"request": {
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "https://api-ddsi.disilab.ar/public/api/login?email={{ddsi_email}}&password={{ddsi_password}}",
+											"protocol": "https",
+											"host": [
+												"api-ddsi",
+												"disilab",
+												"ar"
+											],
+											"path": [
+												"public",
+												"api",
+												"login"
+											],
+											"query": [
+												{
+													"key": "email",
+													"value": "{{ddsi_email}}"
+												},
+												{
+													"key": "password",
+													"value": "{{ddsi_password}}"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Desastres (Paginado)",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer rY3j0CD1b4hpJBNWwZvJkva2NhsGEukeS2pFQkjE2yMBmk6sdlGQ5ATQkpYo",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "https://api-ddsi.disilab.ar/public/api/desastres?per_page=100&page=59",
+											"protocol": "https",
+											"host": [
+												"api-ddsi",
+												"disilab",
+												"ar"
+											],
+											"path": [
+												"public",
+												"api",
+												"desastres"
+											],
+											"query": [
+												{
+													"key": "per_page",
+													"value": "100"
+												},
+												{
+													"key": "page",
+													"value": "59"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Get Desastre by ID",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "GET",
+										"header": [
+											{
+												"key": "Authorization",
+												"value": "Bearer rY3j0CD1b4hpJBNWwZvJkva2NhsGEukeS2pFQkjE2yMBmk6sdlGQ5ATQkpYo",
+												"type": "text"
+											}
+										],
+										"url": {
+											"raw": "https://api-ddsi.disilab.ar/public/api/desastres/:id",
+											"protocol": "https",
+											"host": [
+												"api-ddsi",
+												"disilab",
+												"ar"
+											],
+											"path": [
+												"public",
+												"api",
+												"desastres",
+												":id"
+											],
+											"variable": [
+												{
+													"key": "id",
+													"value": "10"
+												}
+											]
+										}
+									},
+									"response": []
+								},
+								{
+									"name": "Login DDSI API (Copy)",
+									"request": {
+										"auth": {
+											"type": "noauth"
+										},
+										"method": "POST",
+										"header": [],
+										"url": {
+											"raw": "https://api-ddsi.disilab.ar/public/api/login?email={{ddsi_email}}&password={{ddsi_password}}",
+											"protocol": "https",
+											"host": [
+												"api-ddsi",
+												"disilab",
+												"ar"
+											],
+											"path": [
+												"public",
+												"api",
+												"login"
+											],
+											"query": [
+												{
+													"key": "email",
+													"value": "{{ddsi_email}}"
+												},
+												{
+													"key": "password",
+													"value": "{{ddsi_password}}"
+												}
+											]
+										}
+									},
+									"response": []
+								}
+							]
+						},
+						{
+							"name": "Get Nuevos Hechos ONG Proxy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parseamos el body como JSON\r",
+											"let hechos = pm.response.json();\r",
+											"\r",
+											"// Total de hechos\r",
+											"let total = hechos.length;\r",
+											"\r",
+											"// Inicializamos el contador por origen según tu enum\r",
+											"let counts = {\r",
+											"  DATASET: 0,\r",
+											"  ONG: 0,\r",
+											"  METAMAPA: 0,\r",
+											"  CONTRIBUYENTE: 0,\r",
+											"  MANUAL: 0\r",
+											"};\r",
+											"\r",
+											"// Recorremos y contamos\r",
+											"hechos.forEach(h => {\r",
+											"  let o = h.origen;\r",
+											"  if (counts.hasOwnProperty(o)) {\r",
+											"    counts[o]++;\r",
+											"  } else {\r",
+											"    // opcional: para orígenes inesperados\r",
+											"    console.warn(`Origen desconocido: ${o}`);\r",
+											"  }\r",
+											"});\r",
+											"\r",
+											"// Mostramos en consola\r",
+											"console.log(`Total hechos: ${total}`);\r",
+											"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+											"  console.log(`${origen}: ${cnt}`);\r",
+											"});\r",
+											"\r",
+											"// (Opcional) Guardamos en variables de entorno\r",
+											"pm.environment.set(\"totalHechos\", total);\r",
+											"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+											"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{proxyOngBaseURL}}/hechos/nuevos",
+									"host": [
+										"{{proxyOngBaseURL}}"
+									],
+									"path": [
+										"hechos",
+										"nuevos"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "metamapa",
+					"item": [
+						{
+							"name": "Get All Hechos MetaMapa",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"// Parseamos el body como JSON\r",
+											"let hechos = pm.response.json();\r",
+											"\r",
+											"// Total de hechos\r",
+											"let total = hechos.length;\r",
+											"\r",
+											"// Inicializamos el contador por origen según tu enum\r",
+											"let counts = {\r",
+											"  DATASET: 0,\r",
+											"  ONG: 0,\r",
+											"  METAMAPA: 0,\r",
+											"  CONTRIBUYENTE: 0,\r",
+											"  MANUAL: 0\r",
+											"};\r",
+											"\r",
+											"// Recorremos y contamos\r",
+											"hechos.forEach(h => {\r",
+											"  let o = h.origen;\r",
+											"  if (counts.hasOwnProperty(o)) {\r",
+											"    counts[o]++;\r",
+											"  } else {\r",
+											"    // opcional: para orígenes inesperados\r",
+											"    console.warn(`Origen desconocido: ${o}`);\r",
+											"  }\r",
+											"});\r",
+											"\r",
+											"// Mostramos en consola\r",
+											"console.log(`Total hechos: ${total}`);\r",
+											"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+											"  console.log(`${origen}: ${cnt}`);\r",
+											"});\r",
+											"\r",
+											"// (Opcional) Guardamos en variables de entorno\r",
+											"pm.environment.set(\"totalHechos\", total);\r",
+											"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+											"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+											"});\r",
+											""
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{proxyMetamapaBaseURL}}/hechos",
+									"host": [
+										"{{proxyMetamapaBaseURL}}"
+									],
+									"path": [
+										"hechos"
+									],
+									"query": [
+										{
+											"key": "categoria",
+											"value": "Incendio",
+											"disabled": true
+										},
+										{
+											"key": "fecha_reporte_desde",
+											"value": "01-01-0001",
+											"disabled": true
+										},
+										{
+											"key": "fecha_reporte_hasta",
+											"value": "31-12-9999",
+											"disabled": true
+										},
+										{
+											"key": "fecha_acontecimiento_desde",
+											"value": "01-01-0001",
+											"disabled": true
+										},
+										{
+											"key": "fecha_acontecimiento_hasta",
+											"value": "31-12-9999",
+											"disabled": true
+										},
+										{
+											"key": "ubicacion",
+											"value": "-31.42,-64.19",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Colecciones MetaMapa",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{proxyMetamapaBaseURL}}/colecciones",
+									"host": [
+										"{{proxyMetamapaBaseURL}}"
+									],
+									"path": [
+										"colecciones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Coleccion by Handle MetaMapa",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{proxyMetamapaBaseURL}}/colecciones/:handle/hechos",
+									"host": [
+										"{{proxyMetamapaBaseURL}}"
+									],
+									"path": [
+										"colecciones",
+										":handle",
+										"hechos"
+									],
+									"variable": [
+										{
+											"key": "handle",
+											"value": "desastres-naturales-ar-2025-73634145"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Solicitud MetaMapa",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"id_hecho\": 1,\r\n  \"texto_fundamentos\": \"hola\",\r\n  \"id_contribuyente\": 1\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{proxyMetamapaBaseURL}}/solicitudes",
+									"host": [
+										"{{proxyMetamapaBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "agregador",
+			"item": [
+				{
+					"name": "AdminColeccionesController",
+					"item": [
+						{
+							"name": "Create Coleccion (Admin)",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"titulo\": \"Colección de desastres tecnológicos\",\r\n  \"descripcion\": \"Incluye hechos cuya categoría es 'desastre tecnológico - evento sanitario'\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"igualdad\",\r\n    \"cadena_a_comparar\": \"desastre tecnológico - evento sanitario\",\r\n    \"tipo_dato\": \"CATEGORIA\"\r\n  },\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/admin/colecciones",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"admin",
+										"colecciones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get All Colecciones Agregador",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/colecciones",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"colecciones"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "ColeccionesController",
+					"item": []
+				},
+				{
+					"name": "AdminSolicitudesController",
+					"item": []
+				},
+				{
+					"name": "AdminSolicitudesController",
+					"item": []
+				},
+				{
+					"name": "EstadisticasController",
+					"item": []
+				},
+				{
+					"name": "HechosController",
+					"item": []
+				},
+				{
+					"name": "Get All Hechos Agregador",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parseamos el body como JSON\r",
+									"let hechos = pm.response.json();\r",
+									"\r",
+									"// Total de hechos\r",
+									"let total = hechos.length;\r",
+									"\r",
+									"// Inicializamos el contador por origen según tu enum\r",
+									"let counts = {\r",
+									"  DATASET: 0,\r",
+									"  ONG: 0,\r",
+									"  METAMAPA: 0,\r",
+									"  CONTRIBUYENTE: 0,\r",
+									"  MANUAL: 0\r",
+									"};\r",
+									"\r",
+									"// Recorremos y contamos\r",
+									"hechos.forEach(h => {\r",
+									"  let o = h.origen;\r",
+									"  if (counts.hasOwnProperty(o)) {\r",
+									"    counts[o]++;\r",
+									"  } else {\r",
+									"    // opcional: para orígenes inesperados\r",
+									"    console.warn(`Origen desconocido: ${o}`);\r",
+									"  }\r",
+									"});\r",
+									"\r",
+									"// Mostramos en consola\r",
+									"console.log(`Total hechos: ${total}`);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  console.log(`${origen}: ${cnt}`);\r",
+									"});\r",
+									"\r",
+									"// (Opcional) Guardamos en variables de entorno\r",
+									"pm.environment.set(\"totalHechos\", total);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{agregadorBaseURL}}/hechos",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"hechos"
+							],
+							"query": [
+								{
+									"key": "categoria",
+									"value": "desastre tecnológico - contaminación",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "ubicacion",
+									"value": "-34.647167,-58.343773",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Coleccion by Handle Agregador",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{agregadorBaseURL}}/colecciones/:handle/hechos?modo=curada",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"colecciones",
+								":handle",
+								"hechos"
+							],
+							"query": [
+								{
+									"key": "categoria",
+									"value": "Incendio",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "ubicacion",
+									"value": "-31.42,-64.19",
+									"disabled": true
+								},
+								{
+									"key": "modo",
+									"value": "curada"
+								}
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "colecci-n-de-desastres-tecnol-gicos-e5ef7652"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Coleccion by Handle (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{agregadorBaseURL}}/admin/colecciones/:handle/hechos",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"admin",
+								"colecciones",
+								":handle",
+								"hechos"
+							],
+							"query": [
+								{
+									"key": "categoria",
+									"value": "Incendio",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "ubicacion",
+									"value": "-31.42,-64.19",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Create Solicitud Agregador",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_hecho\": 100001,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho porque contiene datos sensibles que, de permanecer públicos, podrían poner en riesgo la seguridad e integridad de las personas involucradas. La publicación menciona información que permite identificar ubicaciones específicas, horarios y nombres propios sin el debido consentimiento explícito de los afectados. Además, existen distintos errores fácticos que ya fueron reportados a la organización responsable y cuya divulgación genera confusión, desinformación y estigmatización de la comunidad a la que se refiere el incidente.\",\r\n  \"id_contribuyente\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{agregadorBaseURL}}/solicitudes",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Solicitud Estado (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"estado\": \"ACEPTADA\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{agregadorBaseURL}}/admin/solicitudes/:id",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"admin",
+								"solicitudes",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "3"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Fuentes Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_fuente\": 1,\r\n  \"accion\": \"ELIMINAR\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{agregadorBaseURL}}/admin/colecciones/:handle/criterios/fuentes",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"admin",
+								"colecciones",
+								":handle",
+								"criterios",
+								"fuentes"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "desastres-naturales-ar-2025-474f6e65"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Criterio Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_fuente\": 1,\r\n  \"accion\": \"ELIMINAR\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{agregadorBaseURL}}/admin/colecciones/:handle/criterios/fuentes",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"admin",
+								"colecciones",
+								":handle",
+								"criterios",
+								"fuentes"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "coleccion-de-ejemplo-b9cbbde4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{agregadorBaseURL}}/admin/colecciones/:handle",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"admin",
+								"colecciones",
+								":handle"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "coleccion-de-ejemplo-b9cbbde4"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "// {\r\n//   \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n//   \"criterio_pertenencia\": {\r\n//     \"tipo\": \"lugar\",\r\n//     \"latitud\": -38.825939, \r\n//     \"longitud\": -62.069268\r\n//   }\r\n// }\r\n\r\n{\r\n  \"descripcion\": \"Cambio algoritmo de consenso\",\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{agregadorBaseURL}}/admin/colecciones/:handle",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"admin",
+								"colecciones",
+								":handle"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "colecci-n-de-desastres-tecnol-gicos-c4c03d97"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Coleccion (Admin)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{agregadorBaseURL}}/admin/colecciones/:handle",
+							"host": [
+								"{{agregadorBaseURL}}"
+							],
+							"path": [
+								"admin",
+								"colecciones",
+								":handle"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "coleccion-de-ejemplo-b9cbbde4"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "dinamica",
+			"item": [
+				{
+					"name": "Create Solicitud Dinamica",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Crisis sanitaria afecta a Tilcara, Jujuy\",\r\n  \"descripcion\": \"Grave crisis sanitaria ocurrió en las inmediaciones de Tilcara, Jujuy. El incidente afectando gravemente la infraestructura local. Se ha declarado estado de emergencia en la región para facilitar la asistencia.\",\r\n  \"categoria\": \"desastre tecnológico - evento sanitario\",\r\n  \"latitud\": -23.574039,\r\n  \"longitud\": -65.36991,\r\n  \"fecha_acontecimiento\": \"2013-11-11\",\r\n  \"multimedia\": []\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Solicitud User Dinamica",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Corte prolongado de energía eléctrica\",\r\n  \"descripcion\": \"La zona estuvo sin suministro eléctrico por más de 12 horas, afectando a cientos de hogares.\",\r\n  \"categoria\": \"Servicio Público\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes/user/:id",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes",
+								"user",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Solicitud Admin Dinamica",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"estado_solicitud\": \"ACEPTADO_MODIFICADO\",\r\n  \"categoria\": \"Modificado por el admin\",\r\n  \"multimedia\": [\r\n    {\r\n      \"pathArchivo\": \"path\",\r\n      \"tipoContenido\": \"IMAGEN\"\r\n    }\r\n  ]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes/admin/:id",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes",
+								"admin",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Solicitudes Dinamica",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Solicitud by ID Dinamica",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes/:id",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Hechos Dinamica",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parseamos el body como JSON\r",
+									"let hechos = pm.response.json();\r",
+									"\r",
+									"// Total de hechos\r",
+									"let total = hechos.length;\r",
+									"\r",
+									"// Inicializamos el contador por origen según tu enum\r",
+									"let counts = {\r",
+									"  DATASET: 0,\r",
+									"  ONG: 0,\r",
+									"  METAMAPA: 0,\r",
+									"  CONTRIBUYENTE: 0,\r",
+									"  MANUAL: 0\r",
+									"};\r",
+									"\r",
+									"// Recorremos y contamos\r",
+									"hechos.forEach(h => {\r",
+									"  let o = h.origen;\r",
+									"  if (counts.hasOwnProperty(o)) {\r",
+									"    counts[o]++;\r",
+									"  } else {\r",
+									"    // opcional: para orígenes inesperados\r",
+									"    console.warn(`Origen desconocido: ${o}`);\r",
+									"  }\r",
+									"});\r",
+									"\r",
+									"// Mostramos en consola\r",
+									"console.log(`Total hechos: ${total}`);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  console.log(`${origen}: ${cnt}`);\r",
+									"});\r",
+									"\r",
+									"// (Opcional) Guardamos en variables de entorno\r",
+									"pm.environment.set(\"totalHechos\", total);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/hechos",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"hechos"
+							],
+							"query": [
+								{
+									"key": "categoria",
+									"value": "Incendio",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_reporte_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_desde",
+									"value": "01-01-0001",
+									"disabled": true
+								},
+								{
+									"key": "fecha_acontecimiento_hasta",
+									"value": "31-12-9999",
+									"disabled": true
+								},
+								{
+									"key": "ubicacion",
+									"value": "-31.42,-64.19",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Nuevos Hechos Dinamica",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parseamos el body como JSON\r",
+									"let hechos = pm.response.json();\r",
+									"\r",
+									"// Total de hechos\r",
+									"let total = hechos.length;\r",
+									"\r",
+									"// Inicializamos el contador por origen según tu enum\r",
+									"let counts = {\r",
+									"  DATASET: 0,\r",
+									"  ONG: 0,\r",
+									"  METAMAPA: 0,\r",
+									"  CONTRIBUYENTE: 0,\r",
+									"  MANUAL: 0\r",
+									"};\r",
+									"\r",
+									"// Recorremos y contamos\r",
+									"hechos.forEach(h => {\r",
+									"  let o = h.origen;\r",
+									"  if (counts.hasOwnProperty(o)) {\r",
+									"    counts[o]++;\r",
+									"  } else {\r",
+									"    // opcional: para orígenes inesperados\r",
+									"    console.warn(`Origen desconocido: ${o}`);\r",
+									"  }\r",
+									"});\r",
+									"\r",
+									"// Mostramos en consola\r",
+									"console.log(`Total hechos: ${total}`);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  console.log(`${origen}: ${cnt}`);\r",
+									"});\r",
+									"\r",
+									"// (Opcional) Guardamos en variables de entorno\r",
+									"pm.environment.set(\"totalHechos\", total);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/hechos/nuevos",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"hechos",
+								"nuevos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "estatica",
+			"item": [
+				{
+					"name": "Get Nuevos Hechos Estatica",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Parseamos el body como JSON\r",
+									"let hechos = pm.response.json();\r",
+									"\r",
+									"// Total de hechos\r",
+									"let total = hechos.length;\r",
+									"\r",
+									"// Inicializamos el contador por origen según tu enum\r",
+									"let counts = {\r",
+									"  DATASET: 0,\r",
+									"  ONG: 0,\r",
+									"  METAMAPA: 0,\r",
+									"  CONTRIBUYENTE: 0,\r",
+									"  MANUAL: 0\r",
+									"};\r",
+									"\r",
+									"// Recorremos y contamos\r",
+									"hechos.forEach(h => {\r",
+									"  let o = h.origen;\r",
+									"  if (counts.hasOwnProperty(o)) {\r",
+									"    counts[o]++;\r",
+									"  } else {\r",
+									"    // opcional: para orígenes inesperados\r",
+									"    console.warn(`Origen desconocido: ${o}`);\r",
+									"  }\r",
+									"});\r",
+									"\r",
+									"// Mostramos en consola\r",
+									"console.log(`Total hechos: ${total}`);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  console.log(`${origen}: ${cnt}`);\r",
+									"});\r",
+									"\r",
+									"// (Opcional) Guardamos en variables de entorno\r",
+									"pm.environment.set(\"totalHechos\", total);\r",
+									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
+									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
+									"});\r",
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estaticaBaseURL}}/hechos/nuevos",
+							"host": [
+								"{{estaticaBaseURL}}"
+							],
+							"path": [
+								"hechos",
+								"nuevos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "estadisticas",
+			"item": [
+				{
+					"name": "Get Provincia Mas Hechos por Coleccion",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/coleccion/:handle/provincia-mas-hechos",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"coleccion",
+								":handle",
+								"provincia-mas-hechos"
+							],
+							"variable": [
+								{
+									"key": "handle",
+									"value": "desastres-naturales-ar-2025-a971f2c2"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Categoria Mas Hechos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/categoria-mas-hechos",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"categoria-mas-hechos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Provincia Mas Hechos por Categoria",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/categoria/:categoria/provincia-mas-hechos",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"categoria",
+								":categoria",
+								"provincia-mas-hechos"
+							],
+							"variable": [
+								{
+									"key": "categoria",
+									"value": "Incendio forestal"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Hora Mas Hechos por Categoria",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/categoria/:categoria/hora-mas-hechos",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"categoria",
+								":categoria",
+								"hora-mas-hechos"
+							],
+							"variable": [
+								{
+									"key": "categoria",
+									"value": "Incendio forestal"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Solicitudes Spam",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/solicitudes-spam",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"solicitudes-spam"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export Estadisticas CSV",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/export/csv",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"export",
+								"csv"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Export Estadisticas CSV por Tipo",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/export/csv/:tipo_estadistica",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"export",
+								"csv",
+								":tipo_estadistica"
+							],
+							"variable": [
+								{
+									"key": "tipo_estadistica",
+									"value": "spam"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check Estadisticas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/health",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"health"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Recalcular estadisticas",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{estadisticasBaseURL}}/estadisticas/recalcular",
+							"host": [
+								"{{estadisticasBaseURL}}"
+							],
+							"path": [
+								"estadisticas",
+								"recalcular"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "agregadorBaseURL",
+			"value": "http://localhost:8084/api"
+		},
+		{
+			"key": "proxyOngBaseURL",
+			"value": "http://localhost:8083/api"
+		},
+		{
+			"key": "proxyMetamapaBaseURL",
+			"value": "http://localhost:8086/api"
+		},
+		{
+			"key": "dinamicaBaseURL",
+			"value": "http://localhost:8081/api"
+		},
+		{
+			"key": "estaticaBaseURL",
+			"value": "http://localhost:8082/api"
+		},
+		{
+			"key": "estadisticasBaseURL",
+			"value": "http://localhost:8085/api"
+		}
+	]
+}

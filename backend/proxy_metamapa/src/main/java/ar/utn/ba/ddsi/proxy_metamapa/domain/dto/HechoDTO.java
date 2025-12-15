@@ -1,5 +1,7 @@
 package ar.utn.ba.ddsi.proxy_metamapa.domain.dto;
 
+import ar.utn.ba.ddsi.proxy_metamapa.domain.enums.EstadoHecho;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,8 +16,8 @@ import lombok.Data;
     "categoria",
     "latitud",
     "longitud",
-    "fechaDeAcontecimiento",
-    "fechaDeCarga",
+    "fecha_contecimiento",
+    "fecha_carga",
     "ultimaModificacion",
     "origen",
     "estado",
@@ -27,7 +29,7 @@ import lombok.Data;
 public class HechoDTO {
   private Long id;
   private String origen;
-  private String estado;
+  private EstadoHecho estado;
   private Long contribuyente;
   private List<String> etiquetas;
   private String titulo;
@@ -35,7 +37,9 @@ public class HechoDTO {
   private String categoria;
   private Double latitud;
   private Double longitud;
+  @JsonProperty("fecha_acontecimiento")
   private LocalDate fechaDeAcontecimiento;
+  @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
   private LocalDateTime ultimaModificacion;
   private List<ContenidoMultimediaDTO> contenidoMultimedia;
@@ -44,7 +48,7 @@ public class HechoDTO {
   public HechoDTO(Long contribuyente, List<String> etiquetas, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, LocalDateTime ultimaModificacion, List<ContenidoMultimediaDTO> contenidoMultimedia, List<TransicionEstadoHechoDTO> transicionesDeEstado) {
     this.id = null;
     this.origen = "METAMAPA";
-    this.estado = "VISIBLE";
+    this.estado = EstadoHecho.VISIBLE;
     this.contribuyente = contribuyente;
     this.etiquetas = etiquetas;
     this.titulo = titulo;
