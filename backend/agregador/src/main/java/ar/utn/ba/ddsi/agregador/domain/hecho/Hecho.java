@@ -10,7 +10,6 @@ import java.util.Objects;
 import java.util.Set;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 @Getter
 @Setter
@@ -94,7 +93,7 @@ public class Hecho {
     this.transicionarEstado(EstadoHecho.VISIBLE);
   }
 
-  @jakarta.persistence.PrePersist
+  @PrePersist
   protected void onPrePersist() {
     // Solo establecer fechaDeCarga si no fue provista (por ejemplo, desde fuentes externas)
     if (this.fechaDeCarga == null) {

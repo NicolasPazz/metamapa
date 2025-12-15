@@ -1,20 +1,15 @@
-package ar.utn.ba.ddsi.estatica.domain.dto.output;
+package ar.utn.ba.ddsi.estatica.dto.output;
 
 import ar.utn.ba.ddsi.estatica.domain.hecho.OrigenHecho;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 public class HechoOutputDTO {
   private Long id;
-  private OrigenHecho origen;
-  private String estado;
-  private String contribuyente;
-  private List<String> etiquetas;
   private String titulo;
   private String descripcion;
   private String categoria;
@@ -24,9 +19,7 @@ public class HechoOutputDTO {
   private LocalDate fechaDeAcontecimiento;
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
-  private LocalDateTime ultimaModificacion;
-  private List<String> contenidoMultimedia;
-  private List<String> transicionesDeEstado;
+  private OrigenHecho origen;
 
   public HechoOutputDTO(
       Long id,
@@ -39,10 +32,6 @@ public class HechoOutputDTO {
       LocalDateTime fechaDeCarga
   ) {
     this.id = id;
-    this.origen = OrigenHecho.DATASET;
-    this.estado = "VISIBLE";
-    this.contribuyente = null;
-    this.etiquetas = new ArrayList<>();
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.categoria = categoria;
@@ -50,8 +39,7 @@ public class HechoOutputDTO {
     this.longitud = longitud;
     this.fechaDeAcontecimiento = fechaDeAcontecimiento;
     this.fechaDeCarga = fechaDeCarga;
-    this.ultimaModificacion = null;
-    this.contenidoMultimedia = new ArrayList<>();
-    this.transicionesDeEstado = new ArrayList<>();
+    this.origen = OrigenHecho.DATASET;
   }
 }
+
