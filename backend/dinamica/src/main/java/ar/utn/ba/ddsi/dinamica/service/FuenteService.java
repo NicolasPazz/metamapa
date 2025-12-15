@@ -1,7 +1,6 @@
 package ar.utn.ba.ddsi.dinamica.service;
 
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.HechoOutputDTO;
-import ar.utn.ba.ddsi.dinamica.domain.hecho.EstadoHecho;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
@@ -49,18 +48,18 @@ public class FuenteService {
   public Hecho crearHechoDesdeSolicitud(SolicitudHecho solicitud) {
     log.info("Creando hecho desde solicitud ID: {}", solicitud.getId());
 
-    OrigenHecho origen = solicitud.esAnonimo() ? OrigenHecho.MANUAL : OrigenHecho.CONTRIBUYENTE;
+    OrigenHecho origen = solicitud.esAnonimo() ? OrigenHecho.ANONIMO : OrigenHecho.CONTRIBUYENTE;
 
     Hecho hecho = Hecho.builder()
         .fechaDeCarga(LocalDateTime.now())
         .origen(origen)
-        .estado(EstadoHecho.VISIBLE)
         .enviado(false)
         .solicitud(solicitud)
         .build();
 
     Hecho hechoGuardado = hechosRepository.save(hecho);
-    log.info("Hecho creado con ID: {} desde solicitud ID: {}", hechoGuardado.getId(), solicitud.getId());
+    log.info("Hecho creado con ID: {} desde solicitud ID: {} - Origen: {}",
+        hechoGuardado.getId(), solicitud.getId(), origen);
 
     return hechoGuardado;
   }

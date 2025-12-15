@@ -1,19 +1,19 @@
 package ar.utn.ba.ddsi.dinamica.domain.solicitud;
 
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.dto.output.TransicionEstadoOutputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.ContenidoMultimedia;
-import ar.utn.ba.ddsi.dinamica.domain.hecho.Hecho;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
@@ -81,18 +81,17 @@ public class SolicitudHecho {
   @Builder.Default
   private LocalDateTime fechaDeCargaSolicitud = LocalDateTime.now();
 
-  @NotNull(message = "El estado es obligatorio")
   @Enumerated(EnumType.STRING)
   @Column(name="estado", nullable = false)
-  @Builder.Default
-  private EstadoSolicitud estado = EstadoSolicitud.PENDIENTE;
+  private EstadoSolicitud estado;
 
-  @ElementCollection
+  @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+  @JoinColumn(name = "solicitud_id", referencedColumnName = "id")
   @Builder.Default
   private List<TransicionEstadoSolicitud> transiciones = new ArrayList<>();
 
   public void cambiarEstado(EstadoSolicitud nuevoEstado) {
-    this.transiciones.add(new TransicionEstadoSolicitud(this.estado, LocalDateTime.now()));
+    this.transiciones.add(new TransicionEstadoSolicitud(nuevoEstado, LocalDateTime.now()));
     this.estado = nuevoEstado;
   }
 
@@ -127,14 +126,23 @@ public class SolicitudHecho {
     dto.setNombreCategoria(this.getCategoria());
     dto.setLatitud(this.getLatitud());
     dto.setLongitud(this.getLongitud());
-    dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento().toString());
+    dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento());
     if (this.getMultimedia() != null && !this.getMultimedia().isEmpty()) {
       dto.setContenidoMultimedia(this.getMultimedia().stream()
           .map(ContenidoMultimedia::toOutputDTO)
           .toList());
     }
-    dto.setFechaDeCargaSolicitud(this.getFechaDeCargaSolicitud().toString());
-    dto.setEstado(this.getEstado().toString());
+    dto.setFechaDeCargaSolicitud(this.getFechaDeCargaSolicitud());
+    dto.setEstado(this.getEstado());
+
+    if (this.getTransiciones() != null && !this.getTransiciones().isEmpty()) {
+      dto.setTransiciones(this.getTransiciones().stream()
+          .map(t -> new TransicionEstadoOutputDTO(
+              t.getEstado(),
+              t.getFecha()
+          ))
+          .toList());
+    }
 
     return dto;
   }

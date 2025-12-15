@@ -1,20 +1,13 @@
 package ar.utn.ba.ddsi.dinamica.domain.dto.output;
 
+import ar.utn.ba.ddsi.dinamica.domain.hecho.OrigenHecho;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Data;
 
-
-@JsonPropertyOrder({
-    "id", "titulo", "descripcion", "categoria", "latitud", "longitud",
-    "fecha_acontecimiento", "fecha_carga", "ultimaModificacion",
-    "origen", "estado", "contribuyente", "etiquetas",
-    "contenidoMultimedia", "transicionesDeEstado"
-})
 @Data
 public class HechoOutputDTO {
 
@@ -42,26 +35,14 @@ public class HechoOutputDTO {
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
 
-  @JsonProperty("ultimaModificacion")
-  private LocalDateTime ultimaModificacion;
-
   @JsonProperty("origen")
-  private String origen;
+  private OrigenHecho origen;
 
-  @JsonProperty("estado")
-  private String estado;
+  @JsonProperty("id_contribuyente")
+  private Long idContribuyente;
 
-  @JsonProperty("contribuyente")
-  private Long contribuyente;
-
-  @JsonProperty("etiquetas")
-  private List<Long> etiquetas;
-
-  @JsonProperty("contenidoMultimedia")
+  @JsonProperty("multimedia")
   private List<ContenidoMultimediaOutputDTO> contenidoMultimedia;
-
-  @JsonProperty("transicionesDeEstado")
-  private List<String> transicionesDeEstado;
 
   public HechoOutputDTO(
       Long id,
@@ -72,15 +53,11 @@ public class HechoOutputDTO {
       Double longitud,
       LocalDate fechaDeAcontecimiento,
       LocalDateTime fechaDeCarga,
-      LocalDateTime ultimaModificacion,
-      Long contribuyente,
+      OrigenHecho origen,
+      Long idContribuyente,
       List<ContenidoMultimediaOutputDTO> contenidoMultimedia
   ) {
     this.id = id;
-    this.origen = "CONTRIBUYENTE";
-    this.estado = "VISIBLE";
-    this.contribuyente = contribuyente;
-    this.etiquetas = new ArrayList<>();
     this.titulo = titulo;
     this.descripcion = descripcion;
     this.categoria = categoria;
@@ -88,8 +65,9 @@ public class HechoOutputDTO {
     this.longitud = longitud;
     this.fechaDeAcontecimiento = fechaDeAcontecimiento;
     this.fechaDeCarga = fechaDeCarga;
-    this.ultimaModificacion = ultimaModificacion;
+    this.origen = origen;
+    this.idContribuyente = idContribuyente;
     this.contenidoMultimedia = contenidoMultimedia != null ? contenidoMultimedia : new ArrayList<>();
-    //this.transicionesDeEstado = new ArrayList<>();
   }
 }
+

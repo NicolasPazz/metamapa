@@ -39,7 +39,7 @@ public class SolicitudEliminacion {
   @Column(name = "textoFundamentos", nullable = false, length = 2000)
   private String textoFundamentos;
 
-  @Column(name = "fecha", nullable = false, updatable = false)
+  @Column(name = "fecha_carga", nullable = false, updatable = false)
   @CreationTimestamp
   private LocalDate fecha;
 

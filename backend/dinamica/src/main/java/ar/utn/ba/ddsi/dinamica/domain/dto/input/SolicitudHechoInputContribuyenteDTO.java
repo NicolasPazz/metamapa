@@ -6,15 +6,14 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import lombok.Data;
-
+import java.time.LocalDate;
 import java.util.List;
+import lombok.Data;
 
 @Data
 public class SolicitudHechoInputContribuyenteDTO {
     @JsonProperty("id_contribuyente")
-    private Long idContribuyente; // Null para anónimos
+    private Long idContribuyente;
 
     @NotBlank(message = "El título es obligatorio")
     @JsonProperty("titulo")
@@ -40,10 +39,9 @@ public class SolicitudHechoInputContribuyenteDTO {
     @JsonProperty("longitud")
     private Double longitud;
 
-    @NotBlank(message = "La fecha de acontecimiento es obligatoria")
-    @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "La fecha debe estar en formato yyyy-MM-dd")
+    @NotNull(message = "La fecha de acontecimiento es obligatoria")
     @JsonProperty("fecha_acontecimiento")
-    private String fechaDeAcontecimiento;
+    private LocalDate fechaDeAcontecimiento;
 
     @Valid
     @JsonProperty("multimedia")

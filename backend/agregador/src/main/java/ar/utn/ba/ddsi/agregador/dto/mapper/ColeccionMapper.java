@@ -28,9 +28,7 @@ public class ColeccionMapper {
         dto.setTitulo(coleccion.getTitulo());
         dto.setDescripcion(coleccion.getDescripcion());
         dto.setFechaDeCarga(coleccion.getFechaDeCarga());
-        dto.setFuenteId(coleccion.getFuenteId());
-        dto.setIdOrigen(coleccion.getIdOrigen());
-        
+
         if (coleccion.getHechos() != null) {
             dto.setHechos(hechoMapper.toDTO(coleccion.getHechos()));
         }

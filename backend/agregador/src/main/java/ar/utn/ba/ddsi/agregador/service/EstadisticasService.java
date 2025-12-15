@@ -262,9 +262,7 @@ public class EstadisticasService {
             .horasPicoPorCategoria(obtenerHoraPicoParaTodasLasCategorias())
             .totalSolicitudesSpam(obtenerTotalSolicitudesSpam())
             .fechaUltimaActualizacion(
-                ultimaActualizacion != null ?
-                    ultimaActualizacion.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) :
-                    LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+                ultimaActualizacion != null ? ultimaActualizacion : LocalDateTime.now()
             )
             .build();
     }

@@ -46,9 +46,8 @@ public class SolicitudesService {
         .categoria(input.getCategoria())
         .latitud(input.getLatitud())
         .longitud(input.getLongitud())
-        .fechaDeAcontecimiento(LocalDate.parse(input.getFechaDeAcontecimiento()))
+        .fechaDeAcontecimiento(input.getFechaDeAcontecimiento())
         .fechaDeCargaSolicitud(LocalDateTime.now())
-        .estado(EstadoSolicitud.PENDIENTE)
         .multimedia(new ArrayList<>())
         .transiciones(new ArrayList<>())
         .build();
@@ -59,6 +58,8 @@ public class SolicitudesService {
           .toList();
       solicitud.getMultimedia().addAll(multimedia);
     }
+
+    solicitud.cambiarEstado(EstadoSolicitud.PENDIENTE);
 
     SolicitudHecho solicitudGuardada = solicitudesRepository.save(solicitud);
 
@@ -94,7 +95,7 @@ public class SolicitudesService {
     if (inputDTO.getNuevoLatitud() != null) solicitud.setLatitud(inputDTO.getNuevoLatitud());
     if (inputDTO.getNuevoLongitud() != null) solicitud.setLongitud(inputDTO.getNuevoLongitud());
     if (inputDTO.getNuevoFechaDeAcontecimiento() != null) {
-      solicitud.setFechaDeAcontecimiento(LocalDate.parse(inputDTO.getNuevoFechaDeAcontecimiento()));
+      solicitud.setFechaDeAcontecimiento(inputDTO.getNuevoFechaDeAcontecimiento());
     }
 
     if (inputDTO.getNuevoContenidoMultimedia() != null) {
@@ -128,7 +129,7 @@ public class SolicitudesService {
     if (inputDTO.getNuevoLatitud() != null) solicitud.setLatitud(inputDTO.getNuevoLatitud());
     if (inputDTO.getNuevoLongitud() != null) solicitud.setLongitud(inputDTO.getNuevoLongitud());
     if (inputDTO.getNuevoFechaDeAcontecimiento() != null) {
-      solicitud.setFechaDeAcontecimiento(LocalDate.parse(inputDTO.getNuevoFechaDeAcontecimiento()));
+      solicitud.setFechaDeAcontecimiento(inputDTO.getNuevoFechaDeAcontecimiento());
     }
 
     if (inputDTO.getNuevoContenidoMultimedia() != null) {
@@ -139,13 +140,9 @@ public class SolicitudesService {
       solicitud.getMultimedia().addAll(nuevaMultimedia);
     }
 
-    try {
-      EstadoSolicitud nuevoEstado = EstadoSolicitud.valueOf(inputDTO.getNuevoEstadoSolicitud().toUpperCase());
-      log.info("Cambiando estado de solicitud ID: {} a {}", id, nuevoEstado);
-      solicitud.cambiarEstado(nuevoEstado);
-    } catch (IllegalArgumentException ex) {
-      throw new IllegalArgumentException("Estado inválido: " + inputDTO.getNuevoEstadoSolicitud());
-    }
+    EstadoSolicitud nuevoEstado = inputDTO.getNuevoEstadoSolicitud();
+    log.info("Cambiando estado de solicitud ID: {} a {}", id, nuevoEstado);
+    solicitud.cambiarEstado(nuevoEstado);
 
     SolicitudHecho solicitudActualizada = solicitudesRepository.save(solicitud);
 

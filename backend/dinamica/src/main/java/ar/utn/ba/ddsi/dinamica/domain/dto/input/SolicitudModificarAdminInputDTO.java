@@ -1,19 +1,20 @@
 package ar.utn.ba.ddsi.dinamica.domain.dto.input;
 
+import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDate;
 import java.util.List;
 import lombok.Data;
 
 @Data
 public class SolicitudModificarAdminInputDTO {
-  @NotBlank(message = "El estado es obligatorio")
+  @NotNull(message = "El estado es obligatorio")
   @JsonProperty("estado")
-  private String nuevoEstadoSolicitud;
+  private EstadoSolicitud nuevoEstadoSolicitud;
 
   @JsonProperty("titulo")
   private String nuevoTitulo;
@@ -34,9 +35,8 @@ public class SolicitudModificarAdminInputDTO {
   @JsonProperty("longitud")
   private Double nuevoLongitud;
 
-  @Pattern(regexp = "\\d{4}-\\d{2}-\\d{2}", message = "La fecha debe estar en formato yyyy-MM-dd")
   @JsonProperty("fecha_acontecimiento")
-  private String nuevoFechaDeAcontecimiento;
+  private LocalDate nuevoFechaDeAcontecimiento;
 
   @Valid
   @JsonProperty("multimedia")

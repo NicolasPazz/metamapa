@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.agregador.service;
 
+import ar.utn.ba.ddsi.agregador.domain.hecho.EstadoHecho;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.FuenteDTO;
@@ -186,16 +187,48 @@ public class FuentesService {
     }
 
     h.setFuenteId(idFuente);
+
+    if (h.getEstado() == null) {
+      h.setEstado(EstadoHecho.VISIBLE);
+      log.debug("Aplicado estado default VISIBLE al hecho idOrigen {} de fuente {}", h.getIdOrigen(), idFuente);
+    }
+
+    if (h.getEtiquetas() == null) {
+      h.setEtiquetas(new ArrayList<>());
+    }
+
+    if (h.getMultimedia() == null) {
+      h.setMultimedia(new ArrayList<>());
+    }
+
+    if (h.getTransiciones() == null) {
+      h.setTransiciones(new ArrayList<>());
+    }
   }
 
   private void normalizarColeccion(ColeccionDTO c, Long idFuente) {
-    if (c.getHandle() == null) {
-      log.warn("Colección sin handle recibido desde fuente {}", idFuente);
-    } else {
-      c.setIdOrigen(c.getHandle());
-      c.setHandle(null);
+    // Aplicar defaults para atributos que otras fuentes pueden no proveer
+    if (c.getCriterioDePertenencia() == null) {
+      log.debug("Colección de fuente {} sin criterio de pertenencia", idFuente);
     }
 
-    c.setFuenteId(idFuente);
+    // El algoritmoConsenso puede ser null si viene de fuentes externas
+    if (c.getAlgoritmoConsenso() == null) {
+      log.debug("Colección de fuente {} sin algoritmo de consenso definido", idFuente);
+    }
+
+    if (c.getHechos() == null) {
+      c.setHechos(new ArrayList<>());
+    } else {
+      // Normalizar cada hecho dentro de la colección
+      c.getHechos().forEach(h -> normalizarHecho(h, idFuente));
+    }
+
+    if (c.getHechosConsensuados() == null) {
+      c.setHechosConsensuados(new ArrayList<>());
+    } else {
+      // Normalizar cada hecho consensuado dentro de la colección
+      c.getHechosConsensuados().forEach(h -> normalizarHecho(h, idFuente));
+    }
   }
 }

@@ -5,6 +5,6 @@ public enum OrigenHecho {
   ONG,
   METAMAPA,
   CONTRIBUYENTE,
-  MANUAL
+  ANONIMO
 }
 

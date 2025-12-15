@@ -25,10 +25,4 @@ public class ColeccionDTO {
 
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
-
-  @JsonProperty("fuente_id")
-  private Long fuenteId;
-
-  @JsonProperty("id_origen")
-  private UUID idOrigen;
 }

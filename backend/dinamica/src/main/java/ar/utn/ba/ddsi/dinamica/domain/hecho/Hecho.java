@@ -39,10 +39,6 @@ public class Hecho {
   @Column(name="origen", nullable = false)
   private OrigenHecho origen;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name="estado", nullable = false)
-  @Builder.Default
-  private EstadoHecho estado = EstadoHecho.VISIBLE;
 
   @Column(name = "enviado", nullable = false)
   @Builder.Default
@@ -62,7 +58,7 @@ public class Hecho {
         this.solicitud.getLongitud(),
         this.solicitud.getFechaDeAcontecimiento(),
         this.fechaDeCarga,
-        this.fechaDeCarga,
+        this.origen,
         this.solicitud.getIdContribuyente(),
         this.solicitud.getMultimedia().stream()
             .map(ContenidoMultimedia::toOutputDTO)

@@ -1,12 +1,12 @@
- package ar.utn.ba.ddsi.agregador.dto;
+package ar.utn.ba.ddsi.agregador.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import java.time.LocalDateTime;
+import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.util.Map;
 
 @Data
 @Builder
@@ -30,6 +30,6 @@ public class EstadisticasDTO {
     private Long totalSolicitudesSpam;
 
     @JsonProperty("fecha_ultima_actualizacion")
-    private String fechaUltimaActualizacion;
+    private LocalDateTime fechaUltimaActualizacion;
 }
 
