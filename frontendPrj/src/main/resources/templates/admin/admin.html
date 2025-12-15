@@ -47,7 +47,13 @@
           <h3 th:text="${coleccion.titulo}"></h3>
           <p>Fuentes: Dinámicas (API Verde), Estáticas (Reporte ONGs)</p> <!-- TODO: agregar fuentes de coleccion a DTO -->
           <p>Algoritmo de consenso: Mayoría Simple</p> <!-- TODO: agregar algoritmo de coleccion a DTO -->
-          <a href="#edit-colection1" class="btn">Editar</a>
+          <a href="#editar-coleccion"
+             class="btn"
+             th:data-handle="${coleccion.handle}"
+             th:data-titulo="${coleccion.titulo}"
+             th:data-descripcion="${coleccion.descripcion}" onclick="cargarDatosEdicion(this)">
+              Editar
+          </a>
         </div>
       </div>
     </section>
@@ -159,7 +165,6 @@
         <option value="lugar">Lugar</option>
         <option value="origen">Origen</option>
       </select>
-<!-- TODO: Arreglar criterio fecha -->
       <div id="opcion-fecha" class="conditional-section">
         <select name="criterioDePertenencia.tipoFecha">
           <option value="CARGA">Carga</option>
@@ -244,5 +249,113 @@
     </form>
     <a href="#" class="close">Cerrar</a>
   </div>
+
+  <div id="editar-coleccion" class="panel">
+    <h3>Editar Colección</h3>
+    <form method="post" th:action="@{/admin/actualizar-coleccion}">
+
+      <input type="hidden" name="handle" id="edit-handle">
+
+      <label for="edit-nombre">Nombre*</label>
+      <input name="titulo" type="text" id="edit-nombre" required>
+
+      <label for="edit-descripcion">Descripción*</label>
+      <textarea name="descripcion" id="edit-descripcion" required></textarea>
+
+      <label for="edit-criterio">Seleccione Criterio:</label>
+      <select name="criterioDePertenencia.tipo" id="edit-criterio" onchange="mostrarOpcionesEdicion()">
+        <option value="">-- Seleccione una opción --</option>
+        <option value="fecha">Fecha</option>
+        <option value="igualdad">Igualdad</option>
+        <option value="lugar">Lugar</option>
+        <option value="origen">Origen</option>
+      </select>
+
+      <div id="edit-opcion-fecha" class="conditional-section-edit" style="display:none;">
+        <select name="criterioDePertenencia.tipoFecha" id="edit-fecha-tipo">
+          <option value="CARGA">Carga</option>
+          <option value="ACONTECIMIENTO">Acontecimiento</option>
+        </select>
+        <label>Fecha Desde:</label>
+        <input type="date" name="criterioDePertenencia.fechaInicial" id="edit-fecha-ini">
+        <label>Fecha Hasta:</label>
+        <input type="date" name="criterioDePertenencia.fechaFinal" id="edit-fecha-fin">
+      </div>
+
+      <div id="edit-opcion-igualdad" class="conditional-section-edit" style="display:none;">
+        <label>Campo:</label>
+        <select name="criterioDePertenencia.tipoDeDato" id="edit-igualdad-tipo">
+          <option value="categoria">Categoría</option>
+          <option value="descripcion">Descripción</option>
+          <option value="etiqueta">Etiqueta</option>
+          <option value="titulo">Título</option>
+        </select>
+        <label>Valor:</label>
+        <input name="criterioDePertenencia.cadenaAComparar" type="text" id="edit-igualdad-valor">
+      </div>
+
+      <div id="edit-opcion-lugar" class="conditional-section-edit" style="display:none;">
+        <label>Latitud:</label>
+        <input name="criterioDePertenencia.lat" type="number" step="any" id="edit-lugar-lat">
+        <label>Longitud:</label>
+        <input name="criterioDePertenencia.lng" type="number" step="any" id="edit-lugar-lng">
+      </div>
+
+      <div id="edit-opcion-origen" class="conditional-section-edit" style="display:none;">
+        <label>Fuente:</label>
+        <select name="criterioDePertenencia.origen" id="edit-origen-fuente">
+          <option value="DATASET">Dataset</option>
+          <option value="ONG">ONG</option>
+          <option value="METAMAPA">Metamapa</option>
+          <option value="CONTRIBUYENTE">Contribuyente</option>
+          <option value="MANUAL">Manual</option>
+        </select>
+      </div>
+
+      <label for="edit-consenso">Algoritmo de Consenso*</label>
+      <select name="algoritmoConsenso" id="edit-consenso" required>
+        <option value="MAYORIA_SIMPLE">Mayoría Simple</option>
+        <option value="MULTIPLES_MENCIONES">Múltiples Menciones</option>
+        <option value="ABSOLUTA">Absoluta</option>
+      </select>
+
+      <div class="mt-3">
+        <button type="submit">Actualizar</button>
+        <a href="#colecciones" class="btn" style="background:#ccc; color:#000;">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Función para manejar la visualización de secciones en el modo EDICIÓN
+    function mostrarOpcionesEdicion() {
+      const criterio = document.getElementById('edit-criterio').value;
+      const secciones = document.querySelectorAll('.conditional-section-edit');
+
+      // Ocultar todo primero
+      secciones.forEach(seccion => {
+        seccion.style.display = 'none';
+      });
+
+      // Mostrar la seleccionada
+      if (criterio) {
+        const seccionAmostrar = document.getElementById('edit-opcion-' + criterio.toLowerCase());
+        if (seccionAmostrar) {
+          seccionAmostrar.style.display = 'block';
+        }
+      }
+    }
+
+    // Función principal: Carga los datos desde el botón al formulario
+    function cargarDatosEdicion(btn) {
+      // 1. Llenar campos básicos
+      document.getElementById('edit-handle').value = btn.dataset.handle;
+      document.getElementById('edit-nombre').value = btn.dataset.titulo;
+      document.getElementById('edit-descripcion').value = btn.dataset.descripcion;
+
+      // 3. Forzar la visualización de la sección correcta antes de llenar los sub-campos
+      mostrarOpcionesEdicion();
+    }
+  </script>
 </div>
 </html>

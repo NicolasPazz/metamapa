@@ -37,6 +37,7 @@ public class AdminController {
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
         List<HechoDTO> hechos = hechoService.getAllHechos();
         List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();
+        model.addAttribute("titulo", "Panel De Control");
         //model.addAttribute("coleccionesLimit", colecciones.subList(0,2));
         model.addAttribute("hechosLimit", hechos.subList(3,5));
         //model.addAttribute("solicitudesLimit", solicitudes.subList(0,2));
@@ -90,6 +91,25 @@ public class AdminController {
             model.addAttribute("mensaje", "Colección creada correctamente.");
         } catch (Exception e) {
             log.error("Error al crear coleccion", e);
+            model.addAttribute("mensaje", "Error: " + e.getMessage());
+        }
+
+        return "redirect:/admin"; // Volvemos a la vista admin.html
+    }
+
+    @PostMapping("/admin/actualizar-coleccion")
+    public String actualizarColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, @RequestParam("handle") String handle, Model model) {
+        if(!coleccionDTO.isValid()) {
+            model.addAttribute("mensaje", "Error: faltan datos para la colección");
+            return "redirect:/admin";
+        }
+
+        try {
+            // Llamamos al servicio que se comunica con el otro sistema
+            adminService.actualizarColeccion(coleccionDTO, handle);
+            model.addAttribute("mensaje", "Colección actualizada correctamente.");
+        } catch (Exception e) {
+            log.error("Error al actualizar coleccion", e);
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
 

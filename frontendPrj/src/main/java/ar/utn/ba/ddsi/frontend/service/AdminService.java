@@ -64,4 +64,13 @@ public class AdminService {
                 .bodyToMono(Void.class) // Deserialize the response
                 .block();
     }
+
+    public void actualizarColeccion(CrearColeccionDTO dto, String handle) {
+        webClientAgregador.patch()
+                .uri("/colecciones/" + handle)
+                .bodyValue(dto)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
 }
