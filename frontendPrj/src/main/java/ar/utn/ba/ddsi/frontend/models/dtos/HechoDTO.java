@@ -46,6 +46,4 @@ public class HechoDTO {
         MultimediaLista.add(contenidoMultimediaDTO);
         return MultimediaLista;
     }
-
-
 }

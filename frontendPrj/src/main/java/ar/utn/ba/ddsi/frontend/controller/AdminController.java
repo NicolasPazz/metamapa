@@ -1,16 +1,16 @@
 // java
 package ar.utn.ba.ddsi.frontend.controller;
 
-import ar.utn.ba.ddsi.frontend.models.dtos.ColeccionDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.*;
 import ar.utn.ba.ddsi.frontend.service.AdminService;
 import ar.utn.ba.ddsi.frontend.service.ColeccionService;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.Logger;
+import org.springframework.cglib.core.Local;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -49,13 +51,12 @@ public class AdminController {
                                       @RequestParam("estado") String estado,
                                       RedirectAttributes redirectAttributes) {
         try {
-            // Pass the ID and new status to your service
             adminService.actualizarSolicitud(solicitudId, estado);
             redirectAttributes.addFlashAttribute("success", "Solicitud actualizada!");
         } catch (Exception e) {
             redirectAttributes.addFlashAttribute("error", "Error al actualizar.");
         }
-        return "redirect:/admin/admin";
+        return "redirect:/admin";
     }
 
 
@@ -72,7 +73,28 @@ public class AdminController {
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
 
-        return "/admin/admin"; // Volvemos a la vista admin.html
+        return "redirect:/admin"; // Volvemos a la vista admin.html
     }
+
+    @PostMapping("/admin/crear-coleccion")
+    public String crearColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, Model model) {
+
+        if(!coleccionDTO.isValid()) {
+            model.addAttribute("mensaje", "Error: faltan datos para la colección");
+            return "redirect:/admin";
+        }
+
+        try {
+            // Llamamos al servicio que se comunica con el otro sistema
+            adminService.crearColeccion(coleccionDTO);
+            model.addAttribute("mensaje", "Colección creada correctamente.");
+        } catch (Exception e) {
+            log.error("Error al crear coleccion", e);
+            model.addAttribute("mensaje", "Error: " + e.getMessage());
+        }
+
+        return "redirect:/admin"; // Volvemos a la vista admin.html
+    }
+
 }
 

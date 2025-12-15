@@ -13,8 +13,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/solicitudes")
+
 public class SolicitudController {
     private final SolicitudService solicitudService;
+
 
     public String crearSolicitud(@ModelAttribute("solicitud") SolicitudDTO solicitudDTO,
                                  BindingResult bindingResult,

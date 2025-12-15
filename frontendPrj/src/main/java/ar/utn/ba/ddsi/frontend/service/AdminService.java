@@ -1,8 +1,6 @@
 package ar.utn.ba.ddsi.frontend.service;
 
-import ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud;
-import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.*;
 import org.springframework.http.MediaType;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
@@ -54,6 +52,16 @@ public class AdminService {
                 .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
                 .toBodilessEntity()
+                .block();
+    }
+
+    public Void crearColeccion(CrearColeccionDTO dto) {
+        return webClientAgregador
+                .post()
+                .uri("/colecciones")
+                .bodyValue(dto)
+                .retrieve()
+                .bodyToMono(Void.class) // Deserialize the response
                 .block();
     }
 }

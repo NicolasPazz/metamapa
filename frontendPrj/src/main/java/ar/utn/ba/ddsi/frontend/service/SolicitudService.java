@@ -4,6 +4,8 @@ import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.util.List;
+
 @Service
 public class SolicitudService {
     final private WebClient webClient;
@@ -20,4 +22,5 @@ public class SolicitudService {
                 .bodyToMono(SolicitudDTO.class)
                 .block();
     }
+
 }
