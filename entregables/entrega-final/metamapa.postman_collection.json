@@ -50,6 +50,9 @@
 								},
 								{
 									"name": "Get Desastres (Paginado)",
+									"protocolProfileBehavior": {
+										"disableBodyPruning": true
+									},
 									"request": {
 										"auth": {
 											"type": "noauth"
@@ -62,6 +65,15 @@
 												"type": "text"
 											}
 										],
+										"body": {
+											"mode": "raw",
+											"raw": "",
+											"options": {
+												"raw": {
+													"language": "json"
+												}
+											}
+										},
 										"url": {
 											"raw": "https://api-ddsi.disilab.ar/public/api/desastres?per_page=100&page=59",
 											"protocol": "https",
@@ -1017,108 +1029,6 @@
 								{
 									"key": "id",
 									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Hechos Dinamica",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"// Parseamos el body como JSON\r",
-									"let hechos = pm.response.json();\r",
-									"\r",
-									"// Total de hechos\r",
-									"let total = hechos.length;\r",
-									"\r",
-									"// Inicializamos el contador por origen según tu enum\r",
-									"let counts = {\r",
-									"  DATASET: 0,\r",
-									"  ONG: 0,\r",
-									"  METAMAPA: 0,\r",
-									"  CONTRIBUYENTE: 0,\r",
-									"  MANUAL: 0\r",
-									"};\r",
-									"\r",
-									"// Recorremos y contamos\r",
-									"hechos.forEach(h => {\r",
-									"  let o = h.origen;\r",
-									"  if (counts.hasOwnProperty(o)) {\r",
-									"    counts[o]++;\r",
-									"  } else {\r",
-									"    // opcional: para orígenes inesperados\r",
-									"    console.warn(`Origen desconocido: ${o}`);\r",
-									"  }\r",
-									"});\r",
-									"\r",
-									"// Mostramos en consola\r",
-									"console.log(`Total hechos: ${total}`);\r",
-									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
-									"  console.log(`${origen}: ${cnt}`);\r",
-									"});\r",
-									"\r",
-									"// (Opcional) Guardamos en variables de entorno\r",
-									"pm.environment.set(\"totalHechos\", total);\r",
-									"Object.entries(counts).forEach(([origen, cnt]) => {\r",
-									"  pm.environment.set(`hechos_${origen}`, cnt);\r",
-									"});\r",
-									""
-								],
-								"type": "text/javascript",
-								"packages": {},
-								"requests": {}
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{dinamicaBaseURL}}/hechos",
-							"host": [
-								"{{dinamicaBaseURL}}"
-							],
-							"path": [
-								"hechos"
-							],
-							"query": [
-								{
-									"key": "categoria",
-									"value": "Incendio",
-									"disabled": true
-								},
-								{
-									"key": "fecha_reporte_desde",
-									"value": "01-01-0001",
-									"disabled": true
-								},
-								{
-									"key": "fecha_reporte_hasta",
-									"value": "31-12-9999",
-									"disabled": true
-								},
-								{
-									"key": "fecha_acontecimiento_desde",
-									"value": "01-01-0001",
-									"disabled": true
-								},
-								{
-									"key": "fecha_acontecimiento_hasta",
-									"value": "31-12-9999",
-									"disabled": true
-								},
-								{
-									"key": "ubicacion",
-									"value": "-31.42,-64.19",
-									"disabled": true
 								}
 							]
 						}

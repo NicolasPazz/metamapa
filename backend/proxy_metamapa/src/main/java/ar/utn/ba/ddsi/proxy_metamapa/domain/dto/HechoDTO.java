@@ -16,21 +16,21 @@ import lombok.Data;
     "categoria",
     "latitud",
     "longitud",
-    "fecha_contecimiento",
+    "fecha_acontecimiento",
     "fecha_carga",
-    "ultimaModificacion",
     "origen",
     "estado",
-    "contribuyente",
+    "contribuyente_id",
     "etiquetas",
-    "contenidoMultimedia",
-    "transicionesDeEstado"
+    "multimedia",
+    "transiciones"
 })
 public class HechoDTO {
   private Long id;
   private String origen;
   private EstadoHecho estado;
-  private Long contribuyente;
+  @JsonProperty("contribuyente_id")
+  private Long contribuyenteId;
   private List<String> etiquetas;
   private String titulo;
   private String descripcion;
@@ -41,15 +41,14 @@ public class HechoDTO {
   private LocalDate fechaDeAcontecimiento;
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
-  private LocalDateTime ultimaModificacion;
-  private List<ContenidoMultimediaDTO> contenidoMultimedia;
-  private List<TransicionEstadoHechoDTO> transicionesDeEstado;
+  private List<ContenidoMultimediaDTO> multimedia;
+  private List<TransicionEstadoHechoDTO> transiciones;
 
-  public HechoDTO(Long contribuyente, List<String> etiquetas, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, LocalDateTime ultimaModificacion, List<ContenidoMultimediaDTO> contenidoMultimedia, List<TransicionEstadoHechoDTO> transicionesDeEstado) {
+  public HechoDTO(Long contribuyenteId, List<String> etiquetas, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, List<ContenidoMultimediaDTO> multimedia, List<TransicionEstadoHechoDTO> transiciones) {
     this.id = null;
     this.origen = "METAMAPA";
     this.estado = EstadoHecho.VISIBLE;
-    this.contribuyente = contribuyente;
+    this.contribuyenteId = contribuyenteId;
     this.etiquetas = etiquetas;
     this.titulo = titulo;
     this.descripcion = descripcion;
@@ -58,8 +57,7 @@ public class HechoDTO {
     this.longitud = longitud;
     this.fechaDeAcontecimiento = fechaDeAcontecimiento;
     this.fechaDeCarga = fechaDeCarga;
-    this.ultimaModificacion = ultimaModificacion;
-    this.contenidoMultimedia = contenidoMultimedia;
-    this.transicionesDeEstado = transicionesDeEstado;
+    this.multimedia = multimedia;
+    this.transiciones = transiciones;
   }
 }

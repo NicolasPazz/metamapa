@@ -19,12 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class FuenteController {
   private final FuenteService fuenteService;
 
-  @GetMapping
-  public ResponseEntity<List<HechoOutputDTO>> getAllHechosVisibles() {
-    log.debug("GET /api/hechos - Retorna lista vacía intencionalmente");
-    return ResponseEntity.ok(fuenteService.getAllHechosVisibles());
-  }
-
   @GetMapping("/nuevos")
   public ResponseEntity<List<HechoOutputDTO>> getAllHechosNuevos() {
     log.info("GET /api/hechos/nuevos - Solicitando hechos nuevos para agregador");

@@ -33,9 +33,9 @@ public class StubDataFixture {
         LocalDateTime.of(2025, 1, 1, 10, 0, 0)
     );
 
-    // Hecho 1: Incendio Córdoba
+    // Hecho 1: Incendio Córdoba (Anónimo)
     HechoDTO incendioCordoba = new HechoDTO(
-        6775L,
+        null,
         List.of("incendio", "córdoba", "forestal"),
         "Incendio forestal en Córdoba",
         "Fuego controlado luego de 3 horas de trabajo intenso de bomberos.",
@@ -44,15 +44,15 @@ public class StubDataFixture {
         -64.19,
         LocalDate.of(2025, 3, 21),
         LocalDateTime.of(2025, 3, 21, 14, 30),
-        LocalDateTime.of(2025, 3, 21, 14, 31),
-        List.of(new ContenidoMultimediaDTO("/stub/img/incendio-1.jpg", "IMAGEN")),
+        List.of(new ContenidoMultimediaDTO("incendio-cordoba.jpg", "IMAGEN")),
         List.of(transVisible)
     );
     incendioCordoba.setId(1L);
+    incendioCordoba.setEstado(EstadoHecho.VISIBLE);
 
-    // Hecho 2: Inundación La Plata
+    // Hecho 2: Inundación La Plata (Anónimo)
     HechoDTO inundacionLaPlata = new HechoDTO(
-        1002L,
+        null,
         List.of("inundación", "la plata", "evacuados"),
         "Inundación en La Plata",
         "Evacuados y cortes de luz debido a intensas lluvias.",
@@ -61,15 +61,15 @@ public class StubDataFixture {
         -57.95,
         LocalDate.of(2025, 4, 2),
         LocalDateTime.of(2025, 4, 2, 16, 0),
-        LocalDateTime.of(2025, 4, 2, 16, 10),
-        List.of(new ContenidoMultimediaDTO("/stub/vid/inundacion-1.mp4", "VIDEO")),
+        List.of(new ContenidoMultimediaDTO("inundacion-laplata.jpg", "IMAGEN")),
         List.of(transVisible)
     );
     inundacionLaPlata.setId(2L);
+    inundacionLaPlata.setEstado(EstadoHecho.VISIBLE);
 
-    // Hecho 3: Terremoto Mendoza
+    // Hecho 3: Terremoto Mendoza (Anónimo)
     HechoDTO terremotoMendoza = new HechoDTO(
-        2345L,
+        null,
         List.of("terremoto", "mendoza", "sismo"),
         "Terremoto de 4.2 grados en Mendoza",
         "Sismo de mediana intensidad sin víctimas reportadas.",
@@ -78,15 +78,15 @@ public class StubDataFixture {
         -68.83,
         LocalDate.of(2025, 5, 15),
         LocalDateTime.of(2025, 5, 15, 8, 45),
-        LocalDateTime.of(2025, 5, 15, 9, 0),
-        List.of(new ContenidoMultimediaDTO("/stub/img/terremoto-1.jpg", "IMAGEN")),
+        List.of(new ContenidoMultimediaDTO("terremoto-mendoza.jpg", "IMAGEN")),
         List.of(transVisible)
     );
     terremotoMendoza.setId(3L);
+    terremotoMendoza.setEstado(EstadoHecho.VISIBLE);
 
-    // Hecho 4: Tornado Santa Fe
+    // Hecho 4: Tornado Santa Fe (Anónimo)
     HechoDTO tornadoSantaFe = new HechoDTO(
-        3456L,
+        null,
         List.of("tornado", "santa fe", "vientos"),
         "Tornado en zona rural de Santa Fe",
         "Tornado F2 causa daños materiales en campos agrícolas.",
@@ -95,18 +95,15 @@ public class StubDataFixture {
         -60.69,
         LocalDate.of(2025, 6, 10),
         LocalDateTime.of(2025, 6, 10, 17, 20),
-        LocalDateTime.of(2025, 6, 10, 18, 0),
-        List.of(
-            new ContenidoMultimediaDTO("/stub/img/tornado-1.jpg", "IMAGEN"),
-            new ContenidoMultimediaDTO("/stub/vid/tornado-1.mp4", "VIDEO")
-        ),
+        List.of(new ContenidoMultimediaDTO("tornado-santafe.jpg", "IMAGEN")),
         List.of(transVisible)
     );
     tornadoSantaFe.setId(4L);
+    tornadoSantaFe.setEstado(EstadoHecho.VISIBLE);
 
-    // Hecho 5: Contaminación Riachuelo
+    // Hecho 5: Contaminación Riachuelo (Anónimo)
     HechoDTO contaminacionRiachuelo = new HechoDTO(
-        4567L,
+        null,
         List.of("contaminación", "riachuelo", "ambiental"),
         "Derrame tóxico en el Riachuelo",
         "Derrame de sustancias químicas detectado en la cuenca del Riachuelo.",
@@ -115,15 +112,15 @@ public class StubDataFixture {
         -58.37,
         LocalDate.of(2025, 7, 5),
         LocalDateTime.of(2025, 7, 5, 11, 30),
-        LocalDateTime.of(2025, 7, 5, 12, 0),
-        List.of(new ContenidoMultimediaDTO("/stub/img/contaminacion-1.jpg", "IMAGEN")),
+        List.of(new ContenidoMultimediaDTO("contaminacion-riachuelo.jpg", "IMAGEN")),
         List.of(transVisible)
     );
     contaminacionRiachuelo.setId(5L);
+    contaminacionRiachuelo.setEstado(EstadoHecho.VISIBLE);
 
-    // Hecho 6: Granizo Rosario
+    // Hecho 6: Granizo Rosario (Anónimo)
     HechoDTO granizoRosario = new HechoDTO(
-        5678L,
+        null,
         List.of("granizo", "rosario", "tormenta"),
         "Intensa tormenta de granizo en Rosario",
         "Granizo del tamaño de pelotas de golf causa daños en autos y techos.",
@@ -132,15 +129,15 @@ public class StubDataFixture {
         -60.64,
         LocalDate.of(2025, 8, 20),
         LocalDateTime.of(2025, 8, 20, 19, 15),
-        LocalDateTime.of(2025, 8, 20, 19, 45),
-        List.of(new ContenidoMultimediaDTO("/stub/vid/granizo-1.mp4", "VIDEO")),
+        List.of(new ContenidoMultimediaDTO("granizo-rosario.jpg", "IMAGEN")),
         List.of(transVisible)
     );
     granizoRosario.setId(6L);
+    granizoRosario.setEstado(EstadoHecho.VISIBLE);
 
-    // Hecho 7: Sequía Salta
+    // Hecho 7: Sequía Salta (Anónimo)
     HechoDTO sequiaSalta = new HechoDTO(
-        6789L,
+        null,
         List.of("sequía", "salta", "agricultura"),
         "Sequía severa afecta cultivos en Salta",
         "Tres meses sin lluvias generan pérdidas en la producción agrícola.",
@@ -149,15 +146,15 @@ public class StubDataFixture {
         -65.41,
         LocalDate.of(2025, 9, 1),
         LocalDateTime.of(2025, 9, 1, 10, 0),
-        LocalDateTime.of(2025, 9, 1, 10, 30),
-        List.of(new ContenidoMultimediaDTO("/stub/img/sequia-1.jpg", "IMAGEN")),
+        List.of(new ContenidoMultimediaDTO("sequia-salta.jpg", "IMAGEN")),
         List.of(transVisible)
     );
     sequiaSalta.setId(7L);
+    sequiaSalta.setEstado(EstadoHecho.VISIBLE);
 
-    // Hecho 8: Deslizamiento Tucumán
+    // Hecho 8: Deslizamiento Tucumán (Anónimo)
     HechoDTO deslizamientoTucuman = new HechoDTO(
-        7890L,
+        null,
         List.of("deslizamiento", "tucumán", "tierra"),
         "Deslizamiento de tierra en ruta tucumana",
         "Lluvias intensas provocan deslizamiento que bloquea ruta provincial.",
@@ -166,11 +163,11 @@ public class StubDataFixture {
         -65.22,
         LocalDate.of(2025, 10, 12),
         LocalDateTime.of(2025, 10, 12, 14, 0),
-        LocalDateTime.of(2025, 10, 12, 14, 30),
-        List.of(new ContenidoMultimediaDTO("/stub/img/deslizamiento-1.jpg", "IMAGEN")),
+        List.of(new ContenidoMultimediaDTO("deslizamiento-tucuman.jpg", "IMAGEN")),
         List.of(transVisible)
     );
     deslizamientoTucuman.setId(8L);
+    deslizamientoTucuman.setEstado(EstadoHecho.VISIBLE);
 
     hechos.addAll(List.of(
         incendioCordoba,

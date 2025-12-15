@@ -41,7 +41,7 @@ public class SolicitudHecho {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "id_contribuyente", nullable = true)
+  @Column(name = "contribuyente_id", nullable = true)
   private Long idContribuyente; // Null para contribuyentes anónimos
 
   @NotBlank(message = "El título es obligatorio")

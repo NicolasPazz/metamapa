@@ -38,7 +38,7 @@ public class HechoOutputDTO {
   @JsonProperty("origen")
   private OrigenHecho origen;
 
-  @JsonProperty("id_contribuyente")
+  @JsonProperty("contribuyente_id")
   private Long idContribuyente;
 
   @JsonProperty("multimedia")

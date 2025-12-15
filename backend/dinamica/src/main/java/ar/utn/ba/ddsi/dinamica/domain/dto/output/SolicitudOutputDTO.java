@@ -13,7 +13,7 @@ import lombok.Setter;
 public class SolicitudOutputDTO {
   @JsonProperty("id")
   private Long id;
-  @JsonProperty("id_contribuyente")
+  @JsonProperty("contribuyente_id")
   private Long idContribuyente;
   @JsonProperty("titulo")
   private String titulo;

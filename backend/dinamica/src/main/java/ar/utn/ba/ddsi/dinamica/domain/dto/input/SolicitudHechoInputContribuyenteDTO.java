@@ -12,7 +12,7 @@ import lombok.Data;
 
 @Data
 public class SolicitudHechoInputContribuyenteDTO {
-    @JsonProperty("id_contribuyente")
+    @JsonProperty("contribuyente_id")
     private Long idContribuyente;
 
     @NotBlank(message = "El título es obligatorio")

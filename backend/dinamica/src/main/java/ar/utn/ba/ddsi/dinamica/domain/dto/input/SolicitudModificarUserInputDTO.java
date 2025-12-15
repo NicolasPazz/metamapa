@@ -12,7 +12,7 @@ import lombok.Data;
 @Data
 public class SolicitudModificarUserInputDTO {
   @NotNull(message = "El ID del contribuyente es obligatorio para modificar")
-  @JsonProperty("id_contribuyente")
+  @JsonProperty("contribuyente_id")
   private Long idContribuyente;
 
   @JsonProperty("titulo")
