@@ -1,5 +1,7 @@
 package ar.utn.ba.ddsi.proxy_metamapa.domain.dto;
 
+import ar.utn.ba.ddsi.proxy_metamapa.domain.enums.EstadoHecho;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -14,38 +16,39 @@ import lombok.Data;
     "categoria",
     "latitud",
     "longitud",
-    "fechaDeAcontecimiento",
-    "fechaDeCarga",
-    "ultimaModificacion",
+    "fecha_acontecimiento",
+    "fecha_carga",
     "origen",
     "estado",
-    "contribuyente",
+    "contribuyente_id",
     "etiquetas",
-    "contenidoMultimedia",
-    "transicionesDeEstado"
+    "multimedia",
+    "transiciones"
 })
 public class HechoDTO {
   private Long id;
   private String origen;
-  private String estado;
-  private Long contribuyente;
+  private EstadoHecho estado;
+  @JsonProperty("contribuyente_id")
+  private Long contribuyenteId;
   private List<String> etiquetas;
   private String titulo;
   private String descripcion;
   private String categoria;
   private Double latitud;
   private Double longitud;
+  @JsonProperty("fecha_acontecimiento")
   private LocalDate fechaDeAcontecimiento;
+  @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
-  private LocalDateTime ultimaModificacion;
-  private List<ContenidoMultimediaDTO> contenidoMultimedia;
-  private List<TransicionEstadoHechoDTO> transicionesDeEstado;
+  private List<ContenidoMultimediaDTO> multimedia;
+  private List<TransicionEstadoHechoDTO> transiciones;
 
-  public HechoDTO(Long contribuyente, List<String> etiquetas, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, LocalDateTime ultimaModificacion, List<ContenidoMultimediaDTO> contenidoMultimedia, List<TransicionEstadoHechoDTO> transicionesDeEstado) {
+  public HechoDTO(Long contribuyenteId, List<String> etiquetas, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, List<ContenidoMultimediaDTO> multimedia, List<TransicionEstadoHechoDTO> transiciones) {
     this.id = null;
     this.origen = "METAMAPA";
-    this.estado = "VISIBLE";
-    this.contribuyente = contribuyente;
+    this.estado = EstadoHecho.VISIBLE;
+    this.contribuyenteId = contribuyenteId;
     this.etiquetas = etiquetas;
     this.titulo = titulo;
     this.descripcion = descripcion;
@@ -54,8 +57,7 @@ public class HechoDTO {
     this.longitud = longitud;
     this.fechaDeAcontecimiento = fechaDeAcontecimiento;
     this.fechaDeCarga = fechaDeCarga;
-    this.ultimaModificacion = ultimaModificacion;
-    this.contenidoMultimedia = contenidoMultimedia;
-    this.transicionesDeEstado = transicionesDeEstado;
+    this.multimedia = multimedia;
+    this.transiciones = transiciones;
   }
 }

@@ -24,7 +24,7 @@ public class Coleccion {
   @Column(name = "handle", columnDefinition = "VARCHAR(100)", nullable = false, unique = true)
   private String handle;
 
-  @Column(name = "titulo")
+  @Column(name = "titulo", nullable = false)
   private String titulo;
 
   @Transient

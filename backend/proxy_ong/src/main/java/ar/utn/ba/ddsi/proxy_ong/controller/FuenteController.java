@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.proxy_ong.controller;
 
 import ar.utn.ba.ddsi.proxy_ong.domain.dto.output.HechoOutputDTO;
-import ar.utn.ba.ddsi.proxy_ong.service.IFuenteService;
+import ar.utn.ba.ddsi.proxy_ong.service.FuenteService;
 import java.util.List;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,16 +11,12 @@ import org.springframework.http.ResponseEntity;
 @RestController
 @RequestMapping("/api/hechos")
 public class FuenteController {
-  private final IFuenteService fuenteService;
+  private final FuenteService fuenteService;
 
-  public FuenteController(IFuenteService fuenteService) {
+  public FuenteController(FuenteService fuenteService) {
     this.fuenteService = fuenteService;
   }
 
-  /**
-   * Devuelve todos los hechos que todavia no se habian enviado.
-   * @return lista reactiva (Mono) con hechos nuevos
-   */
   @GetMapping("/nuevos")
   public ResponseEntity<List<HechoOutputDTO>> getAllHechosNuevos() {
     return fuenteService.getAllHechosNuevos();

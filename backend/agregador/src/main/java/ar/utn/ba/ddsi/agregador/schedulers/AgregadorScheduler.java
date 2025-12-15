@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.agregador.schedulers;
 
-import ar.utn.ba.ddsi.agregador.service.impl.AgregadorService;
-import ar.utn.ba.ddsi.agregador.service.impl.ColeccionesService;
+import ar.utn.ba.ddsi.agregador.service.AgregadorService;
+import ar.utn.ba.ddsi.agregador.service.ColeccionesService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +22,7 @@ public class AgregadorScheduler {
         log.info("⌛ onStartup: iniciando actualización de hechos (puede tardar ~2 min)...");
         try {
             agregadorService.actualizarHechos();
-            log.info("✅ onStartup: hechos actualizados. Aviso a Estadísticas…");
+            log.info("✅ onStartup: hechos actualizados.");
         } catch (Exception e) {
             log.error("❌ onStartup: error actualizando hechos", e);
         }

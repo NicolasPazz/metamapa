@@ -1,0 +1,92 @@
+@startuml
+
+entity "HECHO" as h {
+id: INT <<PK>>
+titulo: VARCHAR(255)
+descripcion: TEXT
+latitud: DOUBLE
+longitud: DOUBLE
+fecha_acontecimiento: DATE
+fecha_carga: DATETIME
+origen: ENUM
+estado: ENUM
+contribuyente_id: INT
+categoria_id: INT <<FK>>
+fuente_id: INT
+id_origen: INT
+}
+
+entity "CATEGORIA" as cat {
+id: INT <<PK>>
+nombre: VARCHAR(255)
+}
+
+entity "ETIQUETA" as etiq {
+id: INT <<PK>>
+hecho_id: INT <<FK>>
+nombre: VARCHAR(255)
+}
+
+entity "CONTENIDO_MULTIMEDIA" as multi {
+id: INT <<PK>>
+hecho_id: INT <<FK>>
+path_archivo: VARCHAR(255)
+tipo_contenido: ENUM
+}
+
+entity "TRANSICION_ESTADO_HECHO" as teh {
+id: INT <<PK>>
+hecho_id: INT <<FK>>
+estado_final: ENUM
+fecha_transicion: DATETIME
+}
+
+entity "COLECCION" as col {
+handle: UUID <<PK>>
+titulo: VARCHAR(255)
+descripcion: TEXT
+criterio_pertenencia: JSON
+algoritmo_consenso: VARCHAR(255)
+fecha_carga: DATETIME
+}
+
+entity "COLECCION_HECHOS" as ch {
+coleccion_handle: UUID <<FK>>
+hecho_id: INT <<FK>>
+}
+
+entity "COLECCION_HECHOS_CONSENSUADOS" as chc {
+coleccion_handle: UUID <<FK>>
+hecho_id: INT <<FK>>
+}
+
+entity "SOLICITUD_ELIMINACION" as se {
+id: INT <<PK>>
+hecho_id: INT <<FK>>
+texto_fundamentos: TEXT
+fecha: DATE
+estado: ENUM
+contribuyente_id: INT
+es_spam: BOOLEAN
+fuente_id: INT
+}
+
+entity "TRANSICION_ESTADO_SOLICITUD" as tes {
+id: INT <<PK>>
+solicitud_eliminacion_id: INT <<FK>>
+estado: ENUM
+fecha: DATETIME
+}
+
+h }o--|| cat
+h ||--o{ etiq
+h ||--o{ multi
+h ||--o{ teh
+h ||--o{ se
+col ||--o{ ch
+col ||--o{ chc
+ch }o--|| h
+chc }o--|| h
+se ||--o{ tes
+
+@enduml

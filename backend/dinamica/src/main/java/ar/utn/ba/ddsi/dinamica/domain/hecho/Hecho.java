@@ -12,11 +12,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.Transient;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -35,75 +32,37 @@ public class Hecho {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Column(name = "titulo")
-  private String titulo;
+  @Column(name = "fecha_carga", nullable = false)
+  private LocalDateTime fechaDeCarga;
 
-  @Column(name = "descripcion")
-  private String descripcion;
-
-  @Column(name = "categoria")
-  private String nombreCategoria;
-
-  @Column(name = "latitud")
-  private Double latitud;
-
-  @Column(name = "longitud")
-  private Double longitud;
-
-  @Column(name = "fecha_de_acontecimiento")
-  private LocalDate fechaDeAcontecimiento;
-
-  @Column(name = "fecha_de_carga")
-  @Builder.Default
-  private LocalDateTime fechaDeCarga = LocalDateTime.now();
-
-  @Enumerated(EnumType.ORDINAL)
+  @Enumerated(EnumType.STRING)
+  @Column(name="origen", nullable = false)
   private OrigenHecho origen;
 
-  @Enumerated(EnumType.ORDINAL)
-  private EstadoHecho estado;
 
-  @Column(name = "contribuyente_id", nullable = true)
-  private Long idContribuyente;
-
-  private Boolean enviado;
+  @Column(name = "enviado", nullable = false)
+  @Builder.Default
+  private Boolean enviado = false;
 
   @OneToOne
-  @JoinColumn(name = "solicitud_id")
+  @JoinColumn(name = "solicitud_id", referencedColumnName = "id", nullable = false)
   private SolicitudHecho solicitud;
-
-  @Transient
-  @Builder.Default
-  private List<ContenidoMultimedia> multimedia = new ArrayList<>();
-
-  /*@ElementCollection
-  @Builder.Default
-  private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
-
-
-  @Column(name = "ultimaModificacion")
-  private LocalDateTime ultimaModificacion;
-
-  public void transicionarEstado(EstadoHecho estado) {
-    this.transiciones.add(new TransicionEstadoHecho(estado, LocalDateTime.now()));
-    this.estado = estado;
-  }*/
 
   public HechoOutputDTO toOutputDTO() {
     return new HechoOutputDTO(
         this.id,
-        this.titulo,
-        this.descripcion,
-        this.nombreCategoria,
-        this.latitud,
-        this.longitud,
-        this.fechaDeAcontecimiento,
+        this.solicitud.getTitulo(),
+        this.solicitud.getDescripcion(),
+        this.solicitud.getCategoria(),
+        this.solicitud.getLatitud(),
+        this.solicitud.getLongitud(),
+        this.solicitud.getFechaDeAcontecimiento(),
         this.fechaDeCarga,
-        this.fechaDeCarga,
-        this.idContribuyente,
-        this.multimedia.stream()
+        this.origen,
+        this.solicitud.getIdContribuyente(),
+        this.solicitud.getMultimedia().stream()
             .map(ContenidoMultimedia::toOutputDTO)
-            .toList()
+            .collect(Collectors.toList())
     );
   }
 }

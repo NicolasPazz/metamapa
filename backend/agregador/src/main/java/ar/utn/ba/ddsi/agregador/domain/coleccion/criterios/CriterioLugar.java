@@ -9,25 +9,37 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CriterioLugar implements Criterio {
-  private String tipo = "lugar";
+  private final TipoCriterio tipo = TipoCriterio.LUGAR;
   private Double lat;
-  private Double lng;
+  private Double lon;
 
-  public CriterioLugar(Double lat, Double lng) {
+  public CriterioLugar(Double lat, Double lon) {
     this.lat = lat;
-    this.lng = lng;
+    this.lon = lon;
   }
 
+  /*
   public CriterioLugar(String pais) {
     this.lat = null;
-    this.lng = null;
+    this.lon = null;
   }
+  */
 
   @Override
   public boolean cumple(Hecho hecho) {
-    boolean cumpleLatitud = (lat == null || hecho.getLatitud().equals(lat));
-    boolean cumpleLongitud = (lng == null || hecho.getLongitud().equals(lng));
+    final double EPSILON = 1e-6;
+
+    boolean cumpleLatitud =
+        (lat == null) ||
+            (hecho.getLatitud() != null &&
+                Math.abs(hecho.getLatitud() - lat) < EPSILON);
+
+    boolean cumpleLongitud =
+        (lon == null) ||
+            (hecho.getLongitud() != null &&
+                Math.abs(hecho.getLongitud() - lon) < EPSILON);
 
     return cumpleLatitud && cumpleLongitud;
   }
+
 }

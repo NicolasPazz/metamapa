@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class CriterioFechas implements Criterio {
-    private String tipo = "fechas";
+    private final TipoCriterio tipo = TipoCriterio.FECHAS;
     private LocalDate fechaInicial;
     private LocalDate fechaFinal;
     private TipoFecha tipoFecha;

@@ -2,18 +2,15 @@ package ar.utn.ba.ddsi.proxy_metamapa.client;
 
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.input.SolicitudInputDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.output.SolicitudOutputDTO;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -76,10 +73,17 @@ public class StubAgregadorClient implements AgregadorClient {
       String ubicacion
   ) {
     log.info("Buscando hechos de la colección con handle: {}", handle);
-    log.info("Filtros - Categoria: {}, Fecha Reporte Desde: {}, Fecha Reporte Hasta: {}, Fecha Acontecimiento Desde: {}, Fecha Acontecimiento Hasta: {}, Ubicación: {}",
-        categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
+
+    java.util.UUID uuidHandle;
+    try {
+      uuidHandle = java.util.UUID.fromString(handle);
+    } catch (IllegalArgumentException e) {
+      log.error("Handle inválido: {}", handle);
+      return ResponseEntity.notFound().build();
+    }
+
     ColeccionDTO encontrada = fixture.getColecciones().stream()
-        .filter(c -> c.getHandle().equals(handle))
+        .filter(c -> c.getHandle().equals(uuidHandle))
         .findFirst()
         .orElse(null);
 
@@ -99,18 +103,5 @@ public class StubAgregadorClient implements AgregadorClient {
         .toList();
 
     return ResponseEntity.ok(hechosFiltrados);
-  }
-
-  @Override
-  public ResponseEntity<SolicitudOutputDTO> crearSolicitudDeEliminacion(SolicitudInputDTO solicitud) {
-    SolicitudOutputDTO solicitudOutputDTO = new SolicitudOutputDTO();
-    solicitudOutputDTO.setId(UUID.randomUUID().getMostSignificantBits() & Long.MAX_VALUE);
-    solicitudOutputDTO.setIdHecho(solicitud.getIdHecho());
-    solicitudOutputDTO.setTextoFundamentos(solicitud.getTextoFundamentos());
-    solicitudOutputDTO.setFecha(LocalDate.now());
-    solicitudOutputDTO.setEstado("PENDIENTE");
-    solicitudOutputDTO.setIdContribuyente(solicitud.getIdContribuyente());
-
-    return ResponseEntity.of(Optional.of(solicitudOutputDTO));
   }
 }

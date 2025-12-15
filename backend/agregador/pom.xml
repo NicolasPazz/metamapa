@@ -9,7 +9,7 @@
         <relativePath/> <!-- lookup parent from repository -->
     </parent>
     <groupId>ar.utn.ba.ddsi</groupId>
-    <artifactId>agregador</artifactId>
+    <artifactId>agregadorr</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>agregador</name>
     <description>agregador</description>
