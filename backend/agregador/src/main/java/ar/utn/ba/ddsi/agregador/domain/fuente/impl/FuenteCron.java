@@ -9,6 +9,7 @@ import jakarta.persistence.Transient;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -17,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+@Slf4j
 @Getter
 @Setter
 @NoArgsConstructor
@@ -44,13 +46,20 @@ public class FuenteCron extends AFuente {
 
   @Override
   public ResponseEntity<List<HechoDTO>> getAllHechosNuevos() {
-    List<HechoDTO> hechos = webClient.get()
-        .uri("/hechos/nuevos")
-        .retrieve()
-        .bodyToFlux(HechoDTO.class)
-        .collectList()
-        .block();
-    return ResponseEntity.ok(hechos);
+    try {
+      log.info("🔍 [FuenteCron] Obteniendo hechos nuevos de fuente: {}", getNombre());
+      List<HechoDTO> hechos = webClient.get()
+          .uri("/hechos/nuevos")
+          .retrieve()
+          .bodyToFlux(HechoDTO.class)
+          .collectList()
+          .block();
+      log.info("✅ [FuenteCron] {} hechos nuevos obtenidos de fuente: {}", hechos != null ? hechos.size() : 0, getNombre());
+      return ResponseEntity.ok(hechos != null ? hechos : List.of());
+    } catch (Exception e) {
+      log.error("❌ [FuenteCron] Error obteniendo hechos de fuente {}: {}", getNombre(), e.getMessage(), e);
+      return ResponseEntity.ok(List.of());
+    }
   }
 
   @Override

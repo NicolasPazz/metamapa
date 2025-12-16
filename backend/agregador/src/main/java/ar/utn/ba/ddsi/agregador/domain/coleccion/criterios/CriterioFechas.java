@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho ;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -11,6 +12,7 @@ import java.time.LocalDate;
 @Getter
 @Setter
 public class CriterioFechas implements Criterio {
+    @JsonIgnore
     private final TipoCriterio tipo = TipoCriterio.FECHAS;
     private LocalDate fechaInicial;
     private LocalDate fechaFinal;

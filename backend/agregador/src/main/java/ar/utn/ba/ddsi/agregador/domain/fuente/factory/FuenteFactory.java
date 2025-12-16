@@ -4,7 +4,6 @@ import ar.utn.ba.ddsi.agregador.domain.fuente.config.FuenteConfig;
 import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteCron;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
-import java.util.concurrent.atomic.AtomicLong;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;

@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.HashSet;
 import java.util.Set;
 import lombok.Getter;
@@ -11,24 +12,31 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 public class CriterioFuente implements Criterio {
+    @JsonIgnore
     private final TipoCriterio tipo = TipoCriterio.FUENTE;
     private Set<Long> fuentes = new HashSet<>();
 
-    public CriterioFuente(Long idFuenteExcluida) {
-        this.fuentes.add(idFuenteExcluida);
+    public CriterioFuente(Long idFuente) {
+        this.fuentes.add(idFuente);
     }
 
-    public void agregarExclusion(Long idFuente) {
+    public void agregarFuente(Long idFuente) {
         fuentes.add(idFuente);
     }
 
-    public void eliminarExclusion(Long idFuente) {
+    public void eliminarFuente(Long idFuente) {
         fuentes.remove(idFuente);
     }
 
     @Override
-    public boolean cumple(Hecho hecho){
+    public boolean cumple(Hecho hecho) {
+        // Si no hay fuentes especificadas, aceptar todos los hechos
+        if (fuentes == null || fuentes.isEmpty()) {
+            return true;
+        }
+
         Long idFuente = hecho.getFuenteId();
-        return !fuentes.contains(idFuente);
+        // Incluir solo hechos de las fuentes especificadas (lista de INCLUSIÓN)
+        return fuentes.contains(idFuente);
     }
 }

@@ -413,7 +413,7 @@
 					"name": "AdminColeccionesController",
 					"item": [
 						{
-							"name": "crearColeccion",
+							"name": "crearColeccion1",
 							"request": {
 								"auth": {
 									"type": "noauth"
@@ -422,7 +422,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"titulo\": \"Colección de desastres tecnológicos\",\r\n  \"descripcion\": \"Incluye hechos cuya categoría es 'desastre tecnológico - evento sanitario'\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"igualdad\",\r\n    \"cadena_a_comparar\": \"desastre tecnológico - evento sanitario\",\r\n    \"tipo_dato\": \"CATEGORIA\"\r\n  },\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
+									"raw": "{\r\n  \"titulo\": \"Colección completa con los 5 tipos de criterio\",\r\n  \"descripcion\": \"ejemplo de uso\",\r\n   \"criterios\": [\r\n      {\r\n        \"cadena_a_comparar\": \"desastre tecnológico - evento sanitario\",\r\n        \"tipo_dato\": \"CATEGORIA\"\r\n      },\r\n      {\r\n        \"latitud\": 3.5,\r\n        \"longitud\": -5.0\r\n      },\r\n      {\r\n        \"fecha_inicial\": \"2025-01-01\",\r\n        \"fecha_final\": \"2025-12-31\",\r\n        \"tipo_fecha\": \"CARGA\"\r\n      },\r\n      {\r\n        \"origen\": \"DATASET\"\r\n      },\r\n      {\r\n        \"fuentes\": [0,1,2,3]\r\n      }\r\n  ],\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -473,7 +473,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "// {\r\n//   \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n//   \"criterio_pertenencia\": {\r\n//     \"tipo\": \"lugar\",\r\n//     \"latitud\": -38.825939, \r\n//     \"longitud\": -62.069268\r\n//   }\r\n// }\r\n\r\n{\r\n  \"descripcion\": \"Cambio algoritmo de consenso\",\r\n  \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n}",
+									"raw": "    {\r\n        \"titulo\": \"modificado\",\r\n        \"descripcion\": \"modificado\",\r\n        \"criterios\": null,\r\n        \"algoritmo_consenso\": null\r\n    }",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -493,7 +493,7 @@
 									"variable": [
 										{
 											"key": "handle",
-											"value": "colecci-n-de-desastres-tecnol-gicos-c4c03d97"
+											"value": "6fe4c414-e7bb-415b-8e5a-a2303925f09f"
 										}
 									]
 								}
@@ -510,7 +510,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"descripcion\": \"Solo hechos ocurridos en Córdoba\",\r\n  \"criterio_pertenencia\": {\r\n    \"tipo\": \"lugar\",\r\n    \"latitud\": -31.42,\r\n    \"longitud\": -64.19\r\n  }\r\n}",
+									"raw": "",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -530,7 +530,7 @@
 									"variable": [
 										{
 											"key": "handle",
-											"value": "coleccion-de-ejemplo-b9cbbde4"
+											"value": "6fe4c414-e7bb-415b-8e5a-a2303925f09f"
 										}
 									]
 								}
@@ -895,7 +895,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"Crisis sanitaria afecta a Tilcara, Jujuy\",\r\n  \"descripcion\": \"Grave crisis sanitaria ocurrió en las inmediaciones de Tilcara, Jujuy. El incidente afectando gravemente la infraestructura local. Se ha declarado estado de emergencia en la región para facilitar la asistencia.\",\r\n  \"categoria\": \"desastre tecnológico - evento sanitario\",\r\n  \"latitud\": -23.574039,\r\n  \"longitud\": -65.36991,\r\n  \"fecha_acontecimiento\": \"2013-11-11\",\r\n  \"multimedia\": [\r\n    {\r\n        \"path\": \"path\",\r\n        \"tipo\": \"IMAGEN\"\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"contribuyente_id\": 123,\r\n  \"titulo\": \"Crisis sanitaria afecta a Tilcara, Jujuy\",\r\n  \"descripcion\": \"Grave crisis sanitaria ocurrió en las inmediaciones de Tilcara, Jujuy. El incidente afectando gravemente la infraestructura local. Se ha declarado estado de emergencia en la región para facilitar la asistencia.\",\r\n  \"categoria\": \"desastre tecnológico - evento sanitario\",\r\n  \"latitud\": -23.574039,\r\n  \"longitud\": -65.36991,\r\n  \"fecha_acontecimiento\": \"2013-11-11\",\r\n  \"multimedia\": [\r\n    {\r\n        \"path\": \"path\",\r\n        \"tipo\": \"IMAGEN\"\r\n    }\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -924,7 +924,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"id_contribuyente\": 123,\r\n  \"titulo\": \"modificado\",\r\n  \"descripcion\": \"modificado\",\r\n  \"categoria\": \"modificado\",\r\n  \"latitud\": -3.574039,\r\n  \"longitud\": -5.36991,\r\n  \"fecha_acontecimiento\": \"2023-11-11\",\r\n  \"multimedia\": [\r\n    {\r\n        \"path\": \"modificado\",\r\n        \"tipo\": \"VIDEO\"\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"contribuyente_id\": 123,\r\n  \"titulo\": \"modificado\",\r\n  \"descripcion\": \"modificado\",\r\n  \"categoria\": \"modificado\",\r\n  \"latitud\": -3.574039,\r\n  \"longitud\": -5.36991,\r\n  \"fecha_acontecimiento\": \"2023-11-11\",\r\n  \"multimedia\": [\r\n    {\r\n        \"path\": \"modificado\",\r\n        \"tipo\": \"VIDEO\"\r\n    }\r\n  ]\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"

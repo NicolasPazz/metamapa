@@ -14,8 +14,8 @@ public class ColeccionDTO {
   private String descripcion;
   private List<HechoDTO> hechos;
 
-  @JsonProperty("criterio_de_pertenencia")
-  private CriterioDTO criterioDePertenencia;
+  @JsonProperty("criterios")
+  private List<CriterioDTO> criteriosDePertenencia;
 
   @JsonProperty("algoritmo_consenso")
   private TipoAlgoritmoConsenso algoritmoConsenso;
@@ -25,4 +25,10 @@ public class ColeccionDTO {
 
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
+
+  @JsonProperty("fuente_id")
+  private Long fuenteId;
+
+  @JsonProperty("id_origen")
+  private UUID idOrigen;
 }

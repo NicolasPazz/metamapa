@@ -14,8 +14,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
     @JsonSubTypes.Type(value = CriterioLugar.class, name = "LUGAR"),
     @JsonSubTypes.Type(value = CriterioFuente.class, name = "FUENTE"),
     @JsonSubTypes.Type(value = CriterioIgualdad.class, name = "IGUALDAD"),
-    @JsonSubTypes.Type(value = CriterioOrigen.class, name = "ORIGEN"),
-    @JsonSubTypes.Type(value = CriterioCombinado.class, name = "COMBINADO")
+    @JsonSubTypes.Type(value = CriterioOrigen.class, name = "ORIGEN")
 })
 public interface Criterio {
   boolean cumple(Hecho hecho);

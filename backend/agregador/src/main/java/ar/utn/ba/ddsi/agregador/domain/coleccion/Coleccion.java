@@ -1,17 +1,20 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion;
 
 import ar.utn.ba.ddsi.agregador.repositorie.converter.AlgoritmoAttributeConverter;
-import ar.utn.ba.ddsi.agregador.repositorie.converter.CriterioAttributeConverter;
+import ar.utn.ba.ddsi.agregador.repositorie.converter.CriterioListAttributeConverter;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.algoritmosConsenso.AAlgoritmoConsenso;
-import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioCombinado;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
-import java.util.List;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UuidGenerator;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -23,7 +26,9 @@ import java.util.List;
 public class Coleccion {
   @Id
   @GeneratedValue
-  @Column(unique = true, updatable = false, nullable = false)
+  @UuidGenerator
+  @JdbcTypeCode(SqlTypes.VARCHAR)
+  @Column(length = 36, updatable = false, nullable = false)
   private UUID handle;
 
   @Column(name = "titulo", nullable = false)
@@ -40,9 +45,10 @@ public class Coleccion {
   )
   private List<Hecho> hechos;
 
-  @Convert(converter = CriterioAttributeConverter.class)
+  @Convert(converter = CriterioListAttributeConverter.class)
+  @Column(name = "criterios_pertenencia", columnDefinition = "TEXT")
   @Builder.Default
-  private Criterio criterioDePertenencia = null;
+  private List<Criterio> criteriosDePertenencia = new ArrayList<>();
 
   @Convert(converter = AlgoritmoAttributeConverter.class)
   @Builder.Default
@@ -62,9 +68,13 @@ public class Coleccion {
 
 
   public void actualizarHechos() {
-    if (this.criterioDePertenencia != null && this.hechos != null) {
-      this.hechos = this.hechos.parallelStream()
-          .filter(criterioDePertenencia::cumple)
+    if (this.criteriosDePertenencia != null && !this.criteriosDePertenencia.isEmpty() && this.hechos != null) {
+      this.hechos = this.hechos.stream()
+          .filter(hecho -> criteriosDePertenencia.stream().allMatch(criterio -> criterio.cumple(hecho)))
+          .filter(Hecho::esVisible)
+          .toList();
+    } else if (this.hechos != null) {
+      this.hechos = this.hechos.stream()
           .filter(Hecho::esVisible)
           .toList();
     } else {
@@ -85,34 +95,14 @@ public class Coleccion {
 
   public void agregarCriterio(Criterio nuevo) {
     if (nuevo == null) return;
-
-    if (criterioDePertenencia == null) {
-      criterioDePertenencia = nuevo;
-    } else if (criterioDePertenencia instanceof CriterioCombinado combinado) {
-      combinado.agregarCriterio(nuevo);
-    } else {
-      CriterioCombinado combinado = new CriterioCombinado();
-      combinado.agregarCriterio(criterioDePertenencia);
-      combinado.agregarCriterio(nuevo);
-      criterioDePertenencia = combinado;
+    if (this.criteriosDePertenencia == null) {
+      this.criteriosDePertenencia = new ArrayList<>();
     }
+    this.criteriosDePertenencia.add(nuevo);
   }
 
   public void eliminarCriterio(Criterio aEliminar) {
-    if (aEliminar == null || criterioDePertenencia == null) return;
-
-    if (criterioDePertenencia instanceof CriterioCombinado combinado) {
-      combinado.eliminarCriterio(aEliminar);
-      List<Criterio> lista = combinado.getCriterios();
-      if (lista.size() == 1) {
-        criterioDePertenencia = lista.get(0);
-      } else if (lista.isEmpty()) {
-        criterioDePertenencia = null;
-      }
-    } else {
-      if (criterioDePertenencia.equals(aEliminar)) {
-        criterioDePertenencia = null;
-      }
-    }
+    if (aEliminar == null || this.criteriosDePertenencia == null) return;
+    this.criteriosDePertenencia.remove(aEliminar);
   }
 }

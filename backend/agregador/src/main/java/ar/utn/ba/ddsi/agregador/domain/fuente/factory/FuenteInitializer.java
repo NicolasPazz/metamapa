@@ -21,7 +21,11 @@ public class FuenteInitializer {
 
   @PostConstruct
   public void init() {
+    log.info("🚀 [FuenteInitializer] Iniciando carga de fuentes. Total configuradas: {}", properties.getConfig().size());
     properties.getConfig().forEach(config -> {
+      log.info("🔧 [FuenteInitializer] Procesando fuente: ID={}, Nombre={}, URL={}, Tipo={}",
+          config.getId(), config.getNombre(), config.getUrl(), config.getTipo());
+
       // Crear y persistir fuente concreta (ya incluye persistencia JPA)
       AFuente fuente = factory.crearFuente(config);
 
@@ -31,7 +35,8 @@ public class FuenteInitializer {
 
       // Agregar fuente al servicio
       fuentesService.agregarFuente(fuente);
-      log.info("🔌 Fuente cargada: {} - {} ({})", config.getNombre(), config.getUrl(), config.getTipo());
+      log.info("🔌 Fuente cargada y agregada al servicio: {} - {} ({})", config.getNombre(), config.getUrl(), config.getTipo());
     });
+    log.info("✅ [FuenteInitializer] Carga de fuentes completada. Total: {}", properties.getConfig().size());
   }
 }

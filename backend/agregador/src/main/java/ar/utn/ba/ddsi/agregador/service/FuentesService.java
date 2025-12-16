@@ -107,20 +107,25 @@ public class FuentesService {
 
 
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
+    log.info("📡 [FuentesService] Iniciando consulta de colecciones desde {} fuentes", fuentes.size());
     List<ColeccionDTO> resultados = new ArrayList<>();
 
     for (AFuente fuente : fuentes) {
       Long idFuente = fuente.getId();
+      log.info("📡 [FuentesService] Consultando colecciones de fuente ID={}, Nombre={}", idFuente, fuente.getNombre());
 
       List<ColeccionDTO> colecciones = Optional.ofNullable(
           fuente.getAllColecciones().getBody()
       ).orElse(List.of());
+
+      log.info("📡 [FuentesService] Fuente {} devolvió {} colecciones", fuente.getNombre(), colecciones.size());
 
       colecciones.forEach(c -> normalizarColeccion(c, idFuente));
 
       resultados.addAll(colecciones);
     }
 
+    log.info("📡 [FuentesService] Total de colecciones obtenidas: {}", resultados.size());
     return ResponseEntity.ok(resultados);
   }
 
@@ -207,8 +212,15 @@ public class FuentesService {
   }
 
   private void normalizarColeccion(ColeccionDTO c, Long idFuente) {
+    if (c.getHandle() == null) {
+      log.warn("Colección sin handle recibida desde fuente {}", idFuente);
+    } else {
+      c.setIdOrigen(c.getHandle());
+    }
+    c.setFuenteId(idFuente);
+
     // Aplicar defaults para atributos que otras fuentes pueden no proveer
-    if (c.getCriterioDePertenencia() == null) {
+    if (c.getCriteriosDePertenencia() == null) {
       log.debug("Colección de fuente {} sin criterio de pertenencia", idFuente);
     }
 

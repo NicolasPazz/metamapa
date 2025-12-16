@@ -35,17 +35,7 @@ public class HechosService {
         log.info("[HechosService] Obteniendo todos los hechos con filtros: categoria={}, ubicacion={}",
             categoria, ubicacion);
 
-        // Obtener hechos de fuentes externas (proxy)
-        ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
-            categoria,
-            fecha_reporte_desde, fecha_reporte_hasta,
-            fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-            ubicacion);
-
-        List<HechoDTO> externos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
-        log.debug("[HechosService] Se obtuvieron {} hechos externos", externos.size());
-
-        // Obtener hechos locales desde la BD
+        // Obtener hechos locales desde la BD (siempre disponibles)
         List<Hecho> hechosLocales = hechosRepository.findByFilters(
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,
@@ -56,11 +46,28 @@ public class HechosService {
         List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
         log.debug("[HechosService] Se obtuvieron {} hechos locales", locales.size());
 
+        // Intentar obtener hechos de fuentes externas (resiliente a fallos)
+        List<HechoDTO> externos = new ArrayList<>();
+        try {
+            ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
+                categoria,
+                fecha_reporte_desde, fecha_reporte_hasta,
+                fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+                ubicacion);
+
+            externos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
+            log.debug("[HechosService] Se obtuvieron {} hechos externos", externos.size());
+        } catch (Exception e) {
+            log.warn("[HechosService] No se pudieron obtener hechos de fuentes externas: {}", e.getMessage());
+            log.debug("[HechosService] Continuando solo con hechos locales");
+        }
+
         // Combinar hechos locales y externos
         List<HechoDTO> combinados = new ArrayList<>(locales);
         combinados.addAll(externos);
 
-        log.info("[HechosService] Total de hechos agregados: {}", combinados.size());
+        log.info("[HechosService] Total de hechos agregados: {} (locales: {}, externos: {})",
+            combinados.size(), locales.size(), externos.size());
         return ResponseEntity.ok(combinados);
     }
 

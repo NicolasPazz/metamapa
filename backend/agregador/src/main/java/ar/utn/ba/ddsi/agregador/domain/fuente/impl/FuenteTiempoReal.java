@@ -64,13 +64,20 @@ public class FuenteTiempoReal extends AFuente {
 
   @Override
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
-    List<ColeccionDTO> colecciones = webClient.get()
-        .uri("/colecciones")
-        .retrieve()
-        .bodyToFlux(ColeccionDTO.class)
-        .collectList()
-        .block();
-    return ResponseEntity.of(Optional.ofNullable(colecciones));
+    try {
+      log.info("Obteniendo colecciones de fuente tiempo real: {}", getNombre());
+      List<ColeccionDTO> colecciones = getWebClient().get()
+          .uri("/colecciones")
+          .retrieve()
+          .bodyToFlux(ColeccionDTO.class)
+          .collectList()
+          .block();
+      log.info("Colecciones obtenidas: {}", colecciones != null ? colecciones.size() : 0);
+      return ResponseEntity.of(Optional.ofNullable(colecciones));
+    } catch (Exception e) {
+      log.error("Error obteniendo colecciones de fuente {}: {}", getNombre(), e.getMessage(), e);
+      return ResponseEntity.ok(List.of());
+    }
   }
 
   @Override

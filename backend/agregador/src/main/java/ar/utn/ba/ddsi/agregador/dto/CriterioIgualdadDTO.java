@@ -8,6 +8,7 @@ import lombok.Data;
 public class CriterioIgualdadDTO implements CriterioDTO {
   @JsonProperty("cadena_a_comparar")
   private String cadenaAComparar;
-  @JsonProperty("tipo_de_dato")
+
+  @JsonProperty("tipo_dato")
   private TipoDato tipoDeDato;
 }

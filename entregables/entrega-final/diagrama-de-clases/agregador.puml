@@ -144,13 +144,6 @@ TIEMPO_REAL
 interface Criterio {
 +cumple(Hecho): Boolean
 }
-CriterioCombinado --> TipoCriterio
-class CriterioCombinado implements Criterio {
-- tipo: TipoCriterio
-- criterios: List<Criterio>
-+ agregarCriterio(Criterio): void
-+ cumple(Hecho): Boolean
-}
 enum TipoFecha {
 CARGA
 ACONTECIMIENTO
@@ -201,7 +194,6 @@ class CriterioOrigen implements Criterio {
 + cumple(Hecho): Boolean
 }
 enum TipoCriterio {
-  COMBINADO
   FECHAS
   FUENTE
   IGUALDAD
@@ -242,20 +234,22 @@ class MultiplesMenciones extends AAlgoritmoConsenso {
 - contarConTituloIgual(Hecho, List<Hecho>): Long
 }
 
-Coleccion -->"*" Hecho
-Coleccion -->"*" Hecho
-Coleccion --> Criterio
+Coleccion -->"*" Hecho : hechos
+Coleccion -->"*" Hecho : hechosConsensuados
+Coleccion -->"*" Criterio
 Coleccion --> AAlgoritmoConsenso
 class Coleccion {
   - handle: String
   - titulo: String
   - descripcion: String
   - hechos: List<Hecho>
-  - criterioDePertenencia: Criterio
+  - criteriosDePertenencia: List<Criterio>
   - algoritmoConsenso: AAlgoritmoConsenso
   - hechosConsensuados: List<Hecho>
   + actualizarHechos(): void
   + actualizarHechosConsensuados(int): void
+  + agregarCriterio(Criterio): void
+  + eliminarCriterio(Criterio): void
 }
 
 
