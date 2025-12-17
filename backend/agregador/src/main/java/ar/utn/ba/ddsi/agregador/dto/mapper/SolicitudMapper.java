@@ -25,7 +25,6 @@ public class SolicitudMapper {
     dto.setFecha(solicitud.getFecha());
     dto.setEstado(solicitud.getEstado());
     dto.setContribuyenteId(solicitud.getContribuyenteId());
-    dto.setSpam(solicitud.getSpam());
     dto.setFuenteId(solicitud.getFuenteId());
     dto.setIdOrigen(solicitud.getIdOrigen());
 

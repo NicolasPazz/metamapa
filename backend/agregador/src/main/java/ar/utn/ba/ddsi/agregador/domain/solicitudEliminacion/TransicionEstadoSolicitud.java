@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Setter
@@ -30,7 +30,7 @@ public class TransicionEstadoSolicitud {
 
   @Column(name = "fecha_transicion", nullable = false, updatable = false)
   @CreationTimestamp
-  private LocalDate fecha;
+  private LocalDateTime fecha;
 
   public TransicionEstadoSolicitud(EstadoSolicitud estadoSolicitud) {
     this.estadoFinal = estadoSolicitud;

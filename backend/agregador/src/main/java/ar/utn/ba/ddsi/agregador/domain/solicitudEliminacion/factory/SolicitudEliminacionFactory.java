@@ -6,6 +6,7 @@ import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.SolicitudEliminacion
 import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.exception.ValidacionException;
 import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.validacion.Validacion;
 import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.validacion.detector.DetectorDeSpam;
+import jakarta.annotation.PostConstruct;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -18,30 +19,84 @@ public class SolicitudEliminacionFactory {
 
   public SolicitudEliminacionFactory(List<Validacion> validaciones) {
     this.validaciones = validaciones;
+    log.info("[SolicitudEliminacionFactory] Constructor llamado con {} validaciones",
+        validaciones != null ? validaciones.size() : 0);
+  }
+
+  @PostConstruct
+  public void init() {
+    log.info("=================================================================");
+    log.info("[SolicitudEliminacionFactory] Inicializando factory de solicitudes");
+    log.info("[SolicitudEliminacionFactory] Validaciones registradas: {}",
+        validaciones != null ? validaciones.size() : 0);
+
+    if (validaciones != null) {
+      for (int i = 0; i < validaciones.size(); i++) {
+        Validacion v = validaciones.get(i);
+        log.info("[SolicitudEliminacionFactory]   {} - {} (DetectorDeSpam: {})",
+            i + 1, v.getClass().getName(), v instanceof DetectorDeSpam);
+      }
+    } else {
+      log.error("[SolicitudEliminacionFactory] ¡NO HAY VALIDACIONES REGISTRADAS!");
+    }
+    log.info("=================================================================");
   }
 
   public SolicitudEliminacion crearSolicitud(Hecho hecho, String textoFundamentos, Long contribuyenteId,
                                              Long fuenteId, Long idOrigen) {
-    SolicitudEliminacion solicitud = new SolicitudEliminacion(hecho, truncarTextoFundamentos(textoFundamentos),
-        contribuyenteId, fuenteId, idOrigen);
+    log.info("[SolicitudEliminacionFactory] Iniciando creación de solicitud");
+    log.info("[SolicitudEliminacionFactory] Texto fundamentos longitud: {}",
+        textoFundamentos != null ? textoFundamentos.length() : 0);
+    log.info("[SolicitudEliminacionFactory] Cantidad de validaciones registradas: {}",
+        validaciones != null ? validaciones.size() : 0);
 
-    boolean esSpam = false;
+    // Log de las validaciones disponibles
+    if (validaciones != null) {
+      for (int i = 0; i < validaciones.size(); i++) {
+        Validacion v = validaciones.get(i);
+        log.info("[SolicitudEliminacionFactory] Validacion {}: {} (es DetectorDeSpam: {})",
+            i + 1, v.getClass().getSimpleName(), v instanceof DetectorDeSpam);
+      }
+    }
 
-    for (Validacion v : validaciones) {
-      if (!v.esValida(textoFundamentos)) {
-        if (v instanceof DetectorDeSpam) {
-          esSpam = true;
-          solicitud.transicionarEstado(EstadoSolicitud.RECHAZADA);
-        } else {
-          throw new ValidacionException(v.mensajeError());
+    // PRIMERO: Validar validaciones NO-SPAM (longitud, formato, etc.)
+    // Estas deben lanzar excepción si fallan
+    if (validaciones != null) {
+      for (Validacion v : validaciones) {
+        if (!(v instanceof DetectorDeSpam)) {
+          log.debug("[SolicitudEliminacionFactory] Ejecutando validación: {}", v.getClass().getSimpleName());
+          if (!v.esValida(textoFundamentos)) {
+            log.warn("[SolicitudEliminacionFactory] Validación {} falló: {}",
+                v.getClass().getSimpleName(), v.mensajeError());
+            throw new ValidacionException(v.mensajeError());
+          }
+          log.debug("[SolicitudEliminacionFactory] Validación {} pasó correctamente", v.getClass().getSimpleName());
         }
       }
     }
-    solicitud.setSpam(esSpam);
 
-    if (!esSpam) {
-      solicitud.transicionarEstado(EstadoSolicitud.PENDIENTE);
+    // SEGUNDO: Verificar si es SPAM (BLOQUEA la creación)
+    if (validaciones != null) {
+      for (Validacion v : validaciones) {
+        if (v instanceof DetectorDeSpam) {
+          log.debug("[SolicitudEliminacionFactory] Ejecutando detector de spam: {}", v.getClass().getSimpleName());
+          if (!v.esValida(textoFundamentos)) {
+            log.warn("[SolicitudEliminacionFactory] Texto detectado como SPAM por: {}", v.getClass().getSimpleName());
+            log.warn("[SolicitudEliminacionFactory] Rechazando creación de solicitud por contenido spam");
+            throw new ValidacionException(v.mensajeError());
+          }
+        }
+      }
     }
+
+    // Crear la solicitud solo si pasó TODAS las validaciones (longitud Y no-spam)
+    SolicitudEliminacion solicitud = new SolicitudEliminacion(hecho, truncarTextoFundamentos(textoFundamentos),
+        contribuyenteId, fuenteId, idOrigen);
+
+    solicitud.setSpam(false); // Si llegamos aquí, no es spam
+    solicitud.transicionarEstado(EstadoSolicitud.PENDIENTE);
+
+    log.info("[SolicitudEliminacionFactory] Solicitud creada exitosamente - Estado: PENDIENTE");
 
     return solicitud;
   }

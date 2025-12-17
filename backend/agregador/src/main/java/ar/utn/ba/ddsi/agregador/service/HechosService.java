@@ -35,16 +35,15 @@ public class HechosService {
         log.info("[HechosService] Obteniendo todos los hechos con filtros: categoria={}, ubicacion={}",
             categoria, ubicacion);
 
-        // Obtener hechos locales desde la BD (siempre disponibles)
-        List<Hecho> hechosLocales = hechosRepository.findByFilters(
+        // Obtener hechos locales desde la BD (solo hechos VISIBLES)
+        List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,
             fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-            ubicacion,
-            null); // modo = null para todos los hechos visibles
+            ubicacion);
 
         List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
-        log.debug("[HechosService] Se obtuvieron {} hechos locales", locales.size());
+        log.debug("[HechosService] Se obtuvieron {} hechos locales VISIBLES", locales.size());
 
         // Intentar obtener hechos de fuentes externas (resiliente a fallos)
         List<HechoDTO> externos = new ArrayList<>();

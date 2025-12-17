@@ -53,12 +53,18 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
 
   @Override
   public boolean esValida(String texto) {
-    return texto != null && !esSpam(texto);
+    boolean resultado = texto != null && !esSpam(texto);
+    log.info("[DetectorSpamTFIDF] esValida() llamado - Resultado: {}", resultado);
+    return resultado;
   }
 
   @Override
   public boolean esSpam(String texto) {
+    log.info("[DetectorSpamTFIDF] esSpam() llamado - Longitud texto: {}",
+        texto != null ? texto.length() : 0);
+
     if (texto == null || texto.isBlank()) {
+      log.info("[DetectorSpamTFIDF] Texto null o vacío - NO ES SPAM");
       return false;
     }
 
@@ -66,8 +72,10 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
     String textoNorm = normalizarTexto(texto);
     String[] palabras = textoNorm.split("\\s+");
 
+    log.info("[DetectorSpamTFIDF] Texto normalizado - {} palabras", palabras.length);
+
     if (palabras.length < 10) {
-      log.debug("[DetectorSpamTFIDF] Texto muy corto (< 10 palabras), podría ser spam");
+      log.warn("[DetectorSpamTFIDF] Texto muy corto (< 10 palabras) - MARCADO COMO SPAM");
       return true; // Textos muy cortos son sospechosos
     }
 
@@ -86,10 +94,18 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
     double patronesScore = detectarPatrones(texto);
     spamScore += patronesScore * 0.2; // 20% del peso
 
+    // 4. Detectar repeticiones excesivas (spam con copy-paste)
+    double repeticionesScore = detectarRepeticionesExcesivas(palabras);
+    if (repeticionesScore > 0.7) {
+      log.warn("[DetectorSpamTFIDF] Texto con repeticiones excesivas detectado: {}", repeticionesScore);
+      return true; // Marcar directamente como spam si hay repeticiones muy altas
+    }
+
     log.debug("[DetectorSpamTFIDF] Spam score: {} (umbral: {})", spamScore, umbralSpam);
     log.debug("[DetectorSpamTFIDF] - Palabras spam: {}", palabrasSpamRatio);
     log.debug("[DetectorSpamTFIDF] - TF-IDF: {}", tfidfScore);
     log.debug("[DetectorSpamTFIDF] - Patrones: {}", patronesScore);
+    log.debug("[DetectorSpamTFIDF] - Repeticiones: {}", repeticionesScore);
 
     return spamScore >= umbralSpam;
   }
@@ -205,6 +221,42 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
     }
 
     return Math.min(score, 1.0); // Limitar a 1.0
+  }
+
+  /**
+   * Detecta si hay repeticiones excesivas de palabras (típico de spam copy-paste)
+   * Calcula la diversidad léxica (palabras únicas / total de palabras)
+   * Un ratio bajo indica muchas repeticiones
+   */
+  private double detectarRepeticionesExcesivas(String[] palabras) {
+    if (palabras.length == 0) {
+      return 0.0;
+    }
+
+    // Contar palabras únicas (excluyendo stopwords)
+    Set<String> palabrasUnicas = new HashSet<>();
+    int totalPalabrasRelevantes = 0;
+
+    for (String palabra : palabras) {
+      if (!stopwords.contains(palabra) && palabra.length() > 2) {
+        palabrasUnicas.add(palabra);
+        totalPalabrasRelevantes++;
+      }
+    }
+
+    // Calcular diversidad léxica
+    double diversidadLexica = totalPalabrasRelevantes > 0
+        ? (double) palabrasUnicas.size() / totalPalabrasRelevantes
+        : 1.0;
+
+    // Invertir: baja diversidad = alta repetición = alto score de spam
+    // Diversidad < 0.3 es muy sospechoso (menos del 30% de palabras únicas)
+    double repeticionScore = 1.0 - diversidadLexica;
+
+    log.debug("[DetectorSpamTFIDF] Diversidad léxica: {} (palabras únicas: {}, total: {})",
+        diversidadLexica, palabrasUnicas.size(), totalPalabrasRelevantes);
+
+    return repeticionScore;
   }
 
   @Override

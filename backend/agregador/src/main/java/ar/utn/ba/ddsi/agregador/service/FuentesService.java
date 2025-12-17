@@ -1,6 +1,8 @@
 package ar.utn.ba.ddsi.agregador.service;
 
+import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
 import ar.utn.ba.ddsi.agregador.domain.hecho.EstadoHecho;
+import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.FuenteDTO;
@@ -68,7 +70,7 @@ public class FuentesService {
   }
 
   private List<HechoDTO> filtrarBlacklist(List<HechoDTO> hechos) {
-  
+
     Map<Long, Set<Long>> blacklist = solicitudesService.blacklist();
 
     if (blacklist.isEmpty()) {
@@ -178,6 +180,17 @@ public class FuentesService {
 
   public int cantidadDeFuentes() {
     return fuentes.size();
+  }
+
+  public List<Long> getFuentesTiempoReal() {
+    return fuentes.stream()
+        .filter(fuente -> fuente instanceof FuenteTiempoReal)
+        .map(AFuente::getId)
+        .collect(Collectors.toList());
+  }
+
+  public List<OrigenHecho> getOrigenesTiempoReal() {
+    return List.of(OrigenHecho.METAMAPA);
   }
 
   private void normalizarHecho(HechoDTO h, Long idFuente) {

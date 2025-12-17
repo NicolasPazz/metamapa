@@ -17,7 +17,6 @@ public class SolicitudEliminacionDTO {
   private EstadoSolicitud estado;
   @JsonProperty("contribuyente_id")
   private Long contribuyenteId;
-  private Boolean spam;
   private List<TransicionEstadoSolicitudDTO> transiciones;
   @JsonProperty("fuente_id")
   private Long fuenteId;

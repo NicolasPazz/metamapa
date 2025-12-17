@@ -24,8 +24,8 @@ public class ColeccionesController {
 
     @GetMapping
     public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
-        log.info("[ColeccionesController] GET /api/colecciones");
-        return coleccionesService.getAll();
+        log.info("[ColeccionesController] GET /api/colecciones (todas: locales + externas)");
+        return coleccionesService.getAllColecciones();
     }
 
     @GetMapping("/{handle}/hechos")

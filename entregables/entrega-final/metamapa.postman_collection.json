@@ -443,6 +443,66 @@
 							"response": []
 						},
 						{
+							"name": "crearColeccion2",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"titulo\": \"Colección de hechos estatica\",\r\n  \"descripcion\": \"ejemplo de uso\",\r\n   \"criterios\": [\r\n      {\r\n        \"cadena_a_comparar\": \"incendio\",\r\n        \"tipo_dato\": \"TITULO\"\r\n      },\r\n      {\r\n        \"origen\": \"DATASET\"\r\n      },\r\n      {\r\n        \"fuentes\": [0]\r\n      }\r\n  ]\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/admin/colecciones",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"admin",
+										"colecciones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "crearColeccion3",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"titulo\": \"Colección de mayoria simple\",\r\n  \"descripcion\": \"ejemplo de uso\",\r\n  \"algoritmo_consenso\": \"MAYORIA_SIMPLE\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/admin/colecciones",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"admin",
+										"colecciones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "getAllColecciones",
 							"request": {
 								"auth": {
@@ -464,7 +524,7 @@
 							"response": []
 						},
 						{
-							"name": "actualizarColeccion",
+							"name": "actualizarColeccion3",
 							"request": {
 								"auth": {
 									"type": "noauth"
@@ -473,7 +533,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "    {\r\n        \"titulo\": \"modificado\",\r\n        \"descripcion\": \"modificado\",\r\n        \"criterios\": null,\r\n        \"algoritmo_consenso\": null\r\n    }",
+									"raw": "    {\r\n        \"titulo\": \"modificado\",\r\n        \"descripcion\": \"modificado\",\r\n        \"criterios\": null,\r\n        \"algoritmo_consenso\": null\r\n    }\r\n",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -493,7 +553,7 @@
 									"variable": [
 										{
 											"key": "handle",
-											"value": "6fe4c414-e7bb-415b-8e5a-a2303925f09f"
+											"value": "26d38d73-3064-4859-a616-100c2ceb34b1"
 										}
 									]
 								}
@@ -530,7 +590,7 @@
 									"variable": [
 										{
 											"key": "handle",
-											"value": "6fe4c414-e7bb-415b-8e5a-a2303925f09f"
+											"value": "f03a7d11-c9f8-4d97-a08d-fcdcadc3c94e"
 										}
 									]
 								}
@@ -568,7 +628,7 @@
 								"method": "GET",
 								"header": [],
 								"url": {
-									"raw": "{{agregadorBaseURL}}/colecciones/:handle/hechos?categoria&fecha_reporte_desde&fecha_reporte_hasta&fecha_acontecimiento_desde&fecha_acontecimiento_hasta&ubicacion&modo",
+									"raw": "{{agregadorBaseURL}}/colecciones/:handle/hechos?categoria&fecha_reporte_desde&fecha_reporte_hasta&fecha_acontecimiento_desde&fecha_acontecimiento_hasta&ubicacion&modo=IRRESTRICTA",
 									"host": [
 										"{{agregadorBaseURL}}"
 									],
@@ -604,13 +664,13 @@
 										},
 										{
 											"key": "modo",
-											"value": null
+											"value": "IRRESTRICTA"
 										}
 									],
 									"variable": [
 										{
 											"key": "handle",
-											"value": ""
+											"value": "22222222-2222-2222-2222-222222222222"
 										}
 									]
 								}
@@ -686,7 +746,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": "3"
+											"value": "1"
 										}
 									]
 								}
@@ -699,7 +759,7 @@
 					"name": "SolicitudesController",
 					"item": [
 						{
-							"name": "crearSolicitudEliminacion",
+							"name": "crearSolicitudEliminacion Interno",
 							"request": {
 								"auth": {
 									"type": "noauth"
@@ -708,7 +768,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"id_hecho\": 100001,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho porque contiene datos sensibles que, de permanecer públicos, podrían poner en riesgo la seguridad e integridad de las personas involucradas. La publicación menciona información que permite identificar ubicaciones específicas, horarios y nombres propios sin el debido consentimiento explícito de los afectados. Además, existen distintos errores fácticos que ya fueron reportados a la organización responsable y cuya divulgación genera confusión, desinformación y estigmatización de la comunidad a la que se refiere el incidente.\",\r\n  \"id_contribuyente\": 2\r\n}",
+									"raw": "{\r\n  \"hecho_id\": 1,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho debido a que contiene datos sensibles que, de permanecer accesibles públicamente, podrían poner en riesgo la seguridad, la integridad y la privacidad de las personas involucradas. La publicación incluye información que permite identificar ubicaciones específicas, horarios y nombres propios, o combinaciones de datos que facilitan la identificación de individuos sin el consentimiento explícito de los afectados. Además, el contenido presenta errores fácticos que ya fueron informados a la organización responsable, generando confusión y desinformación.\",\r\n  \"contribuyente_id\": 2\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -871,7 +931,7 @@
 									"variable": [
 										{
 											"key": "id",
-											"value": ""
+											"value": "1"
 										}
 									]
 								}
