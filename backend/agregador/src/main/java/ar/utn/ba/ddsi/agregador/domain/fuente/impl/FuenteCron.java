@@ -6,6 +6,7 @@ import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -19,14 +20,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
-@Getter
-@Setter
 @NoArgsConstructor
 @Entity
 @DiscriminatorValue("CRON")
 public class FuenteCron extends AFuente {
 
   @Transient
+  @Getter
+  @Setter
   private WebClient webClient;
 
   public FuenteCron(Long id, String nombre, WebClient webClient) {
@@ -39,11 +40,12 @@ public class FuenteCron extends AFuente {
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
           String categoria,
           LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-          LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+          LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
           String ubicacion) {
     return ResponseEntity.ok(List.of());
   }
 
+  @Transient
   @Override
   public ResponseEntity<List<HechoDTO>> getAllHechosNuevos() {
     try {
@@ -62,17 +64,19 @@ public class FuenteCron extends AFuente {
     }
   }
 
+  @Transient
   @Override
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     return ResponseEntity.ok(List.of());
   }
 
+  @Transient
   @Override
   public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
       UUID handle,
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion,
       String modo) {
     return ResponseEntity.of(Optional.empty());

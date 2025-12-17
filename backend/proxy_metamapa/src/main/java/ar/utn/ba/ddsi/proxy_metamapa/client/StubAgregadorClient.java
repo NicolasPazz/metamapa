@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.proxy_metamapa.client;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +24,7 @@ public class StubAgregadorClient implements AgregadorClient {
   @Override
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(String categoria,
                                                              LocalDate frd, LocalDate frh,
-                                                             LocalDate fad, LocalDate fah,
+                                                             LocalDateTime fad, LocalDateTime fah,
                                                              String ubicacion) {
 
     List<HechoDTO> filtrados = fixture.getHechos().stream()
@@ -69,7 +70,7 @@ public class StubAgregadorClient implements AgregadorClient {
       String handle,
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion
   ) {
     log.info("Buscando hechos de la colección con handle: {}", handle);

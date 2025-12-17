@@ -20,6 +20,7 @@ import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -88,7 +89,7 @@ public class ColeccionesService {
         String handle,
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-        LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+        LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
         String ubicacion,
         ModoNavegacion modo) {
 
@@ -512,7 +513,7 @@ public class ColeccionesService {
 
     private List<Hecho> aplicarFiltros(List<Hecho> hechos, String categoria,
                                        LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
-                                       LocalDate fechaAcontecimientoDesde, LocalDate fechaAcontecimientoHasta,
+                                       LocalDateTime fechaAcontecimientoDesde, LocalDateTime fechaAcontecimientoHasta,
                                        String ubicacion) {
 
         List<Hecho> resultado = hechos;

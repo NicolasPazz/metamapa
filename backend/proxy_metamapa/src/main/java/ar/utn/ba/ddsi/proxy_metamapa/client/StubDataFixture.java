@@ -8,7 +8,6 @@ import ar.utn.ba.ddsi.proxy_metamapa.domain.enums.EstadoHecho;
 import lombok.Getter;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,7 +41,7 @@ public class StubDataFixture {
         "Incendio forestal",
         -31.42,
         -64.19,
-        LocalDate.of(2025, 3, 21),
+        LocalDateTime.of(2025, 3, 21, 12, 0, 0),
         LocalDateTime.of(2025, 3, 21, 14, 30),
         List.of(new ContenidoMultimediaDTO("incendio-cordoba.jpg", "IMAGEN")),
         List.of(transVisible)
@@ -59,7 +58,7 @@ public class StubDataFixture {
         "Inundación",
         -34.92,
         -57.95,
-        LocalDate.of(2025, 4, 2),
+        LocalDateTime.of(2025, 4, 2, 8, 30, 0),
         LocalDateTime.of(2025, 4, 2, 16, 0),
         List.of(new ContenidoMultimediaDTO("inundacion-laplata.jpg", "IMAGEN")),
         List.of(transVisible)
@@ -76,7 +75,7 @@ public class StubDataFixture {
         "Terremoto",
         -32.89,
         -68.83,
-        LocalDate.of(2025, 5, 15),
+        LocalDateTime.of(2025, 5, 15, 8, 45, 0),
         LocalDateTime.of(2025, 5, 15, 8, 45),
         List.of(new ContenidoMultimediaDTO("terremoto-mendoza.jpg", "IMAGEN")),
         List.of(transVisible)
@@ -93,7 +92,7 @@ public class StubDataFixture {
         "Tornado",
         -31.62,
         -60.69,
-        LocalDate.of(2025, 6, 10),
+        LocalDateTime.of(2025, 6, 10, 17, 20, 0),
         LocalDateTime.of(2025, 6, 10, 17, 20),
         List.of(new ContenidoMultimediaDTO("tornado-santafe.jpg", "IMAGEN")),
         List.of(transVisible)
@@ -110,7 +109,7 @@ public class StubDataFixture {
         "Contaminación hídrica",
         -34.64,
         -58.37,
-        LocalDate.of(2025, 7, 5),
+        LocalDateTime.of(2025, 7, 5, 11, 30, 0),
         LocalDateTime.of(2025, 7, 5, 11, 30),
         List.of(new ContenidoMultimediaDTO("contaminacion-riachuelo.jpg", "IMAGEN")),
         List.of(transVisible)
@@ -127,7 +126,7 @@ public class StubDataFixture {
         "Granizo",
         -32.95,
         -60.64,
-        LocalDate.of(2025, 8, 20),
+        LocalDateTime.of(2025, 8, 20, 19, 15, 0),
         LocalDateTime.of(2025, 8, 20, 19, 15),
         List.of(new ContenidoMultimediaDTO("granizo-rosario.jpg", "IMAGEN")),
         List.of(transVisible)
@@ -144,7 +143,7 @@ public class StubDataFixture {
         "Sequía",
         -24.78,
         -65.41,
-        LocalDate.of(2025, 9, 1),
+        LocalDateTime.of(2025, 9, 1, 10, 0, 0),
         LocalDateTime.of(2025, 9, 1, 10, 0),
         List.of(new ContenidoMultimediaDTO("sequia-salta.jpg", "IMAGEN")),
         List.of(transVisible)
@@ -161,7 +160,7 @@ public class StubDataFixture {
         "Deslizamiento",
         -26.82,
         -65.22,
-        LocalDate.of(2025, 10, 12),
+        LocalDateTime.of(2025, 10, 12, 14, 0, 0),
         LocalDateTime.of(2025, 10, 12, 14, 0),
         List.of(new ContenidoMultimediaDTO("deslizamiento-tucuman.jpg", "IMAGEN")),
         List.of(transVisible)

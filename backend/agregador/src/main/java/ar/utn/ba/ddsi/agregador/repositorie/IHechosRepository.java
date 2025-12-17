@@ -4,6 +4,7 @@ import ar.utn.ba.ddsi.agregador.domain.hecho.EstadoHecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import jakarta.transaction.Transactional;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -28,8 +29,8 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
       @Param("categoria") String categoria,
       @Param("fechaReporteDesde") LocalDate fechaReporteDesde,
       @Param("fechaReporteHasta") LocalDate fechaReporteHasta,
-      @Param("fechaAcontecimientoDesde") LocalDate fechaAcontecimientoDesde,
-      @Param("fechaAcontecimientoHasta") LocalDate fechaAcontecimientoHasta,
+      @Param("fechaAcontecimientoDesde") LocalDateTime fechaAcontecimientoDesde,
+      @Param("fechaAcontecimientoHasta") LocalDateTime fechaAcontecimientoHasta,
       @Param("latitud") String latitud,
       @Param("longitud") String longitud
   );
@@ -45,8 +46,8 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
   default List<Hecho> findByFiltersConUbicacion(String categoria,
                                                 LocalDate fechaReporteDesde,
                                                 LocalDate fechaReporteHasta,
-                                                LocalDate fechaAcontecimientoDesde,
-                                                LocalDate fechaAcontecimientoHasta,
+                                                LocalDateTime fechaAcontecimientoDesde,
+                                                LocalDateTime fechaAcontecimientoHasta,
                                                 String ubicacion) {
     String latitud = null;
     String longitud = null;

@@ -1,10 +1,7 @@
 package ar.utn.ba.ddsi.agregador.dto.mapper;
 
 import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.SolicitudEliminacion;
-import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.TransicionEstadoSolicitud;
 import ar.utn.ba.ddsi.agregador.dto.SolicitudEliminacionDTO;
-import ar.utn.ba.ddsi.agregador.dto.TransicionEstadoSolicitudDTO;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -25,6 +22,7 @@ public class SolicitudMapper {
     dto.setFecha(solicitud.getFecha());
     dto.setEstado(solicitud.getEstado());
     dto.setContribuyenteId(solicitud.getContribuyenteId());
+    dto.setSpam(solicitud.getSpam()); // Mapear el campo spam
     dto.setFuenteId(solicitud.getFuenteId());
     dto.setIdOrigen(solicitud.getIdOrigen());
 

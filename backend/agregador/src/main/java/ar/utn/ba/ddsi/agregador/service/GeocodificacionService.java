@@ -6,10 +6,6 @@ import org.springframework.stereotype.Service;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Servicio de geocodificación sin API externa.
- * Usa polígonos simplificados y rangos de coordenadas para provincias argentinas.
- */
 @Slf4j
 @Service
 public class GeocodificacionService {
@@ -108,9 +104,6 @@ public class GeocodificacionService {
         NORMALIZACION_PROVINCIAS.put("pampa", "La Pampa");
     }
 
-    /**
-     * Normaliza el nombre de una provincia usando el diccionario
-     */
     public String normalizarProvincia(String provincia) {
         if (provincia == null || provincia.isBlank()) {
             return "Provincia Desconocida";
@@ -120,10 +113,6 @@ public class GeocodificacionService {
         return NORMALIZACION_PROVINCIAS.getOrDefault(provinciaLower, provincia);
     }
 
-    /**
-     * Obtiene la provincia a partir de coordenadas usando rangos mejorados
-     * Basado en límites geográficos aproximados de provincias argentinas
-     */
     public String obtenerProvinciaPorCoordenadas(Double latitud, Double longitud) {
         if (latitud == null || longitud == null) {
             log.warn("[GeocodificacionService] Coordenadas nulas");

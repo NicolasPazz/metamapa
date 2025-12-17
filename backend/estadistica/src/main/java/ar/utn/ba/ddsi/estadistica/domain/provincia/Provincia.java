@@ -1,34 +1,32 @@
 package ar.utn.ba.ddsi.estadistica.domain.provincia;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
-@Setter
-@Getter
-@AllArgsConstructor
-@NoArgsConstructor
 @Entity
-@Table(name = "provincia")
+@Table(name = "provincias")
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class Provincia {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
-  @Enumerated(EnumType.STRING)
-  @Column(name = "nombre", length = 100, nullable = false, unique = true)
-  private ProvinciaEnum nombre;
+  @Column(nullable = false, unique = true)
+  private String nombre;
 
-  public Provincia(ProvinciaEnum nombre) {
-    this.nombre = nombre;
-  }
+  @Column(nullable = false)
+  private Double latitudCentro;
+
+  @Column(nullable = false)
+  private Double longitudCentro;
+
+  @Column(nullable = false)
+  private Double radioKm;
 }

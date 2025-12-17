@@ -75,28 +75,36 @@ public class SolicitudEliminacionFactory {
       }
     }
 
-    // SEGUNDO: Verificar si es SPAM (BLOQUEA la creación)
+    // SEGUNDO: Verificar si es SPAM (ahora se PERSISTE con flag spam=true para estadísticas)
+    boolean esSpam = false;
     if (validaciones != null) {
       for (Validacion v : validaciones) {
         if (v instanceof DetectorDeSpam) {
           log.debug("[SolicitudEliminacionFactory] Ejecutando detector de spam: {}", v.getClass().getSimpleName());
           if (!v.esValida(textoFundamentos)) {
             log.warn("[SolicitudEliminacionFactory] Texto detectado como SPAM por: {}", v.getClass().getSimpleName());
-            log.warn("[SolicitudEliminacionFactory] Rechazando creación de solicitud por contenido spam");
-            throw new ValidacionException(v.mensajeError());
+            log.info("[SolicitudEliminacionFactory] Solicitud será persistida con flag spam=true (para estadísticas)");
+            esSpam = true;
+            break; // No necesitamos verificar más detectores
           }
         }
       }
     }
 
-    // Crear la solicitud solo si pasó TODAS las validaciones (longitud Y no-spam)
+    // Crear la solicitud (incluso si es spam, para fines estadísticos)
     SolicitudEliminacion solicitud = new SolicitudEliminacion(hecho, truncarTextoFundamentos(textoFundamentos),
         contribuyenteId, fuenteId, idOrigen);
 
-    solicitud.setSpam(false); // Si llegamos aquí, no es spam
-    solicitud.transicionarEstado(EstadoSolicitud.PENDIENTE);
+    solicitud.setSpam(esSpam);
 
-    log.info("[SolicitudEliminacionFactory] Solicitud creada exitosamente - Estado: PENDIENTE");
+    if (esSpam) {
+      // Solicitudes spam se rechazan automáticamente
+      solicitud.transicionarEstado(EstadoSolicitud.RECHAZADA);
+      log.info("[SolicitudEliminacionFactory] Solicitud SPAM creada - Estado: RECHAZADA (para estadísticas)");
+    } else {
+      solicitud.transicionarEstado(EstadoSolicitud.PENDIENTE);
+      log.info("[SolicitudEliminacionFactory] Solicitud creada exitosamente - Estado: PENDIENTE");
+    }
 
     return solicitud;
   }

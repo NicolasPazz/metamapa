@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.domain.fuente;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -32,23 +33,27 @@ public abstract class AFuente {
     this.nombre = nombre;
   }
 
+  @Transient
   public abstract ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       String categoria,
       LocalDate fecha_reporte_desde,
       LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde,
-      LocalDate fecha_acontecimiento_hasta,
+      LocalDateTime fecha_acontecimiento_desde,
+      LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion);
 
+  @Transient
   public abstract ResponseEntity<List<HechoDTO>> getAllHechosNuevos();
 
+  @Transient
   public abstract ResponseEntity<List<ColeccionDTO>> getAllColecciones();
 
+  @Transient
   public abstract ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
       UUID handle,
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion,
       String modo);
 }

@@ -2,7 +2,6 @@ package ar.utn.ba.ddsi.dinamica.domain.dto.output;
 
 import ar.utn.ba.ddsi.dinamica.domain.hecho.OrigenHecho;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +29,7 @@ public class HechoOutputDTO {
   private Double longitud;
 
   @JsonProperty("fecha_acontecimiento")
-  private LocalDate fechaDeAcontecimiento;
+  private LocalDateTime fechaDeAcontecimiento;
 
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
@@ -51,7 +50,7 @@ public class HechoOutputDTO {
       String categoria,
       Double latitud,
       Double longitud,
-      LocalDate fechaDeAcontecimiento,
+      LocalDateTime fechaDeAcontecimiento,
       LocalDateTime fechaDeCarga,
       OrigenHecho origen,
       Long idContribuyente,

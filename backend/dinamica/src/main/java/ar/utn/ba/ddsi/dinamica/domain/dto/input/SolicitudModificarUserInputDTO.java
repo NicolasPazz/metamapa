@@ -5,7 +5,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
 
@@ -35,7 +35,7 @@ public class SolicitudModificarUserInputDTO {
   private Double nuevoLongitud;
 
   @JsonProperty("fecha_acontecimiento")
-  private LocalDate nuevoFechaDeAcontecimiento;
+  private LocalDateTime nuevoFechaDeAcontecimiento;
 
   @Valid
   @JsonProperty("multimedia")

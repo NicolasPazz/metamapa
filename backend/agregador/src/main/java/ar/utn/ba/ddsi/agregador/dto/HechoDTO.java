@@ -5,7 +5,6 @@ import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
@@ -24,7 +23,7 @@ public class HechoDTO {
   @DecimalMax(value = "180.0", message = "La longitud debe estar entre -180 y 180 grados")
   private Double longitud;
   @JsonProperty("fecha_acontecimiento")
-  private LocalDate fechaDeAcontecimiento;
+  private LocalDateTime fechaDeAcontecimiento;
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
   private OrigenHecho origen;

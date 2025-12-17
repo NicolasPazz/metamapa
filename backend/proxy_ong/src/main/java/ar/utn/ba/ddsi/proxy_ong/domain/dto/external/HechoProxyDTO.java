@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.proxy_ong.domain.dto.external;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -12,7 +11,7 @@ public class HechoProxyDTO {
   private String categoria;
   private Double latitud;
   private Double longitud;
-  private LocalDate fecha_hecho;
+  private LocalDateTime fecha_hecho;
   private LocalDateTime created_at;
   private LocalDateTime updated_at;
 }

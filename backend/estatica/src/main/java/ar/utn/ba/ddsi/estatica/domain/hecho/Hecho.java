@@ -2,7 +2,7 @@ package ar.utn.ba.ddsi.estatica.domain.hecho;
 
 import ar.utn.ba.ddsi.estatica.dto.output.HechoOutputDTO;
 import com.opencsv.bean.CsvBindByName;
-import com.opencsv.bean.CsvDate;
+import com.opencsv.bean.CsvCustomBindByName;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -11,7 +11,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -45,9 +44,8 @@ public class Hecho {
   @CsvBindByName(column = "Longitud")
   private Double longitud;
 
-  @CsvDate("dd/MM/yyyy")
-  @CsvBindByName(column = "Fecha del hecho")
-  private LocalDate fechaDeAcontecimiento;
+  @CsvCustomBindByName(column = "Fecha del hecho", converter = LocalDateTimeConverter.class)
+  private LocalDateTime fechaDeAcontecimiento;
 
   @Column(name = "fecha_carga", nullable = false)
   private LocalDateTime fechaDeCarga;

@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.proxy_metamapa.service.impl;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
@@ -23,7 +24,7 @@ public class FuenteService {
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion
   ) {
     List<HechoDTO> hechos = webClient
@@ -62,7 +63,7 @@ public class FuenteService {
       String handle,
       String categoria,
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-      LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+      LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion
   ) {
     List<HechoDTO> hechos = webClient.get()

@@ -6,7 +6,7 @@ import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
 
@@ -41,7 +41,7 @@ public class SolicitudHechoInputContribuyenteDTO {
 
     @NotNull(message = "La fecha de acontecimiento es obligatoria")
     @JsonProperty("fecha_acontecimiento")
-    private LocalDate fechaDeAcontecimiento;
+    private LocalDateTime fechaDeAcontecimiento;
 
     @Valid
     @JsonProperty("multimedia")

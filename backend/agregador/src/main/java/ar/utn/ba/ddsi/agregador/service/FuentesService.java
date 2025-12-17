@@ -10,6 +10,7 @@ import ar.utn.ba.ddsi.agregador.dto.mapper.FuenteMapper;
 import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
 import ar.utn.ba.ddsi.agregador.repositorie.IFuentesRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,7 @@ public class FuentesService {
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       String categoria,
       LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
-      LocalDate fechaAcontecimientoDesde, LocalDate fechaAcontecimientoHasta,
+      LocalDateTime fechaAcontecimientoDesde, LocalDateTime fechaAcontecimientoHasta,
       String ubicacion) {
 
     List<HechoDTO> resultados = new ArrayList<>();
@@ -136,7 +137,7 @@ public class FuentesService {
       UUID handle,
       String categoria,
       LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
-      LocalDate fechaAcontecimientoDesde, LocalDate fechaAcontecimientoHasta,
+      LocalDateTime fechaAcontecimientoDesde, LocalDateTime fechaAcontecimientoHasta,
       String ubicacion,
       String modo
   ) {

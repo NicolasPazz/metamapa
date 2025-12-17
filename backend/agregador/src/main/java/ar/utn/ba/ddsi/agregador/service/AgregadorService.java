@@ -19,7 +19,6 @@ public class AgregadorService {
   private final CategoriasService categoriasService;
   private final IHechosRepository hechosRepository;
   private final HechoMapper hechoMapper;
-  private final EstadisticasService estadisticasService;
 
   public void actualizarHechos() {
     try {
@@ -53,7 +52,6 @@ public class AgregadorService {
       hechosRepository.saveAll(hechosNuevos);
       log.info("💾 [AgregadorService] Se guardaron {} hechos nuevos.", hechosNuevos.size());
 
-      estadisticasService.notificarRecalculo();
 
       log.info("✅ [AgregadorService] ====== ACTUALIZACIÓN DE HECHOS COMPLETADA ======");
 

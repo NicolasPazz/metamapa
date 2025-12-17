@@ -5,8 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 @Data
 public class HechoOutputDTO {
   private Long id;
@@ -16,7 +14,7 @@ public class HechoOutputDTO {
   private Double latitud;
   private Double longitud;
   @JsonProperty("fecha_acontecimiento")
-  private LocalDate fechaDeAcontecimiento;
+  private LocalDateTime fechaDeAcontecimiento;
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
   private OrigenHecho origen;
@@ -28,7 +26,7 @@ public class HechoOutputDTO {
       String categoria,
       Double latitud,
       Double longitud,
-      LocalDate fechaDeAcontecimiento,
+      LocalDateTime fechaDeAcontecimiento,
       LocalDateTime fechaDeCarga
   ) {
     this.id = id;

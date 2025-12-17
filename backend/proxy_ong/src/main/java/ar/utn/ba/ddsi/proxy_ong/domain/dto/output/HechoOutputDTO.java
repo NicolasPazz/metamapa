@@ -1,7 +1,6 @@
 package ar.utn.ba.ddsi.proxy_ong.domain.dto.output;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -17,7 +16,7 @@ public class HechoOutputDTO {
   private Double latitud;
   private Double longitud;
   @JsonProperty("fecha_acontecimiento")
-  private LocalDate fechaDeAcontecimiento;
+  private LocalDateTime fechaDeAcontecimiento;
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
 }

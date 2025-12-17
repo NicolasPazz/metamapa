@@ -1,7 +1,6 @@
 package ar.utn.ba.ddsi.agregador.dto;
 
 import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.EstadoSolicitud;
-import ar.utn.ba.ddsi.agregador.domain.solicitudEliminacion.TransicionEstadoSolicitud;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDate;
 import java.util.List;
@@ -17,6 +16,8 @@ public class SolicitudEliminacionDTO {
   private EstadoSolicitud estado;
   @JsonProperty("contribuyente_id")
   private Long contribuyenteId;
+  @JsonProperty("es_spam")
+  private Boolean spam;
   private List<TransicionEstadoSolicitudDTO> transiciones;
   @JsonProperty("fuente_id")
   private Long fuenteId;

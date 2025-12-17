@@ -4,7 +4,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,7 +32,7 @@ public class Hecho {
   private Double longitud;
 
   @Column(name = "fecha_acontecimiento")
-  private LocalDate fechaDeAcontecimiento;
+  private LocalDateTime fechaDeAcontecimiento;
 
   @Column(name = "fecha_carga")
   private LocalDateTime fechaDeCarga;
@@ -41,7 +40,7 @@ public class Hecho {
   @Column(name = "ultima_modificacion")
   private LocalDateTime ultimaModificacion;
 
-  public Hecho(Long id, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, LocalDateTime ultimaModificacion) {
+  public Hecho(Long id, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDateTime fechaDeAcontecimiento, LocalDateTime fechaDeCarga, LocalDateTime ultimaModificacion) {
     this.id = id;
     this.titulo = titulo;
     this.descripcion = descripcion;

@@ -2,7 +2,6 @@ package ar.utn.ba.ddsi.dinamica.domain.dto.output;
 
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Getter;
@@ -26,7 +25,7 @@ public class SolicitudOutputDTO {
   @JsonProperty("longitud")
   private Double longitud;
   @JsonProperty("fecha_acontecimiento")
-  private LocalDate fechaDeAcontecimiento;
+  private LocalDateTime fechaDeAcontecimiento;
   @JsonProperty("multimedia")
   private List<ContenidoMultimediaOutputDTO> contenidoMultimedia;
   @JsonProperty("fecha_carga")

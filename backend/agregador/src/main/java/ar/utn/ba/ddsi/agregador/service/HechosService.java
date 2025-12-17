@@ -6,6 +6,7 @@ import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
 import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -29,7 +30,7 @@ public class HechosService {
     public ResponseEntity<List<HechoDTO>> getAll(
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
-        LocalDate fecha_acontecimiento_desde, LocalDate fecha_acontecimiento_hasta,
+        LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
         String ubicacion) {
 
         log.info("[HechosService] Obteniendo todos los hechos con filtros: categoria={}, ubicacion={}",

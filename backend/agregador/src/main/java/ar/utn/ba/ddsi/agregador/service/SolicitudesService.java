@@ -103,9 +103,20 @@ public class SolicitudesService {
         return ResponseEntity.badRequest().body("Debe proporcionar un ID de hecho o una combinación de fuente_id e id_origen");
       }
 
+      // Persistir la solicitud (incluso si es spam, para estadísticas)
       SolicitudEliminacion solicitud = solicitudesRepository.save(solicitudEliminacion);
-      log.info("[SolicitudesService] Solicitud creada localmente con ID: {}", solicitud.getId());
-      return ResponseEntity.ok(solicitudMapper.toDTO(solicitud));
+
+      // Si es spam, persistir silenciosamente pero responder con error
+      if (solicitud.esSpam()) {
+        log.warn("[SolicitudesService] Solicitud spam detectada y persistida (ID: {}) - Respondiendo con error",
+            solicitud.getId());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+            .body("Spam detectado: El contenido de la solicitud parece ser spam y ha sido rechazado automáticamente");
+      }
+
+      // Si no es spam, responder con éxito
+      log.info("[SolicitudesService] Solicitud creada exitosamente con ID: {}", solicitud.getId());
+      return ResponseEntity.status(HttpStatus.CREATED).body(solicitudMapper.toDTO(solicitud));
 
     } catch (ValidacionException e) {
 

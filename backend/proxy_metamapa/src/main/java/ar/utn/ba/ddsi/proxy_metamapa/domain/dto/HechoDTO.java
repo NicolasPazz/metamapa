@@ -3,7 +3,6 @@ package ar.utn.ba.ddsi.proxy_metamapa.domain.dto;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.enums.EstadoHecho;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.Data;
@@ -38,13 +37,13 @@ public class HechoDTO {
   private Double latitud;
   private Double longitud;
   @JsonProperty("fecha_acontecimiento")
-  private LocalDate fechaDeAcontecimiento;
+  private LocalDateTime fechaDeAcontecimiento;
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
   private List<ContenidoMultimediaDTO> multimedia;
   private List<TransicionEstadoHechoDTO> transiciones;
 
-  public HechoDTO(Long contribuyenteId, List<String> etiquetas, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento, LocalDateTime fechaDeCarga, List<ContenidoMultimediaDTO> multimedia, List<TransicionEstadoHechoDTO> transiciones) {
+  public HechoDTO(Long contribuyenteId, List<String> etiquetas, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDateTime fechaDeAcontecimiento, LocalDateTime fechaDeCarga, List<ContenidoMultimediaDTO> multimedia, List<TransicionEstadoHechoDTO> transiciones) {
     this.id = null;
     this.origen = "METAMAPA";
     this.estado = EstadoHecho.VISIBLE;

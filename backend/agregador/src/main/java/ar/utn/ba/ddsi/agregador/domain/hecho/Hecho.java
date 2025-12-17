@@ -1,7 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -36,7 +35,7 @@ public class Hecho {
   private Double longitud;
 
   @Column(name = "fecha_acontecimiento", nullable = false)
-  private LocalDate fechaDeAcontecimiento;
+  private LocalDateTime fechaDeAcontecimiento;
 
   @Column(name = "fecha_carga", nullable = false, updatable = false)
   private LocalDateTime fechaDeCarga;
@@ -79,7 +78,7 @@ public class Hecho {
   @Column(name = "id_origen", nullable = false)
   private Long idOrigen;
 
-  public Hecho(String titulo, String descripcion, Double latitud, Double longitud, LocalDate fechaDeAcontecimiento,
+  public Hecho(String titulo, String descripcion, Double latitud, Double longitud, LocalDateTime fechaDeAcontecimiento,
                OrigenHecho origen, Long contribuyenteId, Categoria categoria, Long fuenteId) {
     this.titulo = titulo;
     this.descripcion = descripcion;

@@ -1,0 +1,53 @@
+@startuml
+
+entity "PROVINCIA" as prov {
+id: INT <<PK>>
+--
+nombre: VARCHAR(255) <<UNIQUE>>
+latitud_centro: DOUBLE
+longitud_centro: DOUBLE
+radio_km: DOUBLE
+}
+
+entity "ESTADISTICA_COLECCION_PROVINCIA" as ecp {
+id: INT <<PK>>
+--
+coleccion_handle: VARCHAR(255)
+coleccion_titulo: VARCHAR(255)
+provincia_nombre: VARCHAR(255)
+cantidad_hechos: BIGINT
+}
+
+entity "ESTADISTICA_CATEGORIA_DOMINANTE" as ecd {
+id: INT <<PK>>
+--
+categoria_nombre: VARCHAR(255)
+cantidad_hechos: BIGINT
+}
+
+entity "ESTADISTICA_CATEGORIA_PROVINCIA" as ecprov {
+id: INT <<PK>>
+--
+categoria_nombre: VARCHAR(255)
+provincia_nombre: VARCHAR(255)
+cantidad_hechos: BIGINT
+}
+
+entity "ESTADISTICA_CATEGORIA_HORA" as ech {
+id: INT <<PK>>
+--
+categoria_nombre: VARCHAR(255)
+hora: VARCHAR(5)
+cantidad_hechos: BIGINT
+}
+
+entity "ESTADISTICA_SPAM" as es {
+id: INT <<PK>>
+--
+total_solicitudes: BIGINT
+solicitudes_spam: BIGINT
+porcentaje_spam: DOUBLE
+}
+
+@enduml
+

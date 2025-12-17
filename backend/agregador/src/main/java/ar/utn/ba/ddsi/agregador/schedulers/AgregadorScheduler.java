@@ -41,11 +41,6 @@ public class AgregadorScheduler {
         }
     }
 
-    /**
-     * Cron Job que actualiza los hechos consensuados de todas las colecciones
-     * Se ejecuta todos los días a las 3:00 AM
-     * Formato cron: "0 0 3 * * *" = segundo minuto hora día mes día_semana
-     */
     @Scheduled(cron = "0 0 3 * * *")
     public void actualizarColeccionesSegunConsenso() {
         try {

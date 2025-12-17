@@ -7,9 +7,6 @@ import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-/**
- * Mapper encargado de la conversión entre Coleccion y ColeccionDTO.
- */
 @Component
 @RequiredArgsConstructor
 public class ColeccionMapper {
@@ -17,12 +14,6 @@ public class ColeccionMapper {
     private final HechoMapper hechoMapper;
     private final CriterioMapper criterioMapper;
 
-    /**
-     * Convierte una entidad Coleccion a su representación DTO.
-     *
-     * @param coleccion Entidad Coleccion a convertir
-     * @return ColeccionDTO con todos los campos mapeados, o null si la colección es null
-     */
     public ColeccionDTO toDTO(Coleccion coleccion) {
         if (coleccion == null) return null;
 
