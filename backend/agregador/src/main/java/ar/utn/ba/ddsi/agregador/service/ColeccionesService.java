@@ -11,6 +11,7 @@ import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.dto.PageResponse;
 import ar.utn.ba.ddsi.agregador.dto.mapper.ColeccionMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.CriterioMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
@@ -47,16 +48,140 @@ public class ColeccionesService {
     private final CategoriasService categoriasService;
     private final ObjectMapper objectMapper;
 
-  public ResponseEntity<List<ColeccionDTO>> getAllColeccionesLocales() {
-        log.info("[ColeccionesService] Obteniendo colecciones locales (solo BD)");
+    public ResponseEntity<ColeccionDTO> getOneColeccion() {
+        log.info("[ColeccionesService] Obteniendo una colección para landing");
 
-        List<Coleccion> coleccionesBD = coleccionesRepository.findAll();
-        List<ColeccionDTO> dtosBD = coleccionesBD.stream()
-            .map(coleccionMapper::toDTO)
-            .toList();
+        // Intentar obtener de la BD local
+        List<Coleccion> coleccionesLocales = coleccionesRepository.findAll();
 
-        log.info("[ColeccionesService] {} colecciones locales obtenidas", dtosBD.size());
-        return ResponseEntity.ok(dtosBD);
+        if (!coleccionesLocales.isEmpty()) {
+            // Si hay colecciones locales, devolver la primera
+            ColeccionDTO coleccionDTO = coleccionMapper.toDTO(coleccionesLocales.get(0));
+            log.info("[ColeccionesService] Colección local obtenida: {}", coleccionDTO.getTitulo());
+            return ResponseEntity.ok(coleccionDTO);
+        }
+
+        log.info("[ColeccionesService] No hay colecciones locales, buscando en fuentes externas");
+
+        // Si no hay locales, intentar obtener de fuentes externas
+        try {
+            ResponseEntity<List<ColeccionDTO>> respuestaExterna = fuentesService.getAllColecciones();
+            List<ColeccionDTO> coleccionesExternas = Optional.ofNullable(respuestaExterna.getBody())
+                    .orElse(List.of());
+
+            if (!coleccionesExternas.isEmpty()) {
+                ColeccionDTO coleccionExterna = coleccionesExternas.get(0);
+                log.info("[ColeccionesService] Colección externa obtenida: {}", coleccionExterna.getTitulo());
+                return ResponseEntity.ok(coleccionExterna);
+            }
+        } catch (Exception e) {
+            log.warn("[ColeccionesService] Error al obtener colecciones de fuentes externas: {}", e.getMessage());
+        }
+
+        log.warn("[ColeccionesService] No hay colecciones disponibles ni en BD local ni en fuentes externas");
+        return ResponseEntity.notFound().build();
+    }
+
+    public ResponseEntity<List<ColeccionDTO>> getAllColeccionesPaginated(int page, int size) {
+        log.info("[ColeccionesService] Obteniendo colecciones paginadas: page={}, size={}", page, size);
+
+        List<ColeccionDTO> coleccionesLocales = Optional.ofNullable(
+            getAllColeccionesLocales().getBody()
+        ).orElse(new ArrayList<>());
+
+        List<ColeccionDTO> coleccionesFuentes = new ArrayList<>();
+        try {
+            coleccionesFuentes = Optional.ofNullable(
+                fuentesService.getAllColecciones().getBody()
+            ).orElse(List.of());
+        } catch (Exception e) {
+            log.warn("[ColeccionesService] No se pudieron obtener colecciones externas: {}", e.getMessage());
+        }
+
+        List<ColeccionDTO> todasLasColecciones = new ArrayList<>();
+        todasLasColecciones.addAll(coleccionesLocales);
+        todasLasColecciones.addAll(coleccionesFuentes);
+
+        // Paginar
+        int start = page * size;
+        int end = Math.min(start + size, todasLasColecciones.size());
+
+        if (start >= todasLasColecciones.size()) {
+            return ResponseEntity.ok(new ArrayList<>());
+        }
+
+        List<ColeccionDTO> paginadas = todasLasColecciones.subList(start, end);
+        log.info("[ColeccionesService] Devolviendo {} colecciones (página {} de tamaño {})",
+                 paginadas.size(), page, size);
+
+        return ResponseEntity.ok(paginadas);
+    }
+
+    public ResponseEntity<PageResponse<HechoDTO>> getHechosColeccionPaginated(
+            String handle,
+            String ubicacion,
+            LocalDate fechaReporteDesde,
+            LocalDate fechaReporteHasta,
+            String categoria,
+            String modoStr,
+            int page,
+            int size) {
+
+        log.info("[ColeccionesService] Obteniendo hechos paginados de colección {}: page={}, size={}",
+                 handle, page, size);
+
+        // Parsear modo de navegación
+        ModoNavegacion modo = null;
+        if (modoStr != null && !modoStr.trim().isEmpty()) {
+            try {
+                modo = ModoNavegacion.valueOf(modoStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                log.warn("[ColeccionesService] Modo inválido: {}, usando IRRESTRICTA por defecto", modoStr);
+                modo = ModoNavegacion.IRRESTRICTA;
+            }
+        }
+
+        // Obtener todos los hechos primero (reutilizando la lógica existente)
+        ResponseEntity<List<HechoDTO>> respuesta = getHechosColeccionByHandle(
+            handle, categoria, fechaReporteDesde, fechaReporteHasta, null, null, ubicacion, modo);
+
+        List<HechoDTO> todosLosHechos = Optional.ofNullable(respuesta.getBody())
+            .orElse(new ArrayList<>());
+
+        // Paginar
+        int start = page * size;
+        int end = Math.min(start + size, todosLosHechos.size());
+
+        if (start >= todosLosHechos.size()) {
+            PageResponse<HechoDTO> emptyResponse = new PageResponse<>(
+                    new ArrayList<>(),
+                    page,
+                    size,
+                    false,
+                    page > 0,
+                    todosLosHechos.size()
+            );
+            return ResponseEntity.ok(emptyResponse);
+        }
+
+        List<HechoDTO> paginados = todosLosHechos.subList(start, end);
+
+        // Determinar si hay página siguiente
+        boolean hasNext = end < todosLosHechos.size();
+
+        PageResponse<HechoDTO> response = new PageResponse<>(
+                paginados,
+                page,
+                size,
+                hasNext,
+                page > 0,
+                todosLosHechos.size()
+        );
+
+        log.info("[ColeccionesService] Devolviendo {} hechos (página {} de tamaño {}), hasNext: {}",
+                 paginados.size(), page, size, hasNext);
+
+        return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
@@ -83,6 +208,34 @@ public class ColeccionesService {
         log.info("[ColeccionesService] Total de colecciones: {} (locales: {}, externas: {})",
             todasLasColecciones.size(), coleccionesLocales.size(), coleccionesFuentes.size());
         return ResponseEntity.ok(todasLasColecciones);
+    }
+
+    public ResponseEntity<List<ColeccionDTO>> getAllColeccionesLocales() {
+        log.info("[ColeccionesService] Obteniendo colecciones locales (solo BD)");
+
+        List<Coleccion> coleccionesBD = coleccionesRepository.findAll();
+        List<ColeccionDTO> dtosBD = coleccionesBD.stream()
+            .map(coleccionMapper::toDTO)
+            .toList();
+
+        log.info("[ColeccionesService] {} colecciones locales obtenidas", dtosBD.size());
+        return ResponseEntity.ok(dtosBD);
+    }
+
+    public ResponseEntity<List<ColeccionDTO>> getAllColeccionesExternas() {
+        log.info("[ColeccionesService] Obteniendo colecciones externas únicamente");
+
+        List<ColeccionDTO> coleccionesExternas = new ArrayList<>();
+        try {
+            coleccionesExternas = Optional.ofNullable(
+                fuentesService.getAllColecciones().getBody()
+            ).orElse(List.of());
+            log.info("[ColeccionesService] {} colecciones externas obtenidas", coleccionesExternas.size());
+        } catch (Exception e) {
+            log.warn("[ColeccionesService] No se pudieron obtener colecciones externas: {}", e.getMessage());
+        }
+
+        return ResponseEntity.ok(coleccionesExternas);
     }
 
     public ResponseEntity<List<HechoDTO>> getHechosColeccionByHandle(
@@ -583,6 +736,56 @@ public class ColeccionesService {
 
     private int calcularCantidadFuentes() {
         return fuentesService.cantidadDeFuentes();
+    }
+
+    public PageResponse<ColeccionDTO> getPaginatedColecciones(int page, int size) {
+        log.info("[ColeccionesService] Obteniendo colecciones paginadas - page: {}, size: {}", page, size);
+
+        List<ColeccionDTO> resultado = new ArrayList<>();
+        int start = page * size;
+        int needed = size;
+
+        // 1. Obtener colecciones locales
+        ResponseEntity<List<ColeccionDTO>> localesResp = getAllColeccionesLocales();
+        List<ColeccionDTO> coleccionesLocales = Optional.ofNullable(localesResp.getBody()).orElse(new ArrayList<>());
+        log.debug("[ColeccionesService] Colecciones locales disponibles: {}", coleccionesLocales.size());
+
+        // Aplicar paginación a locales
+        if (start < coleccionesLocales.size()) {
+            int endLocal = Math.min(start + size, coleccionesLocales.size());
+            resultado.addAll(coleccionesLocales.subList(start, endLocal));
+            needed = size - resultado.size();
+            log.debug("[ColeccionesService] Agregadas {} colecciones locales, faltan: {}", resultado.size(), needed);
+        } else {
+            // Ajustar start para externas
+            start = start - coleccionesLocales.size();
+        }
+
+        // 2. Obtener colecciones externas
+        ResponseEntity<List<ColeccionDTO>> externasResp = getAllColeccionesExternas();
+        List<ColeccionDTO> coleccionesExternas = Optional.ofNullable(externasResp.getBody()).orElse(new ArrayList<>());
+
+        if (needed > 0 && !coleccionesExternas.isEmpty() && start < coleccionesExternas.size()) {
+            log.debug("[ColeccionesService] Obteniendo colecciones externas para completar página");
+            int endExterno = Math.min(start + needed, coleccionesExternas.size());
+            resultado.addAll(coleccionesExternas.subList(start, endExterno));
+            log.debug("[ColeccionesService] Agregadas {} colecciones externas", endExterno - start);
+        }
+
+        // Determinar si hay página siguiente
+        int totalDisponibles = coleccionesLocales.size() + coleccionesExternas.size();
+        boolean hasNext = (page + 1) * size < totalDisponibles;
+
+        log.info("[ColeccionesService] Devolviendo {} colecciones para página {}, hasNext: {}", resultado.size(), page, hasNext);
+
+        return new PageResponse<>(
+                resultado,
+                page,
+                size,
+                hasNext,
+                page > 0,
+                totalDisponibles
+        );
     }
 }
 

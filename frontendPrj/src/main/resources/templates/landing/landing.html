@@ -9,9 +9,8 @@
 <body>
   <!-- Header -->
   <header class="navbar">
-    <div class="logo">MetaMapa</div>
+    <a th:href="@{/}" class="logo">MetaMapa</a>
     <nav class="nav-buttons">
-      <a th:href="@{/hechos}"class="btn primary">Hechos</a>
       <a th:href="@{/login}" class="btn secondary">Ingresar</a>
       <a th:href="@{/registro}" class="btn primary">Registrarse</a>
     </nav>
@@ -38,28 +37,87 @@
   <section class="block collections">
     <div class="container">
       <h2>Hechos y Colecciones</h2>
-      <div class="grid">
-        <div class="card">
+      <div class="grid-two">
+        <!-- Un solo hecho -->
+        <div class="card clickable-card" th:if="${!#lists.isEmpty(hechos)}"
+             th:data-hecho-id="${hechos[0].id}"
+             onclick="if(event.target.tagName !== 'A') { openHechoPanel(this.dataset.hechoId); }"
+             style="cursor: pointer;">
           <div class="image-placeholder"></div>
-          <p>Colección: Desastres Naturales</p>
+          <p><strong>Hecho:</strong> <span th:text="${hechos[0].titulo}">Título del hecho</span></p>
+          <p class="subtitle" th:text="${hechos[0].categoria != null ? hechos[0].categoria : 'Sin categoría'}">Categoría</p>
+          <a th:href="@{/hechos}" class="btn primary btn-landing" onclick="event.stopPropagation();">Más Hechos</a>
         </div>
-        <div class="card">
+
+        <!-- Una sola colección -->
+        <div class="card clickable-card" th:if="${!#lists.isEmpty(colecciones)}"
+             th:data-coleccion-handle="${colecciones[0].handle}"
+             onclick="if(event.target.tagName !== 'A') { openColeccionPanel(this.dataset.coleccionHandle); }"
+             style="cursor: pointer;">
           <div class="image-placeholder"></div>
-          <p>Hecho: Incendio forestal en Córdoba</p>
+          <p><strong>Colección:</strong> <span th:text="${colecciones[0].titulo}">Título de la colección</span></p>
+          <p class="subtitle" th:text="${#lists.size(colecciones[0].hechos)} + ' hechos'">Cantidad de hechos</p>
+          <a th:href="@{/colecciones}" class="btn primary btn-landing" onclick="event.stopPropagation();">Más Colecciones</a>
         </div>
-        <div class="card">
-          <div class="image-placeholder"></div>
-          <p>Colección: Abusos de autoridad</p>
-        </div>
-        <div class="card">
-          <div class="image-placeholder"></div>
-          <p>Hecho: Inundación repentina en Misiones</p>
-        </div>
+      </div>
+
+      <!-- Mensaje si no hay datos -->
+      <div th:if="${#lists.isEmpty(hechos) && #lists.isEmpty(colecciones)}" class="no-data">
+        <p>No hay hechos ni colecciones disponibles en este momento.</p>
+        <a th:href="@{/hechos/nuevo}" class="btn primary">Reportar un hecho</a>
       </div>
     </div>
   </section>
 
-  <!-- Block 3: Legal / Privacy -->
+  <!-- Panel lateral para Hecho -->
+  <div id="hechoPanel" class="side-panel" th:if="${!#lists.isEmpty(hechos)}">
+    <div class="panel-header">
+      <h3>Detalles del Hecho</h3>
+      <button class="close-btn" onclick="closeHechoPanel()">&times;</button>
+    </div>
+    <div class="panel-content">
+      <h2 th:text="${hechos[0].titulo}">Título del hecho</h2>
+      <p><strong>Categoría:</strong> <span th:text="${hechos[0].categoria != null ? hechos[0].categoria : 'Sin categoría'}">Categoría</span></p>
+      <p><strong>Descripción:</strong> <span th:text="${hechos[0].descripcion != null ? hechos[0].descripcion : 'Sin descripción'}">Descripción</span></p>
+      <p th:if="${hechos[0].fechaDeAcontecimiento != null}">
+        <strong>Fecha:</strong> <span th:text="${#temporals.format(hechos[0].fechaDeAcontecimiento, 'dd/MM/yyyy')}">Fecha</span>
+      </p>
+      <p th:if="${hechos[0].provincia != null}">
+        <strong>Provincia:</strong> <span th:text="${hechos[0].provincia}">Provincia</span>
+      </p>
+      <p th:if="${hechos[0].latitud != null && hechos[0].longitud != null}">
+        <strong>Ubicación:</strong> <span th:text="${hechos[0].latitud} + ', ' + ${hechos[0].longitud}">Coordenadas</span>
+      </p>
+      <div th:if="${hechos[0].etiquetas != null && !#lists.isEmpty(hechos[0].etiquetas)}">
+        <strong>Etiquetas:</strong>
+        <div class="tags">
+          <span class="tag" th:each="etiqueta : ${hechos[0].etiquetas}" th:text="${etiqueta}">Etiqueta</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel lateral para Colección -->
+  <div id="coleccionPanel" class="side-panel" th:if="${!#lists.isEmpty(colecciones)}">
+    <div class="panel-header">
+      <h3>Detalles de la Colección</h3>
+      <button class="close-btn" onclick="closeColeccionPanel()">&times;</button>
+    </div>
+    <div class="panel-content">
+      <h2 th:text="${colecciones[0].titulo}">Título de la colección</h2>
+      <p><strong>Descripción:</strong> <span th:text="${colecciones[0].descripcion != null ? colecciones[0].descripcion : 'Sin descripción'}">Descripción</span></p>
+      <p><strong>Hechos:</strong> <span th:text="${#lists.size(colecciones[0].hechos)}">0</span></p>
+      <p th:if="${colecciones[0].fechaDeCarga != null}">
+        <strong>Fecha de creación:</strong> <span th:text="${#temporals.format(colecciones[0].fechaDeCarga, 'dd/MM/yyyy')}">Fecha</span>
+      </p>
+      <a th:href="@{/colecciones/{handle}/hechos(handle=${colecciones[0].handle})}" class="btn primary">Ver todos los hechos</a>
+    </div>
+  </div>
+
+  <!-- Overlay para cerrar paneles -->
+  <div id="overlay" class="overlay" onclick="closePanels()"></div>
+
+  <!-- Footer -->
   <section class="block legal">
     <div class="container">
       <h2>Información Legal y Privacidad</h2>
@@ -68,10 +126,79 @@
         Todos los datos son tratados de manera segura y transparente. 
       </p>
       <p>
-        © 2025 MetaMapa. Todos los derechos reservados.  
-        Términos de uso · Política de privacidad · Contacto
+        © 2025 MetaMapa. Todos los derechos reservados.<br>
+        <a th:href="@{/terminos}" class="footer-link">Términos de uso</a> ·
+        <a th:href="@{/privacidad}" class="footer-link">Política de privacidad</a> ·
+        <a th:href="@{/contacto}" class="footer-link">Contacto</a>
       </p>
     </div>
   </section>
+
+  <script>
+    function openHechoPanel(hechoId) {
+      const panel = document.getElementById('hechoPanel');
+      const overlay = document.getElementById('overlay');
+      if (panel) {
+        panel.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        // Actualizar la URL sin recargar la página
+        history.pushState(null, '', '#hecho' + hechoId);
+      }
+    }
+
+    function closeHechoPanel() {
+      const panel = document.getElementById('hechoPanel');
+      const overlay = document.getElementById('overlay');
+      if (panel) {
+        panel.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        // Restaurar la URL
+        history.pushState(null, '', '/');
+      }
+    }
+
+    function openColeccionPanel(handle) {
+      const panel = document.getElementById('coleccionPanel');
+      const overlay = document.getElementById('overlay');
+      if (panel) {
+        panel.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+        // Actualizar la URL sin recargar la página
+        history.pushState(null, '', '#coleccion' + handle);
+      }
+    }
+
+    function closeColeccionPanel() {
+      const panel = document.getElementById('coleccionPanel');
+      const overlay = document.getElementById('overlay');
+      if (panel) {
+        panel.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+        // Restaurar la URL
+        history.pushState(null, '', '/');
+      }
+    }
+
+    function closePanels() {
+      closeHechoPanel();
+      closeColeccionPanel();
+    }
+
+    // Manejar el botón "atrás" del navegador
+    window.addEventListener('popstate', function() {
+      closePanels();
+    });
+
+    // Cerrar paneles con la tecla Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closePanels();
+      }
+    });
+  </script>
 </body>
 </html>

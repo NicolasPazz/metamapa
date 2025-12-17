@@ -9,7 +9,14 @@
 <body>
   <!-- Header -->
   <header class="navbar">
-    <div class="logo">MetaMapa</div>
+    <a th:href="@{/}" class="logo">MetaMapa</a>
+    <nav class="nav-buttons-center">
+      <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
+      <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
+    </nav>
+    <nav class="nav-buttons">
+      <a th:href="@{/login}" class="btn secondary">Ingresar</a>
+    </nav>
   </header>
 
   <!-- Register form -->

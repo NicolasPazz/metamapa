@@ -110,9 +110,6 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
     return spamScore >= umbralSpam;
   }
 
-  /**
-   * Normaliza el texto: minúsculas, sin tildes, solo letras y espacios
-   */
   private String normalizarTexto(String texto) {
     return texto.toLowerCase()
         .replaceAll("[áàäâ]", "a")
@@ -126,9 +123,6 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
         .trim();
   }
 
-  /**
-   * Calcula el ratio de palabras de spam en el texto
-   */
   private double calcularRatioPalabrasSpam(String[] palabras) {
     long countSpam = Arrays.stream(palabras)
         .filter(palabrasSpam::contains)
@@ -137,12 +131,6 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
     return palabras.length > 0 ? (double) countSpam / palabras.length : 0.0;
   }
 
-  /**
-   * Calcula TF-IDF simplificado
-   * TF = frecuencia de la palabra en el texto
-   * IDF = log(total documentos / documentos que contienen la palabra)
-   * Score alto = palabras relevantes del corpus legítimo
-   */
   private double calcularTFIDF(String[] palabras) {
     // Construir vocabulario del corpus
     Set<String> vocabularioCorpus = new HashSet<>();
@@ -191,9 +179,6 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
     return palabrasRelevantes > 0 ? tfidfTotal / palabrasRelevantes : 0.0;
   }
 
-  /**
-   * Detecta patrones sospechosos en el texto
-   */
   private double detectarPatrones(String texto) {
     double score = 0.0;
 
@@ -223,11 +208,6 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
     return Math.min(score, 1.0); // Limitar a 1.0
   }
 
-  /**
-   * Detecta si hay repeticiones excesivas de palabras (típico de spam copy-paste)
-   * Calcula la diversidad léxica (palabras únicas / total de palabras)
-   * Un ratio bajo indica muchas repeticiones
-   */
   private double detectarRepeticionesExcesivas(String[] palabras) {
     if (palabras.length == 0) {
       return 0.0;

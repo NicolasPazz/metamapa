@@ -23,10 +23,19 @@ public class ColeccionController {
     private final ColeccionService coleccionService;
 
     @GetMapping
-    public String listarColecciones(Model model) {
-        List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
-        model.addAttribute("colecciones", colecciones);
+    public String listarColecciones(Model model,
+            @RequestParam(defaultValue = "0") int page) {
+        // Obtener colecciones paginadas del servicio (ya procesadas)
+        ar.utn.ba.ddsi.frontend.models.PageResponse<ColeccionDTO> pageResponse =
+            coleccionService.getAllColeccionesPaginadas(page, 100);
+
+        model.addAttribute("colecciones", pageResponse.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("hasNextPage", pageResponse.isHasNext());
         model.addAttribute("titulo", "Listado de colecciones");
+        // En /colecciones: mostrar botón Hechos, no mostrar Colecciones
+        model.addAttribute("showHechosBtn", true);
+        model.addAttribute("showColeccionesBtn", false);
 
         return "colecciones/listacolecciones";
     }
@@ -39,21 +48,28 @@ public class ColeccionController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_hasta,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
             @RequestParam(required = false) String categoria,
-            @RequestParam(required = false) String modo) {
+            @RequestParam(required = false) String modo,
+            @RequestParam(defaultValue = "0") int page) {
 
-        List<HechoDTO> hechos = coleccionService.getHechosColeccionByHandle(
-                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, modo);
+        // Obtener hechos de colección paginados del servicio (ya procesados)
+        ar.utn.ba.ddsi.frontend.models.PageResponse<HechoDTO> pageResponse =
+            coleccionService.getHechosColeccionPaginados(
+                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, modo, page, 100);
         List<String> listaCategorias = coleccionService.getCategoriasUnicas();
         List<String> listaProvincias = coleccionService.getProvinciasConHechos();
 
-        model.addAttribute("hechos", hechos);
-        model.addAttribute("hechos_encontrados", hechos.size());
+        model.addAttribute("hechos", pageResponse.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("hasNextPage", pageResponse.isHasNext());
         model.addAttribute("titulo", "Hechos de colección");
         model.addAttribute("categorias", listaCategorias);
         model.addAttribute("provincias", listaProvincias);
         model.addAttribute("solicitud", new SolicitudDTO());
         model.addAttribute("esColeccion", true);
         model.addAttribute("handleColeccion", handle);
+        // En /colecciones/{handle}/hechos: mostrar ambos botones
+        model.addAttribute("showHechosBtn", true);
+        model.addAttribute("showColeccionesBtn", true);
 
         return "hechos/hechosencoleccion";
     }

@@ -1,4 +1,5 @@
 package ar.utn.ba.ddsi.frontend.controller;
+import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.ContenidoMultimediaDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -28,22 +29,27 @@ public class HechoController {
     private final HechoService hechoService;
     @GetMapping
     public String listarHechos(Model model,
-
             @RequestParam(required = false) String ubicacion,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_hasta,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
-            @RequestParam(required = false) String categoria
-            )
+            @RequestParam(required = false) String categoria,
+            @RequestParam(defaultValue = "0") int page)
     {
-        List<HechoDTO> hechos = hechoService.getAllHechosFilter(null, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria);
+        // Obtener hechos paginados del servicio (ya procesados)
+        PageResponse<HechoDTO> pageResponse = hechoService.getAllHechosPaginados(
+            null, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, page, 100);
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
         List<String> listaProvincias = hechoService.obtenerProvinciasConHechos();
 
-        model.addAttribute("hechos", hechos);
-        model.addAttribute("hechos_encontrados", hechos.size());
+        model.addAttribute("hechos", pageResponse.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("hasNextPage", pageResponse.isHasNext());
         model.addAttribute("titulo", "Hechos");
         model.addAttribute("categorias", listaCategorias);
         model.addAttribute("provincias", listaProvincias);
+        // En /hechos: no mostrar botón Hechos, solo mostrar Colecciones
+        model.addAttribute("showHechosBtn", false);
+        model.addAttribute("showColeccionesBtn", true);
         return "hechos/hechosencoleccion";
 
     }
