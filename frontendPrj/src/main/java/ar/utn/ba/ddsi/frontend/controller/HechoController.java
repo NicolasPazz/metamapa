@@ -58,19 +58,20 @@ public class HechoController {
     public String nuevoHecho(Model model){
         return "hechos/nuevo";
     }
+
     @PostMapping("/crear")
-    public String crearHecho(Model model, HechoFormDTO HechoInput)
+    public String crearHecho(Model model, HechoFormDTO hechoInput)
+
             {
-                HechoDTO hechoDTO = new HechoDTO();
                 try{
-                    hechoDTO.FormtoDTO(HechoInput);
-                    hechoService.guardaHecho(hechoDTO);
+                    hechoService.crearHecho(hechoInput);
+                    return "hechos/exito";
                 }
                 catch (Exception e) {
                     log.error("Error al crear Hecho", e);
                     model.addAttribute("mensaje", "Error: " + e.getMessage());
+                    return "hechos/nuevo";
                 }
-                return "hechos/nuevo";
     }
 
 
