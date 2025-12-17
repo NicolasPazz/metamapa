@@ -32,21 +32,5 @@ public class HechoDTO {
     private List<ContenidoMultimediaDTO> contenidoMultimedia;
     private List<TransicionEstadoHechoDTO> transicionesDeEstado;
 
-    public void FormtoDTO(HechoFormDTO hechoInput) {
-        this.setTitulo(hechoInput.getTitulo());
-        this.setDescripcion(hechoInput.getDescripcion());
-        this.setLatitud(hechoInput.getLatitud());
-        this.setLongitud(hechoInput.getLongitud());
-        this.setContenidoMultimedia(
-                this.fileToMultimediaDTO(hechoInput.getContenidoMultimedia()));
-    }
 
-    public List<ContenidoMultimediaDTO> fileToMultimediaDTO(MultipartFile file) {
-        List<ContenidoMultimediaDTO> MultimediaLista = new ArrayList<>();
-        ContenidoMultimediaDTO contenidoMultimediaDTO = new ContenidoMultimediaDTO();
-        contenidoMultimediaDTO.setTipoContenido(file.getContentType());
-        contenidoMultimediaDTO.setPathArchivo(file.getOriginalFilename());
-        MultimediaLista.add(contenidoMultimediaDTO);
-        return MultimediaLista;
-    }
 }
