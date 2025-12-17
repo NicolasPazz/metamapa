@@ -26,25 +26,57 @@ public class HechoService {
 
 
     public List<HechoDTO> getAllHechosFilter(String modo, String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria ) {
-        List<HechoDTO> hechosFiltrados = webClient.get().uri("/hechos").retrieve().bodyToFlux(HechoDTO.class).collectList().block();
-        assert hechosFiltrados != null;
-        return hechosFiltrados.stream()
-                .filter(h -> (fecha_desde == null || !h.getFechaDeAcontecimiento().isBefore(fecha_desde))
-                        && (fecha_hasta == null || !h.getFechaDeAcontecimiento().isAfter(fecha_hasta)))
-                .collect(Collectors.toList());
-    }
-    public List<String> obtenerCategoriasUnicas(){
-        // 1. Traemos TODOS los hechos (sin filtrar)
-        List<HechoDTO> todos = this.getAllHechos();
+        // Convertir LocalDate a LocalDateTime (inicio y final del día)
+        LocalDateTime fechaDesdeDateTime = fecha_desde != null ? fecha_desde.atStartOfDay() : null;
+        LocalDateTime fechaHastaDateTime = fecha_hasta != null ? fecha_hasta.atTime(23, 59, 59) : null;
 
-        // 2. Extraemos las categorías, quitamos duplicados y ordenamos
-        return todos.stream()
-                .map(HechoDTO::getCategoria)      // Nos quedamos solo con el String categoria
-                .filter(c -> c != null && !c.isEmpty()) // Ignoramos nulos
-                .distinct()                       // Borramos duplicados
-                .sorted()                         // Ordenamos alfabéticamente (opcional)
-                .collect(Collectors.toList());
-    };
+        // Construir la URI con los parámetros de filtro
+        List<HechoDTO> hechos = webClient.get()
+                .uri(uriBuilder -> {
+                    uriBuilder.path("/hechos");
+                    if (categoria != null && !categoria.isEmpty()) {
+                        uriBuilder.queryParam("categoria", categoria);
+                    }
+                    if (ubicacion != null && !ubicacion.isEmpty()) {
+                        uriBuilder.queryParam("ubicacion", ubicacion);
+                    }
+                    if (fechaDesdeDateTime != null) {
+                        uriBuilder.queryParam("fecha_acontecimiento_desde", fechaDesdeDateTime.toString());
+                    }
+                    if (fechaHastaDateTime != null) {
+                        uriBuilder.queryParam("fecha_acontecimiento_hasta", fechaHastaDateTime.toString());
+                    }
+                    return uriBuilder.build();
+                })
+                .retrieve()
+                .bodyToFlux(HechoDTO.class)
+                .collectList()
+                .block();
+
+        return hechos != null ? hechos : List.of();
+    }
+
+    public List<String> obtenerCategoriasUnicas(){
+        // Obtener categorías directamente desde el agregador
+        List<String> categorias = webClient.get()
+                .uri("/front/categorias")
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<List<String>>() {})
+                .block();
+
+        return categorias != null ? categorias : List.of();
+    }
+
+    public List<String> obtenerProvinciasConHechos(){
+        // Obtener provincias con hechos desde el agregador
+        List<String> provincias = webClient.get()
+                .uri("/front/provincias")
+                .retrieve()
+                .bodyToMono(new org.springframework.core.ParameterizedTypeReference<List<String>>() {})
+                .block();
+
+        return provincias != null ? provincias : List.of();
+    }
 
     }
 

@@ -5,7 +5,8 @@ class Hecho {
 -descripcion: String
 -latitud: Double
 -longitud: Double
--fechaDeAcontecimiento: LocalDate
+-provincia: Provincia
+-fechaDeAcontecimiento: LocalDateTime
 -fechaDeCarga: LocalDateTime
 -origen: OrigenHecho
 -estado: EstadoHecho
@@ -15,11 +16,18 @@ class Hecho {
 -transiciones: List<TransicionEstadoHecho>
 -categoria: Categoria
 -fuenteId: Long
+-idOrigen: Long
 -transicionarEstado(): void
 +ocultar(): void
 +visibilizar(): void
 +esVisible(): boolean
 +contieneEtiqueta(String): boolean
+}
+
+Hecho --> Provincia
+class Provincia {
+-id: Long
+-nombre: String
 }
 
 Hecho --> OrigenHecho
@@ -184,6 +192,7 @@ class CriterioLugar implements Criterio {
 - tipo: TipoCriterio
 - lat: Double
 - lon: Double
+- provincia: String
 + cumple(Hecho): Boolean
 }
 CriterioOrigen --> OrigenHecho

@@ -31,23 +31,22 @@ public class HechoController {
 
             @RequestParam(required = false) String ubicacion,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_hasta,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde, // HTML date input envía yyyy-MM-dd por defecto// HTML date input envía yyyy-MM-dd por defecto
-            @RequestParam(required = false) String modo,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
             @RequestParam(required = false) String categoria
             )
     {
-        List<HechoDTO> hechos = hechoService.getAllHechosFilter(modo, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria);
+        List<HechoDTO> hechos = hechoService.getAllHechosFilter(null, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria);
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
+        List<String> listaProvincias = hechoService.obtenerProvinciasConHechos();
 
         model.addAttribute("hechos", hechos);
         model.addAttribute("hechos_encontrados", hechos.size());
         model.addAttribute("titulo", "Hechos");
         model.addAttribute("categorias", listaCategorias);
-        //model.addAttribute("solicitud", new SolicitudDTO());
+        model.addAttribute("provincias", listaProvincias);
         return "hechos/hechosencoleccion";
 
-    } // TODO: No se deberia hacer el filtrado en el front, deberia venir filtrado del agregador
-    // TODO: Por el momento funciona pero esta mal.
+    }
 
     @GetMapping("/nuevo")
     public String nuevoHecho(Model model){

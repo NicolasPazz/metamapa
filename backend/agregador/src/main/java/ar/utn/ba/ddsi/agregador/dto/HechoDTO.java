@@ -22,6 +22,7 @@ public class HechoDTO {
   @DecimalMin(value = "-180.0", message = "La longitud debe estar entre -180 y 180 grados")
   @DecimalMax(value = "180.0", message = "La longitud debe estar entre -180 y 180 grados")
   private Double longitud;
+  private String provincia;
   @JsonProperty("fecha_acontecimiento")
   private LocalDateTime fechaDeAcontecimiento;
   @JsonProperty("fecha_carga")

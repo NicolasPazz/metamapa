@@ -43,6 +43,8 @@ public class HechoMapper {
           ? transicionEstadoHechoMapper.toDTO(hecho.getTransiciones())
           : List.of());
       dto.setCategoria(hecho.getCategoria() != null ? hecho.getCategoria().getNombre() : null);
+      dto.setCategoria(hecho.getCategoria() != null ? hecho.getCategoria().getNombre() : null);
+      dto.setProvincia(hecho.getProvincia() != null ? hecho.getProvincia().getNombre() : null);
       dto.setFuenteId(hecho.getFuenteId());
       dto.setIdOrigen(hecho.getIdOrigen());
 

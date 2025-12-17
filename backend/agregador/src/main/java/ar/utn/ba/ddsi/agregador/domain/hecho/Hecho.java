@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia;
+import ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -33,6 +34,10 @@ public class Hecho {
 
   @Column(name = "longitud", nullable = false)
   private Double longitud;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "provincia_id", referencedColumnName = "id")
+  private Provincia provincia;
 
   @Column(name = "fecha_acontecimiento", nullable = false)
   private LocalDateTime fechaDeAcontecimiento;

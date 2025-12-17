@@ -26,7 +26,7 @@ public class HechosService {
     private final FuentesService fuentesService;
     private final HechoMapper hechoMapper;
     private final CategoriasService categoriasService;
-
+    private final ProvinciaService provinciaService;
     public ResponseEntity<List<HechoDTO>> getAll(
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
@@ -83,6 +83,19 @@ public class HechosService {
 
             // Convertir DTO a entidad
             Hecho hechoNuevo = hechoMapper.fromDTO(hechoInputDTO);
+
+            // Asignar provincia basada en coordenadas o nombre
+            if (hechoNuevo.getLatitud() != null && hechoNuevo.getLongitud() != null) {
+                ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia provincia =
+                    provinciaService.obtenerProvinciaPorCoordenadas(
+                        hechoNuevo.getLatitud(), hechoNuevo.getLongitud());
+                hechoNuevo.setProvincia(provincia);
+                log.debug("[HechosService] Provincia asignada: {}", provincia.getNombre());
+            } else if (hechoInputDTO.getProvincia() != null) {
+                ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia provincia =
+                    provinciaService.obtenerOCrearProvincia(hechoInputDTO.getProvincia());
+                hechoNuevo.setProvincia(provincia);
+            }
 
             // Normalizar categoría antes de persistir
             categoriasService.persistirCategoriasDesdeHechos(List.of(hechoNuevo));
@@ -142,5 +155,14 @@ public class HechosService {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body("Error al actualizar las etiquetas: " + e.getMessage());
         }
+    }
+
+    /**
+     * Obtiene la lista de provincias que tienen al menos un hecho registrado.
+     * @return ResponseEntity con lista de nombres de provincias
+     */
+    public ResponseEntity<List<String>> getProvinciasConHechos() {
+        log.info("[HechosService] Obteniendo provincias con hechos");
+        return provinciaService.getProvinciasConHechos();
     }
 }

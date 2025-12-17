@@ -13,7 +13,6 @@ import lombok.NoArgsConstructor;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HechoSimpleDTO {
   private Long id;
-  private Double latitud;
-  private Double longitud;
+  private String provincia;
 }
 

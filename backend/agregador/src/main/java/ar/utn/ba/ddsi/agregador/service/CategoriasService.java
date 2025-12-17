@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -139,5 +140,18 @@ public class CategoriasService {
 
   private String normalizarNombre(String nombre) {
     return nombre.trim().toLowerCase();
+  }
+
+  public ResponseEntity<List<String>> getAllCategoriasNombres() {
+    log.info("[CategoriasService] Obteniendo todas las categorías");
+
+    List<String> nombres = categoriaRepository.findAll().stream()
+        .map(Categoria::getNombre)
+        .filter(Objects::nonNull)
+        .sorted()
+        .toList();
+
+    log.debug("[CategoriasService] Se encontraron {} categorías", nombres.size());
+    return ResponseEntity.ok(nombres);
   }
 }

@@ -20,7 +20,6 @@ import java.util.stream.Collectors;
 public class EstadisticasService {
 
   private final AgregadorClient agregadorClient;
-  private final GeolocalizacionService geolocalizacionService;
 
   private final EstadisticaColeccionProvinciaRepository coleccionProvinciaRepo;
   private final EstadisticaCategoriaDominanteRepository categoriaDominanteRepo;
@@ -73,8 +72,8 @@ public class EstadisticasService {
       }
 
       Map<String, Long> hechosPorProvincia = coleccion.getHechos().stream()
-          .map(hecho -> geolocalizacionService.obtenerProvincia(hecho.getLatitud(), hecho.getLongitud()))
-          .filter(provincia -> !"Desconocida".equals(provincia))
+          .map(HechoSimpleDTO::getProvincia)
+          .filter(provincia -> provincia != null && !"Provincia Desconocida".equals(provincia))
           .collect(Collectors.groupingBy(
               provincia -> provincia,
               Collectors.counting()
@@ -141,8 +140,8 @@ public class EstadisticasService {
       List<HechoDTO> hechosCategoria = entry.getValue();
 
       Map<String, Long> hechosPorProvincia = hechosCategoria.stream()
-          .map(hecho -> geolocalizacionService.obtenerProvincia(hecho.getLatitud(), hecho.getLongitud()))
-          .filter(provincia -> !"Desconocida".equals(provincia))
+          .map(HechoDTO::getProvincia)
+          .filter(provincia -> provincia != null && !"Provincia Desconocida".equals(provincia))
           .collect(Collectors.groupingBy(
               provincia -> provincia,
               Collectors.counting()

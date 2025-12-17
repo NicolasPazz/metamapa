@@ -25,6 +25,7 @@ public class HechoDTO {
 
   private Double latitud;
   private Double longitud;
+  private String provincia;
   private String categoria;
   private String titulo;
   private String descripcion;

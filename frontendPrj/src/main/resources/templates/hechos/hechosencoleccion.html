@@ -12,7 +12,7 @@
   <section class="hechos-block">
     <!--<h2>Colección: Derechos Humanos</h2> -->
 
-    <form method="get" class="filters">
+    <form method="get" class="filters" th:action="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}">
 
 
       <div class="filtro-fecha">
@@ -26,9 +26,12 @@
       </div>
 
       <select name="ubicacion">
-        <option value="">Todas las ubicaciones</option> <option value="Buenos Aires" th:selected="${param.ubicacion != null and param.ubicacion[0] == 'Buenos Aires'}">Buenos Aires</option>
-        <option value="Córdoba" th:selected="${param.ubicacion != null and param.ubicacion[0] == 'Córdoba'}">Córdoba</option>
-        <option value="Rosario" th:selected="${param.ubicacion != null and param.ubicacion[0] == 'Rosario'}">Rosario</option>
+        <option value="">Todas las provincias</option>
+        <option th:each="prov : ${provincias}"
+                th:value="${prov}"
+                th:text="${prov}"
+                th:selected="${param.ubicacion != null and param.ubicacion[0] == prov}">
+        </option>
       </select>
 
       <select name="categoria">
@@ -41,14 +44,16 @@
         </option>
       </select>
 
-      <select name="modo">
-        <option value="irrestricto" th:selected="${param.modo != null and param.modo[0] == 'irrestricto'}">Irrestricta</option>
-        <option value="curado" th:selected="${param.modo != null and param.modo[0] == 'curado'}">Curada</option>
+      <!-- Filtro de modo solo visible en colecciones -->
+      <select name="modo" th:if="${esColeccion != null and esColeccion}">
+        <option value="">Modo por defecto</option>
+        <option value="IRRESTRICTO" th:selected="${param.modo != null and param.modo[0] == 'IRRESTRICTO'}">Irrestricto</option>
+        <option value="CURADO" th:selected="${param.modo != null and param.modo[0] == 'CURADO'}">Curado</option>
       </select>
 
       <button type="submit">Aplicar Filtros</button>
 
-      <a th:href="@{/hechos}" class="btn primary">Limpiar</a>
+      <a th:href="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}" class="btn primary">Limpiar</a>
 
     </form>
     <span class="btn primary disabled" style="cursor: default; opacity: 1; margin-top: 10px; display: inline-block;">
@@ -69,7 +74,7 @@
   <div th:each="hecho : ${hechos}" th:id="${'hecho' + hecho.id}" class="details-panel">
     <h3 th:text="${hecho.titulo}"></h3>
     <p th:utext="${'<strong>Ubicación:</strong>' + hecho.latitud + ', ' + hecho.longitud}"></p>
-    <p th:utext="${'<strong>Multimedia:</strong>' + #lists.size(hecho.contenidoMultimedia) + ' archivos multimedia'}"></p>
+    <p th:utext="${'<strong>Multimedia:</strong>' + (hecho.contenidoMultimedia != null ? #lists.size(hecho.contenidoMultimedia) : 0) + ' archivos multimedia'}"></p>
     <p th:utext="${'<strong>Fuente:</strong>' + hecho.origen}"></p>
     <p th:utext="${'<strong>Fecha Acontecimiento: </strong>' + hecho.fechaDeAcontecimiento}"></p>
     <p th:utext="${'<strong>Fecha Carga: </strong>' + hecho.fechaDeCarga}"></p>

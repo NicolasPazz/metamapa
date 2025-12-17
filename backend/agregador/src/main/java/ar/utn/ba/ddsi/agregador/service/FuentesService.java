@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.service;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
 import ar.utn.ba.ddsi.agregador.domain.hecho.EstadoHecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
+import ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.FuenteDTO;
@@ -32,6 +33,7 @@ public class FuentesService {
   private final SolicitudesService solicitudesService;
   private final IFuentesRepository fuentesRepository;
   private final FuenteMapper fuenteMapper;
+  private final ProvinciaService provinciaService;
 
   public void agregarFuente(AFuente fuente) {
     if (!fuentes.contains(fuente)) {
@@ -206,6 +208,14 @@ public class FuentesService {
     }
 
     h.setFuenteId(idFuente);
+
+    // Calcular y asignar provincia si no la tiene
+    if (h.getProvincia() == null && h.getLatitud() != null && h.getLongitud() != null) {
+      Provincia provincia =
+          provinciaService.obtenerProvinciaPorCoordenadas(h.getLatitud(), h.getLongitud());
+      h.setProvincia(provincia.getNombre());
+      log.debug("[FuentesService] Provincia calculada para hecho externo: {}", provincia.getNombre());
+    }
 
     if (h.getEstado() == null) {
       h.setEstado(EstadoHecho.VISIBLE);
