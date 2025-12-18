@@ -152,6 +152,66 @@
 
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
+  <div id="solicitudEdicionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Solicitar Edición de Hecho</h3>
+        <button class="close-btn" onclick="closeSolicitudEdicionModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="solicitudEdicionForm">
+          <input type="hidden" id="edit_hecho_id" name="hecho_id">
+
+          <input type="hidden" id="edit_contribuyente_id" name="contribuyente_id" value="1">
+
+          <div class="row">
+            <div class="col-12 form-group">
+              <label for="edit_titulo">Título</label>
+              <input type="text" id="edit_titulo" class="form-control" style="width: 100%; padding: 8px;">
+            </div>
+          </div>
+
+          <div class="row" style="display: flex; gap: 10px; margin-top: 10px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="edit_categoria">Categoría</label>
+              <select id="edit_categoria" class="form-control" style="width: 100%; padding: 8px;">
+                <option value="">Seleccione...</option>
+                <option th:each="cat : ${categorias}" th:value="${cat}" th:text="${cat}"></option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="edit_fecha">Fecha del suceso</label>
+              <input type="datetime-local" id="edit_fecha" class="form-control" style="width: 100%; padding: 8px;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label>Ubicación</label>
+            <div style="display: flex; gap: 10px;">
+              <input type="number" step="any" id="edit_latitud" placeholder="Latitud" class="form-control" style="flex: 1; padding: 8px;">
+              <input type="number" step="any" id="edit_longitud" placeholder="Longitud" class="form-control" style="flex: 1; padding: 8px;">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label for="edit_descripcion">Descripción</label>
+            <textarea id="edit_descripcion" rows="4" class="form-control" style="width: 100%; padding: 8px;"></textarea>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label for="edit_multimedia">Agregar nueva evidencia (Fotos/Videos)</label>
+            <input type="file" id="edit_multimedia" multiple accept="image/*,video/*" class="form-control" style="width: 100%;">
+            <small style="color: #666;">Nota: Los archivos seleccionados se agregarán a los existentes.</small>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 20px;">
+            <button type="button" class="btn secondary" onclick="closeSolicitudEdicionModal()">Cancelar</button>
+            <button type="submit" class="btn primary" id="submit_edicion" style="background: #fd7e14; color: white; border: none;">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- Modal de solicitud de eliminación -->
   <div id="solicitudEliminacionModal" class="modal-overlay" style="display: none;">
@@ -405,16 +465,28 @@
             }
         }
 
-        // Botón para solicitar eliminación
-        html += '<div style="margin-top: 20px; text-align: center;">';
-        html += '<button onclick="openSolicitudEliminacionModal(' + 
-                (hecho.id ? hecho.id : 'null') + ', ' +
-                (hecho.fuente_id ? hecho.fuente_id : 'null') + ', ' +
-                (hecho.id_origen ? hecho.id_origen : 'null') + 
-                ')" class="btn secondary" style="background: #dc3545; color: white; border: none;">';
-        html += 'Solicitar eliminación';
-        html += '</button>';
-        html += '</div>';
+      // --- BOTONES DE ACCIÓN (Edición y Eliminación) ---
+      html += '<div style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">';
+
+      // 1. Botón Solicitar Edición (Naranja)
+      html += '<button onclick="solicitarEdicion(' +
+              (hecho.id ? hecho.id : 'null') + ', ' +
+              (hecho.fuente_id ? hecho.fuente_id : 'null') + ', ' +
+              (hecho.id_origen ? hecho.id_origen : 'null') +
+              ')" class="btn secondary" style="background: #fd7e14; color: white; border: none;">';
+      html += 'Solicitar edición';
+      html += '</button>';
+
+      // 2. Botón Solicitar Eliminación (Rojo - Existente)
+      html += '<button onclick="openSolicitudEliminacionModal(' +
+              (hecho.id ? hecho.id : 'null') + ', ' +
+              (hecho.fuente_id ? hecho.fuente_id : 'null') + ', ' +
+              (hecho.id_origen ? hecho.id_origen : 'null') +
+              ')" class="btn secondary" style="background: #dc3545; color: white; border: none;">';
+      html += 'Solicitar eliminación';
+      html += '</button>';
+
+      html += '</div>';
 
       content.innerHTML = html;
 
@@ -633,10 +705,227 @@
         }
       }
     });
+    // --- Lógica de Edición ---
 
-    // showToast está definido en common.js
+    function solicitarEdicion(hechoId, fuenteId, idOrigen) {
+      let hecho = null;
 
-    // Funciones para el carrusel de multimedia
+      if (hechoId && hechoId !== 'null') {
+        hecho = hechosData.find(h => h.id != null && Number(h.id) === Number(hechoId));
+      } else if (fuenteId && fuenteId !== 'null' && idOrigen && idOrigen !== 'null') {
+        hecho = hechosData.find(h =>
+                h.fuente_id != null && Number(h.fuente_id) === Number(fuenteId) &&
+                h.id_origen != null && Number(h.id_origen) === Number(idOrigen)
+        );
+      }
+
+      if (!hecho) {
+        showToast('No se pudo cargar la información del hecho.', 'error');
+        return;
+      }
+
+      if (!hecho.fecha_carga) {
+        showToast('El hecho no tiene fecha de carga registrada.', 'error');
+        return;
+      }
+
+      const fechaCarga = new Date(hecho.fecha_carga);
+      const hoy = new Date();
+
+      const diferenciaTiempo = hoy - fechaCarga;
+      const diferenciaDias = diferenciaTiempo / (1000 * 3600 * 24);
+
+      if (diferenciaDias > 3000) {
+        showToast('Solo se puede editar un hecho dentro de los 7 días posteriores a su carga.', 'error');
+        return;
+      }
+
+      openSolicitudEdicionModal(hecho);
+    }
+
+    function openSolicitudEdicionModal(hecho) {
+      const modal = document.getElementById('solicitudEdicionModal');
+
+      // 1. IDs
+      document.getElementById('edit_hecho_id').value = hecho.id || '';
+
+      // 2. Textos Simples
+      document.getElementById('edit_titulo').value = hecho.titulo || '';
+      document.getElementById('edit_descripcion').value = hecho.descripcion || '';
+      document.getElementById('edit_latitud').value = hecho.latitud || '';
+      document.getElementById('edit_longitud').value = hecho.longitud || '';
+      // 3. Categoría
+      const selectCategoria = document.getElementById('edit_categoria');
+      if (hecho.categoria) selectCategoria.value = hecho.categoria;
+
+      if (hecho.fecha_acontecimiento) {
+        let fechaIso = hecho.fecha_acontecimiento.substring(0, 16);
+        document.getElementById('edit_fecha').value = fechaIso;
+      }
+
+      document.getElementById('edit_multimedia').value = '';
+
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    // --- LÓGICA DE ENVÍO
+    document.addEventListener('DOMContentLoaded', function() {
+      const formEdicion = document.getElementById('solicitudEdicionForm');
+
+      if (formEdicion) {
+        formEdicion.addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById('submit_edicion');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Procesando...';
+
+          try {
+            const fileInput = document.getElementById('edit_multimedia');
+            const multimediaDTOs = await procesarArchivos(fileInput.files);
+
+            const solicitudData = {
+              contribuyente_id: Number(document.getElementById('edit_contribuyente_id').value) || 1,
+              titulo: document.getElementById('edit_titulo').value,
+              descripcion: document.getElementById('edit_descripcion').value,
+              categoria: document.getElementById('edit_categoria').value,
+              latitud: parseFloat(document.getElementById('edit_latitud').value),
+              longitud: parseFloat(document.getElementById('edit_longitud').value),
+              fecha_acontecimiento: document.getElementById('edit_fecha').value,
+              multimedia: multimediaDTOs
+            };
+
+            const hechoId = document.getElementById('edit_hecho_id').value;
+            const url = '/api/solicitudes/modificar/' + hechoId; // O la ruta que definas
+
+            const response = await apiFetch(url, {
+              method: 'POST', //
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(solicitudData)
+            });
+
+            if (response.ok) {
+              showToast('Modificación solicitada correctamente.', 'success');
+              closeSolicitudEdicionModal();
+              closeHechoDetailPanel();
+              // Opcional: Recargar página para ver cambios
+              setTimeout(() => location.reload(), 1500);
+            } else {
+              const text = await response.text();
+              showToast('Error: ' + text, 'error');
+            }
+
+          } catch (error) {
+            console.error(error);
+            showToast('Error: ' + error.message, 'error');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Guardar Cambios';
+          }
+        });
+      }
+    });
+
+
+    function procesarArchivos(files) {
+      return Promise.all(Array.from(files).map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+
+            const base64String = event.target.result.split(',')[1];
+
+
+            resolve({
+              tipo_contenido: file.type,
+              path_archivo: file.name,
+              contenido_base64: base64String
+            });
+          };
+          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
+        });
+      }));
+    }
+
+    // Manejo del envío del formulario de edición
+    document.addEventListener('DOMContentLoaded', function() {
+      const formEdicion = document.getElementById('solicitudEdicionForm');
+
+      if (formEdicion) {
+        formEdicion.addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById('submit_edicion');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Enviando...';
+
+          // Recopilar datos
+          const solicitudData = {
+            tipo_solicitud: 'EDICION', // Importante para que el backend sepa qué es
+            hecho_id: document.getElementById('edit_hecho_id').value || null,
+            fuente_id: document.getElementById('edit_fuente_id').value || null,
+            id_origen: document.getElementById('edit_id_origen').value || null,
+            nuevos_datos: {
+              titulo: document.getElementById('edit_titulo').value,
+              categoria: document.getElementById('edit_categoria').value,
+              descripcion: document.getElementById('edit_descripcion').value,
+              latitud: document.getElementById('edit_latitud').value,
+              longitud: document.getElementById('edit_longitud').value
+            }
+          };
+
+          try {
+            const response = await apiFetch('/solicitudes', {
+              method: 'PUT',
+              body: JSON.stringify(solicitudData)
+            });
+
+            if (response.ok) {
+              showToast('Solicitud de edición enviada correctamente.', 'success');
+              closeSolicitudEdicionModal();
+
+              closeHechoDetailPanel();
+            } else {
+              const text = await response.text();
+              showToast('Error al enviar solicitud: ' + text, 'error');
+            }
+          } catch (error) {
+            showToast('Error de conexión: ' + error.message, 'error');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Cambios';
+          }
+        });
+      }
+    });
+    function closeSolicitudEdicionModal() {
+      const modal = document.getElementById('solicitudEdicionModal');
+      const form = document.getElementById('solicitudEdicionForm');
+
+
+      if (modal) {
+        modal.style.display = 'none';
+      }
+
+
+      document.body.style.overflow = '';
+
+
+      if (form) {
+        form.reset();
+      }
+    }
+    // Cerrar modal al hacer click fuera (Overlay)
+    document.getElementById('solicitudEdicionModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeSolicitudEdicionModal();
+      }
+    });
+
+
+
     function carouselPrev(carouselId) {
       const carousel = document.getElementById(carouselId);
       if (!carousel) return;
