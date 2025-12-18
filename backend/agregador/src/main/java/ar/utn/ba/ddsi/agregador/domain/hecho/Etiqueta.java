@@ -14,7 +14,7 @@ import lombok.*;
 @Table(name = "etiqueta")
 public class Etiqueta {
   @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "nombre", nullable = false)

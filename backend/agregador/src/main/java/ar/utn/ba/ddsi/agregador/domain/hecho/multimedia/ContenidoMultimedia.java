@@ -12,7 +12,7 @@ import lombok.*;
 @Table(name = "contenido_multimedia")
 public class ContenidoMultimedia {
   @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "path", nullable = false)

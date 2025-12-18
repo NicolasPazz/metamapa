@@ -32,7 +32,7 @@ public class FilesService {
 
   @Transactional
   protected void registrarArchivosExistentes() {
-    log.info("Registrando archivos existentes en disco...");
+    log.info("[FilesService] Registrando archivos existentes en disco...");
     List<String> archivosEnDisco = csvLocationService.listarArchivos();
 
     archivosEnDisco.forEach(nombreArchivo -> {
@@ -42,7 +42,7 @@ public class FilesService {
             .procesado(false)
             .build();
         archivoRepository.save(archivo);
-        log.info("Archivo registrado: {}", nombreArchivo);
+        log.info("[FilesService] Archivo registrado desde disco: {}", nombreArchivo);
       }
     });
   }
@@ -99,14 +99,14 @@ public class FilesService {
       Archivo archivo = archivoExistente.get();
       archivo.setProcesado(false);
       archivoRepository.save(archivo);
-      log.info("Archivo actualizado: {}", nombreArchivo);
+      log.info("[FilesService] Archivo actualizado desde upload: {}", nombreArchivo);
     } else {
       Archivo archivo = Archivo.builder()
           .nombre(nombreArchivo)
           .procesado(false)
           .build();
       archivoRepository.save(archivo);
-      log.info("Archivo registrado: {}", nombreArchivo);
+      log.info("[FilesService] Archivo registrado desde upload: {}", nombreArchivo);
     }
   }
 }

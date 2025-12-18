@@ -20,7 +20,7 @@ import lombok.*;
 @Table(name = "hecho")
 public class Hecho {
   @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "titulo", nullable = false)
@@ -36,7 +36,7 @@ public class Hecho {
   private Double longitud;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "provincia_id", referencedColumnName = "id")
+  @JoinColumn(name = "provincia_id")
   private Provincia provincia;
 
   @Column(name = "fecha_acontecimiento", nullable = false)
@@ -55,26 +55,25 @@ public class Hecho {
   private EstadoHecho estado = EstadoHecho.VISIBLE;
 
   @Column(name = "contribuyente_id", nullable = true)
-  @Builder.Default
-  private Long contribuyenteId = null;
+  private Long contribuyenteId;
 
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
+  @JoinColumn(name = "hecho_id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
 
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
+  @JoinColumn(name = "hecho_id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
 
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
+  @JoinColumn(name = "hecho_id")
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "categoria_id", referencedColumnName = "id")
+  @JoinColumn(name = "categoria_id")
   private Categoria categoria;
 
   @Column(name = "fuente_id", nullable = false)
@@ -115,10 +114,6 @@ public class Hecho {
 
   public void ocultar() {
     this.transicionarEstado(EstadoHecho.OCULTO);
-  }
-
-  public void visibilizar() {
-    this.transicionarEstado(EstadoHecho.VISIBLE);
   }
 
   public boolean esVisible() {

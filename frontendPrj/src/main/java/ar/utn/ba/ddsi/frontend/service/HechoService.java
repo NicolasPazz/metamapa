@@ -26,8 +26,8 @@ public class HechoService {
         return webClient.get().uri("/hechos").retrieve().bodyToFlux(HechoDTO.class).collectList().block();
     }
 
-    public void crearHecho(HechoFormDTO form) { // Este metodo no deberia usar este webclient ya que es de agregador, y este metodo va a dinamica
-        List<ContenidoMultimediaDTO> multimedia = fileToMultimediaDTO(form.getContenidoMultimedia());
+    public void crearHecho(HechoFormDTO form) {
+        fileToMultimediaDTO(form.getContenidoMultimedia());
         HechoDTO hechoParaEnviar = new HechoDTO();
         hechoParaEnviar.setTitulo(form.getTitulo());
         hechoParaEnviar.setDescripcion(form.getDescripcion());
@@ -37,11 +37,10 @@ public class HechoService {
         hechoParaEnviar.setEstado("VISIBLE");
         hechoParaEnviar.setOrigen("CONTRIBUYENTE");
         hechoParaEnviar.setFechaDeCarga(LocalDateTime.now());
-
-        // TODO: endpoint para mandarle el hecho nuevo al agregador agregadorClient.post(hechoParaEnviar)
     }
 
-    public List<HechoDTO> getAllHechosFilter(String modo, String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria ) {
+    @SuppressWarnings("unused")
+    public List<HechoDTO> getAllHechosFilter(String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria ) {
         // Convertir LocalDate a LocalDateTime (inicio y final del día)
         LocalDateTime fechaDesdeDateTime = fecha_desde != null ? fecha_desde.atStartOfDay() : null;
         LocalDateTime fechaHastaDateTime = fecha_hasta != null ? fecha_hasta.atTime(23, 59, 59) : null;
@@ -202,7 +201,7 @@ public class HechoService {
     }
 
     @SuppressWarnings("unchecked")
-    public PageResponse<HechoDTO> getAllHechosPaginados(String modo, String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria, String fuente, int page, int size) {
+    public PageResponse<HechoDTO> getAllHechosPaginados(@SuppressWarnings("unused") String modo, String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria, String fuente, int page, int size) {
         LocalDateTime fechaDesdeDateTime = fecha_desde != null ? fecha_desde.atStartOfDay() : null;
         LocalDateTime fechaHastaDateTime = fecha_hasta != null ? fecha_hasta.atTime(23, 59, 59) : null;
 

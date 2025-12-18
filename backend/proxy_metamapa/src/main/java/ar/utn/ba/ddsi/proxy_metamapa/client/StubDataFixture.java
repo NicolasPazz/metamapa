@@ -260,9 +260,6 @@ public class StubDataFixture {
     List<HechoDTO> contaminacion = hechos.stream()
         .filter(h -> h.getCategoria().contains("Contaminación"))
         .toList();
-    
-    // Hechos consensuados: lista vacía (simulando que el algoritmo de consenso rechazó estos hechos)
-    List<HechoDTO> contaminacionConsensuados = new ArrayList<>();
 
     ColeccionDTO ambiental = ColeccionDTO.builder()
         .handle(UUID.fromString("55555555-5555-5555-5555-555555555555"))
@@ -270,7 +267,7 @@ public class StubDataFixture {
         .descripcion("Incidentes de contaminación hídrica y ambiental")
         .fechaDeCarga(LocalDateTime.of(2025, 4, 1, 0, 0))
         .hechos(new ArrayList<>(contaminacion))
-        .hechosConsensuados(new ArrayList<>(contaminacionConsensuados))
+        .hechosConsensuados(new ArrayList<>())
         .build();
 
     // Colección 6: Eventos del primer semestre

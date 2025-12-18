@@ -12,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
@@ -22,13 +23,16 @@ import java.util.List;
 @RequestMapping("/colecciones")
 public class ColeccionController {
     private final ColeccionService coleccionService;
+    
+    @Value("${app.pagination.page-size:18}")
+    private int pageSize;
 
     @GetMapping
     public String listarColecciones(Model model,
             @RequestParam(defaultValue = "0") int page) {
         // Obtener colecciones paginadas del servicio (ya procesadas)
         PageResponse<ColeccionDTO> pageResponse =
-            coleccionService.getAllColeccionesPaginadas(page, 100);
+            coleccionService.getAllColeccionesPaginadas(page, pageSize);
 
         model.addAttribute("colecciones", pageResponse.getContent());
         model.addAttribute("currentPage", page);
@@ -56,7 +60,7 @@ public class ColeccionController {
         // Obtener hechos de colección paginados del servicio (ya procesados)
         PageResponse<HechoDTO> pageResponse =
             coleccionService.getHechosColeccionPaginados(
-                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page, 100);
+                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page, pageSize);
         List<String> listaCategorias = coleccionService.getCategoriasUnicas();
         List<String> listaProvincias = coleccionService.getProvinciasConHechos();
         List<String> listaFuentes = coleccionService.getFuentesConHechos();

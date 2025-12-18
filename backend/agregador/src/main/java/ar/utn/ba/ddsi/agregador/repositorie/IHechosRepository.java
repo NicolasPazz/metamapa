@@ -14,9 +14,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface IHechosRepository extends JpaRepository<Hecho, Long> {
 
-  @Query("SELECT h FROM Hecho h LEFT JOIN FETCH h.categoria")
-  List<Hecho> findAllWithCategoria();
-
   @Query("SELECT h FROM Hecho h LEFT JOIN FETCH h.provincia WHERE " +
       "h.estado = 'VISIBLE' AND " +  // Filtrar solo hechos VISIBLES
       "(:categoria IS NULL OR h.categoria.nombre = :categoria) AND " +
@@ -57,16 +54,6 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
     return findByFilters(categoria, fechaReporteDesde, fechaReporteHasta,
         fechaAcontecimientoDesde, fechaAcontecimientoHasta, provincia, fuente);
   }
-
-  @Modifying
-  @Transactional
-  default void ocultar(Long idHecho) {
-    actualizarEstado(idHecho, EstadoHecho.OCULTO);
-  }
-
-  @Query("SELECT DISTINCT h.nombreFuente FROM Hecho h " +
-         "WHERE h.estado = 'VISIBLE' AND h.nombreFuente IS NOT NULL")
-  List<String> findFuentesConHechos();
 
   @Query("SELECT COUNT(h) > 0 FROM Hecho h " +
          "WHERE h.estado = 'VISIBLE' AND h.nombreFuente = :nombreFuente")

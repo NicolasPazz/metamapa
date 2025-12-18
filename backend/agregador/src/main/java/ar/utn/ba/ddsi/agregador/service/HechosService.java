@@ -41,9 +41,6 @@ public class HechosService {
         String ubicacion,
         String fuente) {
 
-        log.info("[HechosService] Obteniendo todos los hechos con filtros: categoria={}, ubicacion={}, fuente={}",
-            categoria, ubicacion, fuente);
-
         // Obtener hechos locales desde la BD (solo hechos VISIBLES)
         List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
             categoria,
@@ -52,7 +49,6 @@ public class HechosService {
             ubicacion, fuente);
 
         List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
-        log.debug("[HechosService] Se obtuvieron {} hechos locales VISIBLES", locales.size());
 
         // Intentar obtener hechos de fuentes externas (resiliente a fallos)
         List<HechoDTO> externos = new ArrayList<>();
@@ -71,19 +67,13 @@ public class HechosService {
                     .filter(h -> h.getNombreFuente() != null && h.getNombreFuente().equals(fuente))
                     .toList();
             }
-            
-            log.debug("[HechosService] Se obtuvieron {} hechos externos", externos.size());
         } catch (Exception e) {
-            log.warn("[HechosService] No se pudieron obtener hechos de fuentes externas: {}", e.getMessage());
-            log.debug("[HechosService] Continuando solo con hechos locales");
+            log.warn("[HechosService] Error al obtener hechos de fuentes externas en getAll: {}", e.getMessage());
         }
 
         // Combinar hechos locales y externos
         List<HechoDTO> combinados = new ArrayList<>(locales);
         combinados.addAll(externos);
-
-        log.info("[HechosService] Total de hechos agregados: {} (locales: {}, externos: {})",
-            combinados.size(), locales.size(), externos.size());
         return ResponseEntity.ok(combinados);
     }
 
@@ -95,7 +85,6 @@ public class HechosService {
         }
 
         try {
-            log.info("[HechosService] Creando nuevo hecho: {}", hechoInputDTO.getTitulo());
 
             // Convertir DTO a entidad
             Hecho hechoNuevo = hechoMapper.fromDTO(hechoInputDTO);
@@ -106,7 +95,6 @@ public class HechosService {
                     provinciaService.obtenerProvinciaPorCoordenadas(
                         hechoNuevo.getLatitud(), hechoNuevo.getLongitud());
                 hechoNuevo.setProvincia(provincia);
-                log.debug("[HechosService] Provincia asignada: {}", provincia.getNombre());
             } else if (hechoInputDTO.getProvincia() != null) {
                 Provincia provincia =
                     provinciaService.obtenerOCrearProvincia(hechoInputDTO.getProvincia());
@@ -126,8 +114,6 @@ public class HechosService {
 
             // Persistir el hecho
             Hecho hechoGuardado = hechosRepository.save(hechoNuevo);
-
-            log.info("[HechosService] Hecho creado exitosamente con ID: {}", hechoGuardado.getId());
 
             return ResponseEntity.status(HttpStatus.CREATED).body(hechoMapper.toDTO(hechoGuardado));
 
@@ -166,8 +152,6 @@ public class HechosService {
 
             Hecho hechoActualizado = hechosRepository.save(hecho);
 
-            log.info("[HechosService] Etiquetas actualizadas para el hecho {}: {} etiquetas",
-                idHecho, nuevasEtiquetas.size());
 
             return ResponseEntity.ok(hechoMapper.toDTO(hechoActualizado));
 
@@ -182,12 +166,10 @@ public class HechosService {
     }
 
     public ResponseEntity<List<String>> getProvinciasConHechos() {
-        log.info("[HechosService] Obteniendo provincias con hechos");
         return provinciaService.getProvinciasConHechos();
     }
 
     public ResponseEntity<List<String>> getFuentesConHechos() {
-        log.info("[HechosService] Obteniendo fuentes con hechos");
         // Obtener nombres de fuentes desde la configuración
         List<String> nombresFuentesConfig = fuentesProperties.getConfig().stream()
             .map(FuenteConfig::getNombre)
@@ -222,13 +204,10 @@ public class HechosService {
             })
             .toList();
         
-        log.debug("[HechosService] Se encontraron {} fuentes con hechos de {} configuradas", 
-            fuentesConHechos.size(), nombresFuentesConfig.size());
         return ResponseEntity.ok(fuentesConHechos);
     }
 
     public ResponseEntity<HechoDTO> getOneHechoReciente() {
-        log.info("[HechosService] Obteniendo un hecho reciente para landing");
 
         List<Hecho> hechos = hechosRepository.findByFiltersConUbicacion(
             null, null, null, null, null, null, null);
@@ -240,11 +219,10 @@ public class HechosService {
 
         // Tomar el primer hecho (más reciente)
         HechoDTO hechoDTO = hechoMapper.toDTO(hechos.get(0));
-        log.info("[HechosService] Hecho reciente obtenido: {}", hechoDTO.getTitulo());
-
         return ResponseEntity.ok(hechoDTO);
     }
 
+    @SuppressWarnings("unused")
     public ResponseEntity<List<HechoDTO>> getAllPaginated(
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
@@ -254,7 +232,6 @@ public class HechosService {
         int page,
         int size) {
 
-        log.info("[HechosService] Obteniendo hechos paginados: page={}, size={}", page, size);
 
         // Obtener todos los hechos con filtros
         List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
@@ -282,7 +259,7 @@ public class HechosService {
                     .toList();
             }
         } catch (Exception e) {
-            log.warn("[HechosService] No se pudieron obtener hechos externos: {}", e.getMessage());
+            log.warn("[HechosService] Error al obtener hechos externos en getAllPaginated: {}", e.getMessage());
         }
 
         // Combinar
@@ -298,8 +275,6 @@ public class HechosService {
         }
 
         List<HechoDTO> paginados = combinados.subList(start, end);
-        log.info("[HechosService] Devolviendo {} hechos (página {} de tamaño {})",
-                 paginados.size(), page, size);
 
         return ResponseEntity.ok(paginados);
     }
@@ -311,7 +286,6 @@ public class HechosService {
         String ubicacion,
         String fuente) {
 
-        log.info("[HechosService] Obteniendo hechos locales con filtros");
 
         List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
             categoria,
@@ -320,7 +294,6 @@ public class HechosService {
             ubicacion, fuente);
 
         List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
-        log.info("[HechosService] Hechos locales obtenidos: {}", locales.size());
 
         return ResponseEntity.ok(locales);
     }
@@ -332,7 +305,6 @@ public class HechosService {
         String ubicacion,
         String fuente) {
 
-        log.info("[HechosService] Obteniendo hechos externos con filtros");
 
         List<HechoDTO> externos = new ArrayList<>();
         try {
@@ -351,9 +323,8 @@ public class HechosService {
                     .toList();
             }
             
-            log.info("[HechosService] Hechos externos obtenidos: {}", externos.size());
         } catch (Exception e) {
-            log.warn("[HechosService] No se pudieron obtener hechos externos: {}", e.getMessage());
+            log.warn("[HechosService] Error al obtener hechos externos en getAllExternal: {}", e.getMessage());
         }
 
         return ResponseEntity.ok(externos);
@@ -370,12 +341,11 @@ public class HechosService {
             int page,
             int size) {
 
-        log.info("[HechosService] Obteniendo hechos paginados - page: {}, size: {}", page, size);
 
         List<HechoDTO> resultado = new ArrayList<>();
         int start = page * size;
         int needed = size;
-        long totalLocales = 0;
+        long totalLocales;
         long totalExternos = 0;
 
         // 1. Obtener hechos locales (siempre necesarios para calcular totales y para páginas tempranas)
@@ -385,21 +355,19 @@ public class HechosService {
 
         List<HechoDTO> hechosLocales = Optional.ofNullable(localesResp.getBody()).orElse(new ArrayList<>());
         totalLocales = hechosLocales.size();
-        log.debug("[HechosService] Hechos locales disponibles: {}", totalLocales);
 
         // Aplicar paginación a locales
         if (start < hechosLocales.size()) {
             int endLocal = Math.min(start + size, hechosLocales.size());
             resultado.addAll(hechosLocales.subList(start, endLocal));
             needed = size - resultado.size();
-            log.debug("[HechosService] Agregados {} hechos locales, faltan: {}", resultado.size(), needed);
         } else {
             // Ajustar start para externos
             start = start - (int)totalLocales;
         }
 
         // 2. Solo obtener externos si realmente se necesitan para esta página
-        List<HechoDTO> hechosExternos = new ArrayList<>();
+        List<HechoDTO> hechosExternos;
         if (needed > 0 || start >= 0) {
             try {
                 ResponseEntity<List<HechoDTO>> externosResp = getAllExternal(
@@ -409,22 +377,21 @@ public class HechosService {
                 totalExternos = hechosExternos.size();
                 
                 if (needed > 0 && !hechosExternos.isEmpty() && start >= 0 && start < hechosExternos.size()) {
-                    log.debug("[HechosService] Obteniendo hechos externos para completar página");
                     int endExterno = Math.min(start + needed, hechosExternos.size());
                     resultado.addAll(hechosExternos.subList(start, endExterno));
-                    log.debug("[HechosService] Agregados {} hechos externos", endExterno - start);
                 }
             } catch (Exception e) {
-                log.warn("[HechosService] No se pudieron obtener hechos externos: {}", e.getMessage());
+                log.warn("[HechosService] Error al obtener hechos externos en getPaginatedHechos: {}", e.getMessage());
+                hechosExternos = new ArrayList<>();
             }
+        } else {
+            hechosExternos = new ArrayList<>();
         }
 
         // Determinar si hay página siguiente
         long totalDisponibles = totalLocales + totalExternos;
-        boolean hasNext = (page + 1) * size < totalDisponibles;
+        boolean hasNext = ((long)(page + 1)) * size < totalDisponibles;
 
-        log.info("[HechosService] Devolviendo {} hechos para página {}, hasNext: {} (total: {})", 
-                resultado.size(), page, hasNext, totalDisponibles);
 
         return new PageResponse<>(
                 resultado,

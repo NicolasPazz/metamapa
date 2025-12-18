@@ -15,9 +15,6 @@ public class ContribuyenteService {
   private String baseUrl;
 
   public Contribuyente findById(Long id) {
-    // TODO: Implementación para buscar un contribuyente por ID
-    log.info("Buscando contribuyente con ID: {}", id);
-    // TODO: Aquí iría la lógica para obtener el contribuyente, por ejemplo, una llamada a otro servicio
-    return new Contribuyente(/*id, */"Nombre", "Apellido", LocalDate.of(2025, 1, 1));
+    return new Contribuyente("Nombre", "Apellido", LocalDate.of(2025, 1, 1));
   }
 }

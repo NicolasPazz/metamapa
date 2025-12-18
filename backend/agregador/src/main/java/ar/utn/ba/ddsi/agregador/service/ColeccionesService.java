@@ -50,19 +50,13 @@ public class ColeccionesService {
     private final ObjectMapper objectMapper;
 
     public ResponseEntity<ColeccionDTO> getOneColeccion() {
-        log.info("[ColeccionesService] Obteniendo una colección para landing");
-
         // Intentar obtener de la BD local
         List<Coleccion> coleccionesLocales = coleccionesRepository.findAll();
 
         if (!coleccionesLocales.isEmpty()) {
-            // Si hay colecciones locales, devolver la primera
             ColeccionDTO coleccionDTO = coleccionMapper.toDTO(coleccionesLocales.get(0));
-            log.info("[ColeccionesService] Colección local obtenida: {}", coleccionDTO.getTitulo());
             return ResponseEntity.ok(coleccionDTO);
         }
-
-        log.info("[ColeccionesService] No hay colecciones locales, buscando en fuentes externas");
 
         // Si no hay locales, intentar obtener de fuentes externas
         try {
@@ -72,19 +66,18 @@ public class ColeccionesService {
 
             if (!coleccionesExternas.isEmpty()) {
                 ColeccionDTO coleccionExterna = coleccionesExternas.get(0);
-                log.info("[ColeccionesService] Colección externa obtenida: {}", coleccionExterna.getTitulo());
                 return ResponseEntity.ok(coleccionExterna);
             }
         } catch (Exception e) {
-            log.warn("[ColeccionesService] Error al obtener colecciones de fuentes externas: {}", e.getMessage());
+            log.warn("[ColeccionesService] Error al obtener colecciones de fuentes externas en getOneColeccion: {}", e.getMessage());
         }
 
         log.warn("[ColeccionesService] No hay colecciones disponibles ni en BD local ni en fuentes externas");
         return ResponseEntity.notFound().build();
     }
 
+    @SuppressWarnings("unused")
     public ResponseEntity<List<ColeccionDTO>> getAllColeccionesPaginated(int page, int size) {
-        log.info("[ColeccionesService] Obteniendo colecciones paginadas: page={}, size={}", page, size);
 
         List<ColeccionDTO> coleccionesLocales = Optional.ofNullable(
             getAllColeccionesLocales().getBody()
@@ -96,7 +89,7 @@ public class ColeccionesService {
                 fuentesService.getAllColecciones().getBody()
             ).orElse(List.of());
         } catch (Exception e) {
-            log.warn("[ColeccionesService] No se pudieron obtener colecciones externas: {}", e.getMessage());
+            log.warn("[ColeccionesService] Error al obtener colecciones externas en getPaginatedColecciones: {}", e.getMessage());
         }
 
         List<ColeccionDTO> todasLasColecciones = new ArrayList<>();
@@ -112,8 +105,6 @@ public class ColeccionesService {
         }
 
         List<ColeccionDTO> paginadas = todasLasColecciones.subList(start, end);
-        log.info("[ColeccionesService] Devolviendo {} colecciones (página {} de tamaño {})",
-                 paginadas.size(), page, size);
 
         return ResponseEntity.ok(paginadas);
     }
@@ -131,8 +122,6 @@ public class ColeccionesService {
             int page,
             int size) {
 
-        log.info("[ColeccionesService] Obteniendo hechos paginados de colección {}: page={}, size={}",
-                 handle, page, size);
 
         // Parsear modo de navegación
         ModoNavegacion modo = null;
@@ -194,14 +183,11 @@ public class ColeccionesService {
                 total
         );
 
-        log.info("[ColeccionesService] Devolviendo {} hechos (página {} de tamaño {}), hasNext: {} (total: {})",
-                 paginados.size(), page, size, hasNext, total);
 
         return ResponseEntity.ok(response);
     }
 
     public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
-        log.info("[ColeccionesService] Obteniendo todas las colecciones (BD + fuentes externas)");
 
         List<ColeccionDTO> coleccionesLocales = Optional.ofNullable(
             getAllColeccionesLocales().getBody()
@@ -212,43 +198,37 @@ public class ColeccionesService {
             coleccionesFuentes = Optional.ofNullable(
                 fuentesService.getAllColecciones().getBody()
             ).orElse(List.of());
-            log.info("[ColeccionesService] {} colecciones obtenidas de fuentes externas", coleccionesFuentes.size());
-        } catch (Exception e) {
-            log.warn("[ColeccionesService] No se pudieron obtener colecciones de fuentes externas: {}", e.getMessage());
-        }
+            } catch (Exception e) {
+                log.warn("[ColeccionesService] Error al obtener colecciones de fuentes externas en getAllColecciones: {}", e.getMessage());
+            }
 
         List<ColeccionDTO> todasLasColecciones = new ArrayList<>();
         todasLasColecciones.addAll(coleccionesLocales);
         todasLasColecciones.addAll(coleccionesFuentes);
 
-        log.info("[ColeccionesService] Total de colecciones: {} (locales: {}, externas: {})",
-            todasLasColecciones.size(), coleccionesLocales.size(), coleccionesFuentes.size());
         return ResponseEntity.ok(todasLasColecciones);
     }
 
     public ResponseEntity<List<ColeccionDTO>> getAllColeccionesLocales() {
-        log.info("[ColeccionesService] Obteniendo colecciones locales (solo BD)");
 
         List<Coleccion> coleccionesBD = coleccionesRepository.findAll();
         List<ColeccionDTO> dtosBD = coleccionesBD.stream()
             .map(coleccionMapper::toDTO)
             .toList();
 
-        log.info("[ColeccionesService] {} colecciones locales obtenidas", dtosBD.size());
         return ResponseEntity.ok(dtosBD);
     }
 
     public ResponseEntity<List<ColeccionDTO>> getAllColeccionesExternas() {
-        log.info("[ColeccionesService] Obteniendo colecciones externas únicamente");
 
         List<ColeccionDTO> coleccionesExternas = new ArrayList<>();
         try {
             coleccionesExternas = Optional.ofNullable(
                 fuentesService.getAllColecciones().getBody()
             ).orElse(List.of());
-            log.info("[ColeccionesService] {} colecciones externas obtenidas", coleccionesExternas.size());
+            log.info("[ColeccionesService] {} colecciones externas obtenidas en getAllColeccionesExternas", coleccionesExternas.size());
         } catch (Exception e) {
-            log.warn("[ColeccionesService] No se pudieron obtener colecciones externas: {}", e.getMessage());
+            log.warn("[ColeccionesService] Error al obtener colecciones externas en getAllColeccionesExternas: {}", e.getMessage());
         }
 
         return ResponseEntity.ok(coleccionesExternas);
@@ -327,7 +307,7 @@ public class ColeccionesService {
                         hechos.addAll(hechosExternosFiltrados);
                         log.info("[ColeccionesService] Total con externos: {}", hechos.size());
                     } catch (Exception e) {
-                        log.warn("[ColeccionesService] No se pudieron obtener hechos externos: {}", e.getMessage());
+                        log.warn("[ColeccionesService] Error al obtener hechos externos en getHechosColeccionByHandle (local): {}", e.getMessage());
                     }
                 } else {
                     log.info("[ColeccionesService] Colección no tiene hechos externos, usando solo persistidos");
@@ -392,11 +372,11 @@ public class ColeccionesService {
             }
 
             // Si no se encuentra ni en BD ni en fuentes externas (o si las fuentes están caídas)
-            log.warn("[ColeccionesService] Colección no encontrada: {}", handle);
+            log.warn("[ColeccionesService] Colección no encontrada en getHechosColeccionByHandle: {}", handle);
             return ResponseEntity.notFound().build();
 
         } catch (IllegalArgumentException e) {
-            log.warn("[ColeccionesService] Handle inválido: {}", handle);
+            log.warn("[ColeccionesService] Handle inválido en getHechosColeccionByHandle: {}", handle);
             return ResponseEntity.badRequest().build();
         }
     }
@@ -444,7 +424,7 @@ public class ColeccionesService {
                         todosHechos.addAll(hechosExternos);
                     }
                 } catch (Exception e) {
-                    log.warn("[ColeccionesService] No se pudieron obtener hechos externos: {}", e.getMessage());
+                    log.warn("[ColeccionesService] Error al obtener hechos externos en getHechosColeccionByHandle (externo): {}", e.getMessage());
                 }
             }
 

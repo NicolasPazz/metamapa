@@ -41,15 +41,15 @@ public class FrontController {
 
         // Validar parámetros
         if (page < 0) {
-            log.warn("[FrontController] Página inválida: {}, usando 0", page);
+            log.warn("[FrontController] Página inválida en getHechosPaginados: {}, usando 0", page);
             page = 0;
         }
         if (size < 1) {
-            log.warn("[FrontController] Tamaño inválido: {}, usando 100", size);
+            log.warn("[FrontController] Tamaño inválido en getHechosPaginados: {}, usando 100", size);
             size = 100;
         }
         if (size > 200) {
-            log.warn("[FrontController] Tamaño muy grande: {}, limitando a 200", size);
+            log.warn("[FrontController] Tamaño muy grande en getHechosPaginados: {}, limitando a 200", size);
             size = 200;
         }
 
@@ -70,15 +70,15 @@ public class FrontController {
 
         // Validar parámetros
         if (page < 0) {
-            log.warn("[FrontController] Página inválida: {}, usando 0", page);
+            log.warn("[FrontController] Página inválida en getColeccionesPaginadas: {}, usando 0", page);
             page = 0;
         }
         if (size < 1) {
-            log.warn("[FrontController] Tamaño inválido: {}, usando 100", size);
+            log.warn("[FrontController] Tamaño inválido en getColeccionesPaginadas: {}, usando 100", size);
             size = 100;
         }
         if (size > 200) {
-            log.warn("[FrontController] Tamaño muy grande: {}, limitando a 200", size);
+            log.warn("[FrontController] Tamaño muy grande en getColeccionesPaginadas: {}, limitando a 200", size);
             size = 200;
         }
 
@@ -105,15 +105,15 @@ public class FrontController {
 
         // Validar parámetros
         if (page < 0) {
-            log.warn("[FrontController] Página inválida: {}, usando 0", page);
+            log.warn("[FrontController] Página inválida en getHechosColeccionPaginados: {}, usando 0", page);
             page = 0;
         }
         if (size < 1) {
-            log.warn("[FrontController] Tamaño inválido: {}, usando 100", size);
+            log.warn("[FrontController] Tamaño inválido en getHechosColeccionPaginados: {}, usando 100", size);
             size = 100;
         }
         if (size > 200) {
-            log.warn("[FrontController] Tamaño muy grande: {}, limitando a 200", size);
+            log.warn("[FrontController] Tamaño muy grande en getHechosColeccionPaginados: {}, limitando a 200", size);
             size = 200;
         }
 

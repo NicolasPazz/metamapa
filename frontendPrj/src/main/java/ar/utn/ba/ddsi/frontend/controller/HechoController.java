@@ -1,21 +1,15 @@
 package ar.utn.ba.ddsi.frontend.controller;
 import ar.utn.ba.ddsi.frontend.models.PageResponse;
-import ar.utn.ba.ddsi.frontend.models.dtos.ContenidoMultimediaDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import com.fasterxml.jackson.databind.SerializationFeature;
-
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.*;
+import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,6 +22,9 @@ import java.util.Map;
 public class HechoController {
 
     private final HechoService hechoService;
+    
+    @Value("${app.pagination.page-size:18}")
+    private int pageSize;
     @GetMapping
     public String listarHechos(Model model,
             @RequestParam(required = false) String ubicacion,
@@ -39,7 +36,7 @@ public class HechoController {
     {
         // Obtener hechos paginados del servicio (ya procesados)
         PageResponse<HechoDTO> pageResponse = hechoService.getAllHechosPaginados(
-            null, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, page, 100);
+            null, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, page, pageSize);
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
         List<String> listaProvincias = hechoService.obtenerProvinciasConHechos();
         List<String> listaFuentes = hechoService.obtenerFuentesConHechos();
@@ -59,7 +56,7 @@ public class HechoController {
     }
 
     @GetMapping("/nuevo")
-    public String nuevoHecho(Model model){
+    public String nuevoHecho(){
         return "hechos/nuevo";
     }
 
@@ -83,7 +80,7 @@ public class HechoController {
     public String hechosMapa(Model model, 
                               @RequestParam(required = false) Long hechoId,
                               @RequestParam(required = false) Long fuenteId,
-                              @RequestParam(required = false) Long idOrigen) throws JsonProcessingException {
+                              @RequestParam(required = false) Long idOrigen) {
         Map<String, Object> datosMapa = hechoService.getDatosMapa(hechoId, fuenteId, idOrigen);
         datosMapa.forEach(model::addAttribute);
         model.addAttribute("titulo", "Mapa");

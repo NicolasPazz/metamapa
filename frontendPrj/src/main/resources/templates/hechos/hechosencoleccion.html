@@ -6,9 +6,8 @@
 </head>
 
 
-<html th:replace="~{layout/base :: html}">
+<html lang="es" th:replace="~{layout/base :: html}">
 <div th:fragment="contenido">
-  <!-- Hechos in a collection -->
   <section class="hechos-block">
     <!--<h2>Colección: Derechos Humanos</h2> -->
 
@@ -42,7 +41,6 @@
     </div>
 
     <form method="get" class="filters" th:action="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}">
-      <!-- Mantener modo como hidden si es colección -->
       <input type="hidden" th:if="${esColeccion != null and esColeccion}" name="modo" th:value="${param.modo}">
 
       <div class="filtro-fecha">
@@ -55,7 +53,8 @@
         <input type="date" id="fechaHasta" name="fecha_reporte_hasta" th:value="${param.fecha_reporte_hasta}">
       </div>
 
-      <select name="ubicacion">
+      <label for="ubicacion" style="display: none;">Provincia</label>
+      <select name="ubicacion" id="ubicacion">
         <option value="">Provincia</option>
         <option th:each="prov : ${provincias}"
                 th:value="${prov}"
@@ -64,7 +63,8 @@
         </option>
       </select>
 
-      <select name="categoria">
+      <label for="categoria" style="display: none;">Categoría</label>
+      <select name="categoria" id="categoria">
         <option value="">Categoría</option>
         <option th:each="cat : ${categorias}"
                 th:value="${cat}"
@@ -73,7 +73,8 @@
         </option>
       </select>
 
-      <select name="fuente">
+      <label for="fuente" style="display: none;">Fuente</label>
+      <select name="fuente" id="fuente">
         <option value="">Fuente</option>
         <option th:each="fuente : ${fuentes}"
                 th:value="${fuente}"
@@ -88,7 +89,6 @@
 
     </form>
 
-    <!-- Botón Ver en mapa -->
     <div style="text-align: center; margin: 20px 0;">
       <a th:href="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/mapa' : '/hechos/mapa'}" 
          class="btn primary">
@@ -96,9 +96,7 @@
       </a>
     </div>
 
-    <!-- Navegación de páginas -->
     <div class="pagination">
-      <!-- Botón anterior -->
       <a th:if="${currentPage > 0}"
          th:href="@{${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}(
                     page=${currentPage - 1},
@@ -113,8 +111,6 @@
       </a>
 
       <span class="page-indicator">Página <strong th:text="${currentPage + 1}">1</strong></span>
-
-      <!-- Botón siguiente - solo si hay más páginas -->
       <a th:if="${hasNextPage}"
          th:href="@{${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}(
                     page=${currentPage + 1},
@@ -129,7 +125,6 @@
       </a>
     </div>
 
-    <!-- Hechos list -->
     <div class="hechos-grid">
       <div th:each="hecho, iterStat : ${hechos}" class="hecho-card"
            th:data-hecho-id="${hecho.id}"
@@ -144,18 +139,15 @@
     </div>
   </section>
 
-  <!-- Panel lateral para detalles de Hecho -->
   <div id="hechoDetailPanel" class="side-panel">
     <div class="panel-header">
       <h3>Detalles del Hecho</h3>
       <button class="close-btn" onclick="closeHechoDetailPanel()">&times;</button>
     </div>
     <div class="panel-content" id="hechoDetailContent">
-      <!-- El contenido se cargará dinámicamente -->
     </div>
   </div>
 
-  <!-- Overlay para cerrar panel -->
   <div id="overlay" class="overlay" onclick="closeHechoDetailPanel()"></div>
 
   <script th:inline="javascript">
@@ -163,21 +155,21 @@
     const hechosData = /*[[${hechos}]]*/ [];
 
     function openHechoDetailPanel(element) {
-      // Obtener identificadores del elemento
       const hechoId = element.dataset.hechoId;
       const fuenteId = element.dataset.fuenteId;
       const idOrigen = element.dataset.idOrigen;
       const hechoIndex = element.dataset.hechoIndex;
-      
-      // Buscar el hecho: primero por id, luego por fuente_id e id_origen, finalmente por índice
       let hecho = null;
       if (hechoId && hechoId !== 'null') {
-        hecho = hechosData.find(h => h.id != null && h.id == hechoId);
+        const hechoIdNum = Number(hechoId);
+        hecho = hechosData.find(h => h.id != null && Number(h.id) === hechoIdNum);
       }
       if (!hecho && fuenteId && fuenteId !== 'null' && idOrigen && idOrigen !== 'null') {
+        const fuenteIdNum = Number(fuenteId);
+        const idOrigenNum = Number(idOrigen);
         hecho = hechosData.find(h => 
-          h.fuente_id != null && h.fuente_id == fuenteId && 
-          h.id_origen != null && h.id_origen == idOrigen
+          h.fuente_id != null && Number(h.fuente_id) === fuenteIdNum && 
+          h.id_origen != null && Number(h.id_origen) === idOrigenNum
         );
       }
       if (!hecho && hechoIndex !== undefined) {
@@ -190,7 +182,6 @@
       const overlay = document.getElementById('overlay');
       const content = document.getElementById('hechoDetailContent');
 
-      // Construir el contenido del panel
       let html = '<h2>' + hecho.titulo + '</h2>';
 
         if (hecho.categoria) {
@@ -201,14 +192,12 @@
             html += '<p><strong>Descripción:</strong> ' + hecho.descripcion + '</p>';
         }
 
-        // 📅 Fecha de acontecimiento
         if (hecho.fecha_acontecimiento) {
             const fecha = new Date(hecho.fecha_acontecimiento);
             html += '<p><strong>Fecha de acontecimiento:</strong> ' +
                 fecha.toLocaleString('es-AR') + '</p>';
         }
 
-        // 📅 Fecha de carga
         if (hecho.fecha_carga) {
             const fechaCarga = new Date(hecho.fecha_carga);
             html += '<p><strong>Fecha de carga:</strong> ' +
@@ -224,10 +213,8 @@
                 hecho.latitud + ', ' + hecho.longitud + '</p>';
         }
 
-        // 🏷️ Fuente
         if (hecho.nombre_fuente) {
             let nombreFuente = hecho.nombre_fuente;
-            // Eliminar prefijo "Fuente " si existe
             if (nombreFuente.startsWith('Fuente ')) {
                 nombreFuente = nombreFuente.substring(7);
             }
@@ -249,12 +236,10 @@
             html += '</div></div>';
         }
 
-        // Botón Ver en mapa (solo si tiene coordenadas válidas)
         if (hecho.latitud != null && hecho.longitud != null && 
             !isNaN(hecho.latitud) && !isNaN(hecho.longitud) &&
             hecho.latitud >= -90 && hecho.latitud <= 90 &&
             hecho.longitud >= -180 && hecho.longitud <= 180) {
-            // Usar id si está disponible, sino usar fuenteId e idOrigen
             let mapaUrl = null;
             if (hecho.id != null) {
                 mapaUrl = '/hechos/mapa?hechoId=' + hecho.id;
@@ -262,7 +247,6 @@
                 mapaUrl = '/hechos/mapa?fuenteId=' + hecho.fuente_id + '&idOrigen=' + hecho.id_origen;
             }
             
-            // Solo mostrar el botón si tenemos una URL válida
             if (mapaUrl != null) {
                 html += '<div style="margin-top: 20px; text-align: center;">';
                 html += '<a href="' + mapaUrl + '" class="btn primary">';
@@ -278,7 +262,6 @@
       overlay.classList.add('active');
       document.body.style.overflow = 'hidden';
 
-      // Actualizar URL
       const urlHash = hecho.id != null ? '#hecho' + hecho.id : 
                      (hecho.fuente_id != null && hecho.id_origen != null ? 
                       '#hecho-' + hecho.fuente_id + '-' + hecho.id_origen : '');
@@ -295,24 +278,20 @@
       overlay.classList.remove('active');
       document.body.style.overflow = '';
 
-      // Restaurar URL
       const baseUrl = window.location.pathname + window.location.search;
       history.pushState(null, '', baseUrl);
     }
 
-    // Manejar botón atrás
     window.addEventListener('popstate', function() {
       closeHechoDetailPanel();
     });
 
-    // Cerrar con Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closeHechoDetailPanel();
       }
     });
 
-    // Abrir panel si hay hash en la URL
     window.addEventListener('load', function() {
       const hash = window.location.hash;
       if (hash.startsWith('#hecho')) {
@@ -322,6 +301,4 @@
     });
     /*]]>*/
   </script>
-  </div>
 </div>
-</html>
