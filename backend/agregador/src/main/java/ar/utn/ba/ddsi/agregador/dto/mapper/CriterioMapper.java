@@ -56,7 +56,7 @@ public class CriterioMapper {
 
   private CriterioOrigenDTO toOrigenDTO(CriterioOrigen c) {
     CriterioOrigenDTO dto = new CriterioOrigenDTO();
-    dto.setOrigen(c.getOrigen());
+    dto.setNombreFuente(c.getNombreFuente());
     return dto;
   }
 
@@ -95,6 +95,6 @@ public class CriterioMapper {
   }
 
    private CriterioOrigen fromOrigenDTO(CriterioOrigenDTO dto) {
-    return new CriterioOrigen(dto.getOrigen());
+    return new CriterioOrigen(dto.getNombreFuente());
   }
 }

@@ -4,7 +4,6 @@ import ar.utn.ba.ddsi.agregador.repositorie.converter.AlgoritmoAttributeConverte
 import ar.utn.ba.ddsi.agregador.repositorie.converter.CriterioListAttributeConverter;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioOrigen;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
@@ -90,7 +89,7 @@ public class Coleccion {
       return new ArrayList<>();
     }
     if (this.criteriosDePertenencia == null || this.criteriosDePertenencia.isEmpty()) {
-      return new ArrayList<>(hechos);
+      return new ArrayList<>();
     }
     return hechos.stream()
         .filter(hecho -> this.criteriosDePertenencia.stream()
@@ -111,6 +110,19 @@ public class Coleccion {
   }
 
   public void recalcularHechos(List<Hecho> hechosLocalesDisponibles, int cantidadFuentes) {
+    // Si no hay criterios, establecer listas vacías sin procesar hechos
+    if (this.criteriosDePertenencia == null || this.criteriosDePertenencia.isEmpty()) {
+      if (this.hechos == null) {
+        this.hechos = new ArrayList<>();
+      }
+      this.hechos.clear();
+      if (this.hechosConsensuados == null) {
+        this.hechosConsensuados = new ArrayList<>();
+      }
+      this.hechosConsensuados.clear();
+      return;
+    }
+
     List<Hecho> hechosPersistidos = hechosLocalesDisponibles.stream()
         .filter(h -> h.getId() != null)
         .toList();
@@ -128,14 +140,14 @@ public class Coleccion {
     this.hechosConsensuados.addAll(consensuados);
   }
 
-  public boolean tieneHechosExternos(List<Long> fuentesTiempoReal, List<OrigenHecho> origenesTiempoReal) {
+  public boolean tieneHechosExternos(List<Long> fuentesTiempoReal, List<String> nombresFuentesTiempoReal) {
     if (this.criteriosDePertenencia == null || this.criteriosDePertenencia.isEmpty()) {
       return false;
     }
     return this.criteriosDePertenencia.stream()
         .anyMatch(criterio -> {
           if (criterio instanceof CriterioOrigen criterioOrigen) {
-            return origenesTiempoReal.contains(criterioOrigen.getOrigen());
+            return nombresFuentesTiempoReal.contains(criterioOrigen.getNombreFuente());
           }
           if (criterio instanceof CriterioFuente criterioFuente) {
             return criterioFuente.getFuentes().stream()

@@ -16,7 +16,6 @@ import ar.utn.ba.ddsi.agregador.dto.mapper.ColeccionMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.CriterioMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -256,6 +255,12 @@ public class ColeccionesService {
                 log.info("[ColeccionesService] Colección local encontrada en BD");
                 Coleccion coleccion = coleccionOpt.get();
 
+                // Si no hay criterios, retornar lista vacía sin buscar hechos
+                if (coleccion.getCriteriosDePertenencia() == null || coleccion.getCriteriosDePertenencia().isEmpty()) {
+                    log.info("[ColeccionesService] Colección sin criterios, retornando lista vacía");
+                    return ResponseEntity.ok(new ArrayList<>());
+                }
+
                 // 1. Obtener hechos según el modo de navegación
                 ModoNavegacion modoNav = modo != null ? modo : ModoNavegacion.IRRESTRICTA;
                 List<Hecho> hechos;
@@ -276,10 +281,10 @@ public class ColeccionesService {
 
                 // 2. Si la colección tiene hechos externos, agregar los de tiempo real
                 List<Long> fuentesTiempoReal = fuentesService.getFuentesTiempoReal();
-                List<OrigenHecho> origenesTiempoReal =
-                    fuentesService.getOrigenesTiempoReal();
+                List<String> nombresFuentesTiempoReal =
+                    fuentesService.getNombresFuentesTiempoReal();
 
-                if (coleccion.tieneHechosExternos(fuentesTiempoReal, origenesTiempoReal)) {
+                if (coleccion.tieneHechosExternos(fuentesTiempoReal, nombresFuentesTiempoReal)) {
                     log.info("[ColeccionesService] Colección tiene hechos externos, obteniendo de fuentes en tiempo real");
                     try {
                         ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
@@ -406,13 +411,22 @@ public class ColeccionesService {
                 .criteriosDePertenencia(criterios)
                 .build();
 
-            List<Hecho> hechosLocalesVisibles = hechosRepository.findAll().stream()
-                .filter(Hecho::esVisible)
-                .toList();
+            List<Hecho> todosHechosFiltrados;
+            List<Hecho> todosHechosConsensuados;
 
-            List<Hecho> todosHechos = new ArrayList<>(hechosLocalesVisibles);
+            // Si no hay criterios, no buscar hechos y usar listas vacías
+            if (criterios == null || criterios.isEmpty()) {
+                log.info("[ColeccionesService] Colección sin criterios, no se buscarán hechos");
+                todosHechosFiltrados = new ArrayList<>();
+                todosHechosConsensuados = new ArrayList<>();
+            } else {
+                List<Hecho> hechosLocalesVisibles = hechosRepository.findAll().stream()
+                    .filter(Hecho::esVisible)
+                    .toList();
 
-            if (coleccionTemporal.tieneHechosExternos(fuentesService.getFuentesTiempoReal(), fuentesService.getOrigenesTiempoReal())) {
+                List<Hecho> todosHechos = new ArrayList<>(hechosLocalesVisibles);
+
+                if (coleccionTemporal.tieneHechosExternos(fuentesService.getFuentesTiempoReal(), fuentesService.getNombresFuentesTiempoReal())) {
                 try {
                     ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
                         null, null, null, null, null, null);
@@ -426,11 +440,11 @@ public class ColeccionesService {
                 } catch (Exception e) {
                     log.warn("[ColeccionesService] Error al obtener hechos externos en getHechosColeccionByHandle (externo): {}", e.getMessage());
                 }
+                }
+
+                todosHechosFiltrados = coleccionTemporal.aplicarCriteriosDePertenencia(todosHechos);
+                todosHechosConsensuados = coleccionTemporal.aplicarAlgoritmoConsenso(todosHechosFiltrados, calcularCantidadFuentes());
             }
-
-            List<Hecho> todosHechosFiltrados = coleccionTemporal.aplicarCriteriosDePertenencia(todosHechos);
-
-            List<Hecho> todosHechosConsensuados = coleccionTemporal.aplicarAlgoritmoConsenso(todosHechosFiltrados, calcularCantidadFuentes());
 
             List<Hecho> hechosLocalesFiltrados = todosHechosFiltrados.stream()
                 .filter(h -> h.getId() != null)
@@ -589,6 +603,14 @@ public class ColeccionesService {
     }
 
     private void recalcularHechosYConsenso(Coleccion coleccion) {
+        // Si no hay criterios, establecer listas vacías sin buscar hechos
+        if (coleccion.getCriteriosDePertenencia() == null || coleccion.getCriteriosDePertenencia().isEmpty()) {
+            log.info("[ColeccionesService] Colección sin criterios, estableciendo listas vacías");
+            coleccion.setHechos(new ArrayList<>());
+            coleccion.setHechosConsensuados(new ArrayList<>());
+            return;
+        }
+
         List<Hecho> hechosLocalesVisibles = hechosRepository.findAll().stream()
             .filter(Hecho::esVisible)
             .toList();

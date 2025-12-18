@@ -1,7 +1,6 @@
 package ar.utn.ba.ddsi.agregador.domain.coleccion.criterios;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,13 +12,16 @@ import lombok.Setter;
 public class CriterioOrigen implements Criterio{
   @JsonIgnore
   private final TipoCriterio tipo = TipoCriterio.ORIGEN;
-  private OrigenHecho origen;
+  private String nombreFuente;
 
-  public CriterioOrigen(OrigenHecho origen) {
-    this.origen = origen;
+  public CriterioOrigen(String nombreFuente) {
+    this.nombreFuente = nombreFuente;
   }
 
   public boolean cumple(Hecho hecho) {
-    return this.origen == hecho.getOrigen();
+    if (this.nombreFuente == null) {
+      return hecho.getNombreFuente() == null;
+    }
+    return this.nombreFuente.equals(hecho.getNombreFuente());
   }
 }

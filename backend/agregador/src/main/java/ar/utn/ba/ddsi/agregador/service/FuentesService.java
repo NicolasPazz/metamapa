@@ -196,6 +196,13 @@ public class FuentesService {
     return List.of(OrigenHecho.METAMAPA);
   }
 
+  public List<String> getNombresFuentesTiempoReal() {
+    return fuentes.stream()
+        .filter(fuente -> fuente instanceof FuenteTiempoReal)
+        .map(AFuente::getNombre)
+        .collect(Collectors.toList());
+  }
+
   private void normalizarHecho(HechoDTO h, Long idFuente) {
     if (h.getFechaDeAcontecimiento() == null) {
       log.warn("DTO idOrigen {} sin fecha_acontecimiento recibido desde fuente {}", h.getId(), idFuente);
