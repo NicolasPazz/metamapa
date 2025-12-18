@@ -87,7 +87,24 @@
               </div>
               <div class="form-text text-muted" id="location-status">Ingresa coordenadas o usa el botón.</div>
             </div>
+            <div class="mb-4">
+              <label for="categoria" class="form-label">2. Categoría</label>
+              <select class="form-select bg-light" id="categoria" name="categoria" required>
+                <option value="" selected disabled>Selecciona una opción...</option>
 
+                <option th:each="cat : ${categorias}"
+                        th:value="${cat}"
+                        th:text="${cat}">
+                </option>
+                <option value="Seguridad">Seguridad</option>
+                <option value="Transito">Tránsito</option>
+                <option value="Incendio">Incendio</option>
+              </select>
+            </div>
+            <div class="mb-4">
+              <label for="fechaAcontecimiento" class="form-label">Fecha y Hora del suceso</label>
+              <input type="datetime-local" class="form-control bg-light" id="fechaAcontecimiento" name="fechaAcontecimiento" required>
+            </div>
             <div class="mb-4">
               <label for="fotos" class="form-label">3. Evidencia Fotográfica</label>
               <input class="form-control" type="file" id="fotos" name="archivos" multiple accept="image/*" onchange="previewImages()">

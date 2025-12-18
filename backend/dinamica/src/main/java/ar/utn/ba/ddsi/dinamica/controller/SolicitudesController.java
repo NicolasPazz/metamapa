@@ -37,6 +37,7 @@ public class SolicitudesController {
   @PostMapping
   public ResponseEntity<SolicitudOutputDTO> crearNuevaSolicitud(
       @Valid @RequestBody SolicitudHechoInputContribuyenteDTO input) {
+
     log.info("POST /api/solicitudes - Nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
     var solicitudCreada = solicitudesService.recibirSolicitudContribuyente(input);
     log.info("Solicitud creada con ID: {}", solicitudCreada.getId());
