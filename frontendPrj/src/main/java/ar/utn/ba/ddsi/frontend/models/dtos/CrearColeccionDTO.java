@@ -48,6 +48,7 @@ public class CrearColeccionDTO {
         if ("lugar".equals(tipo)) return c.getLat() != null && c.getLng() != null;
         if ("igualdad".equals(tipo)) return c.getCadenaAComparar() != null && c.getTipoDeDato() != null;
         if ("origen".equals(tipo)) return c.getOrigen() != null;
+        if ("fuente".equals(tipo)) return c.getFuentes() != null;
         return true;
     }
 }

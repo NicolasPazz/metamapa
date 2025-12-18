@@ -179,6 +179,7 @@
           <option value="lugar">Lugar</option>
           <option value="igualdad">Igualdad</option>
           <option value="origen">Origen</option>
+          <option value="fuente">Fuente</option>
         </select>
 
         <div id="opcion-fecha" class="conditional-section" style="display:none;">
@@ -227,6 +228,15 @@
           </select>
         </div>
 
+        <div id="opcion-fuente" class="conditional-section" style="display:none;">
+          <label>Seleccione Fuentes (Ctrl+Click para varias):</label>
+          <select id="input-fuente-ids" multiple class="form-control" style="height: 120px; width: 100%;">
+            <th:block th:each="f : ${fuentes}">
+              <option th:value="${f.id}" th:text="${f.nombre}"></option>
+            </th:block>
+          </select>
+        </div>
+
         <button type="button" onclick="agregarCriterioALista()"
                 style="margin-top:15px; background-color:#28a745; color:white; border:none; padding:8px 15px; cursor:pointer;">
           + Agregar a la lista
@@ -247,14 +257,6 @@
         <option value="ABSOLUTA">Absoluta</option>
       </select>
 
-      <label for="fuente">Fuente*</label>
-      <select name="fuenteId" id="fuente" required>
-        <option value="">-- Seleccione una Fuente --</option>
-        <th:block th:each="f : ${fuentes}">
-          <option th:value="${f.id}" th:text="${f.nombre}"></option>
-        </th:block>
-      </select>
-
       <button type="submit" style="width:100%; padding:10px; font-size:16px;">Guardar Colección</button>
     </form>
     <script>
@@ -271,6 +273,7 @@
         if (criterio === 'lugar') document.getElementById('opcion-lugar').style.display = 'block';
         if (criterio === 'igualdad') document.getElementById('opcion-igualdad').style.display = 'block';
         if (criterio === 'origen') document.getElementById('opcion-origen').style.display = 'block';
+        if (criterio === 'fuente') document.getElementById('opcion-fuente').style.display = 'block';
       }
 
       function agregarCriterioALista() {
@@ -342,6 +345,30 @@
           descripcion = `🏷️ <b>Origen</b>: ${origen}`;
         }
 
+        // --- CASE 5: FUENTE ---
+        else if (tipo === "fuente") {
+          const select = document.getElementById("input-fuente-ids");
+          // Get all selected options
+          const selectedOptions = Array.from(select.selectedOptions);
+
+          if (selectedOptions.length === 0) {
+            alert("Seleccione al menos una fuente.");
+            return;
+          }
+
+          // 1. Set the Type
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "fuente");
+
+          // 2. Loop to create List<Long> inputs: criterios[0].fuenteIds[0], criterios[0].fuenteIds[1]...
+          selectedOptions.forEach((option, index) => {
+            createHiddenInput(container, `criterios[${contadorCriterios}].fuentes`, option.value);
+          });
+
+          // 3. Create visual description using the text of the options
+          const names = selectedOptions.map(o => o.text).join(", ");
+          descripcion = `📚 <b>Fuentes</b>: ${names}`;
+        }
+
         // --- VISUAL FEEDBACK ---
         const li = document.createElement("li");
         li.innerHTML = descripcion;
@@ -356,6 +383,10 @@
         document.querySelectorAll('#input-igualdad-valor, #input-lat, #input-lng').forEach(i => i.value = '');
         document.getElementById("selector-criterio").value = "";
         mostrarOpciones(); // Hides everything again
+
+        if(document.getElementById("input-fuente-ids")) {
+          document.getElementById("input-fuente-ids").selectedIndex = -1;
+        }
       }
 
       // Helper to create the <input type="hidden">
@@ -391,6 +422,7 @@
           <option value="lugar">Lugar</option>
           <option value="igualdad">Igualdad</option>
           <option value="origen">Origen</option>
+          <option value="fuente">Fuente</option>
         </select>
 
         <div id="edit-opcion-fecha" class="conditional-section-edit" style="display:none;">
@@ -436,6 +468,15 @@
           </th:block>
         </select>
 
+        <div id="edit-opcion-fuente" class="conditional-section-edit" style="display:none;">
+          <label>Fuentes:</label>
+          <select id="edit-input-fuente-ids" multiple class="form-control" style="height: 120px; width: 100%;">
+            <th:block th:each="f : ${fuentes}">
+              <option th:value="${f.id}" th:text="${f.nombre}"></option>
+            </th:block>
+          </select>
+        </div>
+
         <button type="button" onclick="agregarCriterioEdit()" class="btn-secondary" style="margin-top:10px;">
           + Agregar
         </button>
@@ -472,6 +513,7 @@
       if (criterio === 'lugar') document.getElementById('edit-opcion-lugar').style.display = 'block';
       if (criterio === 'igualdad') document.getElementById('edit-opcion-igualdad').style.display = 'block';
       if (criterio === 'origen') document.getElementById('edit-opcion-origen').style.display = 'block';
+      if (criterio === 'fuente') document.getElementById('edit-opcion-fuente').style.display = 'block';
     }
 
     // 2. Main function called when clicking "Editar"
@@ -481,7 +523,6 @@
       document.getElementById('edit-nombre').value = btn.dataset.titulo;
       document.getElementById('edit-descripcion').value = btn.dataset.descripcion;
       document.getElementById('edit-consenso').value = btn.dataset.consenso;
-      document.getElementById('edit-fuente').value = btn.dataset.fuenteId;
 
       // B. Clear Lists
       const container = document.getElementById("edit-hidden-inputs-container");
@@ -527,6 +568,13 @@
         tempObj.cadenaAComparar = document.getElementById("edit-input-igualdad-valor").value;
       } else if (tipo === "origen") {
         tempObj.origen = document.getElementById("edit-input-origen-valor").value;
+      } else if (tipo === "fuente") {
+        const select = document.getElementById("edit-input-fuente-ids");
+        const selectedOpts = Array.from(select.selectedOptions);
+        if(selectedOpts.length === 0) return;
+
+        // Store as an array of IDs for 'restaurarCriterio' to use
+        tempObj.fuentes = selectedOpts.map(o => o.value);
       }
 
       restaurarCriterio(tempObj, container, visualList);
@@ -556,6 +604,8 @@
       const cadena = c.cadena_a_comparar || c.cadenaAComparar;
       const origen = c.origen; // Same name
 
+      const fuenteIds = c.fuentes;
+
       if (!tipo) {
         if (fechaIni) {
           tipo = "fecha";
@@ -565,6 +615,9 @@
           tipo = "igualdad";
         } else if (origen) {
           tipo = "origen";
+        }
+        else if(fuenteIds) {
+          tipo = "fuente";
         }
       }
 
@@ -590,10 +643,28 @@
         createHiddenInput(container, `criterios[${i}].origen`, origen);
         desc = `🏷️ Origen: ${origen}`;
       }
+      else if (tipo === "fuente" && fuenteIds) {
+        const idsArray = Array.isArray(fuenteIds) ? fuenteIds : [fuenteIds];
+        const lookupSelect = document.getElementById("edit-input-fuente-ids");
+        let names = [];
+
+        idsArray.forEach((id) => {
+          // CHANGE HERE: Removed [${index}]
+          createHiddenInput(container, `criterios[${i}].fuentes`, id);
+
+          if(lookupSelect) {
+            const opt = lookupSelect.querySelector(`option[value="${id}"]`);
+            if(opt) names.push(opt.text);
+            else names.push("ID " + id);
+          }
+        });
+
+        desc = `📚 Fuentes: ${names.join(", ")}`;
+      }
 
       // Visual Item
       const li = document.createElement("li");
-      li.textContent = desc;
+      li.innerHTML = desc;
       list.appendChild(li);
 
       contadorCriteriosEdit++;

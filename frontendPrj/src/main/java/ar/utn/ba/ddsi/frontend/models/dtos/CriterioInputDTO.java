@@ -10,6 +10,9 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Valid
 @Getter
@@ -54,4 +57,7 @@ public class CriterioInputDTO {
     //CriterioOrigen
     @JsonProperty("origen")
     private String origen;
+
+    //CriterioFuentes
+    private Set<Long> fuentes = new HashSet<>();
 }
