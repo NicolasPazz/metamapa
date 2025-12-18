@@ -6,7 +6,9 @@ import ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
 import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,12 +23,10 @@ public class AgregadorService {
   private final IHechosRepository hechosRepository;
   private final HechoMapper hechoMapper;
   private final ProvinciaService provinciaService;
+  private final ColeccionesService coleccionesService;
 
   public void actualizarHechos() {
     try {
-      log.info("🔄 [AgregadorService] ====== INICIANDO ACTUALIZACIÓN DE HECHOS ======");
-
-      log.info("🔄 [AgregadorService] Llamando a FuentesService.getAllHechosNuevos()...");
       List<HechoDTO> nuevosDTOs = new ArrayList<>();
 
       try {
@@ -34,41 +34,88 @@ public class AgregadorService {
             fuentesService.getAllHechosNuevos().getBody()
         ).orElse(List.of());
       } catch (Exception e) {
-        log.warn("⚠️ [AgregadorService] Error al obtener hechos nuevos de fuentes (pueden estar caídas): {}",
-            e.getMessage());
-        log.debug("⚠️ [AgregadorService] Stack trace: ", e);
+        log.warn("[AgregadorService] Error al obtener hechos nuevos de fuentes: {}", e.getMessage());
       }
 
-      log.info("🔄 [AgregadorService] Cantidad de hechos nuevos obtenidos: {}", nuevosDTOs.size());
-
       if (nuevosDTOs.isEmpty()) {
-        log.warn("⚠️ [AgregadorService] No se obtuvieron hechos nuevos de ninguna fuente (o las fuentes están caídas)");
-        log.info("✅ [AgregadorService] ====== ACTUALIZACIÓN DE HECHOS COMPLETADA (sin cambios) ======");
-        return; // No hay nada que procesar
+        return;
       }
 
       List<Hecho> hechosNuevos = hechoMapper.fromDTO(nuevosDTOs);
 
-      // Asignar provincia y nombre de fuente a cada hecho
+      // Asignar provincia a hechos que no la tienen (usando coordenadas)
       for (Hecho hecho : hechosNuevos) {
         if (hecho.getLatitud() != null && hecho.getLongitud() != null && hecho.getProvincia() == null) {
           Provincia provincia =
               provinciaService.obtenerProvinciaPorCoordenadas(hecho.getLatitud(), hecho.getLongitud());
-          hecho.setProvincia(provincia);
+          hecho.asignarProvinciaSiNoTiene(provincia);
         }
-        // El nombreFuente ya debería estar asignado por el mapper desde el DTO (que viene de normalizarHecho)
       }
 
+      // Normalizar y persistir categorías antes de guardar hechos (evita duplicados)
       categoriasService.persistirCategoriasDesdeHechos(hechosNuevos);
-
       hechosRepository.saveAll(hechosNuevos);
-      log.info("💾 [AgregadorService] Se guardaron {} hechos nuevos.", hechosNuevos.size());
-
-
-      log.info("✅ [AgregadorService] ====== ACTUALIZACIÓN DE HECHOS COMPLETADA ======");
+      log.info("[AgregadorService] Se guardaron {} hechos nuevos", hechosNuevos.size());
 
     } catch (Exception e) {
-      log.error("❌ [AgregadorService] Error al actualizar hechos: {}", e.getMessage(), e);
+      log.error("[AgregadorService] Error al actualizar hechos: {}", e.getMessage(), e);
+    }
+  }
+
+  public Map<String, Object> ejecutarScheduler(
+      boolean obtenerHechosNuevos,
+      boolean recalcularCriterios,
+      boolean recalcularConsenso) {
+    
+    Map<String, Object> resultado = new HashMap<>();
+    long tiempoInicio = System.currentTimeMillis();
+    
+    try {
+      if (obtenerHechosNuevos) {
+        long inicioHechos = System.currentTimeMillis();
+        actualizarHechos();
+        long tiempoHechos = System.currentTimeMillis() - inicioHechos;
+        resultado.put("hechosNuevos", Map.of(
+          "ejecutado", true,
+          "tiempoMs", tiempoHechos,
+          "mensaje", "Hechos nuevos obtenidos correctamente"
+        ));
+      } else {
+        resultado.put("hechosNuevos", Map.of(
+          "ejecutado", false,
+          "mensaje", "Omitido por parámetro"
+        ));
+      }
+      
+      if (recalcularCriterios || recalcularConsenso) {
+        long inicioConsenso = System.currentTimeMillis();
+        coleccionesService.actualizarHechosSegunConsenso();
+        long tiempoConsenso = System.currentTimeMillis() - inicioConsenso;
+        resultado.put("recalcularCriteriosYConsenso", Map.of(
+          "ejecutado", true,
+          "tiempoMs", tiempoConsenso,
+          "mensaje", "Criterios de pertenencia y hechos consensuados recalculados correctamente"
+        ));
+      } else {
+        resultado.put("recalcularCriteriosYConsenso", Map.of(
+          "ejecutado", false,
+          "mensaje", "Omitido por parámetro"
+        ));
+      }
+      
+      long tiempoTotal = System.currentTimeMillis() - tiempoInicio;
+      resultado.put("tiempoTotalMs", tiempoTotal);
+      resultado.put("exito", true);
+      resultado.put("mensaje", "Scheduler ejecutado correctamente");
+      
+      return resultado;
+      
+    } catch (Exception e) {
+      log.error("[AgregadorService] Error al ejecutar scheduler: {}", e.getMessage(), e);
+      resultado.put("exito", false);
+      resultado.put("error", e.getMessage());
+      resultado.put("tiempoTotalMs", System.currentTimeMillis() - tiempoInicio);
+      throw new RuntimeException("Error al ejecutar scheduler: " + e.getMessage(), e);
     }
   }
 }

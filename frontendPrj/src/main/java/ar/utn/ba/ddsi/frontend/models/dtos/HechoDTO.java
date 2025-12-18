@@ -26,6 +26,7 @@ public class HechoDTO {
     private LocalDateTime fechaDeAcontecimiento;
     @JsonProperty("fecha_carga")
     private LocalDateTime fechaDeCarga;
+    @JsonProperty("ultima_modificacion")
     private LocalDateTime ultimaModificacion;
     @JsonProperty("multimedia")
     private List<ContenidoMultimediaDTO> contenidoMultimedia;

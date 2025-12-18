@@ -14,7 +14,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface IHechosRepository extends JpaRepository<Hecho, Long> {
 
-  @Query("SELECT h FROM Hecho h LEFT JOIN FETCH h.provincia WHERE " +
+  @Query("SELECT DISTINCT h FROM Hecho h " +
+      "LEFT JOIN FETCH h.provincia " +
+      "LEFT JOIN FETCH h.multimedia " +
+      "WHERE " +
       "h.estado = 'VISIBLE' AND " +  // Filtrar solo hechos VISIBLES
       "(:categoria IS NULL OR h.categoria.nombre = :categoria) AND " +
       "(:fechaReporteDesde IS NULL OR h.fechaDeCarga >= :fechaReporteDesde) AND " +

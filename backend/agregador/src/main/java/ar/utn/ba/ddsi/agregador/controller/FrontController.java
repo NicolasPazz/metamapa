@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.controller;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.dto.PageResponse;
+import ar.utn.ba.ddsi.agregador.service.AgregadorService;
 import ar.utn.ba.ddsi.agregador.service.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.HechosService;
 import ar.utn.ba.ddsi.agregador.service.CategoriasService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -26,6 +28,7 @@ public class FrontController {
     private final HechosService hechosService;
     private final ColeccionesService coleccionesService;
     private final CategoriasService categoriasService;
+    private final AgregadorService agregadorService;
 
     @GetMapping("/hechos")
     public ResponseEntity<PageResponse<HechoDTO>> getHechosPaginados(
@@ -38,20 +41,6 @@ public class FrontController {
             @RequestParam(required = false) String fuente,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
-
-        // Validar parámetros
-        if (page < 0) {
-            log.warn("[FrontController] Página inválida en getHechosPaginados: {}, usando 0", page);
-            page = 0;
-        }
-        if (size < 1) {
-            log.warn("[FrontController] Tamaño inválido en getHechosPaginados: {}, usando 100", size);
-            size = 100;
-        }
-        if (size > 200) {
-            log.warn("[FrontController] Tamaño muy grande en getHechosPaginados: {}, limitando a 200", size);
-            size = 200;
-        }
 
         log.info("[FrontController] GET /api/front/hechos - page: {}, size: {}", page, size);
 
@@ -67,20 +56,6 @@ public class FrontController {
     public ResponseEntity<PageResponse<ColeccionDTO>> getColeccionesPaginadas(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
-
-        // Validar parámetros
-        if (page < 0) {
-            log.warn("[FrontController] Página inválida en getColeccionesPaginadas: {}, usando 0", page);
-            page = 0;
-        }
-        if (size < 1) {
-            log.warn("[FrontController] Tamaño inválido en getColeccionesPaginadas: {}, usando 100", size);
-            size = 100;
-        }
-        if (size > 200) {
-            log.warn("[FrontController] Tamaño muy grande en getColeccionesPaginadas: {}, limitando a 200", size);
-            size = 200;
-        }
 
         log.info("[FrontController] GET /api/front/colecciones - page: {}, size: {}", page, size);
 
@@ -102,20 +77,6 @@ public class FrontController {
             @RequestParam(required = false) String modo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
-
-        // Validar parámetros
-        if (page < 0) {
-            log.warn("[FrontController] Página inválida en getHechosColeccionPaginados: {}, usando 0", page);
-            page = 0;
-        }
-        if (size < 1) {
-            log.warn("[FrontController] Tamaño inválido en getHechosColeccionPaginados: {}, usando 100", size);
-            size = 100;
-        }
-        if (size > 200) {
-            log.warn("[FrontController] Tamaño muy grande en getHechosColeccionPaginados: {}, limitando a 200", size);
-            size = 200;
-        }
 
         log.info("[FrontController] GET /api/front/colecciones/{}/hechos - page: {}, size: {}", handle, page, size);
 
@@ -153,5 +114,27 @@ public class FrontController {
     public ResponseEntity<List<String>> getFuentes() {
         log.info("[FrontController] GET /api/front/fuentes");
         return hechosService.getFuentesConHechos();
+    }
+
+    @PostMapping("/ejecutar-scheduler")
+    public ResponseEntity<Map<String, Object>> ejecutarScheduler(
+            @RequestParam(required = false, defaultValue = "true") boolean obtenerHechosNuevos,
+            @RequestParam(required = false, defaultValue = "true") boolean recalcularCriterios,
+            @RequestParam(required = false, defaultValue = "true") boolean recalcularConsenso) {
+        
+        log.info("[FrontController] POST /api/front/ejecutar-scheduler - obtenerHechosNuevos: {}, recalcularCriterios: {}, recalcularConsenso: {}", 
+                obtenerHechosNuevos, recalcularCriterios, recalcularConsenso);
+        
+        try {
+            Map<String, Object> resultado = agregadorService.ejecutarScheduler(
+                    obtenerHechosNuevos, recalcularCriterios, recalcularConsenso);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            log.error("[FrontController] ❌ Error al ejecutar scheduler: {}", e.getMessage(), e);
+            Map<String, Object> errorResult = new java.util.HashMap<>();
+            errorResult.put("exito", false);
+            errorResult.put("error", e.getMessage());
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
+        }
     }
 }

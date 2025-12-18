@@ -5,10 +5,14 @@ import ar.utn.ba.ddsi.frontend.models.dtos.ContenidoMultimediaDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoSolicitudInputDTO;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import java.util.Map;
 import java.time.LocalDate;
@@ -17,13 +21,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Slf4j
 public class HechoService {
     final private WebClient webClient;
     final private WebClient webClient2;
 
-    public HechoService(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://localhost:8084/api").build();
-        this.webClient2 = builder.baseUrl("http://localhost:8081/api").build();
+    public HechoService(WebClient.Builder builder,
+                       @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
+                       @Value("${app.api.dinamica.base-url:http://localhost:8081/api}") String dinamicaBaseUrl) {
+        this.webClient = builder.baseUrl(agregadorBaseUrl).build();
+        this.webClient2 = builder.baseUrl(dinamicaBaseUrl).build();
     }
 
     public List<HechoDTO> getAllHechos() {
@@ -31,12 +38,23 @@ public class HechoService {
     }
 
     public void crearHecho(HechoFormDTO hechoInput) {
+        if (hechoInput.getLatitud() == null || hechoInput.getLongitud() == null) {
+            throw new IllegalArgumentException("La latitud y longitud son obligatorias");
+        }
+        
+        if (hechoInput.getFechaAcontecimiento() != null && hechoInput.getFechaAcontecimiento().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("La fecha y hora no pueden ser futuras");
+        }
 
         HechoSolicitudInputDTO hechoOutput = new HechoSolicitudInputDTO();
         hechoOutput.setDescripcion(hechoInput.getDescripcion());
+        // Asegurar que se copien correctamente las coordenadas
         hechoOutput.setLatitud(hechoInput.getLatitud());
         hechoOutput.setLongitud(hechoInput.getLongitud());
         hechoOutput.setTitulo(hechoInput.getTitulo());
+        
+        log.info("HechoService.crearHecho - DTO creado - Latitud: {}, Longitud: {}", 
+                hechoOutput.getLatitud(), hechoOutput.getLongitud());
         
         // Usar la fecha del formulario si está disponible, sino usar ahora
         if (hechoInput.getFechaAcontecimiento() != null) {
@@ -47,17 +65,39 @@ public class HechoService {
         
         hechoOutput.setCategoria(hechoInput.getCategoria());
         
-        // Convertir archivos multimedia si existen
+        // Si hay archivos multimedia, enviar como multipart
         if (hechoInput.getContenidoMultimedia() != null && !hechoInput.getContenidoMultimedia().isEmpty()) {
-            hechoOutput.setMultimedia(this.fileToMultimediaDTO(hechoInput.getContenidoMultimedia()));
+            MultipartBodyBuilder builder = new MultipartBodyBuilder();
+            
+            log.debug("Enviando solicitud con coordenadas - Latitud: {}, Longitud: {}", 
+                    hechoOutput.getLatitud(), hechoOutput.getLongitud());
+            
+            // Agregar datos de la solicitud como parte JSON
+            builder.part("solicitud", hechoOutput, MediaType.APPLICATION_JSON);
+            
+            // Agregar cada archivo multimedia
+            for (MultipartFile archivo : hechoInput.getContenidoMultimedia()) {
+                if (!archivo.isEmpty()) {
+                    builder.part("archivos", archivo.getResource());
+                }
+            }
+            
+            webClient2.post().uri("/solicitudes")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(builder.build()))
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        } else {
+            log.debug("Enviando solicitud JSON con coordenadas - Latitud: {}, Longitud: {}", 
+                    hechoOutput.getLatitud(), hechoOutput.getLongitud());
+            webClient2.post().uri("/solicitudes")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(hechoOutput)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
         }
-
-        webClient2.post().uri("/solicitudes")
-                .contentType(MediaType.APPLICATION_JSON)
-                .bodyValue(hechoOutput)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
     }
 
     @SuppressWarnings("unused")

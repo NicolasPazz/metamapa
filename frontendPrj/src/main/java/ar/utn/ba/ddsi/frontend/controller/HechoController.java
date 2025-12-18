@@ -1,8 +1,8 @@
 package ar.utn.ba.ddsi.frontend.controller;
+
 import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.HechoSolicitudInputDTO;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,13 +11,14 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
+import java.beans.PropertyEditorSupport;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +32,32 @@ public class HechoController {
     
     @Value("${app.pagination.page-size:18}")
     private int pageSize;
+    
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        // Registrar editor personalizado para Double
+        binder.registerCustomEditor(Double.class, new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) throws IllegalArgumentException {
+                if (text == null || text.trim().isEmpty()) {
+                    setValue(null);
+                } else {
+                    try {
+                        setValue(Double.parseDouble(text.trim()));
+                    } catch (NumberFormatException e) {
+                        throw new IllegalArgumentException("Valor numérico inválido: " + text);
+                    }
+                }
+            }
+            
+            @Override
+            public String getAsText() {
+                Double value = (Double) getValue();
+                return value != null ? value.toString() : "";
+            }
+        });
+    }
+    
     @GetMapping
     public String listarHechos(Model model,
             @RequestParam(required = false) String ubicacion,
@@ -77,17 +104,15 @@ public class HechoController {
     @ResponseBody
     public ResponseEntity<?> crearHecho(@ModelAttribute HechoFormDTO formDTO) {
         try {
-            // Validar fecha si está presente
-            if (formDTO.getFechaAcontecimiento() != null) {
-                if (formDTO.getFechaAcontecimiento().isAfter(LocalDateTime.now())) {
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                            .body("La fecha y hora no pueden ser futuras.");
-                }
-            }
-
+            log.info("POST /hechos/crear - Título: {}", formDTO.getTitulo());
             hechoService.crearHecho(formDTO);
             return ResponseEntity.ok().build();
 
+        } catch (MaxUploadSizeExceededException e) {
+            log.warn("Archivo demasiado grande al crear hecho: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body("El tamaño del archivo excede el límite permitido de 50 MB. " +
+                          "Por favor, comprima o reduzca el tamaño de los archivos multimedia e intente nuevamente.");
         } catch (WebClientResponseException e) {
             String mensajeErrorDelBackend = e.getResponseBodyAsString();
             log.error("Error del backend al crear hecho: {}", mensajeErrorDelBackend);

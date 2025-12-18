@@ -110,11 +110,13 @@
                  id="fotos" 
                  name="contenidoMultimedia" 
                  multiple 
-                 accept="image/*,video/*,audio/*" 
+                 accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/wav,audio/ogg" 
                  onchange="previewMedia()"
                  style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
           <div id="preview-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;"></div>
-          <small style="color: #666; font-size: 0.85rem;">Puedes seleccionar múltiples archivos (imágenes, videos o audios)</small>
+          <small style="color: #666; font-size: 0.85rem;">
+            Formatos permitidos: Imágenes (jpg, jpeg, png, gif, webp) | Videos (mp4, webm) | Audio (mp3, wav, ogg)
+          </small>
         </div>
 
         <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -148,27 +150,44 @@
   <script th:inline="javascript">
     /*<![CDATA[*/
     
-    // Función para obtener ubicación del navegador
+    // Función para obtener ubicación del navegador (usa función común)
     function obtenerUbicacion() {
       const status = document.getElementById('location-status');
-      if (!navigator.geolocation) {
-        status.textContent = "La geolocalización no es soportada por tu navegador.";
-        status.style.color = '#dc3545';
-        return;
-      }
       
       status.textContent = "Localizando...";
       status.style.color = '#666';
       
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          document.getElementById('latitud').value = position.coords.latitude;
-          document.getElementById('longitud').value = position.coords.longitude;
-          status.textContent = "¡Ubicación encontrada!";
-          status.style.color = '#28a745';
+      obtenerUbicacionUsuario(
+        (coords) => {
+          // Asegurar que los valores sean números y se asignen correctamente
+          const lat = Number(coords.latitud);
+          const lng = Number(coords.longitud);
+          
+          // Debug: verificar valores recibidos
+          console.log('Coordenadas recibidas de geolocalización:', coords);
+          console.log('Latitud parseada:', lat, 'Longitud parseada:', lng);
+          
+          if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            const latInput = document.getElementById('latitud');
+            const lngInput = document.getElementById('longitud');
+            
+            // Asignar valores directamente como números
+            latInput.value = lat;
+            lngInput.value = lng;
+            
+            // Disparar evento change para asegurar que el valor se registre
+            latInput.dispatchEvent(new Event('change', { bubbles: true }));
+            lngInput.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            status.textContent = "¡Ubicación encontrada!";
+            status.style.color = '#28a745';
+          } else {
+            status.textContent = "Error: No se pudieron obtener coordenadas válidas.";
+            status.style.color = '#dc3545';
+          }
         },
-        () => {
-          status.textContent = "No se pudo obtener la ubicación.";
+        (error) => {
+          status.textContent = error;
           status.style.color = '#dc3545';
         }
       );
@@ -236,36 +255,7 @@
       }
     }
 
-    // Función para mostrar toasts
-    function showToast(message, type = 'info') {
-      return new Promise((resolve) => {
-        const container = document.getElementById('toastContainer');
-        if (!container) {
-          resolve();
-          return;
-        }
-
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.textContent = message;
-
-        container.appendChild(toast);
-
-        setTimeout(() => {
-          toast.classList.add('show');
-        }, 10);
-
-        setTimeout(() => {
-          toast.classList.remove('show');
-          setTimeout(() => {
-            if (toast.parentNode) {
-              toast.parentNode.removeChild(toast);
-            }
-            resolve();
-          }, 300);
-        }, 3000);
-      });
-    }
+    // showToast está definido en common.js
 
     // Validar fecha y hora
     function validarFechaHora() {
@@ -330,8 +320,49 @@
           submitBtn.disabled = true;
           submitBtn.textContent = 'Enviando...';
 
+          // Obtener valores directamente de los inputs
+          const latInput = document.getElementById('latitud');
+          const lngInput = document.getElementById('longitud');
+          const latitudValue = latInput ? latInput.value : null;
+          const longitudValue = lngInput ? lngInput.value : null;
+          
           // Crear FormData
           const formData = new FormData(form);
+          
+          // Validar y convertir a número antes de enviar
+          if (!latitudValue || latitudValue.trim() === '') {
+            showToast('La latitud es obligatoria.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            return;
+          }
+          
+          if (!longitudValue || longitudValue.trim() === '') {
+            showToast('La longitud es obligatoria.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            return;
+          }
+          
+          const lat = Number(latitudValue);
+          const lng = Number(longitudValue);
+          
+          if (isNaN(lat) || lat < -90 || lat > 90) {
+            showToast('La latitud debe estar entre -90 y 90.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            return;
+          }
+          
+          if (isNaN(lng) || lng < -180 || lng > 180) {
+            showToast('La longitud debe estar entre -180 y 180.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            return;
+          }
+          
+          formData.set('latitud', lat.toString());
+          formData.set('longitud', lng.toString());
           
           // La fecha datetime-local ya viene en formato correcto para Spring
           // No necesitamos convertirla, Spring la parsea automáticamente
@@ -352,7 +383,13 @@
               });
             } else {
               const errorText = await response.text();
-              showToast(errorText || 'Error al crear el hecho. Por favor, intente nuevamente.', 'error');
+              // Si es un error de tamaño de archivo (413), mostrar mensaje específico
+              if (response.status === 413 || response.status === 400) {
+                const mensaje = errorText || 'El archivo es demasiado grande. El tamaño máximo permitido es de 50 MB. Por favor, reduzca el tamaño del archivo e intente nuevamente.';
+                showToast(mensaje, 'error');
+              } else {
+                showToast(errorText || 'Error al crear el hecho. Por favor, intente nuevamente.', 'error');
+              }
             }
           } catch (error) {
             submitBtn.disabled = false;

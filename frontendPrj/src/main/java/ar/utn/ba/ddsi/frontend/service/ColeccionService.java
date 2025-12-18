@@ -4,6 +4,7 @@ import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.ColeccionDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -15,8 +16,9 @@ import java.util.List;
 public class ColeccionService {
     private final WebClient webClient;
 
-    public ColeccionService(WebClient.Builder builder) {
-        this.webClient = builder.baseUrl("http://localhost:8084/api").build();
+    public ColeccionService(WebClient.Builder builder,
+                           @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl) {
+        this.webClient = builder.baseUrl(agregadorBaseUrl).build();
     }
 
     public List<ColeccionDTO> getAllColecciones() {

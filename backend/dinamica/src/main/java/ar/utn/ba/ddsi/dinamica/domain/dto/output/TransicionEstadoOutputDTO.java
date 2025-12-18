@@ -13,8 +13,6 @@ import lombok.NoArgsConstructor;
 public class TransicionEstadoOutputDTO {
   @JsonProperty("estado")
   private EstadoSolicitud estado;
-
-  @JsonProperty("fecha")
   private LocalDateTime fecha;
 }
 

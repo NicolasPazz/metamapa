@@ -84,6 +84,17 @@ public class HechoMapper {
       provincia = provinciaService.obtenerProvinciaPorCoordenadas(dto.getLatitud(), dto.getLongitud());
     }
 
+    // Mapear multimedia
+    List<ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia> multimedia = null;
+    if (dto.getMultimedia() != null && !dto.getMultimedia().isEmpty()) {
+      multimedia = dto.getMultimedia().stream()
+          .map(m -> ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia.builder()
+              .pathArchivo(m.getPathArchivo())
+              .tipoContenido(m.getTipoContenido())
+              .build())
+          .collect(java.util.stream.Collectors.toList());
+    }
+
     return Hecho.builder()
         .id(dto.getId())
         .titulo(dto.getTitulo())
@@ -99,6 +110,7 @@ public class HechoMapper {
         .fuenteId(dto.getFuenteId())
         .idOrigen(dto.getIdOrigen())
         .nombreFuente(dto.getNombreFuente())
+        .multimedia(multimedia != null ? multimedia : new java.util.ArrayList<>())
         .build();
   }
 

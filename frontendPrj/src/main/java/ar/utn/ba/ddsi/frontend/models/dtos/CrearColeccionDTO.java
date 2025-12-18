@@ -15,11 +15,9 @@ import java.util.List;
 public class CrearColeccionDTO {
 
     @NotBlank(message = "El titulo es obligatorio")
-    @JsonProperty("titulo")
     private String titulo;
 
     @NotBlank(message = "La descripcion es obligatoria")
-    @JsonProperty("descripcion")
     private String descripcion;
 
     @JsonProperty("criterios")
@@ -28,7 +26,7 @@ public class CrearColeccionDTO {
     @JsonProperty("algoritmo_consenso")
     private String algoritmoConsenso;
 
-    //@JsonProperty("fuente_id")
+    @JsonProperty("fuente_id")
     private Long fuenteId;
 
     @JsonIgnore

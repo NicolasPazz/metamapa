@@ -21,7 +21,14 @@ public class Categoria {
   private String nombre;
 
   public Categoria(String nombre) {
-    this.nombre = nombre.trim().toLowerCase();
+    this.nombre = normalizar(nombre);
+  }
+
+  public static String normalizar(String nombre) {
+    if (nombre == null) {
+      return null;
+    }
+    return nombre.trim().toLowerCase();
   }
 
   @Override

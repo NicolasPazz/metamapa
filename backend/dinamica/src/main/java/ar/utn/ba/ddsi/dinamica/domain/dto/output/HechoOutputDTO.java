@@ -10,36 +10,19 @@ import lombok.Data;
 @Data
 public class HechoOutputDTO {
 
-  @JsonProperty("id")
   private Long id;
-
-  @JsonProperty("titulo")
   private String titulo;
-
-  @JsonProperty("descripcion")
   private String descripcion;
-
-  @JsonProperty("categoria")
   private String categoria;
-
-  @JsonProperty("latitud")
   private Double latitud;
-
-  @JsonProperty("longitud")
   private Double longitud;
-
   @JsonProperty("fecha_acontecimiento")
   private LocalDateTime fechaDeAcontecimiento;
-
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
-
-  @JsonProperty("origen")
   private OrigenHecho origen;
-
   @JsonProperty("contribuyente_id")
   private Long idContribuyente;
-
   @JsonProperty("multimedia")
   private List<ContenidoMultimediaOutputDTO> contenidoMultimedia;
 

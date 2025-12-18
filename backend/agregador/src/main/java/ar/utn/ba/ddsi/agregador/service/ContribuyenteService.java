@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 public class ContribuyenteService {
-  @Value("${users.base-url}")
+  @Value("${users.base-url:http://localhost:8087/api/users}")
   private String baseUrl;
 
   public Contribuyente findById(Long id) {

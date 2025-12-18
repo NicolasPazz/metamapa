@@ -23,7 +23,6 @@ import java.util.Set;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CriterioInputDTO {
 
-    @JsonProperty("tipo")
     private String tipo;
 
     //agregar campos segun el tipo
@@ -55,7 +54,6 @@ public class CriterioInputDTO {
     private Double lng;
 
     //CriterioOrigen
-    @JsonProperty("origen")
     private String origen;
 
     //CriterioFuentes

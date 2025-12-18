@@ -205,35 +205,31 @@ public class FuentesService {
 
 
   private void normalizarHecho(HechoDTO h, Long idFuente) {
-    if (h.getFechaDeAcontecimiento() == null) {
-      log.warn("DTO idOrigen {} sin fecha_acontecimiento recibido desde fuente {}", h.getId(), idFuente);
-    }
+    // Normalizar ID: hechos externos usan idOrigen, no ID (que es para hechos locales)
     if (h.getId() == null) {
       log.warn("Hecho sin id recibido desde fuente {}", idFuente);
     } else {
-      h.setIdOrigen(h.getId());
-      h.setId(null);
+      h.setIdOrigen(h.getId()); // Preservar ID original como idOrigen
+      h.setId(null); // Limpiar ID para evitar conflictos con hechos locales
     }
 
+    // Asignar fuente y nombre de fuente
     h.setFuenteId(idFuente);
-    
-    // Asignar nombre de la fuente desde la configuración
     AFuente fuente = getFuenteById(idFuente);
     if (fuente != null) {
       h.setNombreFuente(fuente.getNombre());
     }
 
-    // Calcular y asignar provincia si no la tiene
+    // Calcular provincia si no está asignada (usando coordenadas)
     if (h.getProvincia() == null && h.getLatitud() != null && h.getLongitud() != null) {
       Provincia provincia =
           provinciaService.obtenerProvinciaPorCoordenadas(h.getLatitud(), h.getLongitud());
       h.setProvincia(provincia.getNombre());
-      log.debug("[FuentesService] Provincia calculada para hecho externo: {}", provincia.getNombre());
     }
 
+    // Aplicar valores por defecto para campos opcionales
     if (h.getEstado() == null) {
       h.setEstado(EstadoHecho.VISIBLE);
-      log.debug("Aplicado estado default VISIBLE al hecho idOrigen {} de fuente {}", h.getIdOrigen(), idFuente);
     }
 
     if (h.getEtiquetas() == null) {
@@ -262,7 +258,6 @@ public class FuentesService {
       log.debug("Colección de fuente {} sin criterio de pertenencia", idFuente);
     }
 
-    // El algoritmoConsenso puede ser null si viene de fuentes externas
     if (c.getAlgoritmoConsenso() == null) {
       log.debug("Colección de fuente {} sin algoritmo de consenso definido", idFuente);
     }
@@ -277,7 +272,6 @@ public class FuentesService {
     if (c.getHechosConsensuados() == null) {
       c.setHechosConsensuados(new ArrayList<>());
     } else {
-      // Normalizar cada hecho consensuado dentro de la colección
       c.getHechosConsensuados().forEach(h -> normalizarHecho(h, idFuente));
     }
   }

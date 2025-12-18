@@ -40,7 +40,9 @@ public class HechoDTO {
   private LocalDateTime fechaDeAcontecimiento;
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCarga;
+  @JsonProperty("multimedia")
   private List<ContenidoMultimediaDTO> multimedia;
+  @JsonProperty("transiciones")
   private List<TransicionEstadoHechoDTO> transiciones;
 
   public HechoDTO(Long contribuyenteId, List<String> etiquetas, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDateTime fechaDeAcontecimiento, LocalDateTime fechaDeCarga, List<ContenidoMultimediaDTO> multimedia, List<TransicionEstadoHechoDTO> transiciones) {

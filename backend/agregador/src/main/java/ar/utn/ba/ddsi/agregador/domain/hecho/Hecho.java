@@ -129,4 +129,38 @@ public class Hecho {
         .map(String::toLowerCase)
         .anyMatch(nombre -> nombre.equals(etiquetaBuscada.trim().toLowerCase()));
   }
+
+  public boolean esLocal() {
+    return this.id != null;
+  }
+
+  public void asignarProvinciaSiNoTiene(Provincia provincia) {
+    if (this.provincia == null && provincia != null) {
+      this.provincia = provincia;
+    }
+  }
+
+  public void validarCoordenadas() {
+    if (this.latitud == null || this.longitud == null) {
+      throw new IllegalArgumentException("La latitud y longitud son obligatorias");
+    }
+    if (this.latitud < -90 || this.latitud > 90) {
+      throw new IllegalArgumentException("La latitud debe estar entre -90 y 90");
+    }
+    if (this.longitud < -180 || this.longitud > 180) {
+      throw new IllegalArgumentException("La longitud debe estar entre -180 y 180");
+    }
+  }
+
+  public void validarFechaNoFutura() {
+    if (this.fechaDeAcontecimiento != null && this.fechaDeAcontecimiento.isAfter(LocalDateTime.now())) {
+      throw new IllegalArgumentException("La fecha y hora no pueden ser futuras");
+    }
+  }
+
+  public void asignarNombreFuenteSiNoTiene(String nombreFuente) {
+    if (this.nombreFuente == null && nombreFuente != null && !nombreFuente.trim().isEmpty()) {
+      this.nombreFuente = nombreFuente.trim();
+    }
+  }
 }

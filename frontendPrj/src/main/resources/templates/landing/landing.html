@@ -43,7 +43,6 @@
              th:data-hecho-id="${hechos[0].id}"
              onclick="if(event.target.tagName !== 'A') { openHechoPanel(this.dataset.hechoId); }"
              style="cursor: pointer;">
-          <div class="image-placeholder"></div>
           <p><strong>Hecho:</strong> <span th:text="${hechos[0].titulo}">Título del hecho</span></p>
           <p class="subtitle" th:text="${hechos[0].categoria != null ? hechos[0].categoria : 'Sin categoría'}">Categoría</p>
           <a th:href="@{/hechos}" class="btn primary btn-landing" onclick="event.stopPropagation();">Más Hechos</a>
@@ -54,7 +53,6 @@
              th:data-coleccion-handle="${colecciones[0].handle}"
              onclick="if(event.target.tagName !== 'A') { openColeccionPanel(this.dataset.coleccionHandle); }"
              style="cursor: pointer;">
-          <div class="image-placeholder"></div>
           <p><strong>Colección:</strong> <span th:text="${colecciones[0].titulo}">Título de la colección</span></p>
           <p class="subtitle" th:text="${#lists.size(colecciones[0].hechos)} + ' hechos'">Cantidad de hechos</p>
           <a th:href="@{/colecciones}" class="btn primary btn-landing" onclick="event.stopPropagation();">Más Colecciones</a>
@@ -353,7 +351,7 @@
       }
     });
 
-    // Funciones para el modal de solicitud de eliminación (mismas que en hechosencoleccion.html)
+    // Funciones para el modal de solicitud de eliminación (usa apiFetch de common.js)
     function openSolicitudEliminacionModal(hechoId, fuenteId, idOrigen) {
       const modal = document.getElementById('solicitudEliminacionModal');
       const form = document.getElementById('solicitudEliminacionForm');
@@ -478,11 +476,8 @@
           }
           
           try {
-            const response = await fetch('http://localhost:8084/api/solicitudes', {
+            const response = await apiFetch('/solicitudes', {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
               body: JSON.stringify(solicitudData)
             });
             
@@ -539,33 +534,6 @@
         }
       }
     });
-
-    // Función para mostrar toasts
-    function showToast(message, type = 'info') {
-      const container = document.getElementById('toastContainer');
-      if (!container) return;
-
-      const toast = document.createElement('div');
-      toast.className = `toast toast-${type}`;
-      toast.textContent = message;
-
-      container.appendChild(toast);
-
-      // Trigger animation
-      setTimeout(() => {
-        toast.classList.add('show');
-      }, 10);
-
-      // Auto remove after 3 seconds
-      setTimeout(() => {
-        toast.classList.remove('show');
-        setTimeout(() => {
-          if (toast.parentNode) {
-            toast.parentNode.removeChild(toast);
-          }
-        }, 300);
-      }, 3000);
-    }
   </script>
 </body>
 </html>

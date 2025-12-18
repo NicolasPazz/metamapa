@@ -25,10 +25,10 @@ public class OngApiAdapter implements IApiExternaAdapter {
   private final String authHeader = "Authorization";
   private String authHeaderValue;
 
-  @Value("${proxy_ong.auth.email}")
+  @Value("${proxy_ong.auth.email:}")
   private String email;
 
-  @Value("${proxy_ong.auth.password}")
+  @Value("${proxy_ong.auth.password:}")
   private String password;
 
   @Value("${proxy_ong.dev.max-pages:-1}")
@@ -36,7 +36,7 @@ public class OngApiAdapter implements IApiExternaAdapter {
 
   public OngApiAdapter(
       WebClient.Builder webClientBuilder,
-      @Value("${proxy_ong.api.url}") String apiUrl
+      @Value("${proxy_ong.api.url:http://localhost:8083/api}") String apiUrl
   ) {
     this.webClient = webClientBuilder.baseUrl(apiUrl).build();
   }

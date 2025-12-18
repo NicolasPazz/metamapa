@@ -4,7 +4,9 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title th:text="${titulo} + ' - MetaMapa'"></title>
+        <meta name="api-base-url" th:content="${apiBaseUrl}">
         <link th:href="@{/css/landing.css}" rel="stylesheet">
+        <script th:src="@{/js/common.js}"></script>
     </head>
     <body>
         <!-- Header -->

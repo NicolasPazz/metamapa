@@ -17,7 +17,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 public class FuenteService {
   private final WebClient webClient;
 
-  public FuenteService(WebClient.Builder webClientBuilder, @Value("${agregador.url}") String apiUrl) {
+  public FuenteService(WebClient.Builder webClientBuilder, @Value("${agregador.url:http://localhost:8084/api}") String apiUrl) {
     this.webClient = webClientBuilder.baseUrl(apiUrl).build();
   }
 

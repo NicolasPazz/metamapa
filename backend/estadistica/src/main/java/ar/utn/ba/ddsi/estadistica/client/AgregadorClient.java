@@ -18,7 +18,7 @@ public class AgregadorClient {
 
   private final RestTemplate restTemplate = new RestTemplate();
 
-  @Value("${agregador.base-url}")
+  @Value("${agregador.base-url:http://localhost:8084/api}")
   private String baseUrl;
 
   public List<HechoDTO> getAllHechos() {

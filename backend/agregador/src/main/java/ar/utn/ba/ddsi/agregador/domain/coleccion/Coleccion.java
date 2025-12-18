@@ -125,7 +125,7 @@ public class Coleccion {
     }
 
     List<Hecho> hechosPersistidos = hechosLocalesDisponibles.stream()
-        .filter(h -> h.getId() != null)
+        .filter(Hecho::esLocal)
         .toList();
     List<Hecho> hechosFiltrados = this.aplicarCriteriosDePertenencia(hechosPersistidos);
     if (this.hechos == null) {
@@ -172,6 +172,15 @@ public class Coleccion {
     }
     return todosHechos.stream()
         .filter(hecho -> this.algoritmoConsenso.esConsensuado(hecho, cantidadFuentes, todosHechos))
+        .collect(Collectors.toList());
+  }
+
+  public List<Hecho> separarHechosLocales(List<Hecho> hechos) {
+    if (hechos == null) {
+      return new ArrayList<>();
+    }
+    return hechos.stream()
+        .filter(Hecho::esLocal)
         .collect(Collectors.toList());
   }
 }

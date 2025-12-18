@@ -3,21 +3,19 @@ package ar.utn.ba.ddsi.dinamica.controller;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudHechoInputContribuyenteDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 import ar.utn.ba.ddsi.dinamica.service.SolicitudesService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/solicitudes")
@@ -34,14 +32,38 @@ public class SolicitudesController {
     return ResponseEntity.ok(solicitudesService.obtenerSolicitud(id));
   }
 
-  @PostMapping
-  public ResponseEntity<SolicitudOutputDTO> crearNuevaSolicitud(
+  @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<SolicitudOutputDTO> crearNuevaSolicitudJson(
       @Valid @RequestBody SolicitudHechoInputContribuyenteDTO input) {
 
-    log.info("POST /api/solicitudes - Nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
+    log.info("POST /api/solicitudes (JSON) - Nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
     var solicitudCreada = solicitudesService.recibirSolicitudContribuyente(input);
     log.info("Solicitud creada con ID: {}", solicitudCreada.getId());
     return ResponseEntity.status(HttpStatus.CREATED).body(solicitudCreada.toOutputDTO());
+  }
+
+  @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> crearNuevaSolicitudMultipart(
+      @RequestPart("solicitud") String solicitudJson,
+      @RequestPart(value = "archivos", required = false) List<MultipartFile> archivos) {
+
+    try {
+      SolicitudHecho solicitudCreada = solicitudesService.recibirSolicitudContribuyenteConMultipart(
+          solicitudJson, archivos);
+      return ResponseEntity.status(HttpStatus.CREATED).body(solicitudCreada.toOutputDTO());
+    } catch (IllegalArgumentException e) {
+      log.error("Formato de archivo no permitido", e);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Formato de archivo no permitido: " + e.getMessage());
+    } catch (IOException e) {
+      log.error("Error procesando solicitud con archivos", e);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Error procesando archivos: " + e.getMessage());
+    } catch (Exception e) {
+      log.error("Error inesperado procesando solicitud", e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Error inesperado: " + e.getMessage());
+    }
   }
 
   @PatchMapping("/{id}")

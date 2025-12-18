@@ -50,7 +50,6 @@ public class HechosService {
 
         List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
 
-        // Intentar obtener hechos de fuentes externas (resiliente a fallos)
         List<HechoDTO> externos = new ArrayList<>();
         try {
             ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
@@ -71,7 +70,6 @@ public class HechosService {
             log.warn("[HechosService] Error al obtener hechos de fuentes externas en getAll: {}", e.getMessage());
         }
 
-        // Combinar hechos locales y externos
         List<HechoDTO> combinados = new ArrayList<>(locales);
         combinados.addAll(externos);
         return ResponseEntity.ok(combinados);
@@ -101,18 +99,15 @@ public class HechosService {
                 hechoNuevo.setProvincia(provincia);
             }
 
-            // Asignar nombre de la fuente si no está asignado
+            // Asignar nombreFuente si no está asignado
             if (hechoNuevo.getNombreFuente() == null && hechoNuevo.getFuenteId() != null) {
                 AFuente fuente = fuentesService.getFuenteById(hechoNuevo.getFuenteId());
                 if (fuente != null) {
-                    hechoNuevo.setNombreFuente(fuente.getNombre());
+                    hechoNuevo.asignarNombreFuenteSiNoTiene(fuente.getNombre());
                 }
             }
 
-            // Normalizar categoría antes de persistir
             categoriasService.persistirCategoriasDesdeHechos(List.of(hechoNuevo));
-
-            // Persistir el hecho
             Hecho hechoGuardado = hechosRepository.save(hechoNuevo);
 
             return ResponseEntity.status(HttpStatus.CREATED).body(hechoMapper.toDTO(hechoGuardado));
@@ -340,7 +335,20 @@ public class HechosService {
             String fuente,
             int page,
             int size) {
-
+        
+        // Validar parámetros de paginación
+        if (page < 0) {
+            log.warn("[HechosService] Página inválida: {}, usando 0", page);
+            page = 0;
+        }
+        if (size < 1) {
+            log.warn("[HechosService] Tamaño inválido: {}, usando 100", size);
+            size = 100;
+        }
+        if (size > 200) {
+            log.warn("[HechosService] Tamaño muy grande: {}, limitando a 200", size);
+            size = 200;
+        }
 
         List<HechoDTO> resultado = new ArrayList<>();
         int start = page * size;
@@ -348,7 +356,8 @@ public class HechosService {
         long totalLocales;
         long totalExternos = 0;
 
-        // 1. Obtener hechos locales (siempre necesarios para calcular totales y para páginas tempranas)
+        // Paginación híbrida: combinar locales (BD) + externos (fuentes en tiempo real)
+        // Siempre obtener locales para calcular totales correctamente
         ResponseEntity<List<HechoDTO>> localesResp = getAllLocal(
                 categoria, fecha_reporte_desde, fecha_reporte_hasta,
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
@@ -356,17 +365,18 @@ public class HechosService {
         List<HechoDTO> hechosLocales = Optional.ofNullable(localesResp.getBody()).orElse(new ArrayList<>());
         totalLocales = hechosLocales.size();
 
-        // Aplicar paginación a locales
+        // Si la página está dentro de los locales, tomar de ahí
         if (start < hechosLocales.size()) {
             int endLocal = Math.min(start + size, hechosLocales.size());
             resultado.addAll(hechosLocales.subList(start, endLocal));
             needed = size - resultado.size();
         } else {
-            // Ajustar start para externos
+            // La página está más allá de los locales, ajustar índice para externos
             start = start - (int)totalLocales;
         }
 
-        // 2. Solo obtener externos si realmente se necesitan para esta página
+        // Solo obtener externos si realmente se necesitan para completar esta página
+        // Optimización: evitar llamadas innecesarias a fuentes externas
         List<HechoDTO> hechosExternos;
         if (needed > 0 || start >= 0) {
             try {
@@ -376,19 +386,20 @@ public class HechosService {
                 hechosExternos = Optional.ofNullable(externosResp.getBody()).orElse(new ArrayList<>());
                 totalExternos = hechosExternos.size();
                 
+                // Completar página con hechos externos si faltan elementos
                 if (needed > 0 && !hechosExternos.isEmpty() && start >= 0 && start < hechosExternos.size()) {
                     int endExterno = Math.min(start + needed, hechosExternos.size());
                     resultado.addAll(hechosExternos.subList(start, endExterno));
                 }
             } catch (Exception e) {
-                log.warn("[HechosService] Error al obtener hechos externos en getPaginatedHechos: {}", e.getMessage());
+                log.warn("[HechosService] Error al obtener hechos externos: {}", e.getMessage());
                 hechosExternos = new ArrayList<>();
             }
         } else {
             hechosExternos = new ArrayList<>();
         }
 
-        // Determinar si hay página siguiente
+        // Calcular totales combinados para determinar si hay página siguiente
         long totalDisponibles = totalLocales + totalExternos;
         boolean hasNext = ((long)(page + 1)) * size < totalDisponibles;
 

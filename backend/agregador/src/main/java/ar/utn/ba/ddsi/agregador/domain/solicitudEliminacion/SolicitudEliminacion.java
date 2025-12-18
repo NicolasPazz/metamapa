@@ -36,7 +36,7 @@ public class SolicitudEliminacion {
   @JoinColumn(name = "hecho_id", referencedColumnName = "id", nullable = true)
   private Hecho hecho;
 
-  @Column(name = "textoFundamentos", nullable = false, length = 2000)
+  @Column(name = "texto_fundamentos", nullable = false, length = 2000)
   private String textoFundamentos;
 
   @Column(name = "fecha_carga", nullable = false, updatable = false)

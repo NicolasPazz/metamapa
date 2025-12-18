@@ -22,6 +22,11 @@ class Hecho {
 +ocultar(): void
 +esVisible(): boolean
 +contieneEtiqueta(String): boolean
++esLocal(): boolean
++asignarProvinciaSiNoTiene(Provincia): void
++validarCoordenadas(): void
++validarFechaNoFutura(): void
++asignarNombreFuenteSiNoTiene(String): void
 }
 
 Hecho --> Provincia
@@ -73,6 +78,7 @@ class Categoria {
 -nombre: String
 +equals(Object): Boolean
 +hashCode(): Int
++{static} normalizar(String): String
 }
 
 ContenidoMultimedia --> TipoContenido
@@ -266,6 +272,7 @@ class Coleccion {
   + recalcularHechos(List<Hecho>, int): void
   + aplicarAlgoritmoConsenso(List<Hecho>, int): List<Hecho>
   + tieneHechosExternos(List<Long>, List<OrigenHecho>, List<String>): boolean
+  + separarHechosLocales(List<Hecho>): List<Hecho>
 }
 
 
@@ -280,7 +287,7 @@ class SolicitudEliminacion {
 -id: Long
 -hecho: Hecho
 -textoFundamentos: String
--fecha: LocalDate
+-fecha: LocalDateTime
 -estado: EstadoSolicitud
 -contribuyenteId: Long
 -spam: Boolean
@@ -288,6 +295,7 @@ class SolicitudEliminacion {
 +transicionarEstado(EstadoSolicitud): void
 +aceptar(): void
 +rechazar(): void
++esSpam(): boolean
 }
 SolicitudEliminacion -->"*" TransicionEstadoSolicitud
 class TransicionEstadoSolicitud {
