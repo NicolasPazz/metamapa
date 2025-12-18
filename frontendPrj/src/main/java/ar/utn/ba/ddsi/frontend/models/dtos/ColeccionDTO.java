@@ -12,7 +12,7 @@ public class ColeccionDTO {
   public String handle;
   public String titulo;
   public String descripcion;
-    @JsonProperty("fecha_carga")
+  @JsonProperty("fecha_carga")
   public LocalDateTime fechaDeCarga;
-    public List<HechoDTO> hechos;
+  public List<HechoDTO> hechos;
 }

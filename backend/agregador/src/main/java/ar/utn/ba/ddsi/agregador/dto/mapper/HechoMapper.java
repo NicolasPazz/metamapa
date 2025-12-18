@@ -1,8 +1,10 @@
 package ar.utn.ba.ddsi.agregador.dto.mapper;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Categoria;
+import ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.service.ProvinciaService;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,6 +19,7 @@ public class HechoMapper {
     private final TransicionEstadoHechoMapper transicionEstadoHechoMapper;
     //private final ContribuyenteMapper contribuyenteMapper;
     private final EtiquetaMapper etiquetaMapper;
+    private final ProvinciaService provinciaService;
 
     public HechoDTO toDTO(Hecho hecho) {
       if (hecho == null) return null;
@@ -47,6 +50,7 @@ public class HechoMapper {
       dto.setProvincia(hecho.getProvincia() != null ? hecho.getProvincia().getNombre() : null);
       dto.setFuenteId(hecho.getFuenteId());
       dto.setIdOrigen(hecho.getIdOrigen());
+      dto.setNombreFuente(hecho.getNombreFuente());
 
       return dto;
     }
@@ -72,6 +76,14 @@ public class HechoMapper {
           dto.getIdOrigen(), dto.getFuenteId(), dto.getTitulo());
     }
 
+    // Asignar provincia: primero intentar usar la que viene en el DTO, luego calcular por coordenadas
+    Provincia provincia = null;
+    if (dto.getProvincia() != null && !dto.getProvincia().trim().isEmpty()) {
+      provincia = provinciaService.obtenerOCrearProvincia(dto.getProvincia());
+    } else if (dto.getLatitud() != null && dto.getLongitud() != null) {
+      provincia = provinciaService.obtenerProvinciaPorCoordenadas(dto.getLatitud(), dto.getLongitud());
+    }
+
     return Hecho.builder()
         .id(dto.getId())
         .titulo(dto.getTitulo())
@@ -83,8 +95,10 @@ public class HechoMapper {
         .origen(dto.getOrigen())
         .contribuyenteId(dto.getContribuyenteId())
         .categoria(categoria)
+        .provincia(provincia)
         .fuenteId(dto.getFuenteId())
         .idOrigen(dto.getIdOrigen())
+        .nombreFuente(dto.getNombreFuente())
         .build();
   }
 

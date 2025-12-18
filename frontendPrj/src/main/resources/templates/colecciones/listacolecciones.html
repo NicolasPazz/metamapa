@@ -78,9 +78,9 @@
           html += '<p><strong>Hechos:</strong> ' + coleccion.hechos.length + '</p>';
         }
 
-        if (coleccion.fechaDeCarga) {
-          const fecha = new Date(coleccion.fechaDeCarga);
-          html += '<p><strong>Fecha de creación:</strong> ' + fecha.toLocaleDateString('es-AR') + '</p>';
+        if (coleccion.fecha_carga) {
+            const fecha = new Date(coleccion.fecha_carga);
+            html += '<p><strong>Fecha de creación:</strong> ' + fecha.toLocaleString('es-AR') + '</p>';
         }
 
         html += '<a href="/colecciones/' + coleccion.handle + '/hechos" class="btn primary">Ver todos los hechos</a>';

@@ -83,6 +83,17 @@ public class HechoService {
         return categorias != null ? categorias : List.of();
     }
 
+    public List<String> obtenerFuentesConHechos(){
+        // Obtener fuentes directamente desde el agregador
+        List<String> fuentes = webClient.get()
+                .uri("/front/fuentes")
+                .retrieve()
+                .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
+                .block();
+
+        return fuentes != null ? fuentes : List.of();
+    }
+
     public List<String> obtenerProvinciasConHechos(){
         // Obtener provincias con hechos desde el agregador
         List<String> provincias = webClient.get()
@@ -121,8 +132,77 @@ public class HechoService {
         }
     }
 
+    public HechoDTO getHechoById(Long id) {
+        // Intentar obtener un hecho específico por ID
+        try {
+            return webClient.get()
+                    .uri("/hechos/" + id)
+                    .retrieve()
+                    .bodyToMono(HechoDTO.class)
+                    .block();
+        } catch (Exception e) {
+            // Si el endpoint específico no existe, intentar obtenerlo de la lista
+            try {
+                return getAllHechos().stream()
+                        .filter(h -> h.getId() != null && h.getId().equals(id))
+                        .findFirst()
+                        .orElse(null);
+            } catch (Exception ex) {
+                return null;
+            }
+        }
+    }
+
+    public HechoDTO getHechoByFuenteIdAndIdOrigen(Long fuenteId, Long idOrigen) {
+        // Buscar un hecho externo por fuenteId e idOrigen
+        try {
+            return getAllHechos().stream()
+                    .filter(h -> h.getFuenteId() != null && h.getFuenteId().equals(fuenteId) &&
+                            h.getIdOrigen() != null && h.getIdOrigen().equals(idOrigen))
+                    .findFirst()
+                    .orElse(null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    public Map<String, Object> getDatosMapa(Long hechoId, Long fuenteId, Long idOrigen) {
+        Map<String, Object> datos = new java.util.HashMap<>();
+        
+        if (hechoId != null) {
+            // Mostrar solo un hecho específico por ID
+            HechoDTO hechoEspecifico = getHechoById(hechoId);
+            
+            if (hechoEspecifico != null) {
+                datos.put("hechos", List.of(hechoEspecifico));
+                datos.put("centrarEnHecho", true);
+                datos.put("hechoId", hechoId);
+            } else {
+                datos.put("hechos", List.of());
+            }
+        } else if (fuenteId != null && idOrigen != null) {
+            // Mostrar solo un hecho externo por fuenteId e idOrigen
+            HechoDTO hechoEspecifico = getHechoByFuenteIdAndIdOrigen(fuenteId, idOrigen);
+            
+            if (hechoEspecifico != null) {
+                datos.put("hechos", List.of(hechoEspecifico));
+                datos.put("centrarEnHecho", true);
+                datos.put("fuenteId", fuenteId);
+                datos.put("idOrigen", idOrigen);
+            } else {
+                datos.put("hechos", List.of());
+            }
+        } else {
+            // Mostrar todos los hechos
+            List<HechoDTO> hechos = getAllHechos();
+            datos.put("hechos", hechos);
+        }
+        
+        return datos;
+    }
+
     @SuppressWarnings("unchecked")
-    public PageResponse<HechoDTO> getAllHechosPaginados(String modo, String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria, int page, int size) {
+    public PageResponse<HechoDTO> getAllHechosPaginados(String modo, String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria, String fuente, int page, int size) {
         LocalDateTime fechaDesdeDateTime = fecha_desde != null ? fecha_desde.atStartOfDay() : null;
         LocalDateTime fechaHastaDateTime = fecha_hasta != null ? fecha_hasta.atTime(23, 59, 59) : null;
 
@@ -135,6 +215,9 @@ public class HechoService {
                         }
                         if (ubicacion != null && !ubicacion.isEmpty()) {
                             uriBuilder.queryParam("ubicacion", ubicacion);
+                        }
+                        if (fuente != null && !fuente.isEmpty()) {
+                            uriBuilder.queryParam("fuente", fuente);
                         }
                         if (fechaDesdeDateTime != null) {
                             uriBuilder.queryParam("fecha_acontecimiento_desde", fechaDesdeDateTime.toString());

@@ -39,4 +39,6 @@ public class HechoDTO {
   private Long fuenteId;
   @JsonProperty("id_origen")
   private Long idOrigen;
+  @JsonProperty("nombre_fuente")
+  private String nombreFuente;
 }

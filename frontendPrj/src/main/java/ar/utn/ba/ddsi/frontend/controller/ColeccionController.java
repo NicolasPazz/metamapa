@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.frontend.controller;
 
+import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.ColeccionDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
@@ -26,7 +27,7 @@ public class ColeccionController {
     public String listarColecciones(Model model,
             @RequestParam(defaultValue = "0") int page) {
         // Obtener colecciones paginadas del servicio (ya procesadas)
-        ar.utn.ba.ddsi.frontend.models.PageResponse<ColeccionDTO> pageResponse =
+        PageResponse<ColeccionDTO> pageResponse =
             coleccionService.getAllColeccionesPaginadas(page, 100);
 
         model.addAttribute("colecciones", pageResponse.getContent());
@@ -48,15 +49,17 @@ public class ColeccionController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_hasta,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
             @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String fuente,
             @RequestParam(required = false) String modo,
             @RequestParam(defaultValue = "0") int page) {
 
         // Obtener hechos de colección paginados del servicio (ya procesados)
-        ar.utn.ba.ddsi.frontend.models.PageResponse<HechoDTO> pageResponse =
+        PageResponse<HechoDTO> pageResponse =
             coleccionService.getHechosColeccionPaginados(
-                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, modo, page, 100);
+                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page, 100);
         List<String> listaCategorias = coleccionService.getCategoriasUnicas();
         List<String> listaProvincias = coleccionService.getProvinciasConHechos();
+        List<String> listaFuentes = coleccionService.getFuentesConHechos();
 
         model.addAttribute("hechos", pageResponse.getContent());
         model.addAttribute("currentPage", page);
@@ -64,6 +67,7 @@ public class ColeccionController {
         model.addAttribute("titulo", "Hechos de colección");
         model.addAttribute("categorias", listaCategorias);
         model.addAttribute("provincias", listaProvincias);
+        model.addAttribute("fuentes", listaFuentes);
         model.addAttribute("solicitud", new SolicitudDTO());
         model.addAttribute("esColeccion", true);
         model.addAttribute("handleColeccion", handle);
@@ -74,6 +78,17 @@ public class ColeccionController {
         return "hechos/hechosencoleccion";
     }
 
-
+    @GetMapping("/{handle}/mapa")
+    public String hechosColeccionMapa(
+            Model model,
+            @PathVariable String handle) {
+        // Obtener todos los hechos de la colección (sin paginación para el mapa)
+        List<HechoDTO> hechos = coleccionService.getHechosColeccionByHandle(
+                handle, null, null, null, null, null);
+        model.addAttribute("hechos", hechos);
+        model.addAttribute("titulo", "Mapa de Colección");
+        model.addAttribute("handleColeccion", handle);
+        return "mapa/mapa";
+    }
 
 }

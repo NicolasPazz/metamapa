@@ -71,31 +71,103 @@
 
   <!-- Panel lateral para Hecho -->
   <div id="hechoPanel" class="side-panel" th:if="${!#lists.isEmpty(hechos)}">
-    <div class="panel-header">
-      <h3>Detalles del Hecho</h3>
-      <button class="close-btn" onclick="closeHechoPanel()">&times;</button>
-    </div>
-    <div class="panel-content">
-      <h2 th:text="${hechos[0].titulo}">Título del hecho</h2>
-      <p><strong>Categoría:</strong> <span th:text="${hechos[0].categoria != null ? hechos[0].categoria : 'Sin categoría'}">Categoría</span></p>
-      <p><strong>Descripción:</strong> <span th:text="${hechos[0].descripcion != null ? hechos[0].descripcion : 'Sin descripción'}">Descripción</span></p>
-      <p th:if="${hechos[0].fechaDeAcontecimiento != null}">
-        <strong>Fecha:</strong> <span th:text="${#temporals.format(hechos[0].fechaDeAcontecimiento, 'dd/MM/yyyy')}">Fecha</span>
-      </p>
-      <p th:if="${hechos[0].provincia != null}">
-        <strong>Provincia:</strong> <span th:text="${hechos[0].provincia}">Provincia</span>
-      </p>
-      <p th:if="${hechos[0].latitud != null && hechos[0].longitud != null}">
-        <strong>Ubicación:</strong> <span th:text="${hechos[0].latitud} + ', ' + ${hechos[0].longitud}">Coordenadas</span>
-      </p>
-      <div th:if="${hechos[0].etiquetas != null && !#lists.isEmpty(hechos[0].etiquetas)}">
-        <strong>Etiquetas:</strong>
-        <div class="tags">
-          <span class="tag" th:each="etiqueta : ${hechos[0].etiquetas}" th:text="${etiqueta}">Etiqueta</span>
-        </div>
+      <div class="panel-header">
+          <h3>Detalles del Hecho</h3>
+          <button class="close-btn" onclick="closeHechoPanel()">&times;</button>
       </div>
-    </div>
+
+      <div class="panel-content">
+          <h2 th:text="${hechos[0].titulo}">Título del hecho</h2>
+
+          <p th:if="${hechos[0].categoria != null}">
+              <strong>Categoría:</strong>
+              <span th:text="${hechos[0].categoria}">Categoría</span>
+          </p>
+
+          <p th:if="${hechos[0].descripcion != null}">
+              <strong>Descripción:</strong>
+              <span th:text="${hechos[0].descripcion}">Descripción</span>
+          </p>
+
+          <p th:if="${hechos[0].fechaDeAcontecimiento != null}">
+              <strong>Fecha de acontecimiento:</strong>
+              <span th:text="${#temporals.format(
+            hechos[0].fechaDeAcontecimiento,
+            'dd/MM/yyyy, HH:mm:ss'
+          )}">Fecha</span>
+          </p>
+
+          <p th:if="${hechos[0].fechaDeCarga != null}">
+              <strong>Fecha de carga:</strong>
+              <span th:text="${#temporals.format(
+            hechos[0].fechaDeCarga,
+            'dd/MM/yyyy, HH:mm:ss'
+          )}">Fecha</span>
+          </p>
+
+          <p th:if="${hechos[0].provincia != null}">
+              <strong>Provincia:</strong>
+              <span th:text="${hechos[0].provincia}">Provincia</span>
+          </p>
+
+          <p th:if="${hechos[0].latitud != null && hechos[0].longitud != null}">
+              <strong>Ubicación:</strong>
+              <span th:text="${hechos[0].latitud} + ', ' + ${hechos[0].longitud}">
+        Coordenadas
+      </span>
+          </p>
+
+          <!-- 🏷️ Fuente -->
+          <p th:if="${hechos[0].nombreFuente != null}">
+              <strong>Fuente:</strong>
+              <span th:text="${hechos[0].nombreFuente != null && hechos[0].nombreFuente.startsWith('Fuente ') ? hechos[0].nombreFuente.substring(7) : hechos[0].nombreFuente}">Fuente</span>
+          </p>
+          <p th:if="${hechos[0].nombreFuente == null && hechos[0].origen != null}">
+              <strong>Fuente:</strong>
+              <span th:text="${hechos[0].origen}">Origen</span>
+          </p>
+
+          <!-- 🎞️ Multimedia -->
+          <p th:if="${hechos[0].contenidoMultimedia != null
+               && !#lists.isEmpty(hechos[0].contenidoMultimedia)}">
+              <strong>Multimedia:</strong>
+              <span th:text="${#lists.size(hechos[0].contenidoMultimedia)}">
+        0
+      </span> archivo(s)
+          </p>
+
+          <!-- 🏷️ Etiquetas -->
+          <div th:if="${hechos[0].etiquetas != null
+                 && !#lists.isEmpty(hechos[0].etiquetas)}">
+              <strong>Etiquetas:</strong>
+              <div class="tags">
+        <span class="tag"
+              th:each="etiqueta : ${hechos[0].etiquetas}"
+              th:text="${etiqueta}">
+          Etiqueta
+        </span>
+              </div>
+          </div>
+
+          <!-- Botón Ver en mapa (solo si tiene coordenadas válidas) -->
+          <div th:if="${hechos[0].latitud != null && hechos[0].longitud != null}" 
+               style="margin-top: 20px; text-align: center;">
+              <!-- Si tiene id, usar hechoId; si no, usar fuenteId e idOrigen -->
+              <a th:if="${hechos[0].id != null}"
+                 th:href="@{/hechos/mapa(hechoId=${hechos[0].id})}" 
+                 class="btn primary">
+                  Ver en mapa
+              </a>
+              <a th:if="${hechos[0].id == null && hechos[0].fuenteId != null && hechos[0].idOrigen != null}"
+                 th:href="@{/hechos/mapa(fuenteId=${hechos[0].fuenteId}, idOrigen=${hechos[0].idOrigen})}" 
+                 class="btn primary">
+                  Ver en mapa
+              </a>
+          </div>
+
+      </div>
   </div>
+
 
   <!-- Panel lateral para Colección -->
   <div id="coleccionPanel" class="side-panel" th:if="${!#lists.isEmpty(colecciones)}">
@@ -108,9 +180,12 @@
       <p><strong>Descripción:</strong> <span th:text="${colecciones[0].descripcion != null ? colecciones[0].descripcion : 'Sin descripción'}">Descripción</span></p>
       <p><strong>Hechos:</strong> <span th:text="${#lists.size(colecciones[0].hechos)}">0</span></p>
       <p th:if="${colecciones[0].fechaDeCarga != null}">
-        <strong>Fecha de creación:</strong> <span th:text="${#temporals.format(colecciones[0].fechaDeCarga, 'dd/MM/yyyy')}">Fecha</span>
+        <strong>Fecha de creación:</strong> <span th:text="${#temporals.format(colecciones[0].fechaDeCarga, 'dd/MM/yyyy, HH:mm:ss')}">Fecha</span>
       </p>
-      <a th:href="@{/colecciones/{handle}/hechos(handle=${colecciones[0].handle})}" class="btn primary">Ver todos los hechos</a>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
+        <a th:href="@{/colecciones/{handle}/hechos(handle=${colecciones[0].handle})}" class="btn primary">Ver todos los hechos</a>
+        <a th:href="@{/colecciones/{handle}/mapa(handle=${colecciones[0].handle})}" class="btn primary">Ver en mapa</a>
+      </div>
     </div>
   </div>
 
@@ -197,6 +272,18 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closePanels();
+      }
+    });
+
+    // Abrir paneles si hay hash en la URL al cargar la página
+    window.addEventListener('load', function() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#hecho')) {
+        const hechoId = hash.replace('#hecho', '');
+        openHechoPanel(hechoId);
+      } else if (hash.startsWith('#coleccion')) {
+        const handle = hash.replace('#coleccion', '');
+        openColeccionPanel(handle);
       }
     });
   </script>

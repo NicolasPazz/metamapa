@@ -35,15 +35,30 @@ public class FrontController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_hasta,
             @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String fuente,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
+
+        // Validar parámetros
+        if (page < 0) {
+            log.warn("[FrontController] Página inválida: {}, usando 0", page);
+            page = 0;
+        }
+        if (size < 1) {
+            log.warn("[FrontController] Tamaño inválido: {}, usando 100", size);
+            size = 100;
+        }
+        if (size > 200) {
+            log.warn("[FrontController] Tamaño muy grande: {}, limitando a 200", size);
+            size = 200;
+        }
 
         log.info("[FrontController] GET /api/front/hechos - page: {}, size: {}", page, size);
 
         PageResponse<HechoDTO> response = hechosService.getPaginatedHechos(
                 categoria, fecha_reporte_desde, fecha_reporte_hasta,
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-                ubicacion, page, size);
+                ubicacion, fuente, page, size);
 
         return ResponseEntity.ok(response);
     }
@@ -52,6 +67,20 @@ public class FrontController {
     public ResponseEntity<PageResponse<ColeccionDTO>> getColeccionesPaginadas(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
+
+        // Validar parámetros
+        if (page < 0) {
+            log.warn("[FrontController] Página inválida: {}, usando 0", page);
+            page = 0;
+        }
+        if (size < 1) {
+            log.warn("[FrontController] Tamaño inválido: {}, usando 100", size);
+            size = 100;
+        }
+        if (size > 200) {
+            log.warn("[FrontController] Tamaño muy grande: {}, limitando a 200", size);
+            size = 200;
+        }
 
         log.info("[FrontController] GET /api/front/colecciones - page: {}, size: {}", page, size);
 
@@ -66,16 +95,34 @@ public class FrontController {
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_hasta,
             @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String fuente,
             @RequestParam(required = false) String modo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
+
+        // Validar parámetros
+        if (page < 0) {
+            log.warn("[FrontController] Página inválida: {}, usando 0", page);
+            page = 0;
+        }
+        if (size < 1) {
+            log.warn("[FrontController] Tamaño inválido: {}, usando 100", size);
+            size = 100;
+        }
+        if (size > 200) {
+            log.warn("[FrontController] Tamaño muy grande: {}, limitando a 200", size);
+            size = 200;
+        }
 
         log.info("[FrontController] GET /api/front/colecciones/{}/hechos - page: {}, size: {}", handle, page, size);
 
         return coleccionesService.getHechosColeccionPaginated(
                 handle, ubicacion, fecha_reporte_desde, fecha_reporte_hasta,
-                categoria, modo, page, size);
+                fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+                categoria, fuente, modo, page, size);
     }
 
     @GetMapping("/hecho-reciente")
@@ -100,5 +147,11 @@ public class FrontController {
     public ResponseEntity<List<String>> getProvincias() {
         log.info("[FrontController] GET /api/front/provincias");
         return hechosService.getProvinciasConHechos();
+    }
+
+    @GetMapping("/fuentes")
+    public ResponseEntity<List<String>> getFuentes() {
+        log.info("[FrontController] GET /api/front/fuentes");
+        return hechosService.getFuentesConHechos();
     }
 }

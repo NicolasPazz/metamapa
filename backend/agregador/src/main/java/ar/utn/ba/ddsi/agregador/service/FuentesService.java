@@ -208,6 +208,12 @@ public class FuentesService {
     }
 
     h.setFuenteId(idFuente);
+    
+    // Asignar nombre de la fuente desde la configuración
+    AFuente fuente = getFuenteById(idFuente);
+    if (fuente != null) {
+      h.setNombreFuente(fuente.getNombre());
+    }
 
     // Calcular y asignar provincia si no la tiene
     if (h.getProvincia() == null && h.getLatitud() != null && h.getLongitud() != null) {

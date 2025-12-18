@@ -73,11 +73,28 @@
         </option>
       </select>
 
+      <select name="fuente">
+        <option value="">Fuente</option>
+        <option th:each="fuente : ${fuentes}"
+                th:value="${fuente}"
+                th:text="${fuente}"
+                th:selected="${param.fuente != null and param.fuente[0] == fuente}">
+        </option>
+      </select>
+
       <button type="submit" class="btn primary">Aplicar Filtros</button>
 
       <a th:href="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}" class="btn primary">Limpiar</a>
 
     </form>
+
+    <!-- Botón Ver en mapa -->
+    <div style="text-align: center; margin: 20px 0;">
+      <a th:href="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/mapa' : '/hechos/mapa'}" 
+         class="btn primary">
+        Ver en mapa
+      </a>
+    </div>
 
     <!-- Navegación de páginas -->
     <div class="pagination">
@@ -89,6 +106,7 @@
                     fecha_reporte_hasta=${param.fecha_reporte_hasta},
                     ubicacion=${param.ubicacion},
                     categoria=${param.categoria},
+                    fuente=${param.fuente},
                     modo=${param.modo})}"
          class="btn primary">
         ← Anterior
@@ -104,6 +122,7 @@
                     fecha_reporte_hasta=${param.fecha_reporte_hasta},
                     ubicacion=${param.ubicacion},
                     categoria=${param.categoria},
+                    fuente=${param.fuente},
                     modo=${param.modo})}"
          class="btn primary">
         Siguiente →
@@ -112,9 +131,11 @@
 
     <!-- Hechos list -->
     <div class="hechos-grid">
-      <div th:each="hecho : ${hechos}" class="hecho-card"
+      <div th:each="hecho, iterStat : ${hechos}" class="hecho-card"
            th:data-hecho-id="${hecho.id}"
-           onclick="openHechoDetailPanel(this.dataset.hechoId)"
+           th:attr="data-fuente-id=${hecho['fuente_id']}, data-id-origen=${hecho['id_origen']}"
+           th:data-hecho-index="${iterStat.index}"
+           onclick="openHechoDetailPanel(this)"
            style="cursor: pointer;">
         <h3 th:text="${hecho.titulo}"></h3>
         <p th:text="${hecho.descripcion}"></p>
@@ -141,8 +162,28 @@
     /*<![CDATA[*/
     const hechosData = /*[[${hechos}]]*/ [];
 
-    function openHechoDetailPanel(hechoId) {
-      const hecho = hechosData.find(h => h.id == hechoId);
+    function openHechoDetailPanel(element) {
+      // Obtener identificadores del elemento
+      const hechoId = element.dataset.hechoId;
+      const fuenteId = element.dataset.fuenteId;
+      const idOrigen = element.dataset.idOrigen;
+      const hechoIndex = element.dataset.hechoIndex;
+      
+      // Buscar el hecho: primero por id, luego por fuente_id e id_origen, finalmente por índice
+      let hecho = null;
+      if (hechoId && hechoId !== 'null') {
+        hecho = hechosData.find(h => h.id != null && h.id == hechoId);
+      }
+      if (!hecho && fuenteId && fuenteId !== 'null' && idOrigen && idOrigen !== 'null') {
+        hecho = hechosData.find(h => 
+          h.fuente_id != null && h.fuente_id == fuenteId && 
+          h.id_origen != null && h.id_origen == idOrigen
+        );
+      }
+      if (!hecho && hechoIndex !== undefined) {
+        hecho = hechosData[parseInt(hechoIndex)];
+      }
+      
       if (!hecho) return;
 
       const panel = document.getElementById('hechoDetailPanel');
@@ -152,47 +193,84 @@
       // Construir el contenido del panel
       let html = '<h2>' + hecho.titulo + '</h2>';
 
-      if (hecho.categoria) {
-        html += '<p><strong>Categoría:</strong> ' + hecho.categoria + '</p>';
-      }
+        if (hecho.categoria) {
+            html += '<p><strong>Categoría:</strong> ' + hecho.categoria + '</p>';
+        }
 
-      if (hecho.descripcion) {
-        html += '<p><strong>Descripción:</strong> ' + hecho.descripcion + '</p>';
-      }
+        if (hecho.descripcion) {
+            html += '<p><strong>Descripción:</strong> ' + hecho.descripcion + '</p>';
+        }
 
-      if (hecho.fechaDeAcontecimiento) {
-        const fecha = new Date(hecho.fechaDeAcontecimiento);
-        html += '<p><strong>Fecha:</strong> ' + fecha.toLocaleDateString('es-AR') + '</p>';
-      }
+        // 📅 Fecha de acontecimiento
+        if (hecho.fecha_acontecimiento) {
+            const fecha = new Date(hecho.fecha_acontecimiento);
+            html += '<p><strong>Fecha de acontecimiento:</strong> ' +
+                fecha.toLocaleString('es-AR') + '</p>';
+        }
 
-      if (hecho.provincia) {
-        html += '<p><strong>Provincia:</strong> ' + hecho.provincia + '</p>';
-      }
+        // 📅 Fecha de carga
+        if (hecho.fecha_carga) {
+            const fechaCarga = new Date(hecho.fecha_carga);
+            html += '<p><strong>Fecha de carga:</strong> ' +
+                fechaCarga.toLocaleString('es-AR') + '</p>';
+        }
 
-      if (hecho.latitud && hecho.longitud) {
-        html += '<p><strong>Ubicación:</strong> ' + hecho.latitud + ', ' + hecho.longitud + '</p>';
-      }
+        if (hecho.provincia) {
+            html += '<p><strong>Provincia:</strong> ' + hecho.provincia + '</p>';
+        }
 
-      if (hecho.origen) {
-        html += '<p><strong>Fuente:</strong> ' + hecho.origen + '</p>';
-      }
+        if (hecho.latitud != null && hecho.longitud != null) {
+            html += '<p><strong>Ubicación:</strong> ' +
+                hecho.latitud + ', ' + hecho.longitud + '</p>';
+        }
 
-      if (hecho.fechaDeCarga) {
-        const fechaCarga = new Date(hecho.fechaDeCarga);
-        html += '<p><strong>Fecha de Carga:</strong> ' + fechaCarga.toLocaleDateString('es-AR') + '</p>';
-      }
+        // 🏷️ Fuente
+        if (hecho.nombre_fuente) {
+            let nombreFuente = hecho.nombre_fuente;
+            // Eliminar prefijo "Fuente " si existe
+            if (nombreFuente.startsWith('Fuente ')) {
+                nombreFuente = nombreFuente.substring(7);
+            }
+            html += '<p><strong>Fuente:</strong> ' + nombreFuente + '</p>';
+        } else if (hecho.origen) {
+            html += '<p><strong>Fuente:</strong> ' + hecho.origen + '</p>';
+        }
 
-      if (hecho.contenidoMultimedia && hecho.contenidoMultimedia.length > 0) {
-        html += '<p><strong>Multimedia:</strong> ' + hecho.contenidoMultimedia.length + ' archivo(s)</p>';
-      }
+        if (hecho.multimedia && hecho.multimedia.length > 0) {
+            html += '<p><strong>Multimedia:</strong> ' +
+                hecho.multimedia.length + ' archivo(s)</p>';
+        }
 
-      if (hecho.etiquetas && hecho.etiquetas.length > 0) {
-        html += '<div><strong>Etiquetas:</strong><div class="tags">';
-        hecho.etiquetas.forEach(etiqueta => {
-          html += '<span class="tag">' + etiqueta + '</span>';
-        });
-        html += '</div></div>';
-      }
+        if (hecho.etiquetas && hecho.etiquetas.length > 0) {
+            html += '<div><strong>Etiquetas:</strong><div class="tags">';
+            hecho.etiquetas.forEach(etiqueta => {
+                html += '<span class="tag">' + etiqueta + '</span>';
+            });
+            html += '</div></div>';
+        }
+
+        // Botón Ver en mapa (solo si tiene coordenadas válidas)
+        if (hecho.latitud != null && hecho.longitud != null && 
+            !isNaN(hecho.latitud) && !isNaN(hecho.longitud) &&
+            hecho.latitud >= -90 && hecho.latitud <= 90 &&
+            hecho.longitud >= -180 && hecho.longitud <= 180) {
+            // Usar id si está disponible, sino usar fuenteId e idOrigen
+            let mapaUrl = null;
+            if (hecho.id != null) {
+                mapaUrl = '/hechos/mapa?hechoId=' + hecho.id;
+            } else if (hecho.fuente_id != null && hecho.id_origen != null) {
+                mapaUrl = '/hechos/mapa?fuenteId=' + hecho.fuente_id + '&idOrigen=' + hecho.id_origen;
+            }
+            
+            // Solo mostrar el botón si tenemos una URL válida
+            if (mapaUrl != null) {
+                html += '<div style="margin-top: 20px; text-align: center;">';
+                html += '<a href="' + mapaUrl + '" class="btn primary">';
+                html += 'Ver en mapa';
+                html += '</a>';
+                html += '</div>';
+            }
+        }
 
       content.innerHTML = html;
 
@@ -201,7 +279,12 @@
       document.body.style.overflow = 'hidden';
 
       // Actualizar URL
-      history.pushState(null, '', '#hecho' + hechoId);
+      const urlHash = hecho.id != null ? '#hecho' + hecho.id : 
+                     (hecho.fuente_id != null && hecho.id_origen != null ? 
+                      '#hecho-' + hecho.fuente_id + '-' + hecho.id_origen : '');
+      if (urlHash) {
+        history.pushState(null, '', urlHash);
+      }
     }
 
     function closeHechoDetailPanel() {

@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.agregador.service;
 
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
 import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
 import java.util.ArrayList;
@@ -48,13 +49,14 @@ public class AgregadorService {
 
       List<Hecho> hechosNuevos = hechoMapper.fromDTO(nuevosDTOs);
 
-      // Asignar provincia a cada hecho basándose en coordenadas
+      // Asignar provincia y nombre de fuente a cada hecho
       for (Hecho hecho : hechosNuevos) {
         if (hecho.getLatitud() != null && hecho.getLongitud() != null && hecho.getProvincia() == null) {
-          ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia provincia =
+          Provincia provincia =
               provinciaService.obtenerProvinciaPorCoordenadas(hecho.getLatitud(), hecho.getLongitud());
           hecho.setProvincia(provincia);
         }
+        // El nombreFuente ya debería estar asignado por el mapper desde el DTO (que viene de normalizarHecho)
       }
 
       categoriasService.persistirCategoriasDesdeHechos(hechosNuevos);

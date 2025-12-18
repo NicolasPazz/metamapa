@@ -1,63 +1,251 @@
 <!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MetaMapa - Mapa Anónimo</title>
-  <link rel="stylesheet" th:href="@{/css/landing.css}">
-  <!-- Leaflet CSS -->
+<html lang="es" th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
-</head>
-<body>
-  <!-- Header -->
-  <header class="navbar">
-    <a href="/" class="logo">MetaMapa</a>
-    <nav class="nav-buttons-center">
-      <a href="/hechos" class="btn secondary">Hechos</a>
-      <a href="/colecciones" class="btn secondary">Colecciones</a>
-    </nav>
-    <nav class="nav-buttons">
-      <a href="/login" class="btn secondary">Ingresar</a>
-      <a href="/registro" class="btn primary">Registrarse</a>
-    </nav>
-  </header>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+  <style>
+    #map {
+      height: calc(100vh - 80px);
+      width: 100%;
+      margin-top: 20px;
+    }
+    .popup-content {
+      max-width: 400px;
+      max-height: 500px;
+      overflow-y: auto;
+    }
+    .popup-content h3 {
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 8px;
+    }
+    .popup-content p {
+      margin: 8px 0;
+      font-size: 0.9em;
+      line-height: 1.4;
+    }
+    .popup-content strong {
+      color: #555;
+      font-weight: 600;
+    }
+    .popup-content .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .popup-content .tag {
+      background: #e0e0e0;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    .popup-content button {
+      margin-top: 15px;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 5px;
+      background: var(--primary, #007bff);
+      color: white;
+      cursor: pointer;
+      font-size: 0.9em;
+      width: 100%;
+    }
+    .popup-content button:hover {
+      opacity: 0.9;
+    }
+    .floating-back-button {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 1000;
+    }
+  </style>
+
+  <!-- Botón flotante Volver -->
+  <div class="floating-back-button">
+    <a href="javascript:history.back()" class="btn secondary">Volver</a>
+  </div>
 
   <!-- Map -->
   <div id="map"></div>
+  <div id="no-hechos-message" style="display: none; text-align: center; padding: 20px; margin-top: 20px;">
+    <p>No hay hechos con ubicación geográfica para mostrar en el mapa.</p>
+    <a th:href="@{/hechos}" class="btn primary">Volver a Hechos</a>
+  </div>
 
-  <!-- Funciona, se traba por la cantidad de hechos-->
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
   <script th:inline="javascript">
-    // Init map centered on Latin America
-    const map = L.map('map').setView([-34.6, -58.4], 5); // Buenos Aires approx
+    /*<![CDATA[*/
+    const hechos = /*[[${hechos}]]*/ [];
+    const centrarEnHecho = /*[[${centrarEnHecho}]]*/ false;
+    const hechoId = /*[[${hechoId}]]*/ null;
+    const fuenteId = /*[[${fuenteId}]]*/ null;
+    const idOrigen = /*[[${idOrigen}]]*/ null;
+    const handleColeccion = /*[[${handleColeccion}]]*/ null;
 
-    // Add OpenStreetMap tiles
+    // Filtrar hechos que tienen coordenadas válidas
+    const hechosConCoordenadas = hechos.filter(hecho => 
+      hecho.latitud != null && 
+      hecho.longitud != null && 
+      !isNaN(hecho.latitud) && 
+      !isNaN(hecho.longitud) &&
+      hecho.latitud >= -90 && hecho.latitud <= 90 &&
+      hecho.longitud >= -180 && hecho.longitud <= 180
+    );
+
+    // Inicializar mapa
+    let map;
+    let markers = [];
+
+    if (centrarEnHecho && hechosConCoordenadas.length > 0) {
+      // Centrar en un hecho específico
+      const hecho = hechosConCoordenadas[0];
+      map = L.map('map').setView([hecho.latitud, hecho.longitud], 13);
+    } else if (hechosConCoordenadas.length > 0) {
+      // Calcular el centro de todos los hechos
+      const bounds = L.latLngBounds(
+        hechosConCoordenadas.map(h => [h.latitud, h.longitud])
+      );
+      map = L.map('map').fitBounds(bounds);
+    } else {
+      // Vista por defecto (Argentina)
+      map = L.map('map').setView([-34.6, -58.4], 5);
+    }
+
+    // Agregar capa de OpenStreetMap
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
     }).addTo(map);
 
-    // Mock hechos data
-    const hechos = /*[[${hechos}]]*/ [];
-
-    // Add markers
-    hechos.forEach(hecho => {
-      const marker = L.marker([hecho.latitud, hecho.longitud]).addTo(map);;
-      marker.bindPopup(`
-        <div class="popup-content">
-          <h3>${hecho.titulo}</h3>
-          <p>${hecho.descripcion}</p>
-          <button onclick="alert('Más detalles de ${hecho.titulo}')"
-                  style="padding:0.4rem 0.6rem;
-                         border:none;
-                         border-radius:5px;
-                         background:var(--primary);
-                         color:white;
-                         cursor:pointer;">
-            Ver más
-          </button>
-        </div>
-      `);
+    // Crear grupo de clusters para mejor rendimiento con muchos marcadores
+    const markersCluster = L.markerClusterGroup({
+      chunkedLoading: true,
+      chunkInterval: 200,
+      chunkDelay: 50,
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true
     });
+
+    // Función para construir el contenido del popup
+    function construirPopupContent(hecho) {
+      let popupContent = '<div class="popup-content">';
+      popupContent += '<h3>' + (hecho.titulo || 'Sin título') + '</h3>';
+      
+      // Categoría
+      if (hecho.categoria) {
+        popupContent += '<p><strong>Categoría:</strong> ' + hecho.categoria + '</p>';
+      }
+
+      // Descripción completa
+      if (hecho.descripcion) {
+        popupContent += '<p><strong>Descripción:</strong> ' + hecho.descripcion + '</p>';
+      }
+
+      // Fecha de acontecimiento
+      if (hecho.fecha_acontecimiento) {
+        const fecha = new Date(hecho.fecha_acontecimiento);
+        popupContent += '<p><strong>Fecha de acontecimiento:</strong> ' +
+          fecha.toLocaleString('es-AR', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }) + '</p>';
+      }
+
+      // Fecha de carga
+      if (hecho.fecha_carga) {
+        const fechaCarga = new Date(hecho.fecha_carga);
+        popupContent += '<p><strong>Fecha de carga:</strong> ' +
+          fechaCarga.toLocaleString('es-AR', { 
+            year: 'numeric', 
+            month: '2-digit', 
+            day: '2-digit', 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          }) + '</p>';
+      }
+
+      // Provincia
+      if (hecho.provincia) {
+        popupContent += '<p><strong>Provincia:</strong> ' + hecho.provincia + '</p>';
+      }
+
+      // Ubicación (coordenadas)
+      if (hecho.latitud != null && hecho.longitud != null) {
+        popupContent += '<p><strong>Ubicación:</strong> ' + 
+          hecho.latitud.toFixed(6) + ', ' + hecho.longitud.toFixed(6) + '</p>';
+      }
+
+      // Fuente
+      if (hecho.nombre_fuente) {
+        let nombreFuente = hecho.nombre_fuente;
+        // Eliminar prefijo "Fuente " si existe
+        if (nombreFuente.startsWith('Fuente ')) {
+          nombreFuente = nombreFuente.substring(7);
+        }
+        popupContent += '<p><strong>Fuente:</strong> ' + nombreFuente + '</p>';
+      } else if (hecho.origen) {
+        popupContent += '<p><strong>Fuente:</strong> ' + hecho.origen + '</p>';
+      }
+
+      // Multimedia
+      if (hecho.multimedia && hecho.multimedia.length > 0) {
+        popupContent += '<p><strong>Multimedia:</strong> ' + 
+          hecho.multimedia.length + ' archivo(s)</p>';
+      }
+
+      // Etiquetas
+      if (hecho.etiquetas && hecho.etiquetas.length > 0) {
+        popupContent += '<div><strong>Etiquetas:</strong><div class="tags">';
+        hecho.etiquetas.forEach(etiqueta => {
+          popupContent += '<span class="tag">' + etiqueta + '</span>';
+        });
+        popupContent += '</div></div>';
+      }
+
+      popupContent += '</div>';
+      return popupContent;
+    }
+
+    // Agregar marcadores al cluster group
+    hechosConCoordenadas.forEach(hecho => {
+      const marker = L.marker([hecho.latitud, hecho.longitud]);
+      const popupContent = construirPopupContent(hecho);
+      marker.bindPopup(popupContent);
+      markersCluster.addLayer(marker);
+      markers.push(marker);
+    });
+
+    // Agregar el cluster group al mapa
+    map.addLayer(markersCluster);
+
+    // Si hay un solo hecho, abrir su popup automáticamente
+    if (centrarEnHecho && hechosConCoordenadas.length === 1 && markers.length > 0) {
+      markers[0].openPopup();
+    }
+
+    // Ajustar el zoom si hay muchos marcadores
+    if (hechosConCoordenadas.length > 1 && !centrarEnHecho) {
+      const group = new L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    // Mostrar mensaje si no hay hechos con coordenadas
+    if (hechosConCoordenadas.length === 0) {
+      document.getElementById('no-hechos-message').style.display = 'block';
+      document.getElementById('map').style.display = 'none';
+    }
+    /*]]>*/
   </script>
-</body>
+</div>
 </html>

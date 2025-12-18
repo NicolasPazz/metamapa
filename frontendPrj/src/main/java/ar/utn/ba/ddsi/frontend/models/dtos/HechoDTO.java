@@ -29,8 +29,16 @@ public class HechoDTO {
     @JsonProperty("fecha_carga")
     private LocalDateTime fechaDeCarga;
     private LocalDateTime ultimaModificacion;
+    @JsonProperty("multimedia")
     private List<ContenidoMultimediaDTO> contenidoMultimedia;
+    @JsonProperty("transiciones")
     private List<TransicionEstadoHechoDTO> transicionesDeEstado;
+    @JsonProperty("fuente_id")
+    private Long fuenteId;
+    @JsonProperty("id_origen")
+    private Long idOrigen;
+    @JsonProperty("nombre_fuente")
+    private String nombreFuente;
 
 
 }

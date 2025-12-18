@@ -38,6 +38,7 @@ public class ColeccionesController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_hasta,
             @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String fuente,
             @RequestParam(required = false) ModoNavegacion modo) {
 
         log.info("[ColeccionesController] GET /api/colecciones/{}/hechos", handle);
@@ -50,6 +51,7 @@ public class ColeccionesController {
                 fecha_acontecimiento_desde,
                 fecha_acontecimiento_hasta,
                 ubicacion,
+                fuente,
                 modo
         );
     }

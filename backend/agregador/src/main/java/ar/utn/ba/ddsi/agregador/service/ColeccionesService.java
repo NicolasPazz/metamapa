@@ -16,6 +16,7 @@ import ar.utn.ba.ddsi.agregador.dto.mapper.ColeccionMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.CriterioMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -122,7 +123,10 @@ public class ColeccionesService {
             String ubicacion,
             LocalDate fechaReporteDesde,
             LocalDate fechaReporteHasta,
+            LocalDateTime fechaAcontecimientoDesde,
+            LocalDateTime fechaAcontecimientoHasta,
             String categoria,
+            String fuente,
             String modoStr,
             int page,
             int size) {
@@ -140,13 +144,25 @@ public class ColeccionesService {
                 modo = ModoNavegacion.IRRESTRICTA;
             }
         }
-
-        // Obtener todos los hechos primero (reutilizando la lógica existente)
+      
         ResponseEntity<List<HechoDTO>> respuesta = getHechosColeccionByHandle(
-            handle, categoria, fechaReporteDesde, fechaReporteHasta, null, null, ubicacion, modo);
+            handle, categoria, fechaReporteDesde, fechaReporteHasta, 
+            fechaAcontecimientoDesde, fechaAcontecimientoHasta, ubicacion, fuente, modo);
 
-        List<HechoDTO> todosLosHechos = Optional.ofNullable(respuesta.getBody())
-            .orElse(new ArrayList<>());
+        if (respuesta.getStatusCode().isError() || respuesta.getBody() == null) {
+            PageResponse<HechoDTO> emptyResponse = new PageResponse<>(
+                    new ArrayList<>(),
+                    page,
+                    size,
+                    false,
+                    page > 0,
+                    0
+            );
+            return ResponseEntity.ok(emptyResponse);
+        }
+
+        List<HechoDTO> todosLosHechos = respuesta.getBody();
+        long total = todosLosHechos.size();
 
         // Paginar
         int start = page * size;
@@ -159,7 +175,7 @@ public class ColeccionesService {
                     size,
                     false,
                     page > 0,
-                    todosLosHechos.size()
+                    total
             );
             return ResponseEntity.ok(emptyResponse);
         }
@@ -175,11 +191,11 @@ public class ColeccionesService {
                 size,
                 hasNext,
                 page > 0,
-                todosLosHechos.size()
+                total
         );
 
-        log.info("[ColeccionesService] Devolviendo {} hechos (página {} de tamaño {}), hasNext: {}",
-                 paginados.size(), page, size, hasNext);
+        log.info("[ColeccionesService] Devolviendo {} hechos (página {} de tamaño {}), hasNext: {} (total: {})",
+                 paginados.size(), page, size, hasNext, total);
 
         return ResponseEntity.ok(response);
     }
@@ -244,6 +260,7 @@ public class ColeccionesService {
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
         LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
         String ubicacion,
+        String fuente,
         ModoNavegacion modo) {
 
         log.info("[ColeccionesService] Obteniendo hechos de colección: handle={}, modo={}", handle, modo);
@@ -279,7 +296,7 @@ public class ColeccionesService {
 
                 // 2. Si la colección tiene hechos externos, agregar los de tiempo real
                 List<Long> fuentesTiempoReal = fuentesService.getFuentesTiempoReal();
-                List<ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho> origenesTiempoReal =
+                List<OrigenHecho> origenesTiempoReal =
                     fuentesService.getOrigenesTiempoReal();
 
                 if (coleccion.tieneHechosExternos(fuentesTiempoReal, origenesTiempoReal)) {
@@ -320,7 +337,7 @@ public class ColeccionesService {
                 log.info("[ColeccionesService] Aplicando filtros adicionales");
                 hechos = aplicarFiltros(hechos, categoria,
                     fecha_reporte_desde, fecha_reporte_hasta,
-                    fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
+                    fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
                 log.info("[ColeccionesService] Después de filtros: {} hechos", hechos.size());
 
                 List<HechoDTO> hechosDTO = hechoMapper.toDTO(hechos);
@@ -363,7 +380,7 @@ public class ColeccionesService {
                     List<Hecho> hechosEntidad = hechoMapper.fromDTO(hechos);
                     hechosEntidad = aplicarFiltros(hechosEntidad, categoria,
                         fecha_reporte_desde, fecha_reporte_hasta,
-                        fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
+                        fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
 
                     List<HechoDTO> hechosDTO = hechoMapper.toDTO(hechosEntidad);
                     log.info("[ColeccionesService] Retornando {} hechos de colección externa {}", hechosDTO.size(), handle);
@@ -667,7 +684,8 @@ public class ColeccionesService {
     private List<Hecho> aplicarFiltros(List<Hecho> hechos, String categoria,
                                        LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
                                        LocalDateTime fechaAcontecimientoDesde, LocalDateTime fechaAcontecimientoHasta,
-                                       String ubicacion) {
+                                       String ubicacion,
+                                       String fuente) {
 
         List<Hecho> resultado = hechos;
         int iniciales = resultado.size();
@@ -683,12 +701,15 @@ public class ColeccionesService {
             iniciales = resultado.size();
         }
 
-        // Filtro de ubicación
+        // Filtro de ubicación (solo por provincia)
         if (ubicacion != null && !ubicacion.trim().isEmpty()) {
+            String provinciaNombre = ubicacion.trim();
             resultado = new ArrayList<>(resultado.stream()
-                .filter(h -> (h.getLatitud() + "," + h.getLongitud()).equals(ubicacion))
+                .filter(h -> h.getProvincia() != null &&
+                    h.getProvincia().getNombre() != null &&
+                    h.getProvincia().getNombre().equalsIgnoreCase(provinciaNombre))
                 .toList());
-            log.debug("[aplicarFiltros] Ubicación '{}': {} -> {} hechos", ubicacion, iniciales, resultado.size());
+            log.debug("[aplicarFiltros] Provincia '{}': {} -> {} hechos", ubicacion, iniciales, resultado.size());
             iniciales = resultado.size();
         }
 
@@ -729,6 +750,15 @@ public class ColeccionesService {
                 .toList());
             log.debug("[aplicarFiltros] Fecha acontecimiento hasta {}: {} -> {} hechos",
                 fechaAcontecimientoHasta, iniciales, resultado.size());
+            iniciales = resultado.size();
+        }
+
+        // Filtro de fuente (por nombre de fuente)
+        if (fuente != null && !fuente.trim().isEmpty()) {
+            resultado = new ArrayList<>(resultado.stream()
+                .filter(h -> h.getNombreFuente() != null && h.getNombreFuente().equals(fuente))
+                .toList());
+            log.debug("[aplicarFiltros] Fuente '{}': {} -> {} hechos", fuente, iniciales, resultado.size());
         }
 
         return resultado;
