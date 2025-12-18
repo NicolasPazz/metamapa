@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<groupId>ar.utn.ba.ddsi</groupId>
+	<artifactId>backend</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>backend</name>
+	<description>MetaMapa Backend</description>
+	<packaging>pom</packaging>
+
+	<modules>
+		<module>estadistica</module>
+		<module>agregador</module>
+		<module>dinamica</module>
+		<module>estatica</module>
+		<module>proxy_ong</module>
+		<module>proxy_metamapa</module>
+	</modules>
+</project>

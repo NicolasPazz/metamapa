@@ -1,0 +1,361 @@
+<html th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+  <div class="main-container">
+  <!-- Sidebar -->
+  <nav class="sidebar">
+    <h2>MetaMapa Admin</h2>
+    <a href="#dashboard" class="active">Panel de Control</a>
+    <a href="#colecciones">Colecciones</a>
+    <a href="#hechos">Moderación de Hechos</a>
+    <a href="#solicitudes">Solicitudes de Eliminación</a>
+    <a href="#carga">Carga Masiva</a>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="content">
+    <!-- Dashboard -->
+    <section id="dashboard">
+      <h2>Panel de Control</h2>
+      <div class="summary-grid">
+        <div class="summary-card">
+          <h3>Últimas Colecciones</h3>
+          <ul>
+            <li th:each="coleccion:${coleccionesLimit}" th:text="${coleccion.titulo}"></li>
+          </ul>
+        </div>
+        <div class="summary-card">
+          <h3>Últimos Hechos</h3>
+          <ul>
+            <li th:each="hecho:${hechosLimit}" th:text="${hecho.titulo}"></li>
+          </ul>
+        </div>
+        <div class="summary-card">
+          <h3>Solicitudes de Eliminación</h3>
+          <ul>
+            <li th:each="solicitud:${solicitudesLimit}" th:text="@{'Hecho #'+solicitud.idHecho}"></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Colecciones -->
+    <section id="colecciones">
+      <h2>Gestión de Colecciones</h2>
+      <a href="#nueva-coleccion" class="btn">+ Crear Nueva Colección</a>
+      <div class="colecciones-grid">
+        <div th:each="coleccion:${colecciones}" class="coleccion-card">
+          <h3 th:text="${coleccion.titulo}"></h3>
+          <p>Fuentes: Dinámicas (API Verde), Estáticas (Reporte ONGs)</p> <!-- TODO: agregar fuentes de coleccion a DTO -->
+          <p>Algoritmo de consenso: Mayoría Simple</p> <!-- TODO: agregar algoritmo de coleccion a DTO -->
+          <a href="#editar-coleccion"
+             class="btn"
+             th:data-handle="${coleccion.handle}"
+             th:data-titulo="${coleccion.titulo}"
+             th:data-descripcion="${coleccion.descripcion}" onclick="cargarDatosEdicion(this)">
+              Editar
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Hechos -->
+    <section id="hechos">
+      <h2>Moderación de Hechos</h2>
+      <div class="hechos-grid">
+        <div th:each="hecho:${hechos}" class="hecho-card">
+          <h3 th:text="${hecho.titulo}"></h3>
+          <p th:text="${'Subido por usuario ' + hecho.contribuyente}"></p>
+          <p th:text="${'Estado: ' + hecho.estado}"></p>
+          <button>Aceptar</button>
+          <button>Denegar</button>
+          <button>Aceptar con cambios</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="solicitudes" class="mt-5 mb-5">
+
+      <div class="card shadow-sm border-0">
+
+        <div class="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
+          <h4 class="mb-0 text-dark fw-bold">
+            <i class="bi bi-trash"></i> Solicitudes de Eliminación
+          </h4>
+          <span class="badge rounded-pill"
+                th:classappend="${#lists.isEmpty(solicitudes)} ? 'bg-success' : 'bg-danger'"
+                th:text="${#lists.isEmpty(solicitudes)} ? 'Al día' : ${#lists.size(solicitudes) + ' Pendientes'}">
+            </span>
+        </div>
+
+        <div class="card-body bg-light">
+
+          <div th:if="${#lists.isEmpty(solicitudes)}" class="text-center py-5">
+            <div class="mb-3">
+              <span style="font-size: 4rem;"></span>
+            </div>
+            <h3 class="text-muted fw-normal">¡Todo limpio!</h3>
+            <p class="text-secondary">No hay solicitudes de eliminación pendientes de revisión en este momento.</p>
+            <button class="btn btn-outline-primary btn-sm mt-2" onclick="location.reload()">Actualizar</button>
+          </div>
+
+          <div th:unless="${#lists.isEmpty(solicitudes)}" class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+
+            <div th:each="solicitud : ${solicitudes}" class="col">
+              <div class="card h-100 border-start border-4 border-warning shadow-sm">
+                <div class="card-body">
+                  <div class="d-flex justify-content-between mb-2">
+                    <span class="badge bg-warning text-dark">PENDIENTE</span>
+                    <small class="text-muted" th:text="'ID #' + ${solicitud.id}"></small>
+                  </div>
+
+                  <h5 class="card-title text-danger mb-1" th:text="'Hecho #' + ${solicitud.idHecho}"></h5>
+                  <p class="text-muted small mb-3">Solicitado por Usuario: <strong th:text="${solicitud.idUsuarioSolicitante}"></strong></p>
+
+                  <div class="bg-light p-2 rounded border mb-3">
+                    <small class="d-block text-secondary fw-bold" style="font-size: 0.7rem;">JUSTIFICACIÓN:</small>
+                    <p class="mb-0 fst-italic small text-dark" th:text="${solicitud.textoFundamentos}"></p>
+                  </div>
+
+                  <form th:action="@{'/admin/actualizarSolicitud'}" method="post" class="d-grid gap-2">
+                    <input type="hidden" name="id" th:value="${solicitud.id}">
+                    <button type="submit" name="estado" value="ACEPTADA"
+                            class="btn btn-danger btn-sm"
+                            onclick="return confirm('¿Eliminar definitivamente este hecho?');">
+                      Aprobar Eliminación
+                    </button>
+                    <button type="submit" name="estado" value="RECHAZADA" class="btn btn-outline-secondary btn-sm">
+                      Rechazar Solicitud
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+          </div> </div> </div>
+    </section>
+
+    <!-- Carga Masiva -->
+    <section id="carga">
+      <h2>Carga Masiva de Hechos</h2>
+      <form method="post" th:action="@{/admin/subir-csv}" enctype="multipart/form-data">
+        <label for="csv">Subir archivo CSV (máx 50MB)</label>
+        <input type="file" id="csv" name="archivo" accept=".csv" required>
+        <button type="submit">Procesar</button>
+      </form>
+      <div th:if="${mensaje}" th:text="${mensaje}" class="alert"></div>
+    </section>
+  </div>
+  </div>
+
+  <!-- Nueva Colección Panel -->
+  <div id="nueva-coleccion" class="panel">
+    <h3>Crear Nueva Colección</h3>
+    <form method="post" th:action="@{/admin/crear-coleccion}">
+      <label for="nombre">Nombre*</label>
+      <input name="titulo" type="text" id="nombre" required>1
+
+      <label for="descripcion">Descripción*</label>
+      <textarea name="descripcion" id="descripcion" required></textarea>
+
+      <label for="criterio">Seleccione Criterio:</label>
+      <select name="criterioDePertenencia.tipo" id="criterio" onchange="mostrarOpciones()">
+        <option value="">-- Seleccione una opción --</option>
+        <option value="fecha">Fecha</option>
+        <option value="igualdad">Igualdad</option>
+        <option value="lugar">Lugar</option>
+        <option value="origen">Origen</option>
+      </select>
+      <div id="opcion-fecha" class="conditional-section">
+        <select name="criterioDePertenencia.tipoFecha">
+          <option value="CARGA">Carga</option>
+          <option value="ACONTECIMIENTO">Acontecimiento</option>
+        </select>
+
+        <label>Fecha Desde:</label>
+        <input type="date" name="criterioDePertenencia.fechaInicial">
+
+        <label>Fecha Hasta:</label>
+        <input type="date" name="criterioDePertenencia.fechaFinal">
+      </div>
+
+      <div id="opcion-igualdad" class="conditional-section">
+        <label>Campo:</label>
+        <select name="criterioDePertenencia.tipoDeDato">
+          <option value="categoria">Categoría</option>
+          <option value="descripcion">Descripción</option>
+          <option value="etiqueta">Etiqueta</option>
+          <option value="titulo">Título</option>
+        </select>
+
+        <label>Valor:</label>
+        <input name="criterioDePertenencia.cadenaAComparar" type="text" placeholder="Escriba para completar...">
+      </div>
+
+      <div id="opcion-lugar" class="conditional-section">
+        <label>Latitud:</label>
+        <input name="criterioDePertenencia.lat" type="number" step="any" placeholder="-34.6037">
+
+        <label>Longitud:</label>
+        <input name="criterioDePertenencia.lng" type="number" step="any" placeholder="-58.3816">
+      </div>
+
+      <div id="opcion-origen" class="conditional-section">
+        <label>Fuente:</label>
+        <select name="criterioDePertenencia.origen">
+          <option value="DATASET">Dataset</option>
+          <option value="ONG">ONG</option>
+          <option value="METAMAPA">Metamapa</option>
+          <option value="CONTRIBUYENTE">Contribuyente</option>
+          <option value="MANUAL">Manual</option>
+        </select>
+      </div>
+
+      <script>
+        function mostrarOpciones() {
+          // 1. Obtener el valor del selector principal
+          const criterio = document.getElementById('criterio').value;
+
+          // 2. Obtener todas las secciones condicionales
+          const secciones = document.querySelectorAll('.conditional-section');
+
+          // 3. Ocultar todas las secciones primero (reset)
+          secciones.forEach(seccion => {
+            seccion.style.display = 'none';
+
+            const inputs = seccion.querySelectorAll('input, select');
+            inputs.forEach(input => {
+              input.value = ''; // Borra el texto o la selección
+            });
+          });
+
+          // 4. Mostrar solo la sección que coincida con la selección
+          if (criterio) {
+            const seccionAmostrar = document.getElementById('opcion-' + criterio);
+            if (seccionAmostrar) {
+              seccionAmostrar.style.display = 'block';
+            }
+          }
+        }
+      </script>
+
+      <label for="consenso">Algoritmo de Consenso*</label>
+      <select name="algoritmoConsenso" id="consenso" required>
+        <option value="MAYORIA_SIMPLE">Mayoría Simple</option>
+        <option value="MULTIPLES_MENCIONES">Múltiples Menciones</option>
+        <option value="ABSOLUTA">Absoluta</option>
+      </select>
+
+      <button type="submit">Guardar</button>
+    </form>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+
+  <div id="editar-coleccion" class="panel">
+    <h3>Editar Colección</h3>
+    <form method="post" th:action="@{/admin/actualizar-coleccion}">
+
+      <input type="hidden" name="handle" id="edit-handle">
+
+      <label for="edit-nombre">Nombre*</label>
+      <input name="titulo" type="text" id="edit-nombre" required>
+
+      <label for="edit-descripcion">Descripción*</label>
+      <textarea name="descripcion" id="edit-descripcion" required></textarea>
+
+      <label for="edit-criterio">Seleccione Criterio:</label>
+      <select name="criterioDePertenencia.tipo" id="edit-criterio" onchange="mostrarOpcionesEdicion()">
+        <option value="">-- Seleccione una opción --</option>
+        <option value="fecha">Fecha</option>
+        <option value="igualdad">Igualdad</option>
+        <option value="lugar">Lugar</option>
+        <option value="origen">Origen</option>
+      </select>
+
+      <div id="edit-opcion-fecha" class="conditional-section-edit" style="display:none;">
+        <select name="criterioDePertenencia.tipoFecha" id="edit-fecha-tipo">
+          <option value="CARGA">Carga</option>
+          <option value="ACONTECIMIENTO">Acontecimiento</option>
+        </select>
+        <label>Fecha Desde:</label>
+        <input type="date" name="criterioDePertenencia.fechaInicial" id="edit-fecha-ini">
+        <label>Fecha Hasta:</label>
+        <input type="date" name="criterioDePertenencia.fechaFinal" id="edit-fecha-fin">
+      </div>
+
+      <div id="edit-opcion-igualdad" class="conditional-section-edit" style="display:none;">
+        <label>Campo:</label>
+        <select name="criterioDePertenencia.tipoDeDato" id="edit-igualdad-tipo">
+          <option value="categoria">Categoría</option>
+          <option value="descripcion">Descripción</option>
+          <option value="etiqueta">Etiqueta</option>
+          <option value="titulo">Título</option>
+        </select>
+        <label>Valor:</label>
+        <input name="criterioDePertenencia.cadenaAComparar" type="text" id="edit-igualdad-valor">
+      </div>
+
+      <div id="edit-opcion-lugar" class="conditional-section-edit" style="display:none;">
+        <label>Latitud:</label>
+        <input name="criterioDePertenencia.lat" type="number" step="any" id="edit-lugar-lat">
+        <label>Longitud:</label>
+        <input name="criterioDePertenencia.lng" type="number" step="any" id="edit-lugar-lng">
+      </div>
+
+      <div id="edit-opcion-origen" class="conditional-section-edit" style="display:none;">
+        <label>Fuente:</label>
+        <select name="criterioDePertenencia.origen" id="edit-origen-fuente">
+          <option value="DATASET">Dataset</option>
+          <option value="ONG">ONG</option>
+          <option value="METAMAPA">Metamapa</option>
+          <option value="CONTRIBUYENTE">Contribuyente</option>
+          <option value="MANUAL">Manual</option>
+        </select>
+      </div>
+
+      <label for="edit-consenso">Algoritmo de Consenso*</label>
+      <select name="algoritmoConsenso" id="edit-consenso" required>
+        <option value="MAYORIA_SIMPLE">Mayoría Simple</option>
+        <option value="MULTIPLES_MENCIONES">Múltiples Menciones</option>
+        <option value="ABSOLUTA">Absoluta</option>
+      </select>
+
+      <div class="mt-3">
+        <button type="submit">Actualizar</button>
+        <a href="#colecciones" class="btn" style="background:#ccc; color:#000;">Cancelar</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    // Función para manejar la visualización de secciones en el modo EDICIÓN
+    function mostrarOpcionesEdicion() {
+      const criterio = document.getElementById('edit-criterio').value;
+      const secciones = document.querySelectorAll('.conditional-section-edit');
+
+      // Ocultar todo primero
+      secciones.forEach(seccion => {
+        seccion.style.display = 'none';
+      });
+
+      // Mostrar la seleccionada
+      if (criterio) {
+        const seccionAmostrar = document.getElementById('edit-opcion-' + criterio.toLowerCase());
+        if (seccionAmostrar) {
+          seccionAmostrar.style.display = 'block';
+        }
+      }
+    }
+
+    // Función principal: Carga los datos desde el botón al formulario
+    function cargarDatosEdicion(btn) {
+      // 1. Llenar campos básicos
+      document.getElementById('edit-handle').value = btn.dataset.handle;
+      document.getElementById('edit-nombre').value = btn.dataset.titulo;
+      document.getElementById('edit-descripcion').value = btn.dataset.descripcion;
+
+      // 3. Forzar la visualización de la sección correcta antes de llenar los sub-campos
+      mostrarOpcionesEdicion();
+    }
+  </script>
+</div>
+</html>

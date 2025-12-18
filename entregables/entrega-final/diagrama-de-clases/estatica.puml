@@ -1,0 +1,28 @@
+@startuml
+
+class Archivo {
+-id: Long
+-nombre: String
+-procesado: Boolean
+}
+
+class Hecho {
+-id: Long
+-titulo: String
+-descripcion: String
+-categoria: String
+-latitud: Double
+-longitud: Double
+-fechaDeAcontecimiento: LocalDate
+-fechaDeCarga: LocalDateTime
+-origen: OrigenHecho
+-enviado: Boolean
++toOutputDTO(): HechoOutputDTO
+}
+
+Hecho --> OrigenHecho
+enum OrigenHecho {
+DATASET
+}
+
+@enduml

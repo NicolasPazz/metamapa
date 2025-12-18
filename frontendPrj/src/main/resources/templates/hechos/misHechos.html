@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMapa - Mis Hechos</title>
+  <link rel="stylesheet" href="../styles/landing.css">
+  <style>
+    .hechos-block {
+      padding: 2rem;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .hechos-block h2 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+      text-align: center;
+    }
+
+    /* Hechos grid */
+    .hechos-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .hecho-card {
+      background: #fff;
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .hecho-card h3 {
+      color: var(--secondary);
+      margin-bottom: 0.5rem;
+    }
+
+    .hecho-card p {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    .hecho-card a {
+      text-decoration: none;
+      color: var(--primary);
+      font-weight: bold;
+      margin-right: 1rem;
+    }
+
+    /* Panel (for new hecho or edit) */
+    .panel {
+      position: fixed;
+      top: 0;
+      right: -100%;
+      width: 450px;
+      height: 100%;
+      background: #fff;
+      border-left: 2px solid var(--primary);
+      box-shadow: -2px 0 8px rgba(0,0,0,0.3);
+      padding: 1.5rem;
+      transition: right 0.3s ease;
+      overflow-y: auto;
+      z-index: 30;
+    }
+
+    .panel:target {
+      right: 0;
+    }
+
+    .panel h3 {
+      color: var(--primary);
+      margin-bottom: 1rem;
+    }
+
+    .panel label {
+      display: block;
+      font-weight: bold;
+      margin-top: 1rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .panel input, .panel textarea, .panel select {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-bottom: 0.5rem;
+    }
+
+    .panel textarea {
+      resize: vertical;
+      height: 100px;
+    }
+
+    .panel button {
+      margin-top: 1rem;
+      padding: 0.6rem 1rem;
+      border: none;
+      border-radius: 6px;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+    }
+
+    .panel a.close {
+      display: inline-block;
+      margin-top: 1rem;
+      color: var(--secondary);
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .new-hecho-btn {
+      display: block;
+      text-align: center;
+      margin: 1rem auto 2rem;
+      padding: 0.8rem 1.2rem;
+      border: 1px solid var(--primary);
+      border-radius: 6px;
+      color: var(--primary);
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .new-hecho-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <a href="/" class="logo">MetaMapa</a>
+    <nav class="nav-buttons-center">
+      <a href="/hechos" class="btn secondary">Hechos</a>
+      <a href="/colecciones" class="btn secondary">Colecciones</a>
+    </nav>
+    <nav class="nav-buttons">
+      <a href="/login" class="btn secondary">Ingresar</a>
+      <a href="/registro" class="btn primary">Registrarse</a>
+    </nav>
+  </header>
+
+  <!-- User hechos -->
+  <section class="hechos-block">
+    <h2>Mis Hechos</h2>
+
+    <!-- Button for new hecho -->
+    <a href="#nuevo" class="new-hecho-btn">+ Subir nuevo Hecho</a>
+
+    <!-- User hechos list -->
+    <div class="hechos-grid">
+      <div class="hecho-card">
+        <h3>Manifestación en plaza central</h3>
+        <p>Fecha: 2024-05-12</p>
+        <a href="#edit1">Editar</a>
+      </div>
+      <div class="hecho-card">
+        <h3>Reporte sobre acceso restringido</h3>
+        <p>Fecha: 2024-07-01</p>
+        <a href="#edit2">Editar</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- New Hecho Panel -->
+  <div id="nuevo" class="panel">
+    <h3>Subir nuevo Hecho</h3>
+    <form>
+      <label for="titulo">Título*</label>
+      <input type="text" id="titulo" required>
+
+      <label for="descripcion">Descripción*</label>
+      <textarea id="descripcion" required></textarea>
+
+      <label for="fecha">Fecha*</label>
+      <input type="date" id="fecha" required>
+
+      <label for="categoria">Categoría*</label>
+      <select id="categoria" required>
+        <option value="">Selecciona una categoría</option>
+        <option>Derechos Humanos</option>
+        <option>Medio Ambiente</option>
+        <option>Educación</option>
+      </select>
+
+      <label for="ubicacion">Ubicación*</label>
+      <input type="text" id="ubicacion" required>
+
+      <label for="multimedia">Contenido multimedia</label>
+      <input type="file" id="multimedia" multiple>
+
+      <button type="submit">Subir Hecho</button>
+    </form>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+
+  <!-- Edit Hecho Panels -->
+  <div id="edit1" class="panel">
+    <h3>Editar Hecho</h3>
+    <form>
+      <label for="titulo1">Título*</label>
+      <input type="text" id="titulo1" value="Manifestación en plaza central" required>
+
+      <label for="descripcion1">Descripción*</label>
+      <textarea id="descripcion1" required>Manifestación con más de 500 participantes.</textarea>
+
+      <label for="fecha1">Fecha*</label>
+      <input type="date" id="fecha1" value="2024-05-12" required>
+
+      <label for="categoria1">Categoría*</label>
+      <select id="categoria1" required>
+        <option selected>Derechos Humanos</option>
+        <option>Medio Ambiente</option>
+        <option>Educación</option>
+      </select>
+
+      <label for="ubicacion1">Ubicación*</label>
+      <input type="text" id="ubicacion1" value="Buenos Aires" required>
+
+      <label for="multimedia1">Contenido multimedia</label>
+      <input type="file" id="multimedia1" multiple>
+
+      <button type="submit">Guardar cambios</button>
+    </form>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+
+  <div id="edit2" class="panel">
+    <h3>Editar Hecho</h3>
+    <form>
+      <label for="titulo2">Título*</label>
+      <input type="text" id="titulo2" value="Reporte sobre acceso restringido" required>
+
+      <label for="descripcion2">Descripción*</label>
+      <textarea id="descripcion2" required>Informe de acceso restringido a recursos en zonas rurales.</textarea>
+
+      <label for="fecha2">Fecha*</label>
+      <input type="date" id="fecha2" value="2024-07-01" required>
+
+      <label for="categoria2">Categoría*</label>
+      <select id="categoria2" required>
+        <option>Derechos Humanos</option>
+        <option selected>Medio Ambiente</option>
+        <option>Educación</option>
+      </select>
+
+      <label for="ubicacion2">Ubicación*</label>
+      <input type="text" id="ubicacion2" value="Córdoba" required>
+
+      <label for="multimedia2">Contenido multimedia</label>
+      <input type="file" id="multimedia2" multiple>
+
+      <button type="submit">Guardar cambios</button>
+    </form>
+    <a href="#" class="close">Cerrar</a>
+  </div>
+</body>
+</html>

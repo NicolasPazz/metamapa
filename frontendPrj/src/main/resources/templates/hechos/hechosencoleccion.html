@@ -1,0 +1,244 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMapa - Hechos</title>
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+</head>
+
+
+<html th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+  <!-- Hechos in a collection -->
+  <section class="hechos-block">
+    <!--<h2>Colección: Derechos Humanos</h2> -->
+
+    <!-- Switch de modo solo visible en colecciones - fuera de filtros -->
+    <div class="modo-switch-fixed" th:if="${esColeccion != null and esColeccion}">
+      <form method="get" th:action="'/colecciones/' + ${handleColeccion} + '/hechos'" style="margin: 0;">
+        <!-- Mantener los filtros actuales como hidden inputs -->
+        <input type="hidden" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}">
+        <input type="hidden" name="fecha_reporte_hasta" th:value="${param.fecha_reporte_hasta}">
+        <input type="hidden" name="ubicacion" th:value="${param.ubicacion}">
+        <input type="hidden" name="categoria" th:value="${param.categoria}">
+        <input type="hidden" name="page" th:value="${param.page}">
+
+        <label class="modo-switch-label">
+          <span class="modo-text">IRRESTRICTA</span>
+          <label class="switch">
+            <input type="checkbox"
+                   id="modoSwitch"
+                   name="modoCheckbox"
+                   th:checked="${param.modo != null and param.modo[0] == 'CURADA'}"
+                   onchange="document.getElementById('modoHidden').value = this.checked ? 'CURADA' : 'IRRESTRICTA'; this.form.submit();">
+            <span class="slider"></span>
+          </label>
+          <span class="modo-text">CURADA</span>
+        </label>
+        <input type="hidden"
+               id="modoHidden"
+               name="modo"
+               th:value="${param.modo != null and param.modo[0] == 'CURADA' ? 'CURADA' : 'IRRESTRICTA'}">
+      </form>
+    </div>
+
+    <form method="get" class="filters" th:action="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}">
+      <!-- Mantener modo como hidden si es colección -->
+      <input type="hidden" th:if="${esColeccion != null and esColeccion}" name="modo" th:value="${param.modo}">
+
+      <div class="filtro-fecha">
+        <label for="fechaDesde">Desde:</label>
+        <input type="date" id="fechaDesde" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}">
+      </div>
+
+      <div class="filtro-fecha">
+        <label for="fechaHasta">Hasta:</label>
+        <input type="date" id="fechaHasta" name="fecha_reporte_hasta" th:value="${param.fecha_reporte_hasta}">
+      </div>
+
+      <select name="ubicacion">
+        <option value="">Provincia</option>
+        <option th:each="prov : ${provincias}"
+                th:value="${prov}"
+                th:text="${prov}"
+                th:selected="${param.ubicacion != null and param.ubicacion[0] == prov}">
+        </option>
+      </select>
+
+      <select name="categoria">
+        <option value="">Categoría</option>
+        <option th:each="cat : ${categorias}"
+                th:value="${cat}"
+                th:text="${cat}"
+                th:selected="${param.categoria != null and param.categoria[0] == cat}">
+        </option>
+      </select>
+
+      <button type="submit" class="btn primary">Aplicar Filtros</button>
+
+      <a th:href="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}" class="btn primary">Limpiar</a>
+
+    </form>
+
+    <!-- Navegación de páginas -->
+    <div class="pagination">
+      <!-- Botón anterior -->
+      <a th:if="${currentPage > 0}"
+         th:href="@{${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}(
+                    page=${currentPage - 1},
+                    fecha_reporte_desde=${param.fecha_reporte_desde},
+                    fecha_reporte_hasta=${param.fecha_reporte_hasta},
+                    ubicacion=${param.ubicacion},
+                    categoria=${param.categoria},
+                    modo=${param.modo})}"
+         class="btn primary">
+        ← Anterior
+      </a>
+
+      <span class="page-indicator">Página <strong th:text="${currentPage + 1}">1</strong></span>
+
+      <!-- Botón siguiente - solo si hay más páginas -->
+      <a th:if="${hasNextPage}"
+         th:href="@{${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}(
+                    page=${currentPage + 1},
+                    fecha_reporte_desde=${param.fecha_reporte_desde},
+                    fecha_reporte_hasta=${param.fecha_reporte_hasta},
+                    ubicacion=${param.ubicacion},
+                    categoria=${param.categoria},
+                    modo=${param.modo})}"
+         class="btn primary">
+        Siguiente →
+      </a>
+    </div>
+
+    <!-- Hechos list -->
+    <div class="hechos-grid">
+      <div th:each="hecho : ${hechos}" class="hecho-card"
+           th:data-hecho-id="${hecho.id}"
+           onclick="openHechoDetailPanel(this.dataset.hechoId)"
+           style="cursor: pointer;">
+        <h3 th:text="${hecho.titulo}"></h3>
+        <p th:text="${hecho.descripcion}"></p>
+        <span class="ver-detalles-link">Ver detalles</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Panel lateral para detalles de Hecho -->
+  <div id="hechoDetailPanel" class="side-panel">
+    <div class="panel-header">
+      <h3>Detalles del Hecho</h3>
+      <button class="close-btn" onclick="closeHechoDetailPanel()">&times;</button>
+    </div>
+    <div class="panel-content" id="hechoDetailContent">
+      <!-- El contenido se cargará dinámicamente -->
+    </div>
+  </div>
+
+  <!-- Overlay para cerrar panel -->
+  <div id="overlay" class="overlay" onclick="closeHechoDetailPanel()"></div>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const hechosData = /*[[${hechos}]]*/ [];
+
+    function openHechoDetailPanel(hechoId) {
+      const hecho = hechosData.find(h => h.id == hechoId);
+      if (!hecho) return;
+
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+      const content = document.getElementById('hechoDetailContent');
+
+      // Construir el contenido del panel
+      let html = '<h2>' + hecho.titulo + '</h2>';
+
+      if (hecho.categoria) {
+        html += '<p><strong>Categoría:</strong> ' + hecho.categoria + '</p>';
+      }
+
+      if (hecho.descripcion) {
+        html += '<p><strong>Descripción:</strong> ' + hecho.descripcion + '</p>';
+      }
+
+      if (hecho.fechaDeAcontecimiento) {
+        const fecha = new Date(hecho.fechaDeAcontecimiento);
+        html += '<p><strong>Fecha:</strong> ' + fecha.toLocaleDateString('es-AR') + '</p>';
+      }
+
+      if (hecho.provincia) {
+        html += '<p><strong>Provincia:</strong> ' + hecho.provincia + '</p>';
+      }
+
+      if (hecho.latitud && hecho.longitud) {
+        html += '<p><strong>Ubicación:</strong> ' + hecho.latitud + ', ' + hecho.longitud + '</p>';
+      }
+
+      if (hecho.origen) {
+        html += '<p><strong>Fuente:</strong> ' + hecho.origen + '</p>';
+      }
+
+      if (hecho.fechaDeCarga) {
+        const fechaCarga = new Date(hecho.fechaDeCarga);
+        html += '<p><strong>Fecha de Carga:</strong> ' + fechaCarga.toLocaleDateString('es-AR') + '</p>';
+      }
+
+      if (hecho.contenidoMultimedia && hecho.contenidoMultimedia.length > 0) {
+        html += '<p><strong>Multimedia:</strong> ' + hecho.contenidoMultimedia.length + ' archivo(s)</p>';
+      }
+
+      if (hecho.etiquetas && hecho.etiquetas.length > 0) {
+        html += '<div><strong>Etiquetas:</strong><div class="tags">';
+        hecho.etiquetas.forEach(etiqueta => {
+          html += '<span class="tag">' + etiqueta + '</span>';
+        });
+        html += '</div></div>';
+      }
+
+      content.innerHTML = html;
+
+      panel.classList.add('active');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      // Actualizar URL
+      history.pushState(null, '', '#hecho' + hechoId);
+    }
+
+    function closeHechoDetailPanel() {
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+
+      panel.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+
+      // Restaurar URL
+      const baseUrl = window.location.pathname + window.location.search;
+      history.pushState(null, '', baseUrl);
+    }
+
+    // Manejar botón atrás
+    window.addEventListener('popstate', function() {
+      closeHechoDetailPanel();
+    });
+
+    // Cerrar con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeHechoDetailPanel();
+      }
+    });
+
+    // Abrir panel si hay hash en la URL
+    window.addEventListener('load', function() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#hecho')) {
+        const hechoId = hash.replace('#hecho', '');
+        openHechoDetailPanel(hechoId);
+      }
+    });
+    /*]]>*/
+  </script>
+  </div>
+</div>
+</html>

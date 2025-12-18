@@ -11,11 +11,7 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>estadistica</module>
-		<module>agregador</module>
-		<module>dinamica</module>
-		<module>estatica</module>
-		<module>proxy_ong</module>
-		<module>proxy_metamapa</module>
-	</modules>
+		<module>backend</module>
+        <module>frontendPrj</module>
+    </modules>
 </project>

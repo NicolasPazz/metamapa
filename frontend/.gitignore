@@ -1,0 +1,20 @@
+# dependencias instaladas con npm/yarn/pnpm
+node_modules/
+
+# archivos de build/output
+dist/
+out/
+.cache/
+.next/
+build/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# sistema/IDE
+.DS_Store
+.vscode/
+.idea/

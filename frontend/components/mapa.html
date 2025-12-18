@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMapa - Mapa Anónimo</title>
+  <link rel="stylesheet" href="../styles/landing.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <div class="logo">MetaMapa</div>
+    <nav class="nav-buttons">
+      <a href="login.html" class="btn secondary">Ingresar</a>
+      <a href="register.html" class="btn primary">Registrarse</a>
+    </nav>
+  </header>
+
+  <!-- Map -->
+  <div id="map"></div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    // Init map centered on Latin America
+    const map = L.map('map').setView([-34.6, -58.4], 5); // Buenos Aires approx
+
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Mock hechos data
+    const hechos = [
+      {
+        title: "Hecho 1",
+        description: "Descripción del hecho 1. Reportado en Buenos Aires.",
+        coords: [-34.6037, -58.3816]
+      },
+      {
+        title: "Hecho 2",
+        description: "Descripción del hecho 2. Reportado en Córdoba.",
+        coords: [-31.4201, -64.1888]
+      },
+      {
+        title: "Hecho 3",
+        description: "Descripción del hecho 3. Reportado en Rosario.",
+        coords: [-32.9587, -60.6939]
+      },
+      {
+        title: "Hecho 4",
+        description: "Descripción del hecho 4. Reportado en Montevideo.",
+        coords: [-34.9011, -56.1645]
+      }
+    ];
+
+    // Add markers
+    hechos.forEach(hecho => {
+      const marker = L.marker(hecho.coords).addTo(map);
+      marker.bindPopup(`
+        <div class="popup-content">
+          <h3>${hecho.title}</h3>
+          <p>${hecho.description}</p>
+          <button onclick="alert('Más detalles de ${hecho.title}')"
+                  style="padding:0.4rem 0.6rem;
+                         border:none;
+                         border-radius:5px;
+                         background:var(--primary);
+                         color:white;
+                         cursor:pointer;">
+            Ver más
+          </button>
+        </div>
+      `);
+    });
+  </script>
+</body>
+</html>

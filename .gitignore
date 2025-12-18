@@ -31,3 +31,10 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Ignorar todos los Markdown
+*.md
+
+# Excepciones
+!README.md
+!justificaciones-de-disenio.md

@@ -1,0 +1,134 @@
+
+<html th:replace="~{layout/base :: html}">
+  <div th:fragment="contenido">
+    <!-- Colecciones list -->
+    <section class="colecciones-block">
+      <h2>Colecciones</h2>
+
+      <!-- Navegación de páginas -->
+      <div class="pagination">
+        <!-- Botón anterior -->
+        <a th:if="${currentPage > 0}"
+           th:href="'/colecciones?page=' + (currentPage - 1)"
+           class="btn primary">
+          ← Anterior
+        </a>
+
+        <span class="page-indicator">Página <strong th:text="${currentPage + 1}">1</strong></span>
+
+        <!-- Botón siguiente - solo si hay más páginas -->
+        <a th:if="${hasNextPage}"
+           th:href="'/colecciones?page=' + (currentPage + 1)"
+           class="btn primary">
+          Siguiente →
+        </a>
+      </div>
+
+      <!-- verificar si hay colecciones -->
+      <div th:if="${#lists.isEmpty(colecciones)}">No hay colecciones disponibles.</div>
+
+      <!-- colecciones -->
+      <div th:if="${!#lists.isEmpty(colecciones) and colecciones != null}" class="colecciones-grid">
+        <!-- Mock colecciones -->
+        <div th:each="coleccion : ${colecciones}" class="coleccion-card"
+             th:data-coleccion-handle="${coleccion.handle}"
+             onclick="openColeccionDetailPanel(this.dataset.coleccionHandle)"
+             style="cursor: pointer;">
+          <h3 th:text="${coleccion.titulo}"></h3>
+          <p th:text="${coleccion.descripcion}"></p>
+          <span class="ver-detalles-link">Ver detalles</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Panel lateral para detalles de Colección -->
+    <div id="coleccionDetailPanel" class="side-panel">
+      <div class="panel-header">
+        <h3>Detalles de la Colección</h3>
+        <button class="close-btn" onclick="closeColeccionDetailPanel()">&times;</button>
+      </div>
+      <div class="panel-content" id="coleccionDetailContent">
+        <!-- El contenido se cargará dinámicamente -->
+      </div>
+    </div>
+
+    <!-- Overlay para cerrar panel -->
+    <div id="overlay" class="overlay" onclick="closeColeccionDetailPanel()"></div>
+
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const coleccionesData = /*[[${colecciones}]]*/ [];
+
+      function openColeccionDetailPanel(handle) {
+        const coleccion = coleccionesData.find(c => c.handle === handle);
+        if (!coleccion) return;
+
+        const panel = document.getElementById('coleccionDetailPanel');
+        const overlay = document.getElementById('overlay');
+        const content = document.getElementById('coleccionDetailContent');
+
+        // Construir el contenido del panel
+        let html = '<h2>' + coleccion.titulo + '</h2>';
+
+        if (coleccion.descripcion) {
+          html += '<p><strong>Descripción:</strong> ' + coleccion.descripcion + '</p>';
+        }
+
+        if (coleccion.hechos) {
+          html += '<p><strong>Hechos:</strong> ' + coleccion.hechos.length + '</p>';
+        }
+
+        if (coleccion.fechaDeCarga) {
+          const fecha = new Date(coleccion.fechaDeCarga);
+          html += '<p><strong>Fecha de creación:</strong> ' + fecha.toLocaleDateString('es-AR') + '</p>';
+        }
+
+        html += '<a href="/colecciones/' + coleccion.handle + '/hechos" class="btn primary">Ver todos los hechos</a>';
+
+        content.innerHTML = html;
+
+        panel.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        // Actualizar URL
+        history.pushState(null, '', '#coleccion' + handle);
+      }
+
+      function closeColeccionDetailPanel() {
+        const panel = document.getElementById('coleccionDetailPanel');
+        const overlay = document.getElementById('overlay');
+
+        panel.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+
+        // Restaurar URL
+        const baseUrl = window.location.pathname;
+        history.pushState(null, '', baseUrl);
+      }
+
+      // Manejar botón atrás
+      window.addEventListener('popstate', function() {
+        closeColeccionDetailPanel();
+      });
+
+      // Cerrar con Escape
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeColeccionDetailPanel();
+        }
+      });
+
+      // Abrir panel si hay hash en la URL
+      window.addEventListener('load', function() {
+        const hash = window.location.hash;
+        if (hash.startsWith('#coleccion')) {
+          const handle = hash.replace('#coleccion', '');
+          openColeccionDetailPanel(handle);
+        }
+      });
+      /*]]>*/
+    </script>
+  </div>
+</html>
