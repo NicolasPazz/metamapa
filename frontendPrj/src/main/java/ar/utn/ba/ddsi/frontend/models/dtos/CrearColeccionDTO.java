@@ -3,15 +3,15 @@ package ar.utn.ba.ddsi.frontend.models.dtos;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.util.List;
 
 @Data
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class CrearColeccionDTO {
 
     @NotBlank(message = "El titulo es obligatorio")
@@ -22,31 +22,32 @@ public class CrearColeccionDTO {
     @JsonProperty("descripcion")
     private String descripcion;
 
-    @JsonProperty("criterioDePertenencia")
-    private CriterioInputDTO criterioDePertenencia;
+    @JsonProperty("criterios")
+    private List<CriterioInputDTO> criterios;
 
-    @JsonProperty("algoritmoConsenso")
+    @JsonProperty("algoritmo_consenso")
     private String algoritmoConsenso;
+
+    //@JsonProperty("fuente_id")
+    private Long fuenteId;
 
     @JsonIgnore
     public boolean isValid() {
-        if (criterioDePertenencia == null) return false;
+        if (criterios == null || criterios.isEmpty()) return false;
 
-        String tipo = criterioDePertenencia.getTipo();
+        // Validate EVERY criterion in the list
+        for (CriterioInputDTO c : criterios) {
+            if (!isCriterioValid(c)) return false;
+        }
+        return true;
+    }
 
-        if ("fecha".equals(tipo)) {
-            // Enforce that dates exist ONLY if type is 'fecha'
-            return criterioDePertenencia.getFechaInicial() != null;
-        }
-        if ("lugar".equals(tipo)) {
-            return criterioDePertenencia.getLat() != null && criterioDePertenencia.getLng() != null;
-        }
-        if ("igualdad".equals(tipo)) {
-            return criterioDePertenencia.getCadenaAComparar() != null && criterioDePertenencia.getTipoDeDato() != null;
-        }
-        if ("origen".equals(tipo)) {
-            return criterioDePertenencia.getOrigen() != null;
-        }
+    private boolean isCriterioValid(CriterioInputDTO c) {
+        String tipo = c.getTipo();
+        if ("fecha".equals(tipo)) return c.getFechaInicial() != null;
+        if ("lugar".equals(tipo)) return c.getLat() != null && c.getLng() != null;
+        if ("igualdad".equals(tipo)) return c.getCadenaAComparar() != null && c.getTipoDeDato() != null;
+        if ("origen".equals(tipo)) return c.getOrigen() != null;
         return true;
     }
 }

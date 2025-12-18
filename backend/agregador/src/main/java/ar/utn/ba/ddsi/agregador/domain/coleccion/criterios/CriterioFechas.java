@@ -40,6 +40,7 @@ public class CriterioFechas implements Criterio {
     }
 
     @Override
+    @JsonIgnore
     public boolean cumple(Hecho hecho) {
         LocalDateTime fecha = switch (tipoFecha) {
             case CARGA -> hecho.getFechaDeCarga();
