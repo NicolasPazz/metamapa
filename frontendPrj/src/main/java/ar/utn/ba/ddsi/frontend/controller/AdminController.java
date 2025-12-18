@@ -2,10 +2,8 @@
 package ar.utn.ba.ddsi.frontend.controller;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
-import ar.utn.ba.ddsi.frontend.service.AdminService;
-import ar.utn.ba.ddsi.frontend.service.ColeccionService;
-import ar.utn.ba.ddsi.frontend.service.HechoService;
-import ar.utn.ba.ddsi.frontend.service.SolicitudService;
+import ar.utn.ba.ddsi.frontend.service.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -31,12 +31,18 @@ public class AdminController {
     private final HechoService hechoService;
     private final SolicitudService solicitudService;
     private final AdminService adminService;
+    private final ObjectMapper objectMapper;
+    private final FuenteService fuenteService;
 
     @GetMapping("/admin")
     public String mostrarMenu(Model model) {
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
         List<HechoDTO> hechos = hechoService.getAllHechos();
         List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();
+        List<FuenteDTO> fuentes = fuenteService.getAllFuentes();
+        Map<Long, String> mapFuentes = fuentes.stream()
+                .collect(Collectors.toMap(FuenteDTO::getId, FuenteDTO::getNombre));
+
         model.addAttribute("titulo", "Panel De Control");
         //model.addAttribute("coleccionesLimit", colecciones.subList(0,2));
         model.addAttribute("hechosLimit", hechos.subList(3,5));
@@ -44,6 +50,9 @@ public class AdminController {
         model.addAttribute("colecciones", colecciones);
         model.addAttribute("hechos", hechos);
         model.addAttribute("solicitudes", solicitudes);
+        model.addAttribute("fuentes", fuentes);
+        model.addAttribute("mapFuentes", mapFuentes);
+        model.addAttribute("objectMapper", objectMapper);
         return "admin/admin";
     }
 

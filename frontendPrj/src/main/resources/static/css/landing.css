@@ -857,6 +857,7 @@ button:hover, .btn:hover {
   padding-top: 15px;
 }
 
+
 /* Estilos para cards de landing dinámicas */
 .card .subtitle {
   font-size: 0.9rem;
@@ -1048,4 +1049,11 @@ input:focus + .slider {
     min-width: 100px;
     font-size: 0.9rem;
   }
+}
+.criterio-box {
+  background: #f9f9f9;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
 }

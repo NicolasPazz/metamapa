@@ -1,23 +1,26 @@
 package ar.utn.ba.ddsi.frontend.models.dtos;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.PastOrPresent;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 @Valid
 @Getter
 @Setter
 @Data
 @AllArgsConstructor
+@NoArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class CriterioInputDTO {
 
     @JsonProperty("tipo")
@@ -28,14 +31,14 @@ public class CriterioInputDTO {
     //CriterioFecha
     @PastOrPresent(message = "La fecha no puede ser futura")
     @JsonProperty("fecha_inicial")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate fechaInicial;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime fechaInicial;
     //@PastOrPresent(message = "La fecha no puede ser futura")
     @JsonProperty("fecha_final")
-    @DateTimeFormat(pattern = "yyyy-MM-dd")
-    @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate fechaFinal;
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
+    private LocalDateTime fechaFinal;
     @JsonProperty("tipo_fecha")
     private String tipoFecha;
 
@@ -54,4 +57,7 @@ public class CriterioInputDTO {
     //CriterioOrigen
     @JsonProperty("origen")
     private String origen;
+
+    //CriterioFuentes
+    private Set<Long> fuentes = new HashSet<>();
 }

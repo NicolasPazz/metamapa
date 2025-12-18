@@ -45,15 +45,26 @@
       <div class="colecciones-grid">
         <div th:each="coleccion:${colecciones}" class="coleccion-card">
           <h3 th:text="${coleccion.titulo}"></h3>
-          <p>Fuentes: Dinámicas (API Verde), Estáticas (Reporte ONGs)</p> <!-- TODO: agregar fuentes de coleccion a DTO -->
-          <p>Algoritmo de consenso: Mayoría Simple</p> <!-- TODO: agregar algoritmo de coleccion a DTO -->
-          <a href="#editar-coleccion"
-             class="btn"
-             th:data-handle="${coleccion.handle}"
-             th:data-titulo="${coleccion.titulo}"
-             th:data-descripcion="${coleccion.descripcion}" onclick="cargarDatosEdicion(this)">
-              Editar
-          </a>
+          <p>
+            <span th:text="${mapFuentes.get(coleccion.fuenteId)}">Nombre Fuente</span>
+
+            <span th:if="${mapFuentes.get(coleccion.fuenteId) == null}" style="color:red;">
+                Sin Fuente
+            </span>
+          </p>
+          <p th:text="${'Algoritmo de consenso: ' + coleccion.algoritmoConsenso}"></p>
+          <button class="btn-edit"
+                  th:data-handle="${coleccion.handle}"
+                  th:data-titulo="${coleccion.titulo}"
+                  th:data-descripcion="${coleccion.descripcion}"
+
+                  th:data-fuente-id="${coleccion.fuenteId}"
+
+                  th:data-criterios="${objectMapper.writeValueAsString(coleccion.criteriosDePertenencia)}"
+                  th:data-consenso="${coleccion.algoritmoConsenso}"
+                  onclick="cargarDatosEdicion(this)">
+            Editar
+          </button>
         </div>
       </div>
     </section>
@@ -150,93 +161,94 @@
   <!-- Nueva Colección Panel -->
   <div id="nueva-coleccion" class="panel">
     <h3>Crear Nueva Colección</h3>
-    <form method="post" th:action="@{/admin/crear-coleccion}">
+    <form method="post" th:action="@{/admin/crear-coleccion}" id="main-form">
+
       <label for="nombre">Nombre*</label>
-      <input name="titulo" type="text" id="nombre" required>1
+      <input name="titulo" type="text" id="nombre" required>
 
       <label for="descripcion">Descripción*</label>
       <textarea name="descripcion" id="descripcion" required></textarea>
 
-      <label for="criterio">Seleccione Criterio:</label>
-      <select name="criterioDePertenencia.tipo" id="criterio" onchange="mostrarOpciones()">
-        <option value="">-- Seleccione una opción --</option>
-        <option value="fecha">Fecha</option>
-        <option value="igualdad">Igualdad</option>
-        <option value="lugar">Lugar</option>
-        <option value="origen">Origen</option>
-      </select>
-      <div id="opcion-fecha" class="conditional-section">
-        <select name="criterioDePertenencia.tipoFecha">
-          <option value="CARGA">Carga</option>
-          <option value="ACONTECIMIENTO">Acontecimiento</option>
+      <div class="criterio-box" style="background:#f9f9f9; padding:15px; margin-bottom:20px; border:1px solid #ddd;">
+        <h4>Agregar Criterios</h4>
+
+        <label>Tipo de Criterio:</label>
+        <select id="selector-criterio" onchange="mostrarOpciones()" style="width:100%; margin-bottom:10px;">
+          <option value="">-- Seleccionar --</option>
+          <option value="fecha">Fecha</option>
+          <option value="lugar">Lugar</option>
+          <option value="igualdad">Igualdad</option>
+          <option value="origen">Origen</option>
+          <option value="fuente">Fuente</option>
         </select>
 
-        <label>Fecha Desde:</label>
-        <input type="date" name="criterioDePertenencia.fechaInicial">
+        <div id="opcion-fecha" class="conditional-section" style="display:none;">
+          <label>Tipo de Fecha:</label>
+          <select id="input-tipo-fecha">
+            <option value="CARGA">Carga</option>
+            <option value="ACONTECIMIENTO">Acontecimiento</option>
+          </select>
 
-        <label>Fecha Hasta:</label>
-        <input type="date" name="criterioDePertenencia.fechaFinal">
+          <label>Desde:</label>
+          <input type="datetime-local" id="input-fecha-inicio">
+
+          <label>Hasta:</label>
+          <input type="datetime-local" id="input-fecha-fin">
+        </div>
+
+        <div id="opcion-lugar" class="conditional-section" style="display:none;">
+          <label>Latitud:</label>
+          <input type="number" step="any" id="input-lat" placeholder="-34.6037">
+
+          <label>Longitud:</label>
+          <input type="number" step="any" id="input-lng" placeholder="-58.3816">
+        </div>
+
+        <div id="opcion-igualdad" class="conditional-section" style="display:none;">
+          <label>Campo a comparar:</label>
+          <select id="input-igualdad-campo">
+            <option value="CATEGORIA">Categoría</option>
+            <option value="DESCRIPCION">Descripción</option>
+            <option value="ETIQUETA">Etiqueta</option>
+            <option value="TITULO">Título</option>
+          </select>
+
+          <label>Valor exacto:</label>
+          <input type="text" id="input-igualdad-valor" placeholder="Ej: Robo, Accidente...">
+        </div>
+
+        <div id="opcion-origen" class="conditional-section" style="display:none;">
+          <label>Fuente:</label>
+          <select id="input-origen-valor">
+            <option value="DATASET">Dataset</option>
+            <option value="ONG">ONG</option>
+            <option value="METAMAPA">MetaMapa</option>
+            <option value="CONTRIBUYENTE">Contribuyente</option>
+            <option value="MANUAL">Manual</option>
+          </select>
+        </div>
+
+        <div id="opcion-fuente" class="conditional-section" style="display:none;">
+          <label>Seleccione Fuentes (Ctrl+Click para varias):</label>
+          <select id="input-fuente-ids" multiple class="form-control" style="height: 120px; width: 100%;">
+            <th:block th:each="f : ${fuentes}">
+              <option th:value="${f.id}" th:text="${f.nombre}"></option>
+            </th:block>
+          </select>
+        </div>
+
+        <button type="button" onclick="agregarCriterioALista()"
+                style="margin-top:15px; background-color:#28a745; color:white; border:none; padding:8px 15px; cursor:pointer;">
+          + Agregar a la lista
+        </button>
       </div>
 
-      <div id="opcion-igualdad" class="conditional-section">
-        <label>Campo:</label>
-        <select name="criterioDePertenencia.tipoDeDato">
-          <option value="categoria">Categoría</option>
-          <option value="descripcion">Descripción</option>
-          <option value="etiqueta">Etiqueta</option>
-          <option value="titulo">Título</option>
-        </select>
-
-        <label>Valor:</label>
-        <input name="criterioDePertenencia.cadenaAComparar" type="text" placeholder="Escriba para completar...">
+      <div style="margin-bottom: 20px;">
+        <h4>Criterios Seleccionados:</h4>
+        <ul id="visual-list" style="list-style-type: none; padding: 0;"></ul>
       </div>
 
-      <div id="opcion-lugar" class="conditional-section">
-        <label>Latitud:</label>
-        <input name="criterioDePertenencia.lat" type="number" step="any" placeholder="-34.6037">
-
-        <label>Longitud:</label>
-        <input name="criterioDePertenencia.lng" type="number" step="any" placeholder="-58.3816">
-      </div>
-
-      <div id="opcion-origen" class="conditional-section">
-        <label>Fuente:</label>
-        <select name="criterioDePertenencia.origen">
-          <option value="DATASET">Dataset</option>
-          <option value="ONG">ONG</option>
-          <option value="METAMAPA">Metamapa</option>
-          <option value="CONTRIBUYENTE">Contribuyente</option>
-          <option value="MANUAL">Manual</option>
-        </select>
-      </div>
-
-      <script>
-        function mostrarOpciones() {
-          // 1. Obtener el valor del selector principal
-          const criterio = document.getElementById('criterio').value;
-
-          // 2. Obtener todas las secciones condicionales
-          const secciones = document.querySelectorAll('.conditional-section');
-
-          // 3. Ocultar todas las secciones primero (reset)
-          secciones.forEach(seccion => {
-            seccion.style.display = 'none';
-
-            const inputs = seccion.querySelectorAll('input, select');
-            inputs.forEach(input => {
-              input.value = ''; // Borra el texto o la selección
-            });
-          });
-
-          // 4. Mostrar solo la sección que coincida con la selección
-          if (criterio) {
-            const seccionAmostrar = document.getElementById('opcion-' + criterio);
-            if (seccionAmostrar) {
-              seccionAmostrar.style.display = 'block';
-            }
-          }
-        }
-      </script>
+      <div id="hidden-inputs-container"></div>
 
       <label for="consenso">Algoritmo de Consenso*</label>
       <select name="algoritmoConsenso" id="consenso" required>
@@ -245,116 +257,427 @@
         <option value="ABSOLUTA">Absoluta</option>
       </select>
 
-      <button type="submit">Guardar</button>
+      <button type="submit" style="width:100%; padding:10px; font-size:16px;">Guardar Colección</button>
     </form>
+    <script>
+      let contadorCriterios = 0;
+
+      function mostrarOpciones() {
+        const criterio = document.getElementById("selector-criterio").value;
+
+        // 1. Hide all sections
+        document.querySelectorAll('.conditional-section').forEach(div => div.style.display = 'none');
+
+        // 2. Show the selected one
+        if (criterio === 'fecha') document.getElementById('opcion-fecha').style.display = 'block';
+        if (criterio === 'lugar') document.getElementById('opcion-lugar').style.display = 'block';
+        if (criterio === 'igualdad') document.getElementById('opcion-igualdad').style.display = 'block';
+        if (criterio === 'origen') document.getElementById('opcion-origen').style.display = 'block';
+        if (criterio === 'fuente') document.getElementById('opcion-fuente').style.display = 'block';
+      }
+
+      function agregarCriterioALista() {
+        const tipo = document.getElementById("selector-criterio").value;
+        if (!tipo) {
+          alert("Seleccione un tipo de criterio.");
+          return;
+        }
+
+        const container = document.getElementById("hidden-inputs-container");
+        const visualList = document.getElementById("visual-list");
+        let descripcion = "";
+
+        // --- CASE 1: FECHA ---
+        if (tipo === "fecha") {
+          const tipoFecha = document.getElementById("input-tipo-fecha").value;
+          const ini = document.getElementById("input-fecha-inicio").value;
+          const fin = document.getElementById("input-fecha-fin").value;
+
+          if (!ini || !fin) { alert("Complete las fechas"); return; }
+
+          // Bind to DTO: tipo, tipoFecha, fechaInicial, fechaFinal
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "fecha");
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipoFecha`, tipoFecha);
+          createHiddenInput(container, `criterios[${contadorCriterios}].fechaInicial`, ini);
+          createHiddenInput(container, `criterios[${contadorCriterios}].fechaFinal`, fin);
+
+          descripcion = `📅 <b>Fecha</b> (${tipoFecha}): ${ini} al ${fin}`;
+        }
+
+        // --- CASE 2: LUGAR ---
+        else if (tipo === "lugar") {
+          const lat = document.getElementById("input-lat").value;
+          const lng = document.getElementById("input-lng").value;
+
+          if (!lat || !lng) { alert("Complete latitud y longitud"); return; }
+
+          // Bind to DTO: tipo, lat, lng
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "lugar");
+          createHiddenInput(container, `criterios[${contadorCriterios}].lat`, lat);
+          createHiddenInput(container, `criterios[${contadorCriterios}].lng`, lng);
+
+          descripcion = `📍 <b>Lugar</b>: ${lat}, ${lng}`;
+        }
+
+        // --- CASE 3: IGUALDAD ---
+        else if (tipo === "igualdad") {
+          const campo = document.getElementById("input-igualdad-campo").value;
+          const valor = document.getElementById("input-igualdad-valor").value;
+
+          if (!valor) { alert("Escriba un valor"); return; }
+
+          // Bind to DTO: tipo, tipoDeDato, cadenaAComparar
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "igualdad");
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipoDeDato`, campo);
+          createHiddenInput(container, `criterios[${contadorCriterios}].cadenaAComparar`, valor);
+
+          descripcion = `🟰 <b>Igualdad</b>: ${campo} = "${valor}"`;
+        }
+
+        // --- CASE 4: ORIGEN ---
+        else if (tipo === "origen") {
+          const origen = document.getElementById("input-origen-valor").value;
+
+          // Bind to DTO: tipo, origen
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "origen");
+          createHiddenInput(container, `criterios[${contadorCriterios}].origen`, origen);
+
+          descripcion = `🏷️ <b>Origen</b>: ${origen}`;
+        }
+
+        // --- CASE 5: FUENTE ---
+        else if (tipo === "fuente") {
+          const select = document.getElementById("input-fuente-ids");
+          // Get all selected options
+          const selectedOptions = Array.from(select.selectedOptions);
+
+          if (selectedOptions.length === 0) {
+            alert("Seleccione al menos una fuente.");
+            return;
+          }
+
+          // 1. Set the Type
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "fuente");
+
+          // 2. Loop to create List<Long> inputs: criterios[0].fuenteIds[0], criterios[0].fuenteIds[1]...
+          selectedOptions.forEach((option, index) => {
+            createHiddenInput(container, `criterios[${contadorCriterios}].fuentes`, option.value);
+          });
+
+          // 3. Create visual description using the text of the options
+          const names = selectedOptions.map(o => o.text).join(", ");
+          descripcion = `📚 <b>Fuentes</b>: ${names}`;
+        }
+
+        // --- VISUAL FEEDBACK ---
+        const li = document.createElement("li");
+        li.innerHTML = descripcion;
+        li.style.borderBottom = "1px solid #ccc";
+        li.style.padding = "5px 0";
+        visualList.appendChild(li);
+
+        // --- RESET ---
+        contadorCriterios++; // Move to next index for Spring
+
+        // Optional: Reset inputs to clean state
+        document.querySelectorAll('#input-igualdad-valor, #input-lat, #input-lng').forEach(i => i.value = '');
+        document.getElementById("selector-criterio").value = "";
+        mostrarOpciones(); // Hides everything again
+
+        if(document.getElementById("input-fuente-ids")) {
+          document.getElementById("input-fuente-ids").selectedIndex = -1;
+        }
+      }
+
+      // Helper to create the <input type="hidden">
+      function createHiddenInput(parent, name, value) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        parent.appendChild(input);
+      }
+    </script>
     <a href="#" class="close">Cerrar</a>
   </div>
 
-  <div id="editar-coleccion" class="panel">
-    <h3>Editar Colección</h3>
+  <div id="editar-coleccion" class="panel"> <h3>Editar Colección</h3>
     <form method="post" th:action="@{/admin/actualizar-coleccion}">
 
       <input type="hidden" name="handle" id="edit-handle">
 
-      <label for="edit-nombre">Nombre*</label>
+      <label>Nombre*</label>
       <input name="titulo" type="text" id="edit-nombre" required>
 
-      <label for="edit-descripcion">Descripción*</label>
+      <label>Descripción*</label>
       <textarea name="descripcion" id="edit-descripcion" required></textarea>
 
-      <label for="edit-criterio">Seleccione Criterio:</label>
-      <select name="criterioDePertenencia.tipo" id="edit-criterio" onchange="mostrarOpcionesEdicion()">
-        <option value="">-- Seleccione una opción --</option>
-        <option value="fecha">Fecha</option>
-        <option value="igualdad">Igualdad</option>
-        <option value="lugar">Lugar</option>
-        <option value="origen">Origen</option>
-      </select>
+      <div class="criterio-box" style="background:#f0f0f0; padding:15px; border:1px solid #ccc; margin-bottom:15px;">
+        <h4>Agregar / Modificar Criterios</h4>
 
-      <div id="edit-opcion-fecha" class="conditional-section-edit" style="display:none;">
-        <select name="criterioDePertenencia.tipoFecha" id="edit-fecha-tipo">
-          <option value="CARGA">Carga</option>
-          <option value="ACONTECIMIENTO">Acontecimiento</option>
+        <label>Tipo:</label>
+        <select id="edit-selector-criterio" onchange="mostrarOpcionesEdit()">
+          <option value="">-- Seleccionar --</option>
+          <option value="fecha">Fecha</option>
+          <option value="lugar">Lugar</option>
+          <option value="igualdad">Igualdad</option>
+          <option value="origen">Origen</option>
+          <option value="fuente">Fuente</option>
         </select>
-        <label>Fecha Desde:</label>
-        <input type="date" name="criterioDePertenencia.fechaInicial" id="edit-fecha-ini">
-        <label>Fecha Hasta:</label>
-        <input type="date" name="criterioDePertenencia.fechaFinal" id="edit-fecha-fin">
-      </div>
 
-      <div id="edit-opcion-igualdad" class="conditional-section-edit" style="display:none;">
-        <label>Campo:</label>
-        <select name="criterioDePertenencia.tipoDeDato" id="edit-igualdad-tipo">
-          <option value="categoria">Categoría</option>
-          <option value="descripcion">Descripción</option>
-          <option value="etiqueta">Etiqueta</option>
-          <option value="titulo">Título</option>
+        <div id="edit-opcion-fecha" class="conditional-section-edit" style="display:none;">
+          <label>Tipo Fecha:</label>
+          <select id="edit-input-tipo-fecha">
+            <option value="CARGA">Carga</option>
+            <option value="ACONTECIMIENTO">Acontecimiento</option>
+          </select>
+          <label>Desde:</label>
+          <input type="datetime-local" step="1" id="edit-input-fecha-inicio">
+          <label>Hasta:</label>
+          <input type="datetime-local" step="1" id="edit-input-fecha-fin">
+        </div>
+
+        <div id="edit-opcion-lugar" class="conditional-section-edit" style="display:none;">
+          <label>Lat:</label> <input type="number" step="any" id="edit-input-lat">
+          <label>Lng:</label> <input type="number" step="any" id="edit-input-lng">
+        </div>
+
+        <div id="edit-opcion-igualdad" class="conditional-section-edit" style="display:none;">
+          <label>Campo:</label>
+          <select id="edit-input-igualdad-campo">
+            <option value="categoria">Categoría</option>
+            <option value="titulo">Título</option>
+          </select>
+          <label>Valor:</label>
+          <input type="text" id="edit-input-igualdad-valor">
+        </div>
+
+        <div id="edit-opcion-origen" class="conditional-section-edit" style="display:none;">
+          <label>Fuente:</label>
+          <select id="edit-input-origen-valor">
+            <option value="DATASET">Dataset</option>
+            <option value="ONG">ONG</option>
+          </select>
+        </div>
+
+        <label for="edit-fuente">Fuente*</label>
+        <select name="fuenteId" id="edit-fuente" required>
+          <option value="">-- Seleccione una Fuente --</option>
+          <th:block th:each="f : ${fuentes}">
+            <option th:value="${f.id}" th:text="${f.nombre}"></option>
+          </th:block>
         </select>
-        <label>Valor:</label>
-        <input name="criterioDePertenencia.cadenaAComparar" type="text" id="edit-igualdad-valor">
+
+        <div id="edit-opcion-fuente" class="conditional-section-edit" style="display:none;">
+          <label>Fuentes:</label>
+          <select id="edit-input-fuente-ids" multiple class="form-control" style="height: 120px; width: 100%;">
+            <th:block th:each="f : ${fuentes}">
+              <option th:value="${f.id}" th:text="${f.nombre}"></option>
+            </th:block>
+          </select>
+        </div>
+
+        <button type="button" onclick="agregarCriterioEdit()" class="btn-secondary" style="margin-top:10px;">
+          + Agregar
+        </button>
       </div>
 
-      <div id="edit-opcion-lugar" class="conditional-section-edit" style="display:none;">
-        <label>Latitud:</label>
-        <input name="criterioDePertenencia.lat" type="number" step="any" id="edit-lugar-lat">
-        <label>Longitud:</label>
-        <input name="criterioDePertenencia.lng" type="number" step="any" id="edit-lugar-lng">
-      </div>
+      <h4>Criterios Actuales:</h4>
+      <ul id="edit-visual-list"></ul>
 
-      <div id="edit-opcion-origen" class="conditional-section-edit" style="display:none;">
-        <label>Fuente:</label>
-        <select name="criterioDePertenencia.origen" id="edit-origen-fuente">
-          <option value="DATASET">Dataset</option>
-          <option value="ONG">ONG</option>
-          <option value="METAMAPA">Metamapa</option>
-          <option value="CONTRIBUYENTE">Contribuyente</option>
-          <option value="MANUAL">Manual</option>
-        </select>
-      </div>
+      <div id="edit-hidden-inputs-container"></div>
 
-      <label for="edit-consenso">Algoritmo de Consenso*</label>
+      <label>Algoritmo de Consenso*</label>
       <select name="algoritmoConsenso" id="edit-consenso" required>
         <option value="MAYORIA_SIMPLE">Mayoría Simple</option>
         <option value="MULTIPLES_MENCIONES">Múltiples Menciones</option>
         <option value="ABSOLUTA">Absoluta</option>
       </select>
 
-      <div class="mt-3">
+      <div style="margin-top:20px;">
         <button type="submit">Actualizar</button>
-        <a href="#colecciones" class="btn" style="background:#ccc; color:#000;">Cancelar</a>
+        <a href="#" class="close" style="margin-left:10px;">Cancelar</a>
       </div>
     </form>
   </div>
 
   <script>
-    // Función para manejar la visualización de secciones en el modo EDICIÓN
-    function mostrarOpcionesEdicion() {
-      const criterio = document.getElementById('edit-criterio').value;
-      const secciones = document.querySelectorAll('.conditional-section-edit');
+    let contadorCriteriosEdit = 0;
 
-      // Ocultar todo primero
-      secciones.forEach(seccion => {
-        seccion.style.display = 'none';
-      });
+    // 1. Helper to show/hide sections in the Edit Panel
+    function mostrarOpcionesEdit() {
+      const criterio = document.getElementById("edit-selector-criterio").value;
+      document.querySelectorAll('.conditional-section-edit').forEach(div => div.style.display = 'none');
 
-      // Mostrar la seleccionada
-      if (criterio) {
-        const seccionAmostrar = document.getElementById('edit-opcion-' + criterio.toLowerCase());
-        if (seccionAmostrar) {
-          seccionAmostrar.style.display = 'block';
-        }
-      }
+      if (criterio === 'fecha') document.getElementById('edit-opcion-fecha').style.display = 'block';
+      if (criterio === 'lugar') document.getElementById('edit-opcion-lugar').style.display = 'block';
+      if (criterio === 'igualdad') document.getElementById('edit-opcion-igualdad').style.display = 'block';
+      if (criterio === 'origen') document.getElementById('edit-opcion-origen').style.display = 'block';
+      if (criterio === 'fuente') document.getElementById('edit-opcion-fuente').style.display = 'block';
     }
 
-    // Función principal: Carga los datos desde el botón al formulario
+    // 2. Main function called when clicking "Editar"
     function cargarDatosEdicion(btn) {
-      // 1. Llenar campos básicos
+      // A. Basic Fields
       document.getElementById('edit-handle').value = btn.dataset.handle;
       document.getElementById('edit-nombre').value = btn.dataset.titulo;
       document.getElementById('edit-descripcion').value = btn.dataset.descripcion;
+      document.getElementById('edit-consenso').value = btn.dataset.consenso;
 
-      // 3. Forzar la visualización de la sección correcta antes de llenar los sub-campos
-      mostrarOpcionesEdicion();
+      // B. Clear Lists
+      const container = document.getElementById("edit-hidden-inputs-container");
+      const visualList = document.getElementById("edit-visual-list");
+      container.innerHTML = "";
+      visualList.innerHTML = "";
+      contadorCriteriosEdit = 0;
+
+      // C. Parse and Load Criterios
+      try {
+        const criterios = JSON.parse(btn.dataset.criterios);
+
+        criterios.forEach(c => {
+          // We reuse the logic to create inputs for existing items
+          restaurarCriterio(c, container, visualList);
+        });
+      } catch (e) {
+        console.error("Error parsing criterios JSON", e);
+      }
+
+      // Open Panel (Use your existing logic here)
+      document.getElementById("editar-coleccion").style.right = "0";
+    }
+
+    // 3. Logic to Add NEW Criterio (From inputs)
+    function agregarCriterioEdit() {
+      const tipo = document.getElementById("edit-selector-criterio").value;
+      const container = document.getElementById("edit-hidden-inputs-container");
+      const visualList = document.getElementById("edit-visual-list");
+
+      // Construct a temporary object to reuse the 'restaurar' logic
+      let tempObj = { tipo: tipo };
+
+      if (tipo === "fecha") {
+        tempObj.tipoFecha = document.getElementById("edit-input-tipo-fecha").value;
+        tempObj.fechaInicial = document.getElementById("edit-input-fecha-inicio").value;
+        tempObj.fechaFinal = document.getElementById("edit-input-fecha-fin").value;
+      } else if (tipo === "lugar") {
+        tempObj.lat = document.getElementById("edit-input-lat").value;
+        tempObj.lng = document.getElementById("edit-input-lng").value;
+      } else if (tipo === "igualdad") {
+        tempObj.tipoDeDato = document.getElementById("edit-input-igualdad-campo").value;
+        tempObj.cadenaAComparar = document.getElementById("edit-input-igualdad-valor").value;
+      } else if (tipo === "origen") {
+        tempObj.origen = document.getElementById("edit-input-origen-valor").value;
+      } else if (tipo === "fuente") {
+        const select = document.getElementById("edit-input-fuente-ids");
+        const selectedOpts = Array.from(select.selectedOptions);
+        if(selectedOpts.length === 0) return;
+
+        // Store as an array of IDs for 'restaurarCriterio' to use
+        tempObj.fuentes = selectedOpts.map(o => o.value);
+      }
+
+      restaurarCriterio(tempObj, container, visualList);
+
+      // Reset UI
+      document.getElementById("edit-selector-criterio").value = "";
+      mostrarOpcionesEdit();
+    }
+
+    // 4. Shared Logic: Creates Hidden Inputs & Visual Item
+    function restaurarCriterio(c, container, list) {
+      const i = contadorCriteriosEdit;
+      let desc = "";
+
+      // 1. Normalize keys (Handle JSON snake_case vs JS camelCase)
+      // We try to read the JSON key first (e.g. fecha_inicial), fallback to JS key
+      let tipo = c.tipo;
+      const fechaIni = c.fecha_inicial || c.fechaInicial;
+      const fechaFin = c.fecha_final || c.fechaFinal;
+      const tipoFecha = c.tipo_fecha || c.tipoFecha;
+
+      // Note: DTO uses "latitud"/"longitud", JS logic used "lat"/"lng"
+      const lat = c.latitud || c.lat;
+      const lng = c.longitud || c.lng;
+
+      const tipoDato = c.tipo_dato || c.tipoDeDato;
+      const cadena = c.cadena_a_comparar || c.cadenaAComparar;
+      const origen = c.origen; // Same name
+
+      const fuenteIds = c.fuentes;
+
+      if (!tipo) {
+        if (fechaIni) {
+          tipo = "fecha";
+        } else if (lat) {
+          tipo = "lugar";
+        } else if (cadena) {
+          tipo = "igualdad";
+        } else if (origen) {
+          tipo = "origen";
+        }
+        else if(fuenteIds) {
+          tipo = "fuente";
+        }
+      }
+
+      createHiddenInput(container, `criterios[${i}].tipo`, tipo);
+
+      if (tipo === "fecha") {
+        createHiddenInput(container, `criterios[${i}].tipoFecha`, tipoFecha);
+        createHiddenInput(container, `criterios[${i}].fechaInicial`, fechaIni);
+        createHiddenInput(container, `criterios[${i}].fechaFinal`, fechaFin);
+        desc = `📅 Fecha (${tipoFecha}): ${fechaIni} - ${fechaFin}`;
+      }
+      else if (tipo === "lugar") {
+        createHiddenInput(container, `criterios[${i}].lat`, lat);
+        createHiddenInput(container, `criterios[${i}].lng`, lng);
+        desc = `📍 Lugar: ${lat}, ${lng}`;
+      }
+      else if (tipo === "igualdad") {
+        createHiddenInput(container, `criterios[${i}].tipoDeDato`, tipoDato);
+        createHiddenInput(container, `criterios[${i}].cadenaAComparar`, cadena);
+        desc = `🟰 Igualdad: ${tipoDato} = ${cadena}`;
+      }
+      else if (tipo === "origen") {
+        createHiddenInput(container, `criterios[${i}].origen`, origen);
+        desc = `🏷️ Origen: ${origen}`;
+      }
+      else if (tipo === "fuente" && fuenteIds) {
+        const idsArray = Array.isArray(fuenteIds) ? fuenteIds : [fuenteIds];
+        const lookupSelect = document.getElementById("edit-input-fuente-ids");
+        let names = [];
+
+        idsArray.forEach((id) => {
+          // CHANGE HERE: Removed [${index}]
+          createHiddenInput(container, `criterios[${i}].fuentes`, id);
+
+          if(lookupSelect) {
+            const opt = lookupSelect.querySelector(`option[value="${id}"]`);
+            if(opt) names.push(opt.text);
+            else names.push("ID " + id);
+          }
+        });
+
+        desc = `📚 Fuentes: ${names.join(", ")}`;
+      }
+
+      // Visual Item
+      const li = document.createElement("li");
+      li.innerHTML = desc;
+      list.appendChild(li);
+
+      contadorCriteriosEdit++;
+    }
+
+    // Helper
+    function createHiddenInput(parent, name, value) {
+      if(value === undefined || value === null) return;
+      const input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = value;
+      parent.appendChild(input);
     }
   </script>
 </div>
