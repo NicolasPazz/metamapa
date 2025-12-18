@@ -3,6 +3,19 @@
     <section class="colecciones-block">
       <h2>Colecciones</h2>
 
+      <div th:if="${#lists.isEmpty(colecciones)}">No hay colecciones disponibles.</div>
+
+      <div th:if="${!#lists.isEmpty(colecciones) and colecciones != null}" class="colecciones-grid">
+        <div th:each="coleccion : ${colecciones}" class="coleccion-card"
+             th:data-coleccion-handle="${coleccion.handle}"
+             onclick="openColeccionDetailPanel(this.dataset.coleccionHandle)"
+             style="cursor: pointer;">
+          <h3 th:text="${coleccion.titulo}"></h3>
+          <p th:text="${coleccion.descripcion}"></p>
+          <span class="ver-detalles-link">Ver detalles</span>
+        </div>
+      </div>
+
       <div class="pagination">
         <a th:if="${currentPage > 0}"
            th:href="'/colecciones?page=' + (currentPage - 1)"
@@ -16,19 +29,6 @@
            class="btn primary">
           Siguiente →
         </a>
-      </div>
-
-      <div th:if="${#lists.isEmpty(colecciones)}">No hay colecciones disponibles.</div>
-
-      <div th:if="${!#lists.isEmpty(colecciones) and colecciones != null}" class="colecciones-grid">
-        <div th:each="coleccion : ${colecciones}" class="coleccion-card"
-             th:data-coleccion-handle="${coleccion.handle}"
-             onclick="openColeccionDetailPanel(this.dataset.coleccionHandle)"
-             style="cursor: pointer;">
-          <h3 th:text="${coleccion.titulo}"></h3>
-          <p th:text="${coleccion.descripcion}"></p>
-          <span class="ver-detalles-link">Ver detalles</span>
-        </div>
       </div>
     </section>
 

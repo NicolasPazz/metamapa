@@ -31,6 +31,9 @@ public class OngApiAdapter implements IApiExternaAdapter {
   @Value("${proxy_ong.auth.password}")
   private String password;
 
+  @Value("${proxy_ong.dev.max-pages:-1}")
+  private Integer maxPagesDev;
+
   public OngApiAdapter(
       WebClient.Builder webClientBuilder,
       @Value("${proxy_ong.api.url}") String apiUrl
@@ -94,14 +97,25 @@ public class OngApiAdapter implements IApiExternaAdapter {
     List<HechoProxyDTO> todos = new ArrayList<>(firstPage.getData());
     Long lastPage = firstPage.getLast_page();
 
-    for (int page = 2; page <= lastPage; page++) {
+    // En modo desarrollo, limitar a maxPagesDev páginas (solo primera si maxPagesDev=1)
+    // En producción (maxPagesDev=-1 o null), traer todas las páginas
+    int maxPageToFetch = (maxPagesDev != null && maxPagesDev > 0) 
+        ? Math.min(maxPagesDev.intValue(), lastPage.intValue())
+        : lastPage.intValue();
+
+    if (maxPagesDev != null && maxPagesDev > 0) {
+      log.info("Modo desarrollo activado: limitando a {} página(s) de un total de {}", maxPageToFetch, lastPage);
+    }
+
+    for (int page = 2; page <= maxPageToFetch; page++) {
       HechoProxyResponseDTO pageResult = obtenerPagina(page);
       if (pageResult != null && pageResult.getData() != null) {
         todos.addAll(pageResult.getData());
       }
     }
 
-    log.info("Se obtuvieron {} hechos de la API externa", todos.size());
+    log.info("Se obtuvieron {} hechos de la API externa ({} página(s) procesada(s))", 
+        todos.size(), maxPageToFetch);
     return todos;
   }
 

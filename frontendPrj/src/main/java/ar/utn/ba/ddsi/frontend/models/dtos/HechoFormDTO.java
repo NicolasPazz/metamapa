@@ -4,7 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
@@ -14,11 +14,14 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class HechoFormDTO {
-    public String titulo;
+    private String titulo;
     private String descripcion;
     private Double latitud;
     private Double longitud;
     private String categoria;
+    
+    @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm")
     private LocalDateTime fechaAcontecimiento;
+    
     private List<MultipartFile> contenidoMultimedia;
 }

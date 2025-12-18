@@ -89,11 +89,24 @@
 
     </form>
 
-    <div style="text-align: center; margin: 20px 0;">
+    <div style="text-align: right; margin: 20px 0;">
       <a th:href="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/mapa' : '/hechos/mapa'}" 
          class="btn primary">
         Ver en mapa
       </a>
+    </div>
+
+    <div class="hechos-grid">
+      <div th:each="hecho, iterStat : ${hechos}" class="hecho-card"
+           th:data-hecho-id="${hecho.id}"
+           th:attr="data-fuente-id=${hecho['fuente_id']}, data-id-origen=${hecho['id_origen']}"
+           th:data-hecho-index="${iterStat.index}"
+           onclick="openHechoDetailPanel(this)"
+           style="cursor: pointer;">
+        <h3 th:text="${hecho.titulo}"></h3>
+        <p th:text="${hecho.descripcion}"></p>
+        <span class="ver-detalles-link">Ver detalles</span>
+      </div>
     </div>
 
     <div class="pagination">
@@ -124,19 +137,6 @@
         Siguiente →
       </a>
     </div>
-
-    <div class="hechos-grid">
-      <div th:each="hecho, iterStat : ${hechos}" class="hecho-card"
-           th:data-hecho-id="${hecho.id}"
-           th:attr="data-fuente-id=${hecho['fuente_id']}, data-id-origen=${hecho['id_origen']}"
-           th:data-hecho-index="${iterStat.index}"
-           onclick="openHechoDetailPanel(this)"
-           style="cursor: pointer;">
-        <h3 th:text="${hecho.titulo}"></h3>
-        <p th:text="${hecho.descripcion}"></p>
-        <span class="ver-detalles-link">Ver detalles</span>
-      </div>
-    </div>
   </section>
 
   <div id="hechoDetailPanel" class="side-panel">
@@ -149,6 +149,61 @@
   </div>
 
   <div id="overlay" class="overlay" onclick="closeHechoDetailPanel()"></div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Modal de solicitud de eliminación -->
+  <div id="solicitudEliminacionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Solicitar Eliminación de Hecho</h3>
+        <button class="close-btn" onclick="closeSolicitudEliminacionModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="solicitudEliminacionForm">
+          <input type="hidden" id="solicitud_hecho_id" name="hecho_id">
+          <input type="hidden" id="solicitud_fuente_id" name="fuente_id">
+          <input type="hidden" id="solicitud_id_origen" name="id_origen">
+          
+          <div class="form-group">
+            <label for="texto_fundamentos">
+              Justificación <span style="color: #dc3545;">*</span>
+              <small>(Mínimo 500 caracteres)</small>
+            </label>
+            <textarea 
+              id="texto_fundamentos" 
+              name="texto_fundamentos" 
+              rows="8" 
+              required
+              minlength="500"
+              placeholder="Por favor, proporcione una justificación detallada de al menos 500 caracteres explicando por qué solicita la eliminación de este hecho..."
+              style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+            <div class="char-counter">
+              <span id="char_count">0</span> / 500 caracteres mínimos
+            </div>
+            <div id="texto_error" class="error-message" style="display: none;"></div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <p style="font-size: 0.9rem; color: #666; font-style: italic;">
+              <strong>Nota:</strong> Esta solicitud será revisada por los administradores. 
+              Si la justificación contiene spam, será rechazada automáticamente.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn secondary" onclick="closeSolicitudEliminacionModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn primary" id="submit_solicitud" style="background: #dc3545; color: white; border: none;">
+              Enviar Solicitud
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script th:inline="javascript">
     /*<![CDATA[*/
@@ -256,6 +311,17 @@
             }
         }
 
+        // Botón para solicitar eliminación
+        html += '<div style="margin-top: 20px; text-align: center;">';
+        html += '<button onclick="openSolicitudEliminacionModal(' + 
+                (hecho.id ? hecho.id : 'null') + ', ' +
+                (hecho.fuente_id ? hecho.fuente_id : 'null') + ', ' +
+                (hecho.id_origen ? hecho.id_origen : 'null') + 
+                ')" class="btn secondary" style="background: #dc3545; color: white; border: none;">';
+        html += 'Solicitar eliminación';
+        html += '</button>';
+        html += '</div>';
+
       content.innerHTML = html;
 
       panel.classList.add('active');
@@ -299,6 +365,210 @@
         openHechoDetailPanel(hechoId);
       }
     });
+
+    // Funciones para el modal de solicitud de eliminación
+    function openSolicitudEliminacionModal(hechoId, fuenteId, idOrigen) {
+      const modal = document.getElementById('solicitudEliminacionModal');
+      const form = document.getElementById('solicitudEliminacionForm');
+      const textoFundamentos = document.getElementById('texto_fundamentos');
+      const charCount = document.getElementById('char_count');
+      const errorDiv = document.getElementById('texto_error');
+      const submitBtn = document.getElementById('submit_solicitud');
+      
+      // Resetear completamente el formulario y estado
+      form.reset();
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      // Resetear botón a estado inicial
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar Solicitud';
+      
+      // Establecer valores ocultos
+      document.getElementById('solicitud_hecho_id').value = hechoId !== 'null' ? hechoId : '';
+      document.getElementById('solicitud_fuente_id').value = fuenteId !== 'null' ? fuenteId : '';
+      document.getElementById('solicitud_id_origen').value = idOrigen !== 'null' ? idOrigen : '';
+      
+      // Actualizar contador de caracteres
+      charCount.textContent = '0';
+      charCount.style.color = '#dc3545';
+      
+      // Mostrar modal
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      // Focus en textarea
+      setTimeout(() => textoFundamentos.focus(), 100);
+    }
+
+    function closeSolicitudEliminacionModal() {
+      const modal = document.getElementById('solicitudEliminacionModal');
+      const form = document.getElementById('solicitudEliminacionForm');
+      const submitBtn = document.getElementById('submit_solicitud');
+      const errorDiv = document.getElementById('texto_error');
+      
+      // Resetear estado antes de cerrar
+      form.reset();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar Solicitud';
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    // Contador de caracteres
+    document.addEventListener('DOMContentLoaded', function() {
+      const textoFundamentos = document.getElementById('texto_fundamentos');
+      const charCount = document.getElementById('char_count');
+      
+      if (textoFundamentos && charCount) {
+        textoFundamentos.addEventListener('input', function() {
+          const length = this.value.trim().length;
+          charCount.textContent = length;
+          
+          // Cambiar color según si cumple el mínimo
+          if (length < 500) {
+            charCount.style.color = '#dc3545';
+          } else {
+            charCount.style.color = '#28a745';
+          }
+        });
+      }
+
+      // Manejar envío del formulario
+      const form = document.getElementById('solicitudEliminacionForm');
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const submitBtn = document.getElementById('submit_solicitud');
+          const errorDiv = document.getElementById('texto_error');
+          const textoFundamentos = document.getElementById('texto_fundamentos');
+          const texto = textoFundamentos.value.trim();
+          
+          // Validar longitud mínima
+          if (texto.length < 500) {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'La justificación debe tener al menos 500 caracteres. Actualmente tiene ' + texto.length + ' caracteres.';
+            return;
+          }
+          
+          // Deshabilitar botón durante el envío
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Enviando...';
+          errorDiv.style.display = 'none';
+          
+          // Preparar datos
+          const hechoId = document.getElementById('solicitud_hecho_id').value;
+          const fuenteId = document.getElementById('solicitud_fuente_id').value;
+          const idOrigen = document.getElementById('solicitud_id_origen').value;
+          
+          const solicitudData = {
+            texto_fundamentos: texto,
+            contribuyente_id: null // Siempre anónimo por ahora
+          };
+          
+          // Agregar identificadores según corresponda
+          if (hechoId) {
+            solicitudData.hecho_id = parseInt(hechoId);
+          } else if (fuenteId && idOrigen) {
+            solicitudData.fuente_id = parseInt(fuenteId);
+            solicitudData.id_origen = parseInt(idOrigen);
+          }
+          
+          try {
+            const response = await fetch('http://localhost:8084/api/solicitudes', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(solicitudData)
+            });
+            
+            const responseData = await response.text();
+            
+            // Resetear botón siempre (tanto en éxito como en error)
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Solicitud';
+            
+            if (response.ok) {
+              // Éxito - mostrar toast y cerrar modal
+              showToast('Solicitud de eliminación enviada exitosamente. Será revisada por los administradores.', 'success');
+              closeSolicitudEliminacionModal();
+            } else {
+              // Error - mostrar toast y mantener modal abierto
+              const errorMessage = responseData || 'Error al enviar la solicitud. Por favor, intente nuevamente.';
+              showToast(errorMessage, 'error');
+              
+              // Solo mostrar error en el formulario si NO es spam (el toast ya lo muestra)
+              if (!errorMessage.includes('Spam detectado')) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = errorMessage;
+              }
+            }
+          } catch (error) {
+            // Error de conexión - resetear botón, mostrar toast y mantener modal abierto
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Solicitud';
+            const errorMessage = 'Error de conexión: ' + error.message;
+            showToast(errorMessage, 'error');
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = errorMessage;
+          }
+        });
+      }
+    });
+
+    // Cerrar modal al hacer click fuera
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('solicitudEliminacionModal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeSolicitudEliminacionModal();
+          }
+        });
+      }
+    });
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('solicitudEliminacionModal');
+        if (modal && modal.style.display === 'flex') {
+          closeSolicitudEliminacionModal();
+        }
+      }
+    });
+
+    // Función para mostrar toasts
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toastContainer');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      toast.className = `toast toast-${type}`;
+      toast.textContent = message;
+
+      container.appendChild(toast);
+
+      // Trigger animation
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 10);
+
+      // Auto remove after 3 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }, 3000);
+    }
     /*]]>*/
   </script>
   </div>

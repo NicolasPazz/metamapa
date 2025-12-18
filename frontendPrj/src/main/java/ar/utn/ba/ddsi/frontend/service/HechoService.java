@@ -37,11 +37,20 @@ public class HechoService {
         hechoOutput.setLatitud(hechoInput.getLatitud());
         hechoOutput.setLongitud(hechoInput.getLongitud());
         hechoOutput.setTitulo(hechoInput.getTitulo());
-        //hechoOutput.setFechaDeAcontecimiento(hechoInput.getFechaAcontecimiento());
-        hechoOutput.setFechaDeAcontecimiento(LocalDateTime.now());
+        
+        // Usar la fecha del formulario si está disponible, sino usar ahora
+        if (hechoInput.getFechaAcontecimiento() != null) {
+            hechoOutput.setFechaDeAcontecimiento(hechoInput.getFechaAcontecimiento());
+        } else {
+            hechoOutput.setFechaDeAcontecimiento(LocalDateTime.now());
+        }
+        
         hechoOutput.setCategoria(hechoInput.getCategoria());
-        hechoOutput.setMultimedia(this.fileToMultimediaDTO(hechoInput.getContenidoMultimedia()));
-
+        
+        // Convertir archivos multimedia si existen
+        if (hechoInput.getContenidoMultimedia() != null && !hechoInput.getContenidoMultimedia().isEmpty()) {
+            hechoOutput.setMultimedia(this.fileToMultimediaDTO(hechoInput.getContenidoMultimedia()));
+        }
 
         webClient2.post().uri("/solicitudes")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -123,13 +132,33 @@ public class HechoService {
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
                 ContenidoMultimediaDTO dto = new ContenidoMultimediaDTO();
-                dto.setTipoContenido(file.getContentType());
+                // Convertir MIME type a enum TipoContenido esperado por el backend
+                String mimeType = file.getContentType();
+                String tipoContenido = convertirMimeTypeATipoContenido(mimeType);
+                dto.setTipoContenido(tipoContenido);
                 dto.setPathArchivo(file.getOriginalFilename());
                 MultimediaLista.add(dto);
             }
         }
 
         return MultimediaLista;
+    }
+
+    private String convertirMimeTypeATipoContenido(String mimeType) {
+        if (mimeType == null) {
+            return "IMAGEN"; // Default
+        }
+        
+        if (mimeType.startsWith("image/")) {
+            return "IMAGEN";
+        } else if (mimeType.startsWith("video/")) {
+            return "VIDEO";
+        } else if (mimeType.startsWith("audio/")) {
+            return "AUDIO";
+        } else {
+            // Si no se reconoce, intentar inferir por extensión o usar default
+            return "IMAGEN";
+        }
     }
 
     public HechoDTO getOneHecho() {

@@ -61,8 +61,15 @@ public class SolicitudesService {
         }
         Hecho hecho = hechoOpt.get();
         log.info("[SolicitudesService] Hecho interno encontrado en BD: {}", hecho.getId());
+        
+        // Si el hecho local tiene fuenteId e idOrigen (fue importado de fuente externa),
+        // incluirlos en la solicitud para que quede en la blacklist al aceptarse
+        Long fuenteIdHecho = hecho.getFuenteId();
+        Long idOrigenHecho = hecho.getIdOrigen();
+        
         solicitudEliminacion = solicitudEliminacionFactory.crearSolicitud(
-            hecho, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getContribuyenteId(), null, null
+            hecho, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getContribuyenteId(), 
+            fuenteIdHecho, idOrigenHecho
         );
       } else if (solicitudInputDTO.getFuenteId() != null && solicitudInputDTO.getIdOrigen() != null) {
         // 2.b. Hecho externo: buscar por fuente_id e id_origen

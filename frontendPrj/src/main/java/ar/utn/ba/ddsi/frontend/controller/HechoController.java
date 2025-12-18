@@ -12,8 +12,12 @@ import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +58,8 @@ public class HechoController {
         // En /hechos: no mostrar botón Hechos, solo mostrar Colecciones
         model.addAttribute("showHechosBtn", false);
         model.addAttribute("showColeccionesBtn", true);
+        // Mostrar botón "Reportar nuevo hecho" solo en /hechos
+        model.addAttribute("showReportarHechoBtn", true);
         return "hechos/hechosencoleccion";
 
     }
@@ -62,31 +68,37 @@ public class HechoController {
     public String nuevoHecho(Model model){
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
         model.addAttribute("categorias", listaCategorias);
+        model.addAttribute("titulo", "Nuevo Hecho");
+        model.addAttribute("showReportarHechoBtn", false);
         return "hechos/nuevo";
     }
 
-    @PostMapping("/crear")
-    public String crearHecho(@ModelAttribute HechoFormDTO formDTO, Model model) {
+    @PostMapping(value = "/crear", consumes = "multipart/form-data")
+    @ResponseBody
+    public ResponseEntity<?> crearHecho(@ModelAttribute HechoFormDTO formDTO) {
         try {
+            // Validar fecha si está presente
+            if (formDTO.getFechaAcontecimiento() != null) {
+                if (formDTO.getFechaAcontecimiento().isAfter(LocalDateTime.now())) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("La fecha y hora no pueden ser futuras.");
+                }
+            }
+
             hechoService.crearHecho(formDTO);
-            return "hechos/exito";
+            return ResponseEntity.ok().build();
 
         } catch (WebClientResponseException e) {
-
             String mensajeErrorDelBackend = e.getResponseBodyAsString();
-
-
-            model.addAttribute("error", "El servidor rechazó la solicitud: " + mensajeErrorDelBackend);
-
-            model.addAttribute("categorias", hechoService.obtenerCategoriasUnicas());
-
-            return "hechos/nuevo";
+            log.error("Error del backend al crear hecho: {}", mensajeErrorDelBackend);
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(mensajeErrorDelBackend != null && !mensajeErrorDelBackend.isEmpty() 
+                            ? mensajeErrorDelBackend 
+                            : "Error al crear el hecho. Por favor, intente nuevamente.");
         } catch (Exception e) {
-
-            e.printStackTrace();
-            model.addAttribute("error", "Error inesperado: " + e.getMessage());
-            model.addAttribute("categorias", hechoService.obtenerCategoriasUnicas());
-            return "hechos/nuevo";
+            log.error("Error inesperado al crear hecho: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error inesperado: " + e.getMessage());
         }
     }
 
@@ -99,6 +111,7 @@ public class HechoController {
         Map<String, Object> datosMapa = hechoService.getDatosMapa(hechoId, fuenteId, idOrigen);
         datosMapa.forEach(model::addAttribute);
         model.addAttribute("titulo", "Mapa");
+        model.addAttribute("showReportarHechoBtn", false);
         return "mapa/mapa";
     }
 }

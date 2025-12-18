@@ -41,6 +41,7 @@ public class ColeccionController {
         // En /colecciones: mostrar botón Hechos, no mostrar Colecciones
         model.addAttribute("showHechosBtn", true);
         model.addAttribute("showColeccionesBtn", false);
+        model.addAttribute("showReportarHechoBtn", false);
 
         return "colecciones/listacolecciones";
     }
@@ -78,6 +79,7 @@ public class ColeccionController {
         // En /colecciones/{handle}/hechos: mostrar ambos botones
         model.addAttribute("showHechosBtn", true);
         model.addAttribute("showColeccionesBtn", true);
+        model.addAttribute("showReportarHechoBtn", false);
 
         return "hechos/hechosencoleccion";
     }
@@ -92,6 +94,7 @@ public class ColeccionController {
         model.addAttribute("hechos", hechos);
         model.addAttribute("titulo", "Mapa de Colección");
         model.addAttribute("handleColeccion", handle);
+        model.addAttribute("showReportarHechoBtn", false);
         return "mapa/mapa";
     }
 
