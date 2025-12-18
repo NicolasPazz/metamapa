@@ -44,6 +44,7 @@ public class CriterioMapper {
   private CriterioFuenteDTO toFuenteDTO(CriterioFuente c) {
     CriterioFuenteDTO dto = new CriterioFuenteDTO();
     dto.setFuentes(c.getFuentes());
+    dto.setNombresFuentes(c.getNombresFuentes());
     return dto;
   }
 
@@ -56,7 +57,7 @@ public class CriterioMapper {
 
   private CriterioOrigenDTO toOrigenDTO(CriterioOrigen c) {
     CriterioOrigenDTO dto = new CriterioOrigenDTO();
-    dto.setNombreFuente(c.getNombreFuente());
+    dto.setOrigen(c.getOrigen());
     return dto;
   }
 
@@ -87,6 +88,9 @@ public class CriterioMapper {
     if (dto.getFuentes() != null) {
       criterio.setFuentes(dto.getFuentes());
     }
+    if (dto.getNombresFuentes() != null) {
+      criterio.setNombresFuentes(dto.getNombresFuentes());
+    }
     return criterio;
   }
 
@@ -95,6 +99,6 @@ public class CriterioMapper {
   }
 
    private CriterioOrigen fromOrigenDTO(CriterioOrigenDTO dto) {
-    return new CriterioOrigen(dto.getNombreFuente());
+    return new CriterioOrigen(dto.getOrigen());
   }
 }

@@ -16,6 +16,7 @@ import ar.utn.ba.ddsi.agregador.dto.mapper.ColeccionMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.CriterioMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.repositorie.IColeccionesRepository;
 import ar.utn.ba.ddsi.agregador.repositorie.IHechosRepository;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -281,10 +282,9 @@ public class ColeccionesService {
 
                 // 2. Si la colección tiene hechos externos, agregar los de tiempo real
                 List<Long> fuentesTiempoReal = fuentesService.getFuentesTiempoReal();
-                List<String> nombresFuentesTiempoReal =
-                    fuentesService.getNombresFuentesTiempoReal();
+                List<OrigenHecho> origenesTiempoReal = fuentesService.getOrigenesTiempoReal();
 
-                if (coleccion.tieneHechosExternos(fuentesTiempoReal, nombresFuentesTiempoReal)) {
+                if (coleccion.tieneHechosExternos(fuentesTiempoReal, origenesTiempoReal, fuentesService.getNombresFuentesTiempoReal())) {
                     log.info("[ColeccionesService] Colección tiene hechos externos, obteniendo de fuentes en tiempo real");
                     try {
                         ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
@@ -426,7 +426,7 @@ public class ColeccionesService {
 
                 List<Hecho> todosHechos = new ArrayList<>(hechosLocalesVisibles);
 
-                if (coleccionTemporal.tieneHechosExternos(fuentesService.getFuentesTiempoReal(), fuentesService.getNombresFuentesTiempoReal())) {
+                if (coleccionTemporal.tieneHechosExternos(fuentesService.getFuentesTiempoReal(), fuentesService.getOrigenesTiempoReal(), fuentesService.getNombresFuentesTiempoReal())) {
                 try {
                     ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
                         null, null, null, null, null, null);

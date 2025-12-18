@@ -7,6 +7,7 @@ import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioOrigen;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
+import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -140,18 +141,26 @@ public class Coleccion {
     this.hechosConsensuados.addAll(consensuados);
   }
 
-  public boolean tieneHechosExternos(List<Long> fuentesTiempoReal, List<String> nombresFuentesTiempoReal) {
+  public boolean tieneHechosExternos(List<Long> fuentesTiempoReal, List<OrigenHecho> origenesTiempoReal, List<String> nombresFuentesTiempoReal) {
     if (this.criteriosDePertenencia == null || this.criteriosDePertenencia.isEmpty()) {
       return false;
     }
     return this.criteriosDePertenencia.stream()
         .anyMatch(criterio -> {
           if (criterio instanceof CriterioOrigen criterioOrigen) {
-            return nombresFuentesTiempoReal.contains(criterioOrigen.getNombreFuente());
+            return origenesTiempoReal.contains(criterioOrigen.getOrigen());
           }
           if (criterio instanceof CriterioFuente criterioFuente) {
-            return criterioFuente.getFuentes().stream()
-                .anyMatch(fuentesTiempoReal::contains);
+            // Verificar por IDs
+            boolean tieneIds = criterioFuente.getFuentes() != null && !criterioFuente.getFuentes().isEmpty();
+            if (tieneIds && criterioFuente.getFuentes().stream().anyMatch(fuentesTiempoReal::contains)) {
+              return true;
+            }
+            // Verificar por nombres
+            boolean tieneNombres = criterioFuente.getNombresFuentes() != null && !criterioFuente.getNombresFuentes().isEmpty();
+            if (tieneNombres && criterioFuente.getNombresFuentes().stream().anyMatch(nombresFuentesTiempoReal::contains)) {
+              return true;
+            }
           }
           return false;
         });

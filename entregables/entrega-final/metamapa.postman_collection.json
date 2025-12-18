@@ -452,7 +452,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"titulo\": \"Colección de hechos estatica\",\r\n  \"descripcion\": \"ejemplo de uso\",\r\n   \"criterios\": [\r\n      {\r\n        \"cadena_a_comparar\": \"incendio\",\r\n        \"tipo_dato\": \"TITULO\"\r\n      },\r\n      {\r\n        \"origen\": \"DATASET\"\r\n      },\r\n      {\r\n        \"fuentes\": [0]\r\n      }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"titulo\": \"Colección de hechos estatica\",\r\n  \"descripcion\": \"ejemplo de uso\",\r\n   \"criterios\": [\r\n      {\r\n        \"cadena_a_comparar\": \"incendio\",\r\n        \"tipo_dato\": \"TITULO\"\r\n      },\r\n      {\r\n        \"origen\": \"DATASET\"\r\n      },\r\n      {\r\n        \"fuentes\": [\"Fuente Estática\"]\r\n      }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -467,6 +467,43 @@
 									"path": [
 										"admin",
 										"colecciones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "actualizarColeccion2",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "    {\r\n        \"titulo\": \"modificado\",\r\n        \"descripcion\": \"modificado\",\r\n        \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n\r\n    }\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/admin/colecciones/:handle",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"admin",
+										"colecciones",
+										":handle"
+									],
+									"variable": [
+										{
+											"key": "handle",
+											"value": "fe90083b-5995-49d7-80c3-0abd2c45f0a2"
+										}
 									]
 								}
 							},
@@ -489,27 +526,6 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{agregadorBaseURL}}/admin/colecciones",
-									"host": [
-										"{{agregadorBaseURL}}"
-									],
-									"path": [
-										"admin",
-										"colecciones"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "getAllColecciones",
-							"request": {
-								"auth": {
-									"type": "noauth"
-								},
-								"method": "GET",
-								"header": [],
 								"url": {
 									"raw": "{{agregadorBaseURL}}/admin/colecciones",
 									"host": [
@@ -555,6 +571,27 @@
 											"key": "handle",
 											"value": "26d38d73-3064-4859-a616-100c2ceb34b1"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getAllColecciones",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/admin/colecciones",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"admin",
+										"colecciones"
 									]
 								}
 							},
@@ -769,6 +806,122 @@
 								"body": {
 									"mode": "raw",
 									"raw": "{\r\n  \"hecho_id\": 1,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho debido a que contiene datos sensibles que, de permanecer accesibles públicamente, podrían poner en riesgo la seguridad, la integridad y la privacidad de las personas involucradas. La publicación incluye información que permite identificar ubicaciones específicas, horarios y nombres propios, o combinaciones de datos que facilitan la identificación de individuos sin el consentimiento explícito de los afectados. Además, el contenido presenta errores fácticos que ya fueron informados a la organización responsable, generando confusión y desinformación.\",\r\n  \"contribuyente_id\": 2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/solicitudes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "crearSolicitudEliminacion Externo",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fuente_id\": 3,\r\n    \"id_origen\": 1,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho debido a que contiene datos sensibles que, de permanecer accesibles públicamente, podrían poner en riesgo la seguridad, la integridad y la privacidad de las personas involucradas. La publicación incluye información que permite identificar ubicaciones específicas, horarios y nombres propios, o combinaciones de datos que facilitan la identificación de individuos sin el consentimiento explícito de los afectados. Además, el contenido presenta errores fácticos que ya fueron informados a la organización responsable, generando confusión y desinformación.\",\r\n  \"contribuyente_id\": 2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/solicitudes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "crearSolicitudEliminacion Corta",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"hecho_id\": 1,\r\n  \"texto_fundamentos\": \"Este texto contiene menos de 500 caracteres\",\r\n  \"contribuyente_id\": 2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/solicitudes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "crearSolicitudEliminacion Spam",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"hecho_id\": 1,\r\n  \"texto_fundamentos\": \"Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/solicitudes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "crearSolicitudEliminacion Hecho No Existente",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fuente_id\": 6,\r\n    \"id_origen\": 1,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho debido a que contiene datos sensibles que, de permanecer accesibles públicamente, podrían poner en riesgo la seguridad, la integridad y la privacidad de las personas involucradas. La publicación incluye información que permite identificar ubicaciones específicas, horarios y nombres propios, o combinaciones de datos que facilitan la identificación de individuos sin el consentimiento explícito de los afectados. Además, el contenido presenta errores fácticos que ya fueron informados a la organización responsable, generando confusión y desinformación.\",\r\n  \"contribuyente_id\": 2\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1298,6 +1451,25 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Get Provincia Mas Hechos - Coleccion",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{estadisticasBaseURL}}/estadisticas/colecciones/provincia-mas-hechos",
+									"host": [
+										"{{estadisticasBaseURL}}"
+									],
+									"path": [
+										"estadisticas",
+										"colecciones",
+										"provincia-mas-hechos"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -1349,6 +1521,25 @@
 							"response": []
 						},
 						{
+							"name": "Get Provincia Mas Hechos - Categoria",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{estadisticasBaseURL}}/estadisticas/categorias/provincia-mas-hechos",
+									"host": [
+										"{{estadisticasBaseURL}}"
+									],
+									"path": [
+										"estadisticas",
+										"categorias",
+										"provincia-mas-hechos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Get Hora Mas Hechos por Categoria",
 							"request": {
 								"method": "GET",
@@ -1369,6 +1560,25 @@
 											"key": "categoria",
 											"value": "vendaval"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Hora Mas Hechos - Categoria",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{estadisticasBaseURL}}/estadisticas/categorias/hora-mas-hechos",
+									"host": [
+										"{{estadisticasBaseURL}}"
+									],
+									"path": [
+										"estadisticas",
+										"categorias",
+										"hora-mas-hechos"
 									]
 								}
 							},

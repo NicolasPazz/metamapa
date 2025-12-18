@@ -15,6 +15,7 @@ contribuyente_id: INT
 categoria_id: INT <<FK>>
 fuente_id: INT
 id_origen: INT
+nombre_fuente: VARCHAR(255)
 }
 
 entity "CATEGORIA" as cat {

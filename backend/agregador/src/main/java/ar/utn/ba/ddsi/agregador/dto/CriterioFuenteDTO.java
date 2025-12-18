@@ -8,4 +8,7 @@ import lombok.Data;
 public class CriterioFuenteDTO implements CriterioDTO {
   @JsonProperty("fuentes")
   private Set<Long> fuentes;
+  
+  @JsonProperty("nombres_fuentes")
+  private Set<String> nombresFuentes;
 }
