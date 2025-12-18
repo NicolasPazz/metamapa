@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.Logger;
 import org.springframework.cglib.core.Local;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -34,6 +35,7 @@ public class AdminController {
     private final ObjectMapper objectMapper;
     private final FuenteService fuenteService;
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/admin")
     public String mostrarMenu(Model model) {
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
