@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.frontend.controller;
 import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.HechoSolicitudInputDTO;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,6 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -32,6 +34,7 @@ public class HechoController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String fuente,
+            @RequestParam(required = false) String modo_navegacion,
             @RequestParam(defaultValue = "0") int page)
     {
         // Obtener hechos paginados del servicio (ya procesados)
@@ -56,23 +59,35 @@ public class HechoController {
     }
 
     @GetMapping("/nuevo")
-    public String nuevoHecho(){
+    public String nuevoHecho(Model model){
+        List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
+        model.addAttribute("categorias", listaCategorias);
         return "hechos/nuevo";
     }
 
     @PostMapping("/crear")
-    public String crearHecho(Model model, HechoFormDTO hechoInput)
+    public String crearHecho(@ModelAttribute HechoFormDTO formDTO, Model model) {
+        try {
+            hechoService.crearHecho(formDTO);
+            return "hechos/exito";
 
-            {
-                try{
-                    hechoService.crearHecho(hechoInput);
-                    return "hechos/exito";
-                }
-                catch (Exception e) {
-                    log.error("Error al crear Hecho", e);
-                    model.addAttribute("mensaje", "Error: " + e.getMessage());
-                    return "hechos/nuevo";
-                }
+        } catch (WebClientResponseException e) {
+
+            String mensajeErrorDelBackend = e.getResponseBodyAsString();
+
+
+            model.addAttribute("error", "El servidor rechazó la solicitud: " + mensajeErrorDelBackend);
+
+            model.addAttribute("categorias", hechoService.obtenerCategoriasUnicas());
+
+            return "hechos/nuevo";
+        } catch (Exception e) {
+
+            e.printStackTrace();
+            model.addAttribute("error", "Error inesperado: " + e.getMessage());
+            model.addAttribute("categorias", hechoService.obtenerCategoriasUnicas());
+            return "hechos/nuevo";
+        }
     }
 
 

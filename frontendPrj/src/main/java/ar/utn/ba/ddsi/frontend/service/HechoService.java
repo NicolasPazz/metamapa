@@ -4,7 +4,9 @@ import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.ContenidoMultimediaDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.HechoSolicitudInputDTO;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -17,26 +19,36 @@ import java.util.List;
 @Service
 public class HechoService {
     final private WebClient webClient;
+    final private WebClient webClient2;
 
     public HechoService(WebClient.Builder builder) {
         this.webClient = builder.baseUrl("http://localhost:8084/api").build();
+        this.webClient2 = builder.baseUrl("http://localhost:8081/api").build();
     }
 
     public List<HechoDTO> getAllHechos() {
         return webClient.get().uri("/hechos").retrieve().bodyToFlux(HechoDTO.class).collectList().block();
     }
 
-    public void crearHecho(HechoFormDTO form) {
-        fileToMultimediaDTO(form.getContenidoMultimedia());
-        HechoDTO hechoParaEnviar = new HechoDTO();
-        hechoParaEnviar.setTitulo(form.getTitulo());
-        hechoParaEnviar.setDescripcion(form.getDescripcion());
-        hechoParaEnviar.setLatitud(form.getLatitud());
-        hechoParaEnviar.setLongitud(form.getLongitud());
+    public void crearHecho(HechoFormDTO hechoInput) {
 
-        hechoParaEnviar.setEstado("VISIBLE");
-        hechoParaEnviar.setOrigen("CONTRIBUYENTE");
-        hechoParaEnviar.setFechaDeCarga(LocalDateTime.now());
+        HechoSolicitudInputDTO hechoOutput = new HechoSolicitudInputDTO();
+        hechoOutput.setDescripcion(hechoInput.getDescripcion());
+        hechoOutput.setLatitud(hechoInput.getLatitud());
+        hechoOutput.setLongitud(hechoInput.getLongitud());
+        hechoOutput.setTitulo(hechoInput.getTitulo());
+        //hechoOutput.setFechaDeAcontecimiento(hechoInput.getFechaAcontecimiento());
+        hechoOutput.setFechaDeAcontecimiento(LocalDateTime.now());
+        hechoOutput.setCategoria(hechoInput.getCategoria());
+        hechoOutput.setMultimedia(this.fileToMultimediaDTO(hechoInput.getContenidoMultimedia()));
+
+
+        webClient2.post().uri("/solicitudes")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(hechoOutput)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
     }
 
     @SuppressWarnings("unused")
@@ -104,15 +116,18 @@ public class HechoService {
         return provincias != null ? provincias : List.of();
     }
 
-    public List<ContenidoMultimediaDTO> fileToMultimediaDTO(MultipartFile file) {
+    public List<ContenidoMultimediaDTO> fileToMultimediaDTO(List<MultipartFile> files) {
         List<ContenidoMultimediaDTO> MultimediaLista = new ArrayList<>();
-        if (file == null || file.isEmpty()) return MultimediaLista;
+        if (files == null || files.isEmpty()) return MultimediaLista;
 
-        // Construccion de DTO
-        ContenidoMultimediaDTO contenidoMultimediaDTO = new ContenidoMultimediaDTO();
-        contenidoMultimediaDTO.setTipoContenido(file.getContentType());
-        contenidoMultimediaDTO.setPathArchivo(file.getOriginalFilename());
-        MultimediaLista.add(contenidoMultimediaDTO);
+        for (MultipartFile file : files) {
+            if (!file.isEmpty()) {
+                ContenidoMultimediaDTO dto = new ContenidoMultimediaDTO();
+                dto.setTipoContenido(file.getContentType());
+                dto.setPathArchivo(file.getOriginalFilename());
+                MultimediaLista.add(dto);
+            }
+        }
 
         return MultimediaLista;
     }
