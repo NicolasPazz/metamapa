@@ -17,7 +17,7 @@ public class AdminService {
 
     public AdminService(WebClient.Builder builder) {
         this.webClientAgregador = builder.baseUrl("http://localhost:8084/api/admin").build();
-        this.webClientEstatica = builder.baseUrl("http://localhost:8082/api/hechos").build(); //Se tiene que establecer una conexion con la estatica
+        this.webClientEstatica = builder.baseUrl("http://localhost:8082/api").build(); //Se tiene que establecer una conexion con la estatica
         // porque la carga de CSV tiene que ir directamente a la estatica
     }
 
@@ -47,7 +47,7 @@ public class AdminService {
         builder.part("archivo", archivo.getResource());
 
         webClientEstatica.post()
-                .uri("/carga-masiva") //
+                .uri("/csv") //
                 .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
                 .toBodilessEntity()
