@@ -377,13 +377,12 @@ public class HechosService {
 
         // Solo obtener externos si realmente se necesitan para completar esta página
         // Optimización: evitar llamadas innecesarias a fuentes externas
-        List<HechoDTO> hechosExternos;
         if (needed > 0 || start >= 0) {
             try {
                 ResponseEntity<List<HechoDTO>> externosResp = getAllExternal(
                         categoria, fecha_reporte_desde, fecha_reporte_hasta,
                         fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
-                hechosExternos = Optional.ofNullable(externosResp.getBody()).orElse(new ArrayList<>());
+                List<HechoDTO> hechosExternos = Optional.ofNullable(externosResp.getBody()).orElse(new ArrayList<>());
                 totalExternos = hechosExternos.size();
                 
                 // Completar página con hechos externos si faltan elementos
@@ -393,10 +392,7 @@ public class HechosService {
                 }
             } catch (Exception e) {
                 log.warn("[HechosService] Error al obtener hechos externos: {}", e.getMessage());
-                hechosExternos = new ArrayList<>();
             }
-        } else {
-            hechosExternos = new ArrayList<>();
         }
 
         // Calcular totales combinados para determinar si hay página siguiente

@@ -93,8 +93,7 @@ async function apiFetch(endpoint, options = {}) {
   };
   
   try {
-    const response = await fetch(url, mergedOptions);
-    return response;
+    return await fetch(url, mergedOptions);
   } catch (error) {
     console.error('Error en petición API:', error);
     throw error;

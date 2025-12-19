@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.config;
+package ar.utn.ba.ddsi.users.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;

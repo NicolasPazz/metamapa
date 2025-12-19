@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.domain.usuario;
+package ar.utn.ba.ddsi.users.domain;
 
 public enum Permiso {
     MANEJAR_COLECCIONES,

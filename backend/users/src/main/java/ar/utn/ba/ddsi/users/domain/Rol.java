@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.domain.usuario;
+package ar.utn.ba.ddsi.users.domain;
 
 public enum Rol {
     ADMIN,

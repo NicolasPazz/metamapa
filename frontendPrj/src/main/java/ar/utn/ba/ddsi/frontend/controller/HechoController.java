@@ -116,10 +116,10 @@ public class HechoController {
         } catch (WebClientResponseException e) {
             String mensajeErrorDelBackend = e.getResponseBodyAsString();
             log.error("Error del backend al crear hecho: {}", mensajeErrorDelBackend);
-            return ResponseEntity.status(e.getStatusCode())
-                    .body(mensajeErrorDelBackend != null && !mensajeErrorDelBackend.isEmpty() 
+            String mensaje = mensajeErrorDelBackend != null && !mensajeErrorDelBackend.isEmpty() 
                             ? mensajeErrorDelBackend 
-                            : "Error al crear el hecho. Por favor, intente nuevamente.");
+                            : "Error al crear el hecho. Por favor, intente nuevamente.";
+            return ResponseEntity.status(e.getStatusCode()).body(mensaje);
         } catch (Exception e) {
             log.error("Error inesperado al crear hecho: {}", e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

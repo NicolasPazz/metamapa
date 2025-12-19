@@ -17,5 +17,6 @@
 		<module>estatica</module>
 		<module>proxy_ong</module>
 		<module>proxy_metamapa</module>
-	</modules>
+        <module>users</module>
+    </modules>
 </project>

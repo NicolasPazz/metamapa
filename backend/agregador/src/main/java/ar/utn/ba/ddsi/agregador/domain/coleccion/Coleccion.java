@@ -157,8 +157,8 @@ public class Coleccion {
               return true;
             }
             // Verificar por nombres
-            boolean tieneNombres = criterioFuente.getNombresFuentes() != null && !criterioFuente.getNombresFuentes().isEmpty();
-            if (tieneNombres && criterioFuente.getNombresFuentes().stream().anyMatch(nombresFuentesTiempoReal::contains)) {
+            if (criterioFuente.getNombresFuentes() != null && !criterioFuente.getNombresFuentes().isEmpty() 
+                && criterioFuente.getNombresFuentes().stream().anyMatch(nombresFuentesTiempoReal::contains)) {
               return true;
             }
           }

@@ -23,7 +23,6 @@ public class OngApiAdapter implements IApiExternaAdapter {
   private String tokenType;
   private final Integer perPage = 100;
   private final String authHeader = "Authorization";
-  private String authHeaderValue;
 
   @Value("${proxy_ong.auth.email:}")
   private String email;
@@ -81,9 +80,10 @@ public class OngApiAdapter implements IApiExternaAdapter {
           (response != null ? response.getMessage() : "respuesta nula"));
     }
 
-    this.accessToken = response.getData().getAccess_token();
-    this.tokenType = response.getData().getToken_type();
-    this.authHeaderValue = tokenType + " " + accessToken;
+    String localAccessToken = response.getData().getAccess_token();
+    String localTokenType = response.getData().getToken_type();
+    this.accessToken = localAccessToken;
+    this.tokenType = localTokenType;
     log.info("Autenticación exitosa con la API externa de ONG");
   }
 
@@ -100,7 +100,7 @@ public class OngApiAdapter implements IApiExternaAdapter {
     // En modo desarrollo, limitar a maxPagesDev páginas (solo primera si maxPagesDev=1)
     // En producción (maxPagesDev=-1 o null), traer todas las páginas
     int maxPageToFetch = (maxPagesDev != null && maxPagesDev > 0) 
-        ? Math.min(maxPagesDev.intValue(), lastPage.intValue())
+        ? Math.min(maxPagesDev, lastPage.intValue())
         : lastPage.intValue();
 
     if (maxPagesDev != null && maxPagesDev > 0) {
@@ -120,6 +120,7 @@ public class OngApiAdapter implements IApiExternaAdapter {
   }
 
   private HechoProxyResponseDTO obtenerPagina(int page) {
+    String authHeaderValue = tokenType + " " + accessToken;
     return webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/desastres")

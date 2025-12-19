@@ -31,7 +31,7 @@ public class AgregadorClient {
           url,
           HttpMethod.GET,
           null,
-          new ParameterizedTypeReference<List<HechoDTO>>() {}
+          new ParameterizedTypeReference<>() {}
       );
 
       List<HechoDTO> hechos = response.getBody();
@@ -65,7 +65,7 @@ public class AgregadorClient {
           url,
           HttpMethod.GET,
           null,
-          new ParameterizedTypeReference<List<ColeccionDTO>>() {}
+          new ParameterizedTypeReference<>() {}
       );
       List<ColeccionDTO> colecciones = response.getBody();
       log.info("✅ [AgregadorClient] Se obtuvieron {} colecciones", colecciones != null ? colecciones.size() : 0);
@@ -84,7 +84,7 @@ public class AgregadorClient {
           url,
           HttpMethod.GET,
           null,
-          new ParameterizedTypeReference<List<SolicitudDTO>>() {}
+          new ParameterizedTypeReference<>() {}
       );
       List<SolicitudDTO> solicitudes = response.getBody();
       log.info("✅ [AgregadorClient] Se obtuvieron {} solicitudes", solicitudes != null ? solicitudes.size() : 0);

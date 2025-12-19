@@ -392,7 +392,7 @@ public class ColeccionesService {
             List<Hecho> todosHechosFiltrados;
             List<Hecho> todosHechosConsensuados;
 
-            if (criterios == null || criterios.isEmpty()) {
+            if (criterios.isEmpty()) {
                 todosHechosFiltrados = new ArrayList<>();
                 todosHechosConsensuados = new ArrayList<>();
             } else {
@@ -710,7 +710,6 @@ public class ColeccionesService {
                 .toList());
             log.debug("[aplicarFiltros] Fecha acontecimiento hasta {}: {} -> {} hechos",
                 fechaAcontecimientoHasta, iniciales, resultado.size());
-            iniciales = resultado.size();
         }
 
         if (fuente != null && !fuente.trim().isEmpty()) {

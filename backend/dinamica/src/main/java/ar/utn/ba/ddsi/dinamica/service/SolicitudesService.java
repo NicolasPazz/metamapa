@@ -14,7 +14,6 @@ import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -196,8 +195,7 @@ public class SolicitudesService {
       input.setMultimedia(multimediaList);
     }
 
-    SolicitudHecho solicitudCreada = recibirSolicitudContribuyente(input);
-    return solicitudCreada;
+    return recibirSolicitudContribuyente(input);
   }
 
   private SolicitudHechoInputContribuyenteDTO parseJsonToDTO(String solicitudJson) throws IOException {
@@ -212,27 +210,29 @@ public class SolicitudesService {
   private TipoContenido determinarTipoContenido(String contentType, String nombreArchivo) {
     // Primero intentar inferir desde MIME type (más confiable)
     if (contentType != null) {
-      if (contentType.equals("image/jpeg") || contentType.equals("image/jpg") || 
-          contentType.equals("image/png") || contentType.equals("image/gif") || 
-          contentType.equals("image/webp")) {
-        return TipoContenido.IMAGEN;
-      } else if (contentType.equals("video/mp4") || contentType.equals("video/webm")) {
-        return TipoContenido.VIDEO;
-      } else if (contentType.equals("audio/mpeg") || contentType.equals("audio/mp3") || 
-                 contentType.equals("audio/wav") || contentType.equals("audio/ogg")) {
-        return TipoContenido.AUDIO;
+      TipoContenido resultado = switch (contentType) {
+        case "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" -> TipoContenido.IMAGEN;
+        case "video/mp4", "video/webm" -> TipoContenido.VIDEO;
+        case "audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg" -> TipoContenido.AUDIO;
+        default -> null;
+      };
+      if (resultado != null) {
+        return resultado;
       }
+
     }
     
     // Fallback: inferir por extensión del archivo si MIME type no está disponible
     if (nombreArchivo != null && nombreArchivo.contains(".")) {
       String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
-      if (extension.matches("jpg|jpeg|png|gif|webp")) {
-        return TipoContenido.IMAGEN;
-      } else if (extension.matches("mp4|webm")) {
-        return TipoContenido.VIDEO;
-      } else if (extension.matches("mp3|wav|ogg")) {
-        return TipoContenido.AUDIO;
+      TipoContenido resultado = switch (extension) {
+        case "jpg", "jpeg", "png", "gif", "webp" -> TipoContenido.IMAGEN;
+        case "mp4", "webm" -> TipoContenido.VIDEO;
+        case "mp3", "wav", "ogg" -> TipoContenido.AUDIO;
+        default -> null;
+      };
+      if (resultado != null) {
+        return resultado;
       }
     }
     
