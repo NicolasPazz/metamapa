@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Términos de Uso - MetaMapa</title>
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <a th:href="@{/}" class="logo">MetaMapa</a>
+    <nav class="nav-buttons-center">
+      <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
+      <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
+    </nav>
+    <nav class="nav-buttons">
+      <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn secondary">Ingresar</a>
+      <a sec:authorize="!isAuthenticated()" th:href="@{/registro}" class="btn primary">Registrarse</a>
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
+        <button type="submit" class="btn secondary">Cerrar sesión</button>
+      </form>
+    </nav>
+  </header>
+
+  <!-- Contenido de Términos de Uso -->
+  <section class="block">
+    <div class="container">
+      <h1 style="color: var(--primary); text-align: center; margin-bottom: 2rem;">Términos de Uso</h1>
+
+      <div style="max-width: 900px; margin: 0 auto; text-align: justify;">
+        <h2 style="color: var(--secondary); margin-top: 2rem;">1. Aceptación de los Términos</h2>
+        <p>
+          Al acceder y utilizar MetaMapa, usted acepta estar sujeto a estos términos de uso,
+          todas las leyes y regulaciones aplicables, y acepta que es responsable del cumplimiento
+          de las leyes locales aplicables.
+        </p>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">2. Uso de la Plataforma</h2>
+        <p>
+          MetaMapa es una plataforma de código abierto diseñada para la recopilación, visibilización
+          y mapeo colaborativo de información. Los usuarios pueden:
+        </p>
+        <ul style="margin-left: 2rem; line-height: 1.8;">
+          <li>Reportar hechos de forma anónima</li>
+          <li>Visualizar información geolocalizada</li>
+          <li>Consultar colecciones de datos</li>
+          <li>Contribuir con información verificable</li>
+        </ul>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">3. Responsabilidades del Usuario</h2>
+        <p>
+          Los usuarios se comprometen a:
+        </p>
+        <ul style="margin-left: 2rem; line-height: 1.8;">
+          <li>Proporcionar información veraz y precisa</li>
+          <li>No publicar contenido ofensivo, difamatorio o ilegal</li>
+          <li>Respetar la privacidad de terceros</li>
+          <li>No utilizar la plataforma para fines maliciosos</li>
+        </ul>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">4. Propiedad Intelectual</h2>
+        <p>
+          MetaMapa es un proyecto de código abierto. El contenido publicado por los usuarios
+          permanece bajo su propiedad, pero otorgan a MetaMapa una licencia para usar,
+          reproducir y distribuir dicho contenido en el contexto de la plataforma.
+        </p>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">5. Modificaciones del Servicio</h2>
+        <p>
+          MetaMapa se reserva el derecho de modificar o discontinuar el servicio en cualquier
+          momento, con o sin previo aviso. No seremos responsables ante usted o ante terceros
+          por cualquier modificación, suspensión o discontinuación del servicio.
+        </p>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">6. Limitación de Responsabilidad</h2>
+        <p>
+          MetaMapa no se hace responsable por la veracidad de la información publicada por los usuarios.
+          El contenido es proporcionado "tal cual" y no garantizamos su exactitud o completitud.
+        </p>
+
+        <p style="margin-top: 2rem; text-align: center;">
+          <a th:href="@{/}" class="btn primary">Volver al inicio</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <section class="block legal">
+    <div class="container">
+      <p>
+        © 2025 MetaMapa. Todos los derechos reservados.<br>
+        <a th:href="@{/terminos}" class="footer-link">Términos de uso</a> ·
+        <a th:href="@{/privacidad}" class="footer-link">Política de privacidad</a> ·
+        <a th:href="@{/contacto}" class="footer-link">Contacto</a>
+      </p>
+    </div>
+  </section>
+</body>
+</html>
+

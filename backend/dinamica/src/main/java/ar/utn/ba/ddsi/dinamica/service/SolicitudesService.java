@@ -34,7 +34,7 @@ public class SolicitudesService {
   public List<SolicitudOutputDTO> buscarTodas() {
     log.debug("Buscando todas las solicitudes");
     List<SolicitudHecho> solicitudes = solicitudesRepository.findAll();
-    log.info("Se encontraron {} solicitudes", solicitudes.size());
+    log.debug("Se encontraron {} solicitudes", solicitudes.size());
 
     return solicitudes.stream()
         .map(SolicitudHecho::toOutputDTO)
@@ -43,7 +43,10 @@ public class SolicitudesService {
 
   @Transactional
   public SolicitudHecho recibirSolicitudContribuyente(SolicitudHechoInputContribuyenteDTO input) {
-    log.info("Recibiendo nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
+    log.debug("SolicitudesService.recibirSolicitudContribuyente - Iniciando");
+    log.debug("SolicitudesService.recibirSolicitudContribuyente - Nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
+    log.debug("SolicitudesService.recibirSolicitudContribuyente - Título: {}, Latitud: {}, Longitud: {}, Categoría: {}", 
+            input.getTitulo(), input.getLatitud(), input.getLongitud(), input.getCategoria());
 
     SolicitudHecho solicitud = SolicitudHecho.builder()
         .idContribuyente(input.getIdContribuyente())
@@ -73,7 +76,7 @@ public class SolicitudesService {
 
     SolicitudHecho solicitudGuardada = solicitudesRepository.save(solicitud);
 
-    log.info("Solicitud creada con ID: {} - Contribuyente: {} ({})",
+    log.debug("Solicitud creada con ID: {} - Contribuyente: {} ({})",
         solicitudGuardada.getId(),
         solicitudGuardada.getIdContribuyente(),
         solicitudGuardada.esAnonimo() ? "Anónimo" : "Registrado");
@@ -92,7 +95,7 @@ public class SolicitudesService {
 
   @Transactional
   public SolicitudOutputDTO modificarSolicitud(Long id, SolicitudModificarUserInputDTO inputDTO) {
-    log.info("Modificando solicitud ID: {} por contribuyente ID: {}", id, inputDTO.getIdContribuyente());
+    log.debug("Modificando solicitud ID: {} por contribuyente ID: {}", id, inputDTO.getIdContribuyente());
 
     SolicitudHecho solicitud = solicitudesRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Solicitud no encontrada con ID: " + id));
@@ -117,14 +120,14 @@ public class SolicitudesService {
     }
 
     SolicitudHecho solicitudActualizada = solicitudesRepository.save(solicitud);
-    log.info("Solicitud ID: {} modificada exitosamente", id);
+    log.debug("Solicitud ID: {} modificada exitosamente", id);
 
     return solicitudActualizada.toOutputDTO();
   }
 
   @Transactional
   public SolicitudOutputDTO revisionSolicitud(Long id, SolicitudModificarAdminInputDTO inputDTO) {
-    log.info("Revisión administrativa de solicitud ID: {}", id);
+    log.debug("Revisión administrativa de solicitud ID: {}", id);
 
     SolicitudHecho solicitud = solicitudesRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Solicitud no encontrada con ID: " + id));
@@ -151,18 +154,18 @@ public class SolicitudesService {
     }
 
     EstadoSolicitud nuevoEstado = inputDTO.getNuevoEstadoSolicitud();
-    log.info("Cambiando estado de solicitud ID: {} a {}", id, nuevoEstado);
+    log.debug("Cambiando estado de solicitud ID: {} a {}", id, nuevoEstado);
     solicitud.cambiarEstado(nuevoEstado);
 
     SolicitudHecho solicitudActualizada = solicitudesRepository.save(solicitud);
 
     if (solicitud.getEstado() == EstadoSolicitud.ACEPTADO ||
         solicitud.getEstado() == EstadoSolicitud.ACEPTADO_MODIFICADO) {
-      log.info("Creando hecho para solicitud aceptada ID: {}", id);
+      log.debug("Creando hecho para solicitud aceptada ID: {}", id);
       fuenteService.crearHechoDesdeSolicitud(solicitudActualizada);
     }
 
-    log.info("Revisión completada para solicitud ID: {}", id);
+    log.debug("Revisión completada para solicitud ID: {}", id);
     return solicitudActualizada.toOutputDTO();
   }
 
@@ -171,7 +174,13 @@ public class SolicitudesService {
       String solicitudJson,
       List<MultipartFile> archivos) throws IOException {
     
+    log.debug("SolicitudesService.recibirSolicitudContribuyenteConMultipart - Iniciando procesamiento");
+    log.debug("SolicitudesService.recibirSolicitudContribuyenteConMultipart - JSON recibido: {}", solicitudJson);
+    
     SolicitudHechoInputContribuyenteDTO input = parseJsonToDTO(solicitudJson);
+    
+    log.debug("SolicitudesService.recibirSolicitudContribuyenteConMultipart - DTO parseado - Título: {}, Contribuyente: {}", 
+            input.getTitulo(), input.getIdContribuyente());
     
     // Procesar archivos multimedia: guardar físicamente y determinar tipo de contenido
     if (archivos != null && !archivos.isEmpty()) {

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMapa - Registrarse</title>
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+  <script th:src="@{/js/common.js}"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar">
+    <a th:href="@{/}" class="logo">MetaMapa</a>
+    <nav class="nav-buttons-center">
+      <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
+      <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
+    </nav>
+    <nav class="nav-buttons">
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
+        <button type="submit" class="btn secondary">Cerrar sesión</button>
+      </form>
+    </nav>
+  </header>
+
+  <!-- Register form -->
+  <section class="login-block">
+    <div class="login-card">
+      <h2>Registrarse</h2>
+      
+      <!-- Mostrar mensajes de error -->
+      <div th:if="${error}" style="color: red; margin-bottom: 1rem; padding: 0.75rem; background: #fee; border: 1px solid #fcc; border-radius: 6px;">
+        <span th:text="${error}">Error</span>
+      </div>
+      
+      <form id="registerForm" th:action="@{/registro}" method="post">
+        <!-- Mandatory fields -->
+        <label for="username">Usuario <span style="color: #dc3545;">*</span></label>
+        <input type="text" id="username" name="username" placeholder="Nombre de usuario" required>
+
+        <label for="nombre">Nombre <span style="color: #dc3545;">*</span></label>
+        <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+
+        <label for="password">Contraseña <span style="color: #dc3545;">*</span></label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required>
+
+        <!-- Optional fields -->
+        <label for="apellido">Apellido</label>
+        <input type="text" id="apellido" name="apellido" placeholder="Tu apellido">
+
+        <label for="fecha">Fecha de nacimiento</label>
+        <input type="date" id="fecha">
+
+        <button type="submit" class="btn primary" id="submitBtn">Crear cuenta</button>
+      </form>
+
+      <div class="login-options" style="text-align: center; margin-top: 1rem;">
+        <a th:href="@{/login}">¿Ya tenes cuenta? Ingresar</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const registerForm = document.getElementById('registerForm');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Deshabilitar botón durante el envío
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Registrando...';
+        
+        // Obtener datos del formulario
+        const formData = new FormData(registerForm);
+        
+        try {
+          const response = await fetch('/registro', {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+          });
+          
+          // Resetear botón
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Crear cuenta';
+          
+          // Intentar parsear como JSON primero
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const data = await response.json();
+            
+            if (data.success === "true" || data.success === true) {
+              // Registro exitoso - mostrar toast durante 1.5 segundos y luego redirigir
+              showToast('Registro exitoso', 'success', 1500).then(() => {
+                window.location.href = '/login';
+              });
+            } else {
+              // Error - mostrar mensaje de error
+              const errorMessage = data.error || 'Error al registrar usuario. Por favor, intente nuevamente.';
+              showToast(errorMessage, 'error');
+            }
+          } else {
+            // Si no es JSON, manejar como HTML (fallback)
+            const htmlText = await response.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(htmlText, 'text/html');
+            
+            // Verificar si la página es de login (éxito) o de registro (error)
+            const isLoginPage = doc.querySelector('h2') && doc.querySelector('h2').textContent.includes('Ingresar');
+            const isRegisterPage = doc.querySelector('h2') && doc.querySelector('h2').textContent.includes('Registrarse');
+            
+            if (isLoginPage) {
+              // Registro exitoso - mostrar toast durante 1.5 segundos y luego redirigir
+              showToast('Registro exitoso', 'success', 1500).then(() => {
+                window.location.href = '/login';
+              });
+            } else if (isRegisterPage) {
+              // Error - obtener mensaje de error
+              let errorMessage = 'Error al registrar usuario. Por favor, intente nuevamente.';
+              
+              const errorDiv = doc.querySelector('div[style*="color: red"]') || 
+                             doc.querySelector('.error');
+              
+              if (errorDiv) {
+                const errorSpan = errorDiv.querySelector('span');
+                if (errorSpan) {
+                  errorMessage = errorSpan.textContent.trim();
+                } else {
+                  errorMessage = errorDiv.textContent.trim();
+                }
+              }
+              
+              showToast(errorMessage, 'error');
+            } else {
+              // No se pudo determinar - asumir éxito si la respuesta es OK
+              if (response.ok) {
+                showToast('Registro exitoso', 'success', 1500).then(() => {
+                  window.location.href = '/login';
+                });
+              } else {
+                showToast('Error al registrar usuario. Por favor, intente nuevamente.', 'error');
+              }
+            }
+          }
+        } catch (error) {
+          // Error de conexión
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Crear cuenta';
+          showToast('Error de conexión: ' + error.message, 'error');
+        }
+      });
+    });
+  </script>
+  
+</body>
+</html>

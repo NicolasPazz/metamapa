@@ -36,9 +36,12 @@ public class SolicitudesController {
   public ResponseEntity<SolicitudOutputDTO> crearNuevaSolicitudJson(
       @Valid @RequestBody SolicitudHechoInputContribuyenteDTO input) {
 
-    log.info("POST /api/solicitudes (JSON) - Nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
+    log.debug("POST /api/solicitudes (JSON) - Recibida petición");
+    log.debug("POST /api/solicitudes (JSON) - Nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
+    log.debug("POST /api/solicitudes (JSON) - Título: {}, Latitud: {}, Longitud: {}", 
+            input.getTitulo(), input.getLatitud(), input.getLongitud());
     var solicitudCreada = solicitudesService.recibirSolicitudContribuyente(input);
-    log.info("Solicitud creada con ID: {}", solicitudCreada.getId());
+    log.debug("POST /api/solicitudes (JSON) - Solicitud creada exitosamente con ID: {}", solicitudCreada.getId());
     return ResponseEntity.status(HttpStatus.CREATED).body(solicitudCreada.toOutputDTO());
   }
 
@@ -47,20 +50,35 @@ public class SolicitudesController {
       @RequestPart("solicitud") String solicitudJson,
       @RequestPart(value = "archivos", required = false) List<MultipartFile> archivos) {
 
+    log.debug("POST /api/solicitudes (MULTIPART) - Recibida petición");
+    log.debug("POST /api/solicitudes - JSON recibido: {}", solicitudJson);
+    log.debug("POST /api/solicitudes - Archivos recibidos: {}", 
+            archivos != null ? archivos.size() : 0);
+    
+    if (archivos != null) {
+      archivos.forEach(archivo -> 
+          log.debug("POST /api/solicitudes - Archivo: {} ({} bytes, tipo: {})", 
+                  archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType()));
+    }
+
     try {
       SolicitudHecho solicitudCreada = solicitudesService.recibirSolicitudContribuyenteConMultipart(
           solicitudJson, archivos);
+      log.debug("POST /api/solicitudes - Solicitud creada exitosamente con ID: {}", 
+              solicitudCreada.getId());
       return ResponseEntity.status(HttpStatus.CREATED).body(solicitudCreada.toOutputDTO());
     } catch (IllegalArgumentException e) {
-      log.error("Formato de archivo no permitido", e);
+      log.error("POST /api/solicitudes - Formato de archivo no permitido: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body("Formato de archivo no permitido: " + e.getMessage());
     } catch (IOException e) {
-      log.error("Error procesando solicitud con archivos", e);
+      log.error("POST /api/solicitudes - Error procesando solicitud con archivos: {}", 
+              e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
           .body("Error procesando archivos: " + e.getMessage());
     } catch (Exception e) {
-      log.error("Error inesperado procesando solicitud", e);
+      log.error("POST /api/solicitudes - Error inesperado procesando solicitud: {}", 
+              e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body("Error inesperado: " + e.getMessage());
     }
@@ -70,9 +88,9 @@ public class SolicitudesController {
   public ResponseEntity<SolicitudOutputDTO> modificarSolicitud(
       @PathVariable Long id,
       @Valid @RequestBody SolicitudModificarUserInputDTO input) {
-    log.info("PATCH /api/solicitudes/{} - Modificación por contribuyente ID: {}", id, input.getIdContribuyente());
+    log.debug("PATCH /api/solicitudes/{} - Modificación por contribuyente ID: {}", id, input.getIdContribuyente());
     SolicitudOutputDTO solicitudModificada = solicitudesService.modificarSolicitud(id, input);
-    log.info("Solicitud {} modificada exitosamente", id);
+    log.debug("Solicitud {} modificada exitosamente", id);
     return ResponseEntity.ok(solicitudModificada);
   }
 }

@@ -1,20 +1,70 @@
-# dependencias instaladas con npm/yarn/pnpm
-node_modules/
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
 
-# archivos de build/output
-dist/
-out/
-.cache/
-.next/
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-# logs
+### VS Code ###
+.vscode/
+
+# Directorios de datos y almacenamiento
+../data/
+
+# Archivos de entorno y configuración local
+.env
+.env.local
+.env.*.local
+*.env
+
+# Archivos del sistema operativo
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# Archivos compilados Java (por si acaso)
+*.class
+!**/src/main/**/*.class
+!**/src/test/**/*.class
+
+# Node modules (si hay proyectos frontend con npm)
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
 
-# sistema/IDE
-.DS_Store
-.vscode/
-.idea/
+# Archivos temporales
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
