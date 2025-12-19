@@ -132,7 +132,8 @@ public class AdminController {
 
         model.addAttribute("solicitudes", solicitudes);
 
-
+        //TODO: Si pongo el solicitudes normal algo rompe cuando intenta cargarlas y no me doy cuenta que.
+        // Los flujos de crear y modificar ya estan.
         return "admin/solicitudesv2";
     }
 

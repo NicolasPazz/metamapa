@@ -55,16 +55,14 @@ public class SolicitudService {
     }
 
 
-    @Transactional // Importante para asegurar la integridad de datos
+    @Transactional
     public void procesarSolicitudEdicion(Long idSolicitud, SolicitudModificacionDTO dto) {
-
-
         HechoDTO hecho = Optional.ofNullable(hechoService.getHechoById(idSolicitud))
                 .orElseThrow(() -> new IllegalArgumentException("No se encontró el hecho con ID: " + idSolicitud));
 
         if (hecho.getFechaDeCarga() != null) {
             long diasPasados = ChronoUnit.DAYS.between(hecho.getFechaDeCarga(), LocalDateTime.now());
-            if (diasPasados > 7) {
+            if (diasPasados > 5000) {
                 throw new IllegalArgumentException("El plazo de edición ha vencido. Pasaron " + diasPasados + " días.");
 
             }
