@@ -96,7 +96,6 @@ public class SolicitudService {
         try {
             webClient2.patch()
                     .uri("/solicitudes/" + idSolicitud + "/" + accion)
-                    // .bodyValue(dto)  <--- ¡ESTO LO QUITAMOS! No enviamos cuerpo.
                     .retrieve()
                     .onStatus(
                             status -> status.is4xxClientError() || status.is5xxServerError(),

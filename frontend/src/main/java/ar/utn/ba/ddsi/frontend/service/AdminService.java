@@ -31,8 +31,8 @@ public class AdminService {
     public void actualizarSolicitud(Long id, String estado) {
         SolicitudOutputDTO dtoBack = new SolicitudOutputDTO();
 
-        if(Objects.equals(estado, "RECHAZADA")) dtoBack.setEstado(EstadoSolicitud.RECHAZADA);
-        else dtoBack.setEstado(EstadoSolicitud.ACEPTADA);
+        if(Objects.equals(estado, "RECHAZADA")) dtoBack.setEstado(EstadoSolicitud.RECHAZADO);
+        else dtoBack.setEstado(EstadoSolicitud.ACEPTADO);
 
         webClientAgregador.patch()
                 .uri("/solicitudes/" + id)
