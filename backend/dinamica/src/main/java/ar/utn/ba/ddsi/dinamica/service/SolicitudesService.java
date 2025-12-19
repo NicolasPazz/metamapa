@@ -248,5 +248,8 @@ public class SolicitudesService {
     throw new IllegalArgumentException("Formato de archivo no permitido. Formatos permitidos: " +
         "Imágenes: jpg, jpeg, png, gif, webp | Videos: mp4, webm | Audio: mp3, wav, ogg");
   }
-}
+
+
+  }
+
 

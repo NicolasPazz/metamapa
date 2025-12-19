@@ -18,6 +18,9 @@
         .detail-label { font-size: 0.75rem; text-transform: uppercase; color: #6c757d; font-weight: 700; margin-bottom: 2px; }
         .detail-value { font-size: 1rem; color: #212529; font-weight: 500; margin-bottom: 1rem; }
         .multimedia-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px; display: inline-flex; align-items: center; gap: 8px; margin-right: 5px; margin-bottom: 5px; font-size: 0.9rem; }
+
+        /* Botones de acción pequeños */
+        .btn-action { margin-right: 2px; }
     </style>
 
     <div class="container mt-5">
@@ -42,16 +45,17 @@
                         <th>Título</th>
                         <th>Usuario</th>
                         <th>Estado</th>
-                        <th class="text-end pe-4">Acción</th>
+                        <th class="text-end pe-4" style="min-width: 200px;">Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="sol : ${solicitudes}">
+
                         <td class="ps-4 fw-bold text-secondary" th:text="${sol.id}">1</td>
 
                         <td>
-                                <span th:if="${sol.fechaDeCargaSolicitud != null}"
-                                      th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></span>
+                            <span th:if="${sol.fechaDeCargaSolicitud != null}"
+                                  th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></span>
                             <span th:if="${sol.fechaDeCargaSolicitud == null}" class="text-muted">-</span>
                         </td>
 
@@ -62,26 +66,39 @@
                         <td th:text="${sol.idContribuyente != null ? 'User #' + sol.idContribuyente : 'Anónimo'}">User</td>
 
                         <td>
-                                <span th:if="${sol.estado != null}"
-                                      th:class="'badge-status ' +
-                                      ( ${sol.estado.name() == 'PENDIENTE'} ? 'bg-pendiente' :
-                                      ( ${sol.estado.name() == 'APROBADA'} ? 'bg-aprobada' : 'bg-rechazada' ) )"
-                                      th:text="${sol.estado}">
-                                    ESTADO
-                                </span>
+                            <span th:if="${sol.estado != null}"
+                                  th:class="'badge-status ' +
+                                  ( ${sol.estado.name() == 'PENDIENTE'} ? 'bg-pendiente' :
+                                  ( ${sol.estado.name() == 'ACEPTADO'} ? 'bg-aprobada' : 'bg-rechazada' ) )"
+                                  th:text="${sol.estado}">
+                                ESTADO
+                            </span>
                         </td>
 
                         <td class="text-end pe-4">
-                            <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                                    th:onclick="'abrirModal(' + ${sol.id} + ')'">
-                                Ver Detalle
-                            </button>
-                        </td>
-                    </tr>
+                            <form th:action="@{/solicitud/{id}/aceptar(id=${sol.id})}" method="post" style="display:inline;">
+                                <button type="submit"
+                                        class="btn btn-sm btn-success btn-action"
+                                        title="Aceptar Solicitud">
+                                    <i class="bi bi-check-lg"></i> Aceptar
+                                </button>
+                            </form>
 
-                    <tr th:if="${#lists.isEmpty(solicitudes)}">
-                        <td colspan="7" class="text-center py-5 text-muted">
-                            No hay solicitudes registradas.
+
+                            <form th:action="@{/solicitud/{id}/rechazar(id=${sol.id})}" method="post" style="display:inline;">
+                                <button type="submit"
+                                        class="btn btn-sm btn-danger btn-action"
+                                        title="Rechazar Solicitud">
+
+                                    <i class="bi bi-x-lg"></i> Rechazar
+                                </button>
+                            </form>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                    th:onclick="'abrirModal(' + ${sol.id} + ')'">
+                                Detalle
+                            </button>
                         </td>
                     </tr>
                     </tbody>
@@ -113,9 +130,7 @@
                             <span id="mdlEstadoBadge" class="badge bg-secondary">ESTADO</span>
                         </div>
                     </div>
-
                     <hr class="text-muted opacity-25 my-2">
-
                     <div class="row mt-3">
                         <div class="col-md-4">
                             <div class="detail-label">Categoría</div>
@@ -130,32 +145,18 @@
                             <div class="detail-value" id="mdlFechaSuceso"></div>
                         </div>
                     </div>
-
                     <div class="mt-2">
                         <div class="detail-label">Descripción</div>
                         <div class="p-3 bg-light border rounded text-secondary" style="white-space: pre-wrap;" id="mdlDescripcion"></div>
                     </div>
-
                     <div id="divMultimedia" class="mt-4" style="display:none;">
                         <div class="detail-label mb-2"><i class="bi bi-paperclip"></i> Archivos Adjuntos</div>
                         <div id="listaMultimedia"></div>
                     </div>
                 </div>
 
-                <div class="modal-footer bg-light px-4 justify-content-between">
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cerrar</button>
-
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-danger" onclick="ejecutarAccion('RECHAZAR')">
-                            Rechazar
-                        </button>
-                        <button type="button" class="btn btn-warning" onclick="ejecutarAccion('CAMBIOS')">
-                            Aceptar con Cambios
-                        </button>
-                        <button type="button" class="btn btn-success" onclick="ejecutarAccion('APROBAR')">
-                            Aprobar
-                        </button>
-                    </div>
+                <div class="modal-footer bg-light px-4">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
 
             </div>
@@ -164,51 +165,38 @@
 
     <script th:inline="javascript">
         /*<![CDATA[*/
-        // 1. Guardamos la lista completa que viene del servidor en una variable JS
         const todasLasSolicitudes = /*[[${solicitudes}]]*/ [];
-        let idSolicitudActual = null;
-
-        // Función para abrir el modal y rellenar datos
         function abrirModal(id) {
-            idSolicitudActual = id;
-
-            // Buscar objeto en el array
             const sol = todasLasSolicitudes.find(s => s.id === id);
             if (!sol) {
                 alert("Error: No se encontró la solicitud en memoria.");
                 return;
             }
-
-            // Rellenar Textos
             document.getElementById('mdlId').innerText = sol.id || '-';
             document.getElementById('mdlTitulo').innerText = sol.titulo || 'Sin título';
             document.getElementById('mdlCategoria').innerText = sol.nombreCategoria || '-';
             document.getElementById('mdlDescripcion').innerText = sol.descripcion || 'Sin descripción.';
-
-            // Rellenar Ubicación
             if (sol.latitud && sol.longitud) {
                 document.getElementById('mdlUbicacion').innerText = sol.latitud.toFixed(5) + ', ' + sol.longitud.toFixed(5);
             } else {
                 document.getElementById('mdlUbicacion').innerText = 'Sin ubicación';
             }
-
-            // Rellenar Fecha Suceso
+            // Rellenar Fecha
             document.getElementById('mdlFechaSuceso').innerText = sol.fechaDeAcontecimiento
                 ? new Date(sol.fechaDeAcontecimiento).toLocaleString()
                 : '-';
-
-            // Configurar Badge de Estado
+            // Configurar Badge Modal
             const badge = document.getElementById('mdlEstadoBadge');
             badge.innerText = sol.estado || 'UNKNOWN';
+            // Ajusta estos colores según tus estados reales (PENDIENTE, ACEPTADO, RECHAZADO)
             badge.className = 'badge ' + (
                 sol.estado === 'PENDIENTE' ? 'bg-warning text-dark' :
-                    sol.estado === 'APROBADA' ? 'bg-success' : 'bg-secondary'
+                    sol.estado === 'ACEPTADO' ? 'bg-success' : 'bg-danger'
             );
-
             // Rellenar Multimedia
             const containerMedia = document.getElementById('divMultimedia');
             const listaMedia = document.getElementById('listaMultimedia');
-            listaMedia.innerHTML = ''; // Limpiar anteriores
+            listaMedia.innerHTML = '';
 
             if (sol.contenidoMultimedia && sol.contenidoMultimedia.length > 0) {
                 containerMedia.style.display = 'block';
@@ -221,35 +209,10 @@
             } else {
                 containerMedia.style.display = 'none';
             }
-
-            // ABRIR EL MODAL DE FORMA SEGURA
-            // getOrCreateInstance: Si ya existe, lo recupera. Si no, lo crea. Evita duplicados.
+            // Abrir Modal
             const modalElement = document.getElementById('modalDetalle');
             const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
             modalInstance.show();
-        }
-
-        // Función para gestionar los botones de acción
-        function ejecutarAccion(tipo) {
-            if (!idSolicitudActual) return;
-
-            let mensaje = "¿Estás seguro?";
-            if (tipo === 'APROBAR') mensaje = "Se publicará el hecho oficialmente.";
-            if (tipo === 'RECHAZAR') mensaje = "Se rechazará la solicitud y se avisará al usuario.";
-
-            if (confirm(mensaje)) {
-                console.log("Enviando acción al backend: " + tipo + " para ID: " + idSolicitudActual);
-
-                // Aquí iría tu fetch()...
-                // fetch('/api/....')
-
-                alert("Acción realizada: " + tipo);
-
-                // CERRAR EL MODAL DESDE CODIGO
-                const modalElement = document.getElementById('modalDetalle');
-                const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
-                modalInstance.hide();
-            }
         }
         /*]]>*/
     </script>

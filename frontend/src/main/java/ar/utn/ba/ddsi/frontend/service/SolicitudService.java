@@ -86,7 +86,31 @@ public class SolicitudService {
             throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
         }
     }
+
+
+    public void cambiarEstado(Long idSolicitud, String estado) {
+        String accion = "aceptar"; // Por defecto
+        if ("RECHAZADO".equalsIgnoreCase(estado)) {
+            accion = "rechazar";
+        }
+        try {
+            webClient2.patch()
+                    .uri("/solicitudes/" + idSolicitud + "/" + accion)
+                    // .bodyValue(dto)  <--- ¡ESTO LO QUITAMOS! No enviamos cuerpo.
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                    )
+                    .toBodilessEntity() // Indicamos que no esperamos un cuerpo de respuesta, solo el status OK
+                    .block();
+        } catch (WebClientResponseException e) {
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
+        }
     }
+}
 
 
 

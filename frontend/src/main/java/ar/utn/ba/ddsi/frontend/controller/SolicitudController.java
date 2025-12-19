@@ -22,6 +22,7 @@ import java.util.List;
 
 public class SolicitudController {
     private final SolicitudService solicitudService;
+
     public String crearSolicitud(@ModelAttribute("solicitud") SolicitudDTO solicitudDTO,
                                  BindingResult bindingResult,
                                  Model model,
@@ -35,19 +36,43 @@ public class SolicitudController {
 
 
     }
+
     @GetMapping()
     public String verPanelSolicitudes(Model model) {
         List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
         model.addAttribute("solicitudes", solicitudes);
         return "admin/solicitudes";
     }
+
     @PostMapping("/modificar/{idSolicitud}")
     public ResponseEntity<?> solicitarModificacion(
-            @PathVariable Long idSolicitud  ,
+            @PathVariable Long idSolicitud,
             @RequestBody @Valid SolicitudModificacionDTO dto) {
         return ResponseEntity.ok("Solicitud recibida correctamente");
     }
 
+    // Endpoint para ACEPTAR
+    @PostMapping("/{id}/aceptar")
+    public String aceptarSolicitud(@PathVariable Long id) {
+        solicitudService.cambiarEstado(id, "ACEPTADO");
+        return "redirect:/admin/solicitudes";
+
+
+    }
+
+    @PostMapping("/{id}/rechazar")
+    public String rechazarSolicitud(@PathVariable Long id) {
+        solicitudService.cambiarEstado(id, "RECHAZADO");
+
+        return "redirect:/admin/solicitudes";
+    }
+}
+
+
+
+
+
+/*
     @GetMapping("/test1")
     public ResponseEntity<?> testearEdicion() {
         SolicitudModificacionDTO dtoPrueba = new SolicitudModificacionDTO();
@@ -66,6 +91,6 @@ public class SolicitudController {
     }
     
 }
-
+*/
 
 
