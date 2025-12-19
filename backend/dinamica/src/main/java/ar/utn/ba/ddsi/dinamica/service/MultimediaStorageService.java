@@ -51,10 +51,88 @@ public class MultimediaStorageService {
 
         Path directorio = obtenerDirectorio();
         Files.createDirectories(directorio);
+        log.debug("Guardando archivo en directorio: {}", directorio.toAbsolutePath());
 
         String nombreArchivo = UUID.randomUUID().toString() + "." + extension;
         Path destino = directorio.resolve(nombreArchivo);
         Files.copy(archivo.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
+        log.info("Archivo guardado exitosamente: {} en {}", nombreArchivo, destino.toAbsolutePath());
+
+        return nombreArchivo;
+    }
+
+    public String guardarArchivoDesdeBase64(String contenidoBase64, String nombreOriginal, String tipoContenido) throws IOException {
+        log.debug("guardarArchivoDesdeBase64 - Inicio - nombreOriginal: {}, tipoContenido: {}, tamaño base64: {}", 
+            nombreOriginal, tipoContenido, contenidoBase64 != null ? contenidoBase64.length() : 0);
+        
+        if (contenidoBase64 == null || contenidoBase64.isEmpty()) {
+            throw new IllegalArgumentException("El contenido base64 está vacío");
+        }
+
+        String extension = null;
+        if (nombreOriginal != null && nombreOriginal.contains(".")) {
+            extension = nombreOriginal.substring(nombreOriginal.lastIndexOf(".") + 1).toLowerCase();
+            log.debug("Extensión inferida desde nombreOriginal: {}", extension);
+        } else {
+            // Inferir extensión desde tipo de contenido
+            if (tipoContenido != null) {
+                switch (tipoContenido.toUpperCase()) {
+                    case "IMAGEN":
+                        extension = "jpg";
+                        break;
+                    case "VIDEO":
+                        extension = "mp4";
+                        break;
+                    case "AUDIO":
+                        extension = "mp3";
+                        break;
+                }
+                log.debug("Extensión inferida desde tipoContenido: {}", extension);
+            }
+        }
+
+        if (extension == null || !esFormatoPermitido(extension)) {
+            log.error("Formato de archivo no permitido: {}", extension);
+            throw new IllegalArgumentException(
+                String.format("Formato de archivo no permitido: %s. Formatos permitidos: " +
+                    "Imágenes: %s | Videos: %s | Audio: %s",
+                    extension,
+                    String.join(", ", FORMATOS_IMAGEN),
+                    String.join(", ", FORMATOS_VIDEO),
+                    String.join(", ", FORMATOS_AUDIO)
+                )
+            );
+        }
+
+        Path directorio = obtenerDirectorio();
+        log.info("Directorio obtenido: {}", directorio.toAbsolutePath());
+        
+        Files.createDirectories(directorio);
+        log.debug("Directorio creado/verificado: {}", directorio.toAbsolutePath());
+
+        String nombreArchivo = UUID.randomUUID().toString() + "." + extension;
+        Path destino = directorio.resolve(nombreArchivo);
+        log.info("Guardando archivo desde base64 - nombre: {}, destino: {}", nombreArchivo, destino.toAbsolutePath());
+        
+        try {
+            byte[] bytes = java.util.Base64.getDecoder().decode(contenidoBase64);
+            log.debug("Base64 decodificado, tamaño bytes: {}", bytes.length);
+            
+            Files.write(destino, bytes);
+            log.info("Archivo guardado desde base64 exitosamente: {} en {} ({} bytes)", 
+                nombreArchivo, destino.toAbsolutePath(), bytes.length);
+            
+            // Verificar que el archivo existe
+            if (Files.exists(destino)) {
+                long fileSize = Files.size(destino);
+                log.info("Archivo verificado - existe: true, tamaño: {} bytes", fileSize);
+            } else {
+                log.error("ERROR: Archivo no existe después de escribirlo: {}", destino.toAbsolutePath());
+            }
+        } catch (Exception e) {
+            log.error("Error escribiendo archivo: {}", e.getMessage(), e);
+            throw e;
+        }
 
         return nombreArchivo;
     }
@@ -74,7 +152,18 @@ public class MultimediaStorageService {
     }
 
     public Resource cargarArchivo(String nombreArchivo) throws IOException {
+        // Validar nombre de archivo para prevenir path traversal
+        validarNombreArchivo(nombreArchivo);
+        
         Path archivo = obtenerDirectorio().resolve(nombreArchivo);
+        
+        // Validar que el archivo esté dentro del directorio permitido (prevenir path traversal)
+        Path directorioBase = obtenerDirectorio().toAbsolutePath().normalize();
+        Path archivoNormalizado = archivo.toAbsolutePath().normalize();
+        if (!archivoNormalizado.startsWith(directorioBase)) {
+            throw new SecurityException("Intento de acceso a archivo fuera del directorio permitido: " + nombreArchivo);
+        }
+        
         Resource resource = new UrlResource(archivo.toUri());
 
         if (resource.exists() && resource.isReadable()) {
@@ -83,9 +172,72 @@ public class MultimediaStorageService {
             throw new IOException("No se pudo leer el archivo: " + nombreArchivo);
         }
     }
+    
+    private void validarNombreArchivo(String nombreArchivo) {
+        if (nombreArchivo == null || nombreArchivo.trim().isEmpty()) {
+            throw new IllegalArgumentException("El nombre del archivo no puede estar vacío");
+        }
+        
+        // Prevenir path traversal y rutas absolutas
+        if (nombreArchivo.contains("..") || nombreArchivo.contains("/") || nombreArchivo.contains("\\")) {
+            throw new SecurityException("Nombre de archivo inválido: contiene caracteres no permitidos");
+        }
+        
+        // Validar formato UUID.extension (los archivos se guardan con UUID)
+        if (!nombreArchivo.matches("^[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}\\.[a-zA-Z0-9]+$")) {
+            throw new IllegalArgumentException("Nombre de archivo inválido: formato esperado UUID.extension");
+        }
+    }
 
     private Path obtenerDirectorio() {
-        return Paths.get(storagePath);
+        Path path = Paths.get(storagePath);
+        // Si el path es relativo, hacerlo absoluto basado en el directorio del proyecto
+        if (!path.isAbsolute()) {
+            // Obtener el directorio actual
+            String userDir = System.getProperty("user.dir");
+            Path currentDir = Paths.get(userDir);
+            log.debug("Directorio de trabajo actual: {}", currentDir);
+            
+            // Estrategia: buscar el directorio que contiene "backend" como subdirectorio
+            Path projectRoot = currentDir;
+            int maxDepth = 10;
+            int depth = 0;
+            
+            // Primero, verificar si el directorio actual contiene "backend"
+            Path backendDir = currentDir.resolve("backend");
+            if (java.nio.file.Files.exists(backendDir) && java.nio.file.Files.isDirectory(backendDir)) {
+                projectRoot = currentDir;
+                log.debug("Encontrado 'backend' como subdirectorio de: {}", currentDir);
+            } else {
+                // Si no, subir hasta encontrar un directorio que contenga "backend"
+                while (depth < maxDepth && projectRoot != null && projectRoot.getParent() != null) {
+                    backendDir = projectRoot.resolve("backend");
+                    if (java.nio.file.Files.exists(backendDir) && java.nio.file.Files.isDirectory(backendDir)) {
+                        log.debug("Encontrado 'backend' como subdirectorio de: {}", projectRoot);
+                        break;
+                    }
+                    Path fileName = projectRoot.getFileName();
+                    if (fileName != null && "backend".equals(fileName.toString())) {
+                        // Estamos dentro de "backend", subir al padre
+                        projectRoot = projectRoot.getParent();
+                        log.debug("Estamos en 'backend', subiendo a: {}", projectRoot);
+                        break;
+                    }
+                    projectRoot = projectRoot.getParent();
+                    depth++;
+                }
+            }
+            
+            // Si no encontramos nada, usar el directorio actual
+            if (projectRoot == null || depth >= maxDepth) {
+                log.warn("No se pudo determinar el root del proyecto, usando directorio actual: {}", currentDir);
+                projectRoot = currentDir;
+            }
+            
+            path = projectRoot.resolve(storagePath).toAbsolutePath().normalize();
+            log.info("Path final de multimedia (dinámica): {}", path);
+        }
+        return path;
     }
 }
 

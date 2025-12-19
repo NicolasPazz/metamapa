@@ -31,13 +31,20 @@ public class HechosController {
             @RequestParam(required = false) String ubicacion,
             @RequestParam(required = false) String fuente) {
 
-        log.info("[HechosController] GET /api/hechos");
+        log.info("[HechosController] GET /api/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}, fuente: {}",
+                categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
 
         return hechosService.getAll(
                 categoria,
                 fecha_reporte_desde, fecha_reporte_hasta,
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
                 ubicacion, fuente);
+    }
+
+    @PatchMapping("/{id}/ocultar")
+    public ResponseEntity<?> ocultarHecho(@PathVariable Long id) {
+        log.info("[HechosController] PATCH /api/hechos/{}/ocultar", id);
+        return hechosService.ocultarHecho(id);
     }
 }
 

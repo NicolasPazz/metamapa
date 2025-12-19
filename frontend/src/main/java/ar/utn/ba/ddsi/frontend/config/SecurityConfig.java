@@ -30,7 +30,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/hechos/crear", "/hechos/**") // Permitir sin CSRF para AJAX
+                        .ignoringRequestMatchers("/hechos/crear", "/hechos/**", "/solicitudes/**") // Permitir sin CSRF para AJAX
                 )
                 .authorizeHttpRequests(auth -> auth
                         // Recursos estáticos y login público

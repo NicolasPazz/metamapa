@@ -28,18 +28,24 @@ public class SolicitudesController {
 
   @GetMapping("/{id}")
   public ResponseEntity<SolicitudOutputDTO> obtenerSolicitudPorId(@PathVariable Long id) {
-    log.debug("GET /api/solicitudes/{}", id);
+    log.info("GET /api/solicitudes/{}", id);
     return ResponseEntity.ok(solicitudesService.obtenerSolicitud(id));
+  }
+
+  @GetMapping("/contribuyente/{idContribuyente}")
+  public ResponseEntity<List<SolicitudOutputDTO>> obtenerSolicitudesPorContribuyente(
+      @PathVariable Long idContribuyente) {
+    log.info("GET /api/solicitudes/contribuyente/{}", idContribuyente);
+    return ResponseEntity.ok(solicitudesService.buscarPorContribuyente(idContribuyente));
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SolicitudOutputDTO> crearNuevaSolicitudJson(
       @Valid @RequestBody SolicitudHechoInputContribuyenteDTO input) {
 
-    log.debug("POST /api/solicitudes (JSON) - Recibida petición");
-    log.debug("POST /api/solicitudes (JSON) - Nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
-    log.debug("POST /api/solicitudes (JSON) - Título: {}, Latitud: {}, Longitud: {}", 
-            input.getTitulo(), input.getLatitud(), input.getLongitud());
+    log.info("POST /api/solicitudes (JSON) - idContribuyente: {}, titulo: {}, descripcion: {}, categoria: {}, latitud: {}, longitud: {}, fechaDeAcontecimiento: {}, multimedia: {}",
+            input.getIdContribuyente(), input.getTitulo(), input.getDescripcion(), input.getCategoria(),
+            input.getLatitud(), input.getLongitud(), input.getFechaDeAcontecimiento(), input.getMultimedia());
     var solicitudCreada = solicitudesService.recibirSolicitudContribuyente(input);
     log.debug("POST /api/solicitudes (JSON) - Solicitud creada exitosamente con ID: {}", solicitudCreada.getId());
     return ResponseEntity.status(HttpStatus.CREATED).body(solicitudCreada.toOutputDTO());
@@ -50,14 +56,12 @@ public class SolicitudesController {
       @RequestPart("solicitud") String solicitudJson,
       @RequestPart(value = "archivos", required = false) List<MultipartFile> archivos) {
 
-    log.debug("POST /api/solicitudes (MULTIPART) - Recibida petición");
-    log.debug("POST /api/solicitudes - JSON recibido: {}", solicitudJson);
-    log.debug("POST /api/solicitudes - Archivos recibidos: {}", 
-            archivos != null ? archivos.size() : 0);
+    log.info("POST /api/solicitudes (MULTIPART) - solicitudJson: {}, archivos: {}",
+            solicitudJson, archivos != null ? archivos.size() : 0);
     
-    if (archivos != null) {
+    if (archivos != null && !archivos.isEmpty()) {
       archivos.forEach(archivo -> 
-          log.debug("POST /api/solicitudes - Archivo: {} ({} bytes, tipo: {})", 
+          log.info("POST /api/solicitudes (MULTIPART) - Archivo: {} ({} bytes, tipo: {})", 
                   archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType()));
     }
 
@@ -84,14 +88,61 @@ public class SolicitudesController {
     }
   }
 
-  @PatchMapping("/{id}")
-  public ResponseEntity<SolicitudOutputDTO> modificarSolicitud(
+  @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> modificarSolicitud(
+      @PathVariable Long id,
+      @RequestPart("solicitud") String solicitudJson,
+      @RequestPart(value = "archivos", required = false) List<MultipartFile> archivos) {
+    
+    log.info("PATCH /api/solicitudes/{} (MULTIPART) - solicitudJson: {}, archivos: {}",
+            id, solicitudJson, archivos != null ? archivos.size() : 0);
+    
+    if (archivos != null && !archivos.isEmpty()) {
+      archivos.forEach(archivo -> 
+          log.info("PATCH /api/solicitudes/{} (MULTIPART) - Archivo: {} ({} bytes, tipo: {})", 
+                  id, archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType()));
+    }
+    
+    try {
+      SolicitudOutputDTO solicitudModificada = solicitudesService.modificarSolicitudConMultipart(
+          id, solicitudJson, archivos);
+      log.debug("Solicitud {} modificada exitosamente", id);
+      return ResponseEntity.ok(solicitudModificada);
+    } catch (IllegalArgumentException e) {
+      log.error("PATCH /api/solicitudes/{} - Formato de archivo no permitido: {}", id, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Formato de archivo no permitido: " + e.getMessage());
+    } catch (IOException e) {
+      log.error("PATCH /api/solicitudes/{} - Error procesando solicitud con archivos: {}", 
+          id, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Error procesando archivos: " + e.getMessage());
+    } catch (Exception e) {
+      log.error("Error modificando solicitud {}: {}", id, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Error al modificar la solicitud: " + e.getMessage());
+    }
+  }
+
+  @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> modificarSolicitudJson(
       @PathVariable Long id,
       @Valid @RequestBody SolicitudModificarUserInputDTO input) {
-    log.debug("PATCH /api/solicitudes/{} - Modificación por contribuyente ID: {}", id, input.getIdContribuyente());
-    SolicitudOutputDTO solicitudModificada = solicitudesService.modificarSolicitud(id, input);
-    log.debug("Solicitud {} modificada exitosamente", id);
-    return ResponseEntity.ok(solicitudModificada);
+    
+    log.info("PATCH /api/solicitudes/{} (JSON) - idContribuyente: {}, nuevoTitulo: {}, nuevoDescripcion: {}, nuevoNombreCategoria: {}, nuevoLatitud: {}, nuevoLongitud: {}, nuevoFechaDeAcontecimiento: {}, nuevoContenidoMultimedia: {}",
+            id, input.getIdContribuyente(), input.getNuevoTitulo(), input.getNuevoDescripcion(),
+            input.getNuevoNombreCategoria(), input.getNuevoLatitud(), input.getNuevoLongitud(),
+            input.getNuevoFechaDeAcontecimiento(), input.getNuevoContenidoMultimedia());
+    
+    try {
+      SolicitudOutputDTO solicitudModificada = solicitudesService.modificarSolicitud(id, input);
+      log.debug("Solicitud {} modificada exitosamente", id);
+      return ResponseEntity.ok(solicitudModificada);
+    } catch (Exception e) {
+      log.error("Error modificando solicitud {}: {}", id, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Error al modificar la solicitud: " + e.getMessage());
+    }
   }
 }
 

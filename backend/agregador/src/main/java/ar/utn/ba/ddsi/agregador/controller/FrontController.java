@@ -42,7 +42,8 @@ public class FrontController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
 
-        log.info("[FrontController] GET /api/front/hechos - page: {}, size: {}", page, size);
+        log.info("[FrontController] GET /api/front/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}, fuente: {}, page: {}, size: {}",
+                categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente, page, size);
 
         PageResponse<HechoDTO> response = hechosService.getPaginatedHechos(
                 categoria, fecha_reporte_desde, fecha_reporte_hasta,
@@ -78,7 +79,8 @@ public class FrontController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
 
-        log.info("[FrontController] GET /api/front/colecciones/{}/hechos - page: {}, size: {}", handle, page, size);
+        log.info("[FrontController] GET /api/front/colecciones/{}/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}, fuente: {}, modo: {}, page: {}, size: {}",
+                handle, categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente, modo, page, size);
 
         return coleccionesService.getHechosColeccionPaginated(
                 handle, ubicacion, fecha_reporte_desde, fecha_reporte_hasta,

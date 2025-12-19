@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.dinamica.domain.dto.input;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -35,6 +36,7 @@ public class SolicitudModificarUserInputDTO {
   private Double nuevoLongitud;
 
   @JsonProperty("fecha_acontecimiento")
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss[.SSS][XXX]")
   private LocalDateTime nuevoFechaDeAcontecimiento;
 
   @Valid

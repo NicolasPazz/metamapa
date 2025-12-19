@@ -38,6 +38,7 @@ public class AdminController {
     //@PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/admin")
     public String mostrarMenu(Model model) {
+        log.info("GET /admin");
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
         List<HechoDTO> hechos = hechoService.getAllHechos();
         List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();
@@ -47,7 +48,13 @@ public class AdminController {
 
         model.addAttribute("titulo", "Panel De Control");
         //model.addAttribute("coleccionesLimit", colecciones.subList(0,2));
-        model.addAttribute("hechosLimit", hechos.subList(3,5));
+        // Mostrar hechos limitados de forma segura
+        if (hechos != null && hechos.size() > 3) {
+            int endIndex = Math.min(5, hechos.size());
+            model.addAttribute("hechosLimit", hechos.subList(3, endIndex));
+        } else {
+            model.addAttribute("hechosLimit", java.util.Collections.emptyList());
+        }
         //model.addAttribute("solicitudesLimit", solicitudes.subList(0,2));
         model.addAttribute("colecciones", colecciones);
         model.addAttribute("hechos", hechos);
@@ -62,6 +69,7 @@ public class AdminController {
     public String actualizarSolicitud(@RequestParam("id") Long solicitudId,
                                       @RequestParam("estado") String estado,
                                       RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/actualizarSolicitud - id: {}, estado: {}", solicitudId, estado);
         try {
             adminService.actualizarSolicitud(solicitudId, estado);
             redirectAttributes.addFlashAttribute("success", "Solicitud actualizada!");
@@ -74,7 +82,8 @@ public class AdminController {
 
     @PostMapping("/admin/subir-csv")
     public String procesarCsv(@RequestParam("archivo") MultipartFile archivo, Model model) {
-        log.info("Recibiendo archivo: {}, tamaño: {} bytes", archivo.getOriginalFilename(), archivo.getSize());
+        log.info("POST /admin/subir-csv - archivo: {} ({} bytes, tipo: {})",
+                archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType());
 
         try {
             // Llamamos al servicio que se comunica con el otro sistema
@@ -90,6 +99,9 @@ public class AdminController {
 
     @PostMapping("/admin/crear-coleccion")
     public String crearColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, Model model) {
+        log.info("POST /admin/crear-coleccion - titulo: {}, descripcion: {}, criterios: {}, algoritmoConsenso: {}, fuenteId: {}",
+                coleccionDTO.getTitulo(), coleccionDTO.getDescripcion(), coleccionDTO.getCriterios(),
+                coleccionDTO.getAlgoritmoConsenso(), coleccionDTO.getFuenteId());
 
         if(!coleccionDTO.isValid()) {
             model.addAttribute("mensaje", "Error: faltan datos para la colección");
@@ -110,6 +122,9 @@ public class AdminController {
 
     @PostMapping("/admin/actualizar-coleccion")
     public String actualizarColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, @RequestParam("handle") String handle, Model model) {
+        log.info("POST /admin/actualizar-coleccion - handle: {}, titulo: {}, descripcion: {}, criterios: {}, algoritmoConsenso: {}, fuenteId: {}",
+                handle, coleccionDTO.getTitulo(), coleccionDTO.getDescripcion(), coleccionDTO.getCriterios(),
+                coleccionDTO.getAlgoritmoConsenso(), coleccionDTO.getFuenteId());
         if(!coleccionDTO.isValid()) {
             model.addAttribute("mensaje", "Error: faltan datos para la colección");
             return "redirect:/admin";
@@ -128,6 +143,7 @@ public class AdminController {
     }
     @GetMapping("/solicitudes")
     public String verPanelSolicitudes(Model model) {
+        log.info("GET /solicitudes");
         List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
 
         model.addAttribute("solicitudes", solicitudes);

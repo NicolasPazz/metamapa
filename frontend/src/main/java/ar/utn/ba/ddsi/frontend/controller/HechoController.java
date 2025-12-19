@@ -3,7 +3,9 @@ package ar.utn.ba.ddsi.frontend.controller;
 import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudInputDTO;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
+import ar.utn.ba.ddsi.frontend.service.SolicitudService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -29,6 +31,7 @@ import java.util.Map;
 public class HechoController {
 
     private final HechoService hechoService;
+    private final SolicitudService solicitudService;
     
     @Value("${app.pagination.page-size:18}")
     private int pageSize;
@@ -68,6 +71,8 @@ public class HechoController {
             @RequestParam(required = false) String modo_navegacion,
             @RequestParam(defaultValue = "0") int page)
     {
+        log.info("GET /hechos - ubicacion: {}, fecha_reporte_hasta: {}, fecha_reporte_desde: {}, categoria: {}, fuente: {}, modo_navegacion: {}, page: {}",
+                ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo_navegacion, page);
         // Obtener hechos paginados del servicio (ya procesados)
         PageResponse<HechoDTO> pageResponse = hechoService.getAllHechosPaginados(
             null, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, page, pageSize);
@@ -87,12 +92,45 @@ public class HechoController {
         model.addAttribute("showColeccionesBtn", true);
         // Mostrar botón "Reportar nuevo hecho" solo en /hechos
         model.addAttribute("showReportarHechoBtn", true);
+        // Mostrar botón "Mis hechos" solo en /hechos
+        model.addAttribute("showMisHechosBtn", true);
         return "hechos/hechosencoleccion";
 
     }
 
+    @GetMapping("/mis-hechos")
+    public String misHechos(Model model) {
+        log.info("GET /hechos/mis-hechos");
+        Long contribuyenteId = solicitudService.obtenerContribuyenteIdDeSesion();
+        if (contribuyenteId == null) {
+            return "redirect:/login";
+        }
+        
+        List<SolicitudInputDTO> solicitudes = solicitudService.obtenerSolicitudesPorContribuyente(contribuyenteId);
+        
+        // Para cada solicitud con hecho enviado, buscar el ID del agregador
+        for (SolicitudInputDTO solicitud : solicitudes) {
+            if (solicitud.getIdHecho() != null && Boolean.TRUE.equals(solicitud.getHechoEnviado())) {
+                // La fuente Dinamica tiene ID=1 en agregador
+                // El id_origen en agregador es el ID del hecho en dinamica
+                HechoDTO hechoAgregador = hechoService.getHechoByFuenteIdAndIdOrigen(1L, solicitud.getIdHecho());
+                if (hechoAgregador != null && hechoAgregador.getId() != null) {
+                    solicitud.setIdHechoAgregador(hechoAgregador.getId());
+                }
+            }
+        }
+        
+        model.addAttribute("solicitudes", solicitudes);
+        model.addAttribute("contribuyenteId", contribuyenteId);
+        model.addAttribute("titulo", "Mis Hechos");
+        model.addAttribute("showReportarHechoBtn", false);
+        model.addAttribute("showMisHechosBtn", false);
+        return "hechos/misHechos";
+    }
+
     @GetMapping("/nuevo")
     public String nuevoHecho(Model model){
+        log.info("GET /hechos/nuevo");
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
         model.addAttribute("categorias", listaCategorias);
         model.addAttribute("titulo", "Nuevo Hecho");
@@ -104,7 +142,10 @@ public class HechoController {
     @ResponseBody
     public ResponseEntity<?> crearHecho(@ModelAttribute HechoFormDTO formDTO) {
         try {
-            log.info("POST /hechos/crear - Título: {}", formDTO.getTitulo());
+            log.info("POST /hechos/crear - titulo: {}, descripcion: {}, latitud: {}, longitud: {}, categoria: {}, fechaAcontecimiento: {}, contenidoMultimedia: {}",
+                    formDTO.getTitulo(), formDTO.getDescripcion(), formDTO.getLatitud(), formDTO.getLongitud(),
+                    formDTO.getCategoria(), formDTO.getFechaAcontecimiento(),
+                    formDTO.getContenidoMultimedia() != null ? formDTO.getContenidoMultimedia().size() : 0);
             hechoService.crearHecho(formDTO);
             return ResponseEntity.ok().build();
 
@@ -133,6 +174,7 @@ public class HechoController {
                               @RequestParam(required = false) Long hechoId,
                               @RequestParam(required = false) Long fuenteId,
                               @RequestParam(required = false) Long idOrigen) {
+        log.info("GET /hechos/mapa - hechoId: {}, fuenteId: {}, idOrigen: {}", hechoId, fuenteId, idOrigen);
         Map<String, Object> datosMapa = hechoService.getDatosMapa(hechoId, fuenteId, idOrigen);
         datosMapa.forEach(model::addAttribute);
         model.addAttribute("titulo", "Mapa");

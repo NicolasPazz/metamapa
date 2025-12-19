@@ -11,11 +11,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import lombok.extern.slf4j.Slf4j;
 
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Controller
 public class AccessController {
 
@@ -25,6 +27,7 @@ public class AccessController {
     // Registro de Contribuyentes
     @GetMapping("/registro")
     public String mostrarFormularioRegistro(Model model) {
+        log.info("GET /registro");
         return "access/register"; // plantilla: 'src/main/resources/templates/registro.html'
     }
 
@@ -36,6 +39,7 @@ public class AccessController {
             @RequestParam(required = false) String apellido,
             RedirectAttributes redirectAttributes,
             HttpServletRequest request) {
+        log.info("POST /registro - username: {}, password: [PROTEGIDO], nombre: {}, apellido: {}", username, nombre, apellido);
         try {
             metaMapaApiService.register(username, password, nombre, apellido);
             
@@ -87,12 +91,14 @@ public class AccessController {
     // Inicio de Sesión
     @GetMapping("/login")
     public String mostrarLogin(Model model) {
+        log.info("GET /login");
         return "access/login"; // plantilla: 'src/main/resources/templates/login.html'
     }
 
     // Página de error 403
     @GetMapping("/403")
     public String error403(Model model) {
+        log.info("GET /403");
         return "error/403";
     }
 }

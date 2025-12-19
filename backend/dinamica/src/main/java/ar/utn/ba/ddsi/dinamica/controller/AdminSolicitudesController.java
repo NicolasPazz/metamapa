@@ -28,7 +28,7 @@ public class AdminSolicitudesController {
 
   @GetMapping
   public ResponseEntity<List<SolicitudOutputDTO>> buscarTodasLasSolicitudes() {
-    log.debug("GET /api/admin/solicitudes - Obteniendo todas las solicitudes");
+    log.info("GET /api/admin/solicitudes - Obteniendo todas las solicitudes");
     List<SolicitudOutputDTO> solicitudes = solicitudesService.buscarTodas();
     log.info("Retornando {} solicitudes", solicitudes.size());
     return ResponseEntity.ok(solicitudes);
@@ -38,8 +38,10 @@ public class AdminSolicitudesController {
   public ResponseEntity<SolicitudOutputDTO> revisarSolicitud(
       @PathVariable Long id,
       @Valid @RequestBody SolicitudModificarAdminInputDTO input) {
-    log.info("PATCH /api/admin/solicitudes/{} - Revisión administrativa, estado: {}",
-        id, input.getNuevoEstadoSolicitud());
+    log.info("PATCH /api/admin/solicitudes/{} - nuevoEstadoSolicitud: {}, nuevoTitulo: {}, nuevoDescripcion: {}, nuevoNombreCategoria: {}, nuevoLatitud: {}, nuevoLongitud: {}, nuevoFechaDeAcontecimiento: {}, nuevoContenidoMultimedia: {}",
+        id, input.getNuevoEstadoSolicitud(), input.getNuevoTitulo(), input.getNuevoDescripcion(),
+        input.getNuevoNombreCategoria(), input.getNuevoLatitud(), input.getNuevoLongitud(),
+        input.getNuevoFechaDeAcontecimiento(), input.getNuevoContenidoMultimedia());
     SolicitudOutputDTO solicitudRevisada = solicitudesService.revisionSolicitud(id, input);
     log.info("Solicitud {} revisada con estado: {}", id, solicitudRevisada.getEstado());
     return ResponseEntity.ok(solicitudRevisada);

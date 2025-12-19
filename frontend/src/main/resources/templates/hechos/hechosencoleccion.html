@@ -465,19 +465,10 @@
             }
         }
 
-      // --- BOTONES DE ACCIÓN (Edición y Eliminación) ---
+      // --- BOTONES DE ACCIÓN (Eliminación) ---
       html += '<div style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">';
 
-      // 1. Botón Solicitar Edición (Naranja)
-      html += '<button onclick="solicitarEdicion(' +
-              (hecho.id ? hecho.id : 'null') + ', ' +
-              (hecho.fuente_id ? hecho.fuente_id : 'null') + ', ' +
-              (hecho.id_origen ? hecho.id_origen : 'null') +
-              ')" class="btn secondary" style="background: #fd7e14; color: white; border: none;">';
-      html += 'Solicitar edición';
-      html += '</button>';
-
-      // 2. Botón Solicitar Eliminación (Rojo - Existente)
+      // Botón Solicitar Eliminación (Rojo - Existente)
       html += '<button onclick="openSolicitudEliminacionModal(' +
               (hecho.id ? hecho.id : 'null') + ', ' +
               (hecho.fuente_id ? hecho.fuente_id : 'null') + ', ' +
@@ -735,7 +726,7 @@
       const diferenciaTiempo = hoy - fechaCarga;
       const diferenciaDias = diferenciaTiempo / (1000 * 3600 * 24);
 
-      if (diferenciaDias > 3000) {
+      if (diferenciaDias > 7) {
         showToast('Solo se puede editar un hecho dentro de los 7 días posteriores a su carga.', 'error');
         return;
       }

@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -42,6 +44,8 @@ public class FuenteController {
       LocalDateTime fecha_acontecimiento_hasta,
 
       @RequestParam(required = false) String ubicacion) {
+    log.info("GET /api/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}",
+            categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
     return agregador.getAllHechosVisibles(
         categoria,
         fecha_reporte_desde, fecha_reporte_hasta,
@@ -51,6 +55,7 @@ public class FuenteController {
 
   @GetMapping("/colecciones")
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
+    log.info("GET /api/colecciones");
     return agregador.getAllColecciones();
   }
 
@@ -75,6 +80,8 @@ public class FuenteController {
 
       @RequestParam(required = false) String ubicacion
   ) {
+    log.info("GET /api/colecciones/{}/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}",
+            handle, categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
     return agregador.getHechosColeccionByHandle(
         handle,
         categoria,

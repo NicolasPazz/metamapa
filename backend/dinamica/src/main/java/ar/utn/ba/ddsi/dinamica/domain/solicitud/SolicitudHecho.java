@@ -99,15 +99,11 @@ public class SolicitudHecho {
   }
 
   public void validarModificacionPorUsuario(Long idContribuyenteQueModifica) {
-    if (this.estado != EstadoSolicitud.PENDIENTE) {
-      throw new IllegalStateException("Solo se pueden modificar solicitudes en estado PENDIENTE");
-    }
-
     if (this.esAnonimo()) {
       throw new IllegalStateException("Las solicitudes anónimas no pueden ser modificadas");
     }
 
-    if (!this.idContribuyente.equals(idContribuyenteQueModifica)) {
+    if (idContribuyenteQueModifica == null || !this.idContribuyente.equals(idContribuyenteQueModifica)) {
       throw new IllegalArgumentException("No está autorizado para modificar esta solicitud");
     }
 

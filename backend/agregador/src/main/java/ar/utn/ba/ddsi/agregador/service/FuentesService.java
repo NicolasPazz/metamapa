@@ -224,7 +224,9 @@ public class FuentesService {
     if (h.getProvincia() == null && h.getLatitud() != null && h.getLongitud() != null) {
       Provincia provincia =
           provinciaService.obtenerProvinciaPorCoordenadas(h.getLatitud(), h.getLongitud());
-      h.setProvincia(provincia.getNombre());
+      if (provincia != null) {
+        h.setProvincia(provincia.getNombre());
+      }
     }
 
     // Aplicar valores por defecto para campos opcionales

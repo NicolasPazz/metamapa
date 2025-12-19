@@ -160,6 +160,31 @@ public class HechosService {
         }
     }
 
+    @Transactional
+    public ResponseEntity<?> ocultarHecho(Long idHecho) {
+        log.info("[HechosService] Ocultando hecho con ID: {}", idHecho);
+        
+        try {
+            Hecho hecho = hechosRepository.findById(idHecho)
+                .orElseThrow(() -> new IllegalArgumentException(
+                    "No se encontró el Hecho con ID " + idHecho));
+            
+            hecho.ocultar();
+            hechosRepository.save(hecho);
+            
+            log.info("[HechosService] Hecho {} ocultado exitosamente", idHecho);
+            return ResponseEntity.ok("Hecho ocultado exitosamente");
+            
+        } catch (IllegalArgumentException e) {
+            log.warn("[HechosService] {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (Exception e) {
+            log.error("[HechosService] Error al ocultar hecho: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body("Error al ocultar el hecho: " + e.getMessage());
+        }
+    }
+
     public ResponseEntity<List<String>> getProvinciasConHechos() {
         return provinciaService.getProvinciasConHechos();
     }

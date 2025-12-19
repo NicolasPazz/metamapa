@@ -23,6 +23,7 @@ public class MultimediaController {
 
     @GetMapping("/{nombreArchivo:.+}")
     public ResponseEntity<Resource> obtenerArchivo(@PathVariable String nombreArchivo) {
+        log.info("GET /api/multimedia/{}", nombreArchivo);
         try {
             Resource archivo = storageService.cargarArchivo(nombreArchivo);
             

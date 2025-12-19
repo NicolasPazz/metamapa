@@ -17,6 +17,8 @@
                 <a th:if="${showHechosBtn == null || showHechosBtn}" th:href="@{/hechos}" class="btn secondary">Hechos</a>
                 <!-- Mostrar botón Colecciones solo si showColeccionesBtn es true o no está definido -->
                 <a th:if="${showColeccionesBtn == null || showColeccionesBtn}" th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
+                <!-- Mostrar botón Mis hechos solo si showMisHechosBtn es true y el usuario está autenticado -->
+                <a sec:authorize="isAuthenticated()" th:if="${showMisHechosBtn == null || showMisHechosBtn}" th:href="@{/hechos/mis-hechos}" class="btn secondary">Mis hechos</a>
                 <!-- Mostrar botón Reportar nuevo hecho solo si showReportarHechoBtn es true o no está definido -->
                 <a th:if="${showReportarHechoBtn == null || showReportarHechoBtn}" th:href="@{/hechos/nuevo}" class="btn btn-primary btn-lg shadow-sm">
                     <i class="bi bi-plus-circle-fill me-2"></i> Reportar nuevo hecho
