@@ -107,10 +107,8 @@ public class SolicitudService {
         }
     }
 
-    @Transactional
-    public void procesarSolicitudEdicionConMultipart(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
-        log.debug("Procesando edición de solicitud ID: {} con multipart", idSolicitud);
-
+    public SolicitudInputDTO buscarSolicitudPorId(Long idSolicitud) {
+        // Obtener la solicitud para verificar su estado
         // Obtener la solicitud para verificar su estado
         SolicitudInputDTO solicitud = webClient2.get()
                 .uri("/solicitudes/" + idSolicitud)
@@ -122,6 +120,16 @@ public class SolicitudService {
         if (solicitud == null) {
             throw new IllegalArgumentException("No se encontró la solicitud con ID: " + idSolicitud);
         }
+        return solicitud;
+    }
+
+
+    @Transactional
+    public void procesarSolicitudEdicionConMultipart(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
+        log.debug("Procesando edición de solicitud ID: {} con multipart", idSolicitud);
+
+        // Obtener la solicitud para verificar su estado
+        SolicitudInputDTO solicitud = this.buscarSolicitudPorId(idSolicitud);
 
         // Validar que pasaron <= 7 días desde la creación
         if (solicitud.getFechaDeCargaSolicitud() != null) {
@@ -206,16 +214,7 @@ public class SolicitudService {
     public void procesarSolicitudEdicion(Long idSolicitud, SolicitudModificacionDTO dto) {
         log.debug("Procesando edición de solicitud ID: {}", idSolicitud);
         // Obtener la solicitud para verificar su estado
-        SolicitudInputDTO solicitud = webClient2.get()
-                .uri("/solicitudes/" + idSolicitud)
-                .retrieve()
-                .bodyToMono(SolicitudInputDTO.class)
-                .block();
-        log.debug("Solicitud obtenida para ID: {}, encontrada: {}", idSolicitud, solicitud != null);
-
-        if (solicitud == null) {
-            throw new IllegalArgumentException("No se encontró la solicitud con ID: " + idSolicitud);
-        }
+        SolicitudInputDTO solicitud =this.buscarSolicitudPorId(idSolicitud);
         // Validar que pasaron <= 7 días desde la creación
         if (solicitud.getFechaDeCargaSolicitud() != null) {
             long diasPasados = ChronoUnit.DAYS.between(solicitud.getFechaDeCargaSolicitud(), LocalDateTime.now());

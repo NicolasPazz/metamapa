@@ -40,7 +40,7 @@ public class SolicitudController {
 
 
     }
-
+/*
     @PostMapping("/modificar/{idSolicitud}")
     public ResponseEntity<?> solicitarModificacion(
             @PathVariable Long idSolicitud  ,
@@ -52,6 +52,8 @@ public class SolicitudController {
 
         return ResponseEntity.ok("Solicitud recibida correctamente");
     }
+*/
+
 
     @PatchMapping(value = "/{id}", consumes = "multipart/form-data")
     @ResponseBody
@@ -93,6 +95,31 @@ public class SolicitudController {
         return "redirect:/admin/solicitudes";
 
     }
+
+    @GetMapping("/solicitudes/{id}/editar")
+    public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
+        try {
+            SolicitudInputDTO solicitud = solicitudService.buscarSolicitudPorId(id);
+            if (solicitud == null) {
+                return "redirect:/admin/solicitudes?error=NoEncontrado";
+            }
+            model.addAttribute("solicitud", solicitud);
+            return "admin/editar_solicitud"; // Nombre del archivo HTML
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "redirect:/admin/solicitudes?error=ErrorInterno";
+        }
+    }
+
+    @PostMapping("/solicitudes/{id}/editar/")
+    public String procesarEdicion(@PathVariable Long id, @ModelAttribute SolicitudEdicionFormDTO solicitudEditada) {
+        solicitudService.procesarSolicitudEdicionConMultipart(id, solicitudEditada);
+
+        // Redirigimos al listado principal
+        return "redirect:/admin/solicitudes";
+    }
+
+
     @PostMapping("/{id}/rechazar")
     public String rechazarSolicitud(@PathVariable Long id) {
         solicitudService.cambiarEstado(id, "RECHAZADO");
