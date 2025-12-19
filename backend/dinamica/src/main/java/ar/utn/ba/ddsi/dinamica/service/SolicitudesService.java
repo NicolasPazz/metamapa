@@ -446,5 +446,6 @@ public class SolicitudesService {
     public Long getIdOrigen() { return idOrigen; }
     public void setIdOrigen(Long idOrigen) { this.idOrigen = idOrigen; }
   }
+
 }
 

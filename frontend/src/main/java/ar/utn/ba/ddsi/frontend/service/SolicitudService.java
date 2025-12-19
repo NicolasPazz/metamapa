@@ -33,11 +33,11 @@ public class SolicitudService {
     final private ObjectMapper objectMapper;
 
     public SolicitudService(WebClient.Builder builder, HechoService hechoService,
-                           @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
+                            @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
                             @Value("${app.api.dinamica.base-url:http://localhost:8081/api}") String dinamicaBaseUrl,
                             ObjectMapper objectMapper) {
         this.webClient = builder.baseUrl(agregadorBaseUrl).build();
-        this.webClient2= builder.baseUrl(dinamicaBaseUrl).build();
+        this.webClient2 = builder.baseUrl(dinamicaBaseUrl).build();
         this.hechoService = hechoService;
         this.objectMapper = objectMapper;
     }
@@ -56,6 +56,7 @@ public class SolicitudService {
             return null;
         }
     }
+
     public List<SolicitudInputDTO> buscarTodasLasSolicitudes() {
         try {
             return webClient2.get()
@@ -63,7 +64,8 @@ public class SolicitudService {
                     // Ajusta "/admin/solicitudes" según el @RequestMapping de tu controller backend
                     .uri("/admin/solicitudes")
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {
+                    })
                     .block(); // Bloqueamos para esperar la respuesta sincrónica
 
         } catch (Exception e) {
@@ -73,22 +75,13 @@ public class SolicitudService {
         }
     }
 
-    public SolicitudDTO crearSolicitud(SolicitudDTO solicitud) {
-        return webClient.post()
-                .uri("/solicitudes")
-                .bodyValue(solicitud)
-                .retrieve()
-                .bodyToMono(SolicitudDTO.class)
-                .block();
-    }
-
-
     public List<SolicitudInputDTO> obtenerSolicitudesPorContribuyente(Long idContribuyente) {
         try {
             return webClient2.get()
                     .uri("/solicitudes/contribuyente/" + idContribuyente)
                     .retrieve()
-                    .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {})
+                    .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {
+                    })
                     .block();
         } catch (Exception e) {
             log.error("Error al obtener solicitudes por contribuyente {}: {}", idContribuyente, e.getMessage(), e);
@@ -117,7 +110,7 @@ public class SolicitudService {
     @Transactional
     public void procesarSolicitudEdicionConMultipart(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
         log.debug("Procesando edición de solicitud ID: {} con multipart", idSolicitud);
-        
+
         // Obtener la solicitud para verificar su estado
         SolicitudInputDTO solicitud = webClient2.get()
                 .uri("/solicitudes/" + idSolicitud)
@@ -169,7 +162,7 @@ public class SolicitudService {
 
                 // Construir multipart igual que en la creación
                 MultipartBodyBuilder builder = new MultipartBodyBuilder();
-                
+
                 // Agregar datos de la solicitud como parte JSON (String)
                 builder.part("solicitud", solicitudJson);
 
@@ -196,7 +189,7 @@ public class SolicitudService {
                         .block();
                 log.debug("PATCH multipart exitoso para solicitud ID: {}", idSolicitud);
             } catch (WebClientResponseException e) {
-                log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}", 
+                log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}",
                         idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
                 throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
             } catch (Exception e) {
@@ -223,7 +216,6 @@ public class SolicitudService {
         if (solicitud == null) {
             throw new IllegalArgumentException("No se encontró la solicitud con ID: " + idSolicitud);
         }
-
         // Validar que pasaron <= 7 días desde la creación
         if (solicitud.getFechaDeCargaSolicitud() != null) {
             long diasPasados = ChronoUnit.DAYS.between(solicitud.getFechaDeCargaSolicitud(), LocalDateTime.now());
@@ -252,11 +244,36 @@ public class SolicitudService {
             log.debug("PATCH exitoso para solicitud ID: {}", idSolicitud);
 
         } catch (WebClientResponseException e) {
-            log.error("Error del backend al modificar solicitud ID: {}, status: {}, body: {}", 
+            log.error("Error del backend al modificar solicitud ID: {}, status: {}, body: {}",
                     idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
             throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
         } catch (Exception e) {
             log.error("Error al conectar con el servicio de Dinámica para solicitud ID: {}", idSolicitud, e);
+            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
+        }
+    }
+
+
+
+
+    public void cambiarEstado(Long idSolicitud, String estado) {
+        String accion = "aceptar"; // Por defecto
+        if ("RECHAZADO".equalsIgnoreCase(estado)) {
+            accion = "rechazar";
+        }
+        try {
+            webClient2.post()
+                    .uri("/solicitudes/" + idSolicitud + "/" + accion)
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                    )
+                    .toBodilessEntity() // Indicamos que no esperamos un cuerpo de respuesta, solo el status OK
+                    .block();
+        } catch (WebClientResponseException e) {
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
             throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
         }
     }

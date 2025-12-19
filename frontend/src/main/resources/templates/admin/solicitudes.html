@@ -1,60 +1,104 @@
 <!DOCTYPE html>
 <html lang="es" th:replace="~{layout/base :: html}">
 <head>
-    <title>Listado de Solicitudes</title>
+    <title>Administración de Solicitudes</title>
 </head>
 <body>
 
 <div th:fragment="contenido">
-    <div class="container mt-4">
 
+    <style>
+        .badge-status { font-size: 0.8rem; padding: 0.5em 0.8em; border-radius: 50px; font-weight: 600; letter-spacing: 0.5px; }
+        .bg-pendiente { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .bg-aprobada { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .bg-rechazada { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Estilos del Modal */
+        .modal-header { background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; }
+        .detail-label { font-size: 0.75rem; text-transform: uppercase; color: #6c757d; font-weight: 700; margin-bottom: 2px; }
+        .detail-value { font-size: 1rem; color: #212529; font-weight: 500; margin-bottom: 1rem; }
+        .multimedia-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px; display: inline-flex; align-items: center; gap: 8px; margin-right: 5px; margin-bottom: 5px; font-size: 0.9rem; }
+
+        /* Botones de acción pequeños */
+        .btn-action { margin-right: 2px; }
+    </style>
+
+    <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Panel de Solicitudes (Total: <span th:text="${solicitudes.size()}">0</span>)</h2>
+            <div>
+                <h2 class="fw-bold mb-0">Panel de Solicitudes</h2>
+                <div class="text-muted small">Administración de reportes ciudadanos</div>
+            </div>
+            <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill">
+                Total: <span th:text="${solicitudes.size()}">0</span>
+            </span>
         </div>
 
-        <div class="card shadow-sm">
+        <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
             <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Hecho Relacionado</th>
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light">
+                    <tr class="text-secondary small text-uppercase">
+                        <th class="ps-4">ID</th>
+                        <th>Fecha Carga</th>
+                        <th>Categoría</th>
+                        <th>Título</th>
                         <th>Usuario</th>
                         <th>Estado</th>
-                        <th class="text-end">Detalles</th>
+                        <th class="text-end pe-4" style="min-width: 200px;">Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="sol : ${solicitudes}">
-                        <td th:text="${sol.id}">1</td>
-                        <td th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></td>
 
-                        <td th:text="${sol.tipo}">TIPO</td>
+                        <td class="ps-4 fw-bold text-secondary" th:text="${sol.id}">1</td>
 
                         <td>
-                            <span th:if="${sol.hecho != null}" th:text="${sol.hecho.titulo}">Título</span>
-                            <span th:if="${sol.hecho == null}" class="text-muted fst-italic">Hecho desconocido</span>
+                            <span th:if="${sol.fechaDeCargaSolicitud != null}"
+                                  th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></span>
+                            <span th:if="${sol.fechaDeCargaSolicitud == null}" class="text-muted">-</span>
                         </td>
 
-                        <td th:text="${sol.contribuyenteId != null ? sol.contribuyenteId : 'Anónimo'}">User</td>
+                        <td><span class="badge bg-light text-dark border" th:text="${sol.nombreCategoria}">Cat</span></td>
 
-                        <td th:text="${sol.estado}">ESTADO</td>
-<!--
+                        <td class="fw-bold" th:text="${sol.titulo}">Título</td>
 
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-info text-white"
-                                    th:onclick="verDetalle([[${sol}]])">
-                                Ver info
+                        <td th:text="${sol.idContribuyente != null ? 'User #' + sol.idContribuyente : 'Anónimo'}">User</td>
+
+                        <td>
+                            <span th:if="${sol.estado != null}"
+                                  th:class="'badge-status ' +
+                                  ( ${sol.estado.name() == 'PENDIENTE'} ? 'bg-pendiente' :
+                                  ( ${sol.estado.name() == 'ACEPTADO'} ? 'bg-aprobada' : 'bg-rechazada' ) )"
+                                  th:text="${sol.estado}">
+                                ESTADO
+                            </span>
+                        </td>
+
+                        <td class="text-end pe-4">
+                            <form th:action="@{/solicitudes/{id}/aceptar(id=${sol.id})}" method="post" style="display:inline;">
+                                <button type="submit"
+                                        class="btn btn-sm btn-success btn-action"
+                                        title="Aceptar Solicitud">
+                                    <i class="bi bi-check-lg"></i> Aceptar
+                                </button>
+                            </form>
+
+
+                            <form th:action="@{/solicitudes/{id}/rechazar(id=${sol.id})}" method="post" style="display:inline;">
+                                <button type="submit"
+                                        class="btn btn-sm btn-danger btn-action"
+                                        title="Rechazar Solicitud">
+
+                                    <i class="bi bi-x-lg"></i> Rechazar
+                                </button>
+                            </form>
+
+                            <button type="button"
+                                    class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                    th:onclick="'abrirModal(' + ${sol.id} + ')'">
+                                Detalle
                             </button>
-                        </td>
--->
-                    </tr>
-
-                    <tr th:if="${#lists.isEmpty(solicitudes)}">
-                        <td colspan="7" class="text-center py-5 text-muted">
-                            No hay solicitudes registradas en el sistema.
                         </td>
                     </tr>
                     </tbody>
@@ -63,65 +107,114 @@
         </div>
     </div>
 
-    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalle de Solicitud #<span id="modalId"></span></h5>
+    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+
+                <div class="modal-header px-4">
+                    <div>
+                        <h5 class="modal-title fw-bold">Detalle de Solicitud</h5>
+                        <small class="text-muted">ID Referencia: #<span id="mdlId"></span></small>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <strong>Tipo:</strong> <span id="modalTipo"></span><br>
-                        <strong>Estado:</strong> <span id="modalEstado"></span>
-                    </div>
 
-                    <div class="card bg-light">
-                        <div class="card-body">
-                            <h6>Contenido / Justificación:</h6>
-                            <pre id="modalContenido" style="white-space: pre-wrap; font-size: 0.9em;"></pre>
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="detail-label">Título del Hecho</div>
+                            <div class="detail-value fs-5" id="mdlTitulo"></div>
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="detail-label">Estado Actual</div>
+                            <span id="mdlEstadoBadge" class="badge bg-secondary">ESTADO</span>
                         </div>
                     </div>
+                    <hr class="text-muted opacity-25 my-2">
+                    <div class="row mt-3">
+                        <div class="col-md-4">
+                            <div class="detail-label">Categoría</div>
+                            <div class="detail-value" id="mdlCategoria"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="detail-label">Ubicación (Lat, Long)</div>
+                            <div class="detail-value" id="mdlUbicacion"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="detail-label">Fecha del Suceso</div>
+                            <div class="detail-value" id="mdlFechaSuceso"></div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <div class="detail-label">Descripción</div>
+                        <div class="p-3 bg-light border rounded text-secondary" style="white-space: pre-wrap;" id="mdlDescripcion"></div>
+                    </div>
+                    <div id="divMultimedia" class="mt-4" style="display:none;">
+                        <div class="detail-label mb-2"><i class="bi bi-paperclip"></i> Archivos Adjuntos</div>
+                        <div id="listaMultimedia"></div>
+                    </div>
                 </div>
-                <div class="modal-footer">
+
+                <div class="modal-footer bg-light px-4">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
+
             </div>
         </div>
     </div>
 
     <script th:inline="javascript">
-        let modal = null;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
-        });
-
-        function verDetalle(solicitud) {
-            // Llenar datos básicos
-            document.getElementById('modalId').textContent = solicitud.id;
-            document.getElementById('modalTipo').textContent = solicitud.tipo;
-            document.getElementById('modalEstado').textContent = solicitud.estado;
-
-            // Formatear el contenido (detalle)
-            const contenidoDiv = document.getElementById('modalContenido');
-
-            if (!solicitud.detalle) {
-                contenidoDiv.textContent = "Sin detalles adicionales.";
-            } else {
-                // Intentamos ver si es un JSON (caso Edición) para mostrarlo bonito
-                try {
-                    const json = JSON.parse(solicitud.detalle);
-                    // Lo mostramos indentado
-                    contenidoDiv.textContent = JSON.stringify(json, null, 2);
-                } catch (e) {
-                    // Si no es JSON (caso Eliminación con texto plano), mostramos el texto tal cual
-                    contenidoDiv.textContent = solicitud.detalle;
-                }
+        /*<![CDATA[*/
+        const todasLasSolicitudes = /*[[${solicitudes}]]*/ [];
+        function abrirModal(id) {
+            const sol = todasLasSolicitudes.find(s => s.id === id);
+            if (!sol) {
+                alert("Error: No se encontró la solicitud en memoria.");
+                return;
             }
+            document.getElementById('mdlId').innerText = sol.id || '-';
+            document.getElementById('mdlTitulo').innerText = sol.titulo || 'Sin título';
+            document.getElementById('mdlCategoria').innerText = sol.nombreCategoria || '-';
+            document.getElementById('mdlDescripcion').innerText = sol.descripcion || 'Sin descripción.';
+            if (sol.latitud && sol.longitud) {
+                document.getElementById('mdlUbicacion').innerText = sol.latitud.toFixed(5) + ', ' + sol.longitud.toFixed(5);
+            } else {
+                document.getElementById('mdlUbicacion').innerText = 'Sin ubicación';
+            }
+            // Rellenar Fecha
+            document.getElementById('mdlFechaSuceso').innerText = sol.fechaDeAcontecimiento
+                ? new Date(sol.fechaDeAcontecimiento).toLocaleString()
+                : '-';
+            // Configurar Badge Modal
+            const badge = document.getElementById('mdlEstadoBadge');
+            badge.innerText = sol.estado || 'UNKNOWN';
+            // Ajusta estos colores según tus estados reales (PENDIENTE, ACEPTADO, RECHAZADO)
+            badge.className = 'badge ' + (
+                sol.estado === 'PENDIENTE' ? 'bg-warning text-dark' :
+                    sol.estado === 'ACEPTADO' ? 'bg-success' : 'bg-danger'
+            );
+            // Rellenar Multimedia
+            const containerMedia = document.getElementById('divMultimedia');
+            const listaMedia = document.getElementById('listaMultimedia');
+            listaMedia.innerHTML = '';
 
-            modal.show();
+            if (sol.contenidoMultimedia && sol.contenidoMultimedia.length > 0) {
+                containerMedia.style.display = 'block';
+                sol.contenidoMultimedia.forEach(m => {
+                    const div = document.createElement('div');
+                    div.className = 'multimedia-box';
+                    div.innerHTML = `<i class="bi bi-file-earmark-image"></i> <span>${m.pathArchivo || 'Archivo'}</span>`;
+                    listaMedia.appendChild(div);
+                });
+            } else {
+                containerMedia.style.display = 'none';
+            }
+            // Abrir Modal
+            const modalElement = document.getElementById('modalDetalle');
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+            modalInstance.show();
         }
+        /*]]>*/
     </script>
 </div>
 

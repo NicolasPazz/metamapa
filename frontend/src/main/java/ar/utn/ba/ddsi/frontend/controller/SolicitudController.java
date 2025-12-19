@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.frontend.controller;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudEdicionFormDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificacionDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudInputDTO;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class SolicitudController {
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
         try {
-            solicitudService.crearSolicitud(solicitudDTO);
+            //solicitudService.crearSolicitud(solicitudDTO);
             return "redirect:/hechos";
         } catch (Exception e) {
             return "redirect:/hechos";
@@ -38,6 +40,7 @@ public class SolicitudController {
 
 
     }
+
     @PostMapping("/modificar/{idSolicitud}")
     public ResponseEntity<?> solicitarModificacion(
             @PathVariable Long idSolicitud  ,
@@ -47,17 +50,8 @@ public class SolicitudController {
                 dto.getNuevoNombreCategoria(), dto.getNuevoLatitud(), dto.getNuevoLongitud(),
                 dto.getNuevoFechaDeAcontecimiento(), dto.getNuevoContenidoMultimedia());
 
-
-
-        //solicitudService.procesarSolicitudEdicion(idSolicitud, dto);
-
-        //Prueba hardcodeada
-
-
-
         return ResponseEntity.ok("Solicitud recibida correctamente");
     }
-
 
     @PatchMapping(value = "/{id}", consumes = "multipart/form-data")
     @ResponseBody
@@ -93,22 +87,17 @@ public class SolicitudController {
         }
     }
 
-    @GetMapping("/test1")
-    public ResponseEntity<?> testearEdicion() {
-        log.info("GET /solicitudes/test1");
-        SolicitudModificacionDTO dtoPrueba = new SolicitudModificacionDTO();
+    @PostMapping("/{id}/aceptar")
+    public String aceptarSolicitud(@PathVariable Long id) {
+        solicitudService.cambiarEstado(id, "ACEPTADO");
+        return "redirect:/admin/solicitudes";
 
-        dtoPrueba.setIdContribuyente(1L);
-        dtoPrueba.setNuevoTitulo("TEST: Título Modificado Hardcodeado");
-        dtoPrueba.setNuevoDescripcion("Esta es una descripción de prueba generada manualmente en el backend para verificar el flujo de edición.");
-        dtoPrueba.setNuevoNombreCategoria("Alau");
-        dtoPrueba.setNuevoLatitud(-34.603722); //
-        dtoPrueba.setNuevoLongitud(-58.381592);
-        dtoPrueba.setNuevoFechaDeAcontecimiento(LocalDateTime.now().minusDays(1));
+    }
+    @PostMapping("/{id}/rechazar")
+    public String rechazarSolicitud(@PathVariable Long id) {
+        solicitudService.cambiarEstado(id, "RECHAZADO");
 
-        solicitudService.procesarSolicitudEdicion(1L, dtoPrueba);
-
-        return ResponseEntity.ok("Solicitud hardcodeada enviada con éxito");
+        return "redirect:/admin/solicitudes";
     }
     
 }
