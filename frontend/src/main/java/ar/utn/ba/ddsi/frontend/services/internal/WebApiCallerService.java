@@ -48,6 +48,10 @@ public class WebApiCallerService {
                     // Token expirado, intentar refresh
                     AuthResponseDTO newTokens = refreshToken(refreshToken);
                     
+                    if (newTokens == null || newTokens.getAccessToken() == null) {
+                        throw new RuntimeException("Error al refrescar token: respuesta inválida");
+                    }
+                    
                     // Segundo intento con el nuevo token
                     return apiCall.execute(newTokens.getAccessToken());
                 } catch (Exception refreshError) {

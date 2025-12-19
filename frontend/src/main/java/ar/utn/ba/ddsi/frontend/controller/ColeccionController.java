@@ -6,6 +6,7 @@ import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import ar.utn.ba.ddsi.frontend.service.ColeccionService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/colecciones")
@@ -30,6 +32,7 @@ public class ColeccionController {
     @GetMapping
     public String listarColecciones(Model model,
             @RequestParam(defaultValue = "0") int page) {
+        log.info("GET /colecciones - page: {}", page);
         // Obtener colecciones paginadas del servicio (ya procesadas)
         PageResponse<ColeccionDTO> pageResponse =
             coleccionService.getAllColeccionesPaginadas(page, pageSize);
@@ -57,7 +60,8 @@ public class ColeccionController {
             @RequestParam(required = false) String fuente,
             @RequestParam(required = false) String modo,
             @RequestParam(defaultValue = "0") int page) {
-
+        log.info("GET /colecciones/{}/hechos - ubicacion: {}, fecha_reporte_hasta: {}, fecha_reporte_desde: {}, categoria: {}, fuente: {}, modo: {}, page: {}",
+                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page);
         // Obtener hechos de colección paginados del servicio (ya procesados)
         PageResponse<HechoDTO> pageResponse =
             coleccionService.getHechosColeccionPaginados(
@@ -88,6 +92,7 @@ public class ColeccionController {
     public String hechosColeccionMapa(
             Model model,
             @PathVariable String handle) {
+        log.info("GET /colecciones/{}/mapa", handle);
         // Obtener todos los hechos de la colección (sin paginación para el mapa)
         List<HechoDTO> hechos = coleccionService.getHechosColeccionByHandle(
                 handle, null, null, null, null, null);

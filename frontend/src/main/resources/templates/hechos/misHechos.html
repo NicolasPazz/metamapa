@@ -1,10 +1,129 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MetaMapa - Mis Hechos</title>
-  <link rel="stylesheet" th:href="@{/css/landing.css}">
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+  <section class="hechos-block">
+    <h2>Mis Hechos</h2>
+
+    <div th:if="${#lists.isEmpty(solicitudes)}" class="empty-state">
+      <p>No has creado ninguna solicitud aún.</p>
+      <a th:href="@{/hechos/nuevo}" class="btn primary">Crear primera solicitud</a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(solicitudes)}" class="solicitudes-list">
+      <div th:each="solicitud : ${solicitudes}" class="solicitud-card">
+        <h3 th:text="${solicitud.titulo}">Título</h3>
+        <p class="solicitud-descripcion" th:text="${solicitud.descripcion}">Descripción</p>
+        <div class="solicitud-info">
+          <span class="info-item">
+            <strong>Estado:</strong> 
+            <span th:text="${solicitud.estado}">PENDIENTE</span>
+          </span>
+          <span class="info-item">
+            <strong>Fecha de carga:</strong> 
+            <span th:text="${#temporals.format(solicitud.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</span>
+          </span>
+          <span class="info-item" th:if="${solicitud.fechaDeAcontecimiento}">
+            <strong>Fecha de acontecimiento:</strong> 
+            <span th:text="${#temporals.format(solicitud.fechaDeAcontecimiento, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+          </span>
+        </div>
+        <button 
+          th:data-solicitud-id="${solicitud.id}"
+          th:data-fecha-carga="${solicitud.fechaDeCargaSolicitud}"
+          onclick="editarSolicitud(this)"
+          class="btn secondary editar-btn">
+          Editar
+        </button>
+        <button 
+          th:if="${(solicitud.estado == T(ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud).ACEPTADO || solicitud.estado == T(ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud).ACEPTADO_MODIFICADO) && solicitud.hechoEnviado == true && solicitud.idHechoAgregador != null}"
+          th:data-hecho-id="${solicitud.idHechoAgregador}"
+          onclick="verHecho(this)"
+          class="btn primary ver-hecho-btn">
+          Ver hecho
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal de Edición -->
+  <div id="edicionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Solicitud</h3>
+        <button class="close-btn" onclick="cerrarModalEdicion()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formEdicionSolicitud">
+          <input type="hidden" id="solicitud_id" name="solicitud_id">
+          <input type="hidden" id="contribuyente_id" name="contribuyente_id" th:value="${contribuyenteId}">
+
+          <div class="form-notice" style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px;">
+            <p style="margin: 0; color: #1976d2; font-size: 0.9rem;">
+              <strong>Nota:</strong> Al editar la solicitud, volverá a ser revisada por un administrador. Solo se modificarán los campos que completes.
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_titulo">Título</label>
+            <input type="text" id="edit_titulo" name="titulo" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="edit_descripcion">Descripción</label>
+            <textarea id="edit_descripcion" name="descripcion" class="form-control" rows="4"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_categoria">Categoría</label>
+            <input type="text" id="edit_categoria" name="categoria" class="form-control">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit_latitud">Latitud</label>
+              <input type="number" id="edit_latitud" name="latitud" step="0.000001" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="edit_longitud">Longitud</label>
+              <input type="number" id="edit_longitud" name="longitud" step="0.000001" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_fecha_acontecimiento">Fecha de Acontecimiento</label>
+            <input type="datetime-local" id="edit_fecha_acontecimiento" name="fecha_acontecimiento" class="form-control" min="1900-01-01T00:00" max="2100-12-31T23:59" oninput="validarFechaAcontecimiento(this)">
+          </div>
+
+          <div class="form-group">
+            <label for="edit_multimedia">Multimedia</label>
+            <input type="file" id="edit_multimedia" name="multimedia" multiple accept="image/*,video/*">
+            <small class="form-text">Puedes seleccionar múltiples archivos</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" onclick="cerrarModalEdicion()" class="btn secondary">Cancelar</button>
+            <button type="button" id="submit_edicion" onclick="enviarFormularioEdicion()" class="btn primary">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Panel de Detalles del Hecho -->
+  <div id="hechoDetailPanel" class="side-panel">
+    <div class="panel-header">
+      <h3>Detalles del Hecho</h3>
+      <button class="close-btn" onclick="closeHechoDetailPanel()">&times;</button>
+    </div>
+    <div class="panel-content" id="hechoDetailContent">
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="closeHechoDetailPanel()"></div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
   <style>
     .hechos-block {
       padding: 2rem;
@@ -14,253 +133,829 @@
 
     .hechos-block h2 {
       color: var(--primary);
-      margin-bottom: 1rem;
+      margin-bottom: 2rem;
       text-align: center;
     }
 
-    /* Hechos grid */
-    .hechos-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
+    .empty-state {
+      text-align: center;
+      padding: 3rem;
     }
 
-    .hecho-card {
+    .solicitudes-list {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .solicitud-card {
       background: #fff;
-      padding: 1rem;
+      padding: 1.5rem;
       border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
     }
 
-    .hecho-card h3 {
-      color: var(--secondary);
+    .solicitud-card h3 {
+      color: var(--primary);
       margin-bottom: 0.5rem;
+      font-size: 1.2rem;
     }
 
-    .hecho-card p {
+    .solicitud-descripcion {
       font-size: 0.9rem;
+      color: #666;
+      margin-bottom: 1rem;
+      flex-grow: 1;
+    }
+
+    .solicitud-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      font-size: 0.85rem;
+    }
+
+    .info-item {
+      display: block;
+    }
+
+    .editar-btn {
+      margin-top: auto;
+      width: 100%;
+    }
+
+    .ver-hecho-btn {
+      margin-top: 0.5rem;
+      width: 100%;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      background: var(--primary);
+      color: #fff;
+      padding: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      border-radius: 10px 10px 0 0;
+    }
+
+    .modal-header h3 {
+      margin: 0;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 2rem;
+      cursor: pointer;
+      line-height: 1;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover {
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .form-group {
       margin-bottom: 1rem;
     }
 
-    .hecho-card a {
-      text-decoration: none;
-      color: var(--primary);
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
       font-weight: bold;
-      margin-right: 1rem;
+      color: #333;
     }
 
-    /* Panel (for new hecho or edit) */
-    .panel {
+    .form-control {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: flex-end;
+      margin-top: 1.5rem;
+    }
+
+    .form-text {
+      display: block;
+      font-size: 0.85rem;
+      color: #666;
+      margin-top: 0.25rem;
+    }
+
+    .toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 2000;
+    }
+
+    /* Side Panel */
+    .side-panel {
       position: fixed;
       top: 0;
-      right: -100%;
+      right: -450px;
       width: 450px;
       height: 100%;
       background: #fff;
-      border-left: 2px solid var(--primary);
-      box-shadow: -2px 0 8px rgba(0,0,0,0.3);
-      padding: 1.5rem;
+      box-shadow: -2px 0 10px rgba(0,0,0,0.3);
       transition: right 0.3s ease;
+      z-index: 1001;
       overflow-y: auto;
-      z-index: 30;
     }
 
-    .panel:target {
+    .side-panel.active {
       right: 0;
     }
 
-    .panel h3 {
+    .panel-content {
+      padding: 2rem;
+    }
+
+    .panel-content h2 {
       color: var(--primary);
       margin-bottom: 1rem;
+      font-size: 1.5rem;
     }
 
-    .panel label {
-      display: block;
-      font-weight: bold;
-      margin-top: 1rem;
-      margin-bottom: 0.3rem;
+    .panel-content p {
+      margin-bottom: 1rem;
+      line-height: 1.6;
     }
 
-    .panel input, .panel textarea, .panel select {
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .tag {
+      background: var(--light-gray);
+      color: var(--text);
+      padding: 0.3rem 0.7rem;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      border: 1px solid #ddd;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
       width: 100%;
-      padding: 0.6rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin-bottom: 0.5rem;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: none;
     }
 
-    .panel textarea {
-      resize: vertical;
-      height: 100px;
+    .overlay.active {
+      display: block;
     }
 
-    .panel button {
-      margin-top: 1rem;
-      padding: 0.6rem 1rem;
-      border: none;
-      border-radius: 6px;
-      background: var(--primary);
+    /* Multimedia Carousel */
+    .multimedia-carousel {
+      margin-top: 20px;
+    }
+
+    .carousel-container {
+      position: relative;
+      width: 100%;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+
+    .carousel-slides {
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .carousel-slide {
+      display: none;
+      width: 100%;
+    }
+
+    .carousel-slide.active {
+      display: block;
+    }
+
+    .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.5);
       color: white;
+      border: none;
+      font-size: 2rem;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      z-index: 10;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .carousel-btn:hover {
+      background: rgba(0,0,0,0.7);
+    }
+
+    .carousel-prev {
+      left: 10px;
+    }
+
+    .carousel-next {
+      right: 10px;
+    }
+
+    .carousel-item-image img {
+      width: 100%;
+      height: auto;
+      max-height: 400px;
+      object-fit: contain;
       cursor: pointer;
     }
 
-    .panel a.close {
-      display: inline-block;
-      margin-top: 1rem;
-      color: var(--secondary);
-      text-decoration: none;
-      font-weight: bold;
+    .carousel-item-video video {
+      width: 100%;
+      max-height: 400px;
     }
 
-    .new-hecho-btn {
-      display: block;
+    .carousel-item-audio {
       text-align: center;
-      margin: 1rem auto 2rem;
-      padding: 0.8rem 1.2rem;
-      border: 1px solid var(--primary);
-      border-radius: 6px;
-      color: var(--primary);
-      font-weight: bold;
-      text-decoration: none;
+      padding: 20px;
     }
 
-    .new-hecho-btn:hover {
-      background: var(--primary);
-      color: white;
+    .carousel-error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      color: #666;
+      gap: 10px;
+    }
+
+    @media (max-width: 768px) {
+      .side-panel {
+        width: 100%;
+        right: -100%;
+      }
     }
   </style>
-</head>
-<body>
-  <!-- Header -->
-  <header class="navbar">
-    <a th:href="@{/}" class="logo">MetaMapa</a>
-    <nav class="nav-buttons-center">
-      <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
-      <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
-    </nav>
-    <nav class="nav-buttons">
-      <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn secondary">Ingresar</a>
-      <a sec:authorize="!isAuthenticated()" th:href="@{/registro}" class="btn primary">Registrarse</a>
-      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
-        <button type="submit" class="btn secondary">Cerrar sesión</button>
-      </form>
-    </nav>
-  </header>
 
-  <!-- User hechos -->
-  <section class="hechos-block">
-    <h2>Mis Hechos</h2>
+  <script th:inline="javascript">
+    const solicitudesData = /*[[${solicitudes}]]*/ [];
 
-    <!-- Button for new hecho -->
-    <a href="#nuevo" class="new-hecho-btn">+ Subir nuevo Hecho</a>
+    function editarSolicitud(button) {
+      const solicitudId = button.getAttribute('data-solicitud-id');
+      const fechaCarga = button.getAttribute('data-fecha-carga');
+      
+      // Validar que pasaron <= 7 días
+      if (fechaCarga) {
+        const fechaCargaDate = new Date(fechaCarga);
+        const hoy = new Date();
+        const diferenciaTiempo = hoy - fechaCargaDate;
+        const diferenciaDias = diferenciaTiempo / (1000 * 3600 * 24);
+        
+        if (diferenciaDias > 7) {
+          showToast('Solo se puede editar una solicitud dentro de los 7 días posteriores a su creación.', 'error');
+          return;
+        }
+      }
 
-    <!-- User hechos list -->
-    <div class="hechos-grid">
-      <div class="hecho-card">
-        <h3>Manifestación en plaza central</h3>
-        <p>Fecha: 2024-05-12</p>
-        <a href="#edit1">Editar</a>
-      </div>
-      <div class="hecho-card">
-        <h3>Reporte sobre acceso restringido</h3>
-        <p>Fecha: 2024-07-01</p>
-        <a href="#edit2">Editar</a>
-      </div>
-    </div>
-  </section>
+      // Buscar la solicitud en los datos
+      const solicitud = solicitudesData.find(s => s.id == solicitudId);
+      if (!solicitud) {
+        showToast('No se pudo cargar la información de la solicitud.', 'error');
+        return;
+      }
 
-  <!-- New Hecho Panel -->
-  <div id="nuevo" class="panel">
-    <h3>Subir nuevo Hecho</h3>
-    <form>
-      <label for="titulo">Título <span style="color: #dc3545;">*</span></label>
-      <input type="text" id="titulo" required>
+      // Solo establecer el ID de la solicitud, los campos quedan vacíos
+      document.getElementById('solicitud_id').value = solicitud.id;
+      
+      // Guardar el estado anterior y el idHechoAgregador para usar después de la edición
+      document.getElementById('solicitud_id').setAttribute('data-estado-anterior', solicitud.estado || '');
+      document.getElementById('solicitud_id').setAttribute('data-hecho-agregador-id', solicitud.idHechoAgregador || '');
 
-      <label for="descripcion">Descripción <span style="color: #dc3545;">*</span></label>
-      <textarea id="descripcion" required></textarea>
+      // Mostrar modal
+      document.getElementById('edicionModal').style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
 
-      <label for="fecha">Fecha <span style="color: #dc3545;">*</span></label>
-      <input type="date" id="fecha" required>
+    function cerrarModalEdicion() {
+      document.getElementById('edicionModal').style.display = 'none';
+      document.body.style.overflow = '';
+      document.getElementById('formEdicionSolicitud').reset();
+    }
 
-      <label for="categoria">Categoría <span style="color: #dc3545;">*</span></label>
-      <select id="categoria" required>
-        <option value="">Selecciona una categoría</option>
-        <option>Derechos Humanos</option>
-        <option>Medio Ambiente</option>
-        <option>Educación</option>
-      </select>
+    // Función para enviar el formulario de edición
+    async function enviarFormularioEdicion() {
+      const submitBtn = document.getElementById('submit_edicion');
+      if (!submitBtn) {
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Guardando...';
 
-      <label for="ubicacion">Ubicación <span style="color: #dc3545;">*</span></label>
-      <input type="text" id="ubicacion" required>
+      try {
+        const solicitudId = document.getElementById('solicitud_id').value;
+        const contribuyenteId = document.getElementById('contribuyente_id').value;
 
-      <label for="multimedia">Contenido multimedia</label>
-      <input type="file" id="multimedia" multiple>
+        if (!solicitudId) {
+          showToast('Error: No se pudo obtener el ID de la solicitud.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Guardar Cambios';
+          return;
+        }
 
-      <button type="submit">Subir Hecho</button>
-    </form>
-    <a href="#" class="close">Cerrar</a>
-  </div>
+        if (!contribuyenteId) {
+          showToast('Error: No se pudo obtener el ID del contribuyente.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Guardar Cambios';
+          return;
+        }
 
-  <!-- Edit Hecho Panels -->
-  <div id="edit1" class="panel">
-    <h3>Editar Hecho</h3>
-    <form>
-      <label for="titulo1">Título <span style="color: #dc3545;">*</span></label>
-      <input type="text" id="titulo1" value="Manifestación en plaza central" required>
+        // Construir FormData igual que en la creación
+        const formData = new FormData();
+        formData.set('contribuyente_id', contribuyenteId);
 
-      <label for="descripcion1">Descripción <span style="color: #dc3545;">*</span></label>
-      <textarea id="descripcion1" required>Manifestación con más de 500 participantes.</textarea>
+        const titulo = document.getElementById('edit_titulo').value.trim();
+        if (titulo) formData.set('titulo', titulo);
 
-      <label for="fecha1">Fecha <span style="color: #dc3545;">*</span></label>
-      <input type="date" id="fecha1" value="2024-05-12" required>
+        const descripcion = document.getElementById('edit_descripcion').value.trim();
+        if (descripcion) formData.set('descripcion', descripcion);
 
-      <label for="categoria1">Categoría <span style="color: #dc3545;">*</span></label>
-      <select id="categoria1" required>
-        <option selected>Derechos Humanos</option>
-        <option>Medio Ambiente</option>
-        <option>Educación</option>
-      </select>
+        const categoria = document.getElementById('edit_categoria').value.trim();
+        if (categoria) formData.set('categoria', categoria);
 
-      <label for="ubicacion1">Ubicación <span style="color: #dc3545;">*</span></label>
-      <input type="text" id="ubicacion1" value="Buenos Aires" required>
+        const latitud = document.getElementById('edit_latitud').value;
+        if (latitud && latitud !== '') formData.set('latitud', latitud);
 
-      <label for="multimedia1">Contenido multimedia</label>
-      <input type="file" id="multimedia1" multiple>
+        const longitud = document.getElementById('edit_longitud').value;
+        if (longitud && longitud !== '') formData.set('longitud', longitud);
 
-      <button type="submit">Guardar cambios</button>
-    </form>
-    <a href="#" class="close">Cerrar</a>
-  </div>
+        const fechaAcontecimiento = document.getElementById('edit_fecha_acontecimiento').value;
+        if (fechaAcontecimiento) {
+          // Validar que la fecha tenga el formato correcto (YYYY-MM-DDTHH:mm)
+          const fechaRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+          if (!fechaRegex.test(fechaAcontecimiento)) {
+            showToast('La fecha debe tener el formato correcto (año de 4 dígitos).', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Guardar Cambios';
+            return;
+          }
+          formData.set('fecha_acontecimiento', new Date(fechaAcontecimiento).toISOString());
+        }
 
-  <div id="edit2" class="panel">
-    <h3>Editar Hecho</h3>
-    <form>
-      <label for="titulo2">Título <span style="color: #dc3545;">*</span></label>
-      <input type="text" id="titulo2" value="Reporte sobre acceso restringido" required>
+        // Agregar archivos multimedia directamente al FormData (igual que en la creación)
+        const fileInput = document.getElementById('edit_multimedia');
+        if (fileInput && fileInput.files.length > 0) {
+          for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append('archivos', fileInput.files[i]);
+          }
+        }
 
-      <label for="descripcion2">Descripción <span style="color: #dc3545;">*</span></label>
-      <textarea id="descripcion2" required>Informe de acceso restringido a recursos en zonas rurales.</textarea>
+        // Verificar que al menos un campo además del contribuyente_id esté presente
+        const camposModificados = Array.from(formData.keys()).filter(key => key !== 'contribuyente_id' && key !== 'archivos');
+        if (camposModificados.length === 0 && (!fileInput || fileInput.files.length === 0)) {
+          showToast('Debes completar al menos un campo para modificar la solicitud.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Guardar Cambios';
+          return;
+        }
 
-      <label for="fecha2">Fecha <span style="color: #dc3545;">*</span></label>
-      <input type="date" id="fecha2" value="2024-07-01" required>
+        const response = await fetch('/solicitudes/' + solicitudId, {
+          method: 'PATCH',
+          headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: formData
+        });
 
-      <label for="categoria2">Categoría <span style="color: #dc3545;">*</span></label>
-      <select id="categoria2" required>
-        <option>Derechos Humanos</option>
-        <option selected>Medio Ambiente</option>
-        <option>Educación</option>
-      </select>
+        console.log('Respuesta recibida:', response.status, response.statusText);
 
-      <label for="ubicacion2">Ubicación <span style="color: #dc3545;">*</span></label>
-      <input type="text" id="ubicacion2" value="Córdoba" required>
+        if (response.ok) {
+          // Obtener el estado anterior y el idHechoAgregador
+          const estadoAnterior = document.getElementById('solicitud_id').getAttribute('data-estado-anterior');
+          const idHechoAgregador = document.getElementById('solicitud_id').getAttribute('data-hecho-agregador-id');
+          
+          // Si la solicitud estaba en ACEPTADO o ACEPTADO_MODIFICADO y tiene idHechoAgregador, ocultarlo
+          if ((estadoAnterior === 'ACEPTADO' || estadoAnterior === 'ACEPTADO_MODIFICADO') && idHechoAgregador) {
+            try {
+              const apiBaseUrl = getApiBaseUrl();
+              const hideResponse = await fetch(apiBaseUrl + '/hechos/' + idHechoAgregador + '/ocultar', {
+                method: 'PATCH'
+              });
+            } catch (error) {
+              console.error('Error al ocultar hecho en agregador:', error);
+            }
+          }
+          
+          await showToast('Solicitud actualizada correctamente.', 'success');
+          cerrarModalEdicion();
+          setTimeout(() => location.reload(), 1500);
+        } else {
+          const text = await response.text();
+          console.error('Error del servidor:', text);
+          showToast('Error: ' + text, 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Guardar Cambios';
+        }
+      } catch (error) {
+        console.error('Error al procesar la solicitud:', error);
+        showToast('Error: ' + (error.message || 'Error desconocido'), 'error');
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Guardar Cambios';
+      }
+    }
 
-      <label for="multimedia2">Contenido multimedia</label>
-      <input type="file" id="multimedia2" multiple>
+    // Cerrar modal al hacer click fuera
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('edicionModal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            cerrarModalEdicion();
+          }
+        });
+      }
 
-      <button type="submit">Guardar cambios</button>
-    </form>
-    <a href="#" class="close">Cerrar</a>
-  </div>
-</body>
+      // Cerrar modal con Escape
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('edicionModal');
+          if (modal && modal.style.display === 'flex') {
+            cerrarModalEdicion();
+          }
+        }
+      });
+    });
+
+    function procesarArchivos(files) {
+      return Promise.all(Array.from(files).map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64String = event.target.result.split(',')[1];
+            // Mapear el tipo MIME al enum TipoContenido que espera el backend
+            let tipoContenido = 'IMAGEN'; // Por defecto
+            if (file.type.startsWith('image/')) {
+              tipoContenido = 'IMAGEN';
+            } else if (file.type.startsWith('video/')) {
+              tipoContenido = 'VIDEO';
+            } else if (file.type.startsWith('audio/')) {
+              tipoContenido = 'AUDIO';
+            }
+            resolve({
+              tipo: tipoContenido,
+              path: file.name,
+              contenido_base64: base64String
+            });
+          };
+          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
+        });
+      }));
+    }
+
+    function validarFechaAcontecimiento(input) {
+      const valor = input.value;
+      if (valor) {
+        // Validar que el año tenga exactamente 4 dígitos
+        const partes = valor.split('T');
+        if (partes.length > 0) {
+          const fecha = partes[0];
+          const año = fecha.split('-')[0];
+          if (año && año.length !== 4) {
+            input.setCustomValidity('El año debe tener 4 dígitos');
+            input.reportValidity();
+          } else {
+            input.setCustomValidity('');
+          }
+        }
+      } else {
+        input.setCustomValidity('');
+      }
+    }
+
+    // showToast está definido en common.js
+
+    // Función para ver hecho desde agregador
+    async function verHecho(button) {
+      const hechoId = button.getAttribute('data-hecho-id');
+      if (!hechoId) {
+        showToast('Error: No se pudo obtener el ID del hecho.', 'error');
+        return;
+      }
+
+      try {
+        // Obtener el hecho desde agregador
+        const apiBaseUrl = getApiBaseUrl();
+        const response = await fetch(apiBaseUrl + '/hechos');
+        if (!response.ok) {
+          throw new Error('Error al obtener hechos');
+        }
+        const hechos = await response.json();
+        const hecho = hechos.find(h => h.id != null && Number(h.id) === Number(hechoId));
+        
+        if (!hecho) {
+          showToast('No se encontró el hecho.', 'error');
+          return;
+        }
+
+        // Abrir el panel con los datos del hecho
+        openHechoDetailPanel(hecho);
+      } catch (error) {
+        console.error('Error al obtener el hecho:', error);
+        showToast('Error al cargar el hecho: ' + error.message, 'error');
+      }
+    }
+
+    // Función para abrir el panel de detalles
+    function openHechoDetailPanel(hecho) {
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+      const content = document.getElementById('hechoDetailContent');
+
+      let html = '<h2>' + hecho.titulo + '</h2>';
+
+      if (hecho.categoria) {
+        html += '<p><strong>Categoría:</strong> ' + hecho.categoria + '</p>';
+      }
+
+      if (hecho.descripcion) {
+        html += '<p><strong>Descripción:</strong> ' + hecho.descripcion + '</p>';
+      }
+
+      if (hecho.fecha_acontecimiento) {
+        const fecha = new Date(hecho.fecha_acontecimiento);
+        html += '<p><strong>Fecha de acontecimiento:</strong> ' +
+          fecha.toLocaleString('es-AR') + '</p>';
+      }
+
+      if (hecho.fecha_carga) {
+        const fechaCarga = new Date(hecho.fecha_carga);
+        html += '<p><strong>Fecha de carga:</strong> ' +
+          fechaCarga.toLocaleString('es-AR') + '</p>';
+      }
+
+      if (hecho.provincia) {
+        html += '<p><strong>Provincia:</strong> ' + hecho.provincia + '</p>';
+      }
+
+      if (hecho.latitud != null && hecho.longitud != null) {
+        html += '<p><strong>Ubicación:</strong> ' +
+          hecho.latitud + ', ' + hecho.longitud + '</p>';
+      }
+
+      if (hecho.nombre_fuente) {
+        let nombreFuente = hecho.nombre_fuente;
+        if (nombreFuente.startsWith('Fuente ')) {
+          nombreFuente = nombreFuente.substring(7);
+        }
+        html += '<p><strong>Fuente:</strong> ' + nombreFuente + '</p>';
+      } else if (hecho.origen) {
+        html += '<p><strong>Fuente:</strong> ' + hecho.origen + '</p>';
+      }
+
+      // Multimedia
+      let multimedia = hecho.multimedia;
+      if (!multimedia || !Array.isArray(multimedia) || multimedia.length === 0) {
+        multimedia = hecho.contenidoMultimedia;
+      }
+      
+      if (multimedia && Array.isArray(multimedia) && multimedia.length > 0) {
+        const carouselId = 'multimedia-carousel-' + (hecho.id || Date.now());
+        html += '<div style="margin-top: 20px;">';
+        html += '<div class="multimedia-carousel" id="' + carouselId + '">';
+        html += '<div class="carousel-container">';
+        
+        const items = [];
+        multimedia.forEach(function(item, index) {
+          let tipoRaw = item.tipoContenido || item.tipo;
+          if (tipoRaw && typeof tipoRaw === 'object') {
+            tipoRaw = tipoRaw.name || tipoRaw.toString();
+          }
+          const tipo = (tipoRaw || '').toString().toUpperCase();
+          const path = item.pathArchivo || item.path || '';
+          
+          let fileUrl;
+          if (path.startsWith('http')) {
+            fileUrl = path;
+          } else {
+            const apiBaseUrl = getApiBaseUrl();
+            fileUrl = apiBaseUrl + '/multimedia/' + encodeURIComponent(path);
+          }
+          
+          items.push({ tipo, path, fileUrl, index });
+        });
+        
+        html += '<button class="carousel-btn carousel-prev" onclick="carouselPrev(\'' + carouselId + '\')" aria-label="Anterior">‹</button>';
+        html += '<div class="carousel-slides">';
+        items.forEach(function(item, index) {
+          html += '<div class="carousel-slide' + (index === 0 ? ' active' : '') + '">';
+          
+          if (item.tipo === 'IMAGEN') {
+            html += '<div class="carousel-item-image">';
+            html += '<img src="' + item.fileUrl + '" alt="' + item.path + '" loading="lazy" ';
+            html += 'onclick="window.open(\'' + item.fileUrl + '\', \'_blank\')" ';
+            html += 'onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" />';
+            html += '<div class="carousel-error" style="display: none;">';
+            html += '<span style="font-size: 2rem;">🖼️</span>';
+            html += '<span>Imagen no disponible</span>';
+            html += '</div>';
+            html += '</div>';
+          } else if (item.tipo === 'VIDEO') {
+            html += '<div class="carousel-item-video">';
+            html += '<video src="' + item.fileUrl + '" controls preload="metadata" ';
+            html += 'onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';"></video>';
+            html += '<div class="carousel-error" style="display: none;">';
+            html += '<span style="font-size: 2rem;">🎬</span>';
+            html += '<span>Video no disponible</span>';
+            html += '</div>';
+            html += '</div>';
+          } else if (item.tipo === 'AUDIO') {
+            html += '<div class="carousel-item-audio">';
+            html += '<div style="font-size: 4rem; text-align: center; margin-bottom: 20px;">🎵</div>';
+            html += '<audio src="' + item.fileUrl + '" controls style="width: 100%;" ';
+            html += 'onerror="this.onerror=null; this.parentElement.querySelector(\'.carousel-error\').style.display=\'flex\';"></audio>';
+            html += '<div class="carousel-error" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">';
+            html += '<span style="font-size: 2rem;">🎵</span>';
+            html += '<span>Audio no disponible</span>';
+            html += '</div>';
+            html += '<div style="font-size: 0.85rem; color: #666; text-align: center; margin-top: 10px; word-break: break-all;" title="' + item.path + '">' + item.path + '</div>';
+            html += '</div>';
+          } else {
+            html += '<div class="carousel-item-file">';
+            html += '<a href="' + item.fileUrl + '" target="_blank" class="file-link">';
+            html += '<span style="font-size: 3rem;">📎</span>';
+            html += '<span>' + item.path + '</span>';
+            html += '</a>';
+            html += '</div>';
+          }
+          
+          html += '</div>';
+        });
+        html += '</div>';
+        html += '<button class="carousel-btn carousel-next" onclick="carouselNext(\'' + carouselId + '\')" aria-label="Siguiente">›</button>';
+        html += '</div>';
+        html += '</div></div>';
+      }
+
+      if (hecho.etiquetas && hecho.etiquetas.length > 0) {
+        html += '<div><strong>Etiquetas:</strong><div class="tags">';
+        hecho.etiquetas.forEach(etiqueta => {
+          html += '<span class="tag">' + etiqueta + '</span>';
+        });
+        html += '</div></div>';
+      }
+
+      if (hecho.latitud != null && hecho.longitud != null && 
+        !isNaN(hecho.latitud) && !isNaN(hecho.longitud) &&
+        hecho.latitud >= -90 && hecho.latitud <= 90 &&
+        hecho.longitud >= -180 && hecho.longitud <= 180) {
+        let mapaUrl = null;
+        if (hecho.id != null) {
+          mapaUrl = '/hechos/mapa?hechoId=' + hecho.id;
+        } else if (hecho.fuente_id != null && hecho.id_origen != null) {
+          mapaUrl = '/hechos/mapa?fuenteId=' + hecho.fuente_id + '&idOrigen=' + hecho.id_origen;
+        }
+        
+        if (mapaUrl != null) {
+          html += '<div style="margin-top: 20px; text-align: center;">';
+          html += '<a href="' + mapaUrl + '" class="btn primary">';
+          html += 'Ver en mapa';
+          html += '</a>';
+          html += '</div>';
+        }
+      }
+
+      content.innerHTML = html;
+
+      panel.classList.add('active');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeHechoDetailPanel() {
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+
+      panel.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeHechoDetailPanel();
+      }
+    });
+
+    // Funciones del carousel
+    function carouselPrev(carouselId) {
+      const carousel = document.getElementById(carouselId);
+      if (!carousel) return;
+      
+      const slides = carousel.querySelectorAll('.carousel-slide');
+      let currentIndex = -1;
+      
+      slides.forEach((slide, index) => {
+        if (slide.classList.contains('active')) {
+          currentIndex = index;
+        }
+      });
+      
+      if (currentIndex === -1) return;
+      
+      const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+      
+      slides[currentIndex].classList.remove('active');
+      slides[prevIndex].classList.add('active');
+    }
+
+    function carouselNext(carouselId) {
+      const carousel = document.getElementById(carouselId);
+      if (!carousel) return;
+      
+      const slides = carousel.querySelectorAll('.carousel-slide');
+      let currentIndex = -1;
+      
+      slides.forEach((slide, index) => {
+        if (slide.classList.contains('active')) {
+          currentIndex = index;
+        }
+      });
+      
+      if (currentIndex === -1) return;
+      
+      const nextIndex = (currentIndex + 1) % slides.length;
+      
+      slides[currentIndex].classList.remove('active');
+      slides[nextIndex].classList.add('active');
+    }
+  </script>
+</div>
 </html>

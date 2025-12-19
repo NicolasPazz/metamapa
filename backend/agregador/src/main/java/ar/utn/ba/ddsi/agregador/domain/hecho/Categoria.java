@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.agregador.domain.hecho;
 
 import jakarta.persistence.*;
+import java.util.Objects;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -36,11 +37,11 @@ public class Categoria {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     Categoria categoria = (Categoria) o;
-    return nombre.equals(categoria.nombre);
+    return Objects.equals(nombre, categoria.nombre);
   }
 
   @Override
   public int hashCode() {
-    return nombre.hashCode();
+    return Objects.hashCode(nombre);
   }
 }

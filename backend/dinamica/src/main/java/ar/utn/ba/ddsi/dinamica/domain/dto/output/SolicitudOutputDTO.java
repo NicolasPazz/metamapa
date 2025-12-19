@@ -28,4 +28,10 @@ public class SolicitudOutputDTO {
   private EstadoSolicitud estado;
   @JsonProperty("transiciones")
   private List<TransicionEstadoOutputDTO> transiciones;
+  @JsonProperty("hecho_id")
+  private Long idHecho;
+  @JsonProperty("hecho_agregador_id")
+  private Long idHechoAgregador;
+  @JsonProperty("hecho_enviado")
+  private Boolean hechoEnviado;
 }

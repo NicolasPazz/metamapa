@@ -6,10 +6,12 @@ import ar.utn.ba.ddsi.frontend.service.ColeccionService;
 import ar.utn.ba.ddsi.frontend.service.HechoService;
 import java.util.Collections;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+@Slf4j
 @Controller
 public class HomeController {
 
@@ -23,6 +25,7 @@ public class HomeController {
 
     @GetMapping("/")
     public String landing(Model model) {
+        log.info("GET /");
         // Obtener un solo hecho para la landing (optimizado)
         HechoDTO hecho = hechoService.getOneHecho();
         List<HechoDTO> hechos = hecho != null ? Collections.singletonList(hecho) : Collections.emptyList();
@@ -40,18 +43,21 @@ public class HomeController {
 
     @GetMapping("/terminos")
     public String terminos(Model model) {
+        log.info("GET /terminos");
         model.addAttribute("showReportarHechoBtn", false);
         return "legal/terminos";
     }
 
     @GetMapping("/privacidad")
     public String privacidad(Model model) {
+        log.info("GET /privacidad");
         model.addAttribute("showReportarHechoBtn", false);
         return "legal/privacidad";
     }
 
     @GetMapping("/contacto")
     public String contacto(Model model) {
+        log.info("GET /contacto");
         model.addAttribute("showReportarHechoBtn", false);
         return "legal/contacto";
     }

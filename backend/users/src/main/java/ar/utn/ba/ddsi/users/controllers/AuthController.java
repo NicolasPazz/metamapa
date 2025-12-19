@@ -28,9 +28,10 @@ public class AuthController {
 
     @PostMapping
     public ResponseEntity<AuthResponseDTO> loginApi(@RequestBody Map<String, String> credentials) {
+        String username = credentials.get("username");
+        String password = credentials.get("password");
+        log.info("POST /api/auth - username: {}, password: [PROTEGIDO]", username);
         try {
-            String username = credentials.get("username");
-            String password = credentials.get("password");
             
             // Validación básica de credenciales
             if (username == null || username.trim().isEmpty() || 
@@ -64,6 +65,7 @@ public class AuthController {
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@RequestBody RefreshRequest request) {
+        log.info("POST /api/auth/refresh - refreshToken: [PROTEGIDO]");
         try {
             String username = JwtUtil.validarToken(request.getRefreshToken());
 
@@ -90,11 +92,12 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody Map<String, String> userData) {
+        String username = userData.get("username");
+        String password = userData.get("password");
+        String nombre = userData.get("nombre");
+        String apellido = userData.get("apellido");
+        log.info("POST /api/auth/register - username: {}, password: [PROTEGIDO], nombre: {}, apellido: {}", username, nombre, apellido);
         try {
-            String username = userData.get("username");
-            String password = userData.get("password");
-            String nombre = userData.get("nombre");
-            String apellido = userData.get("apellido");
             
             // Validación básica
             if (username == null || username.trim().isEmpty() || 
@@ -128,6 +131,7 @@ public class AuthController {
 
     @GetMapping("/user/roles-permisos")
     public ResponseEntity<UserRolesPermissionsDTO> getUserRolesAndPermissions(Authentication authentication) {
+        log.info("GET /api/auth/user/roles-permisos - Username: {}", authentication != null ? authentication.getName() : "null");
         try {
             String username = authentication.getName();
             UserRolesPermissionsDTO response = loginService.obtenerRolesYPermisosUsuario(username);

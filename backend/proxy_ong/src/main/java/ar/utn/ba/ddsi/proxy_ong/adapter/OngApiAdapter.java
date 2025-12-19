@@ -80,6 +80,10 @@ public class OngApiAdapter implements IApiExternaAdapter {
           (response != null ? response.getMessage() : "respuesta nula"));
     }
 
+    if (response.getData() == null) {
+      throw new ApiLoginException("Login fallido: respuesta sin datos");
+    }
+
     String localAccessToken = response.getData().getAccess_token();
     String localTokenType = response.getData().getToken_type();
     this.accessToken = localAccessToken;

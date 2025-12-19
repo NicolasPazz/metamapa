@@ -17,8 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
-import static ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud.*;
 
+import static ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud.ACEPTADO;
+import static ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud.RECHAZADO;
 
 @RestController
 @RequestMapping("/api/solicitudes")
@@ -31,18 +32,24 @@ public class SolicitudesController {
 
   @GetMapping("/{id}")
   public ResponseEntity<SolicitudOutputDTO> obtenerSolicitudPorId(@PathVariable Long id) {
-    log.debug("GET /api/solicitudes/{}", id);
+    log.info("GET /api/solicitudes/{}", id);
     return ResponseEntity.ok(solicitudesService.obtenerSolicitud(id));
+  }
+
+  @GetMapping("/contribuyente/{idContribuyente}")
+  public ResponseEntity<List<SolicitudOutputDTO>> obtenerSolicitudesPorContribuyente(
+      @PathVariable Long idContribuyente) {
+    log.info("GET /api/solicitudes/contribuyente/{}", idContribuyente);
+    return ResponseEntity.ok(solicitudesService.buscarPorContribuyente(idContribuyente));
   }
 
   @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
   public ResponseEntity<SolicitudOutputDTO> crearNuevaSolicitudJson(
-          @Valid @RequestBody SolicitudHechoInputContribuyenteDTO input) {
+      @Valid @RequestBody SolicitudHechoInputContribuyenteDTO input) {
 
-    log.debug("POST /api/solicitudes (JSON) - Recibida petición");
-    log.debug("POST /api/solicitudes (JSON) - Nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
-    log.debug("POST /api/solicitudes (JSON) - Título: {}, Latitud: {}, Longitud: {}",
-            input.getTitulo(), input.getLatitud(), input.getLongitud());
+    log.info("POST /api/solicitudes (JSON) - idContribuyente: {}, titulo: {}, descripcion: {}, categoria: {}, latitud: {}, longitud: {}, fechaDeAcontecimiento: {}, multimedia: {}",
+            input.getIdContribuyente(), input.getTitulo(), input.getDescripcion(), input.getCategoria(),
+            input.getLatitud(), input.getLongitud(), input.getFechaDeAcontecimiento(), input.getMultimedia());
     var solicitudCreada = solicitudesService.recibirSolicitudContribuyente(input);
     log.debug("POST /api/solicitudes (JSON) - Solicitud creada exitosamente con ID: {}", solicitudCreada.getId());
     return ResponseEntity.status(HttpStatus.CREATED).body(solicitudCreada.toOutputDTO());
@@ -50,54 +57,98 @@ public class SolicitudesController {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<?> crearNuevaSolicitudMultipart(
-          @RequestPart("solicitud") String solicitudJson,
-          @RequestPart(value = "archivos", required = false) List<MultipartFile> archivos) {
+      @RequestPart("solicitud") String solicitudJson,
+      @RequestPart(value = "archivos", required = false) List<MultipartFile> archivos) {
 
-    log.debug("POST /api/solicitudes (MULTIPART) - Recibida petición");
-    log.debug("POST /api/solicitudes - JSON recibido: {}", solicitudJson);
-    log.debug("POST /api/solicitudes - Archivos recibidos: {}",
-            archivos != null ? archivos.size() : 0);
-
-    if (archivos != null) {
-      archivos.forEach(archivo ->
-              log.debug("POST /api/solicitudes - Archivo: {} ({} bytes, tipo: {})",
-                      archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType()));
+    log.info("POST /api/solicitudes (MULTIPART) - solicitudJson: {}, archivos: {}",
+            solicitudJson, archivos != null ? archivos.size() : 0);
+    
+    if (archivos != null && !archivos.isEmpty()) {
+      archivos.forEach(archivo -> 
+          log.info("POST /api/solicitudes (MULTIPART) - Archivo: {} ({} bytes, tipo: {})", 
+                  archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType()));
     }
 
     try {
       SolicitudHecho solicitudCreada = solicitudesService.recibirSolicitudContribuyenteConMultipart(
-              solicitudJson, archivos);
-      log.debug("POST /api/solicitudes - Solicitud creada exitosamente con ID: {}",
+          solicitudJson, archivos);
+      log.debug("POST /api/solicitudes - Solicitud creada exitosamente con ID: {}", 
               solicitudCreada.getId());
       return ResponseEntity.status(HttpStatus.CREATED).body(solicitudCreada.toOutputDTO());
     } catch (IllegalArgumentException e) {
       log.error("POST /api/solicitudes - Formato de archivo no permitido: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body("Formato de archivo no permitido: " + e.getMessage());
+          .body("Formato de archivo no permitido: " + e.getMessage());
     } catch (IOException e) {
-      log.error("POST /api/solicitudes - Error procesando solicitud con archivos: {}",
+      log.error("POST /api/solicitudes - Error procesando solicitud con archivos: {}", 
               e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-              .body("Error procesando archivos: " + e.getMessage());
+          .body("Error procesando archivos: " + e.getMessage());
     } catch (Exception e) {
-      log.error("POST /api/solicitudes - Error inesperado procesando solicitud: {}",
+      log.error("POST /api/solicitudes - Error inesperado procesando solicitud: {}", 
               e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-              .body("Error inesperado: " + e.getMessage());
+          .body("Error inesperado: " + e.getMessage());
     }
   }
 
-  @PatchMapping("/{id}")
-  public ResponseEntity<SolicitudOutputDTO> modificarSolicitud(
-          @PathVariable Long id,
-          @Valid @RequestBody SolicitudModificarUserInputDTO input) {
-    log.debug("PATCH /api/solicitudes/{} - Modificación por contribuyente ID: {}", id, input.getIdContribuyente());
-    SolicitudOutputDTO solicitudModificada = solicitudesService.modificarSolicitud(id, input);
-    log.debug("Solicitud {} modificada exitosamente", id);
-    return ResponseEntity.ok(solicitudModificada);
+  @PatchMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+  public ResponseEntity<?> modificarSolicitud(
+      @PathVariable Long id,
+      @RequestPart("solicitud") String solicitudJson,
+      @RequestPart(value = "archivos", required = false) List<MultipartFile> archivos) {
+    
+    log.info("PATCH /api/solicitudes/{} (MULTIPART) - solicitudJson: {}, archivos: {}",
+            id, solicitudJson, archivos != null ? archivos.size() : 0);
+    
+    if (archivos != null && !archivos.isEmpty()) {
+      archivos.forEach(archivo -> 
+          log.info("PATCH /api/solicitudes/{} (MULTIPART) - Archivo: {} ({} bytes, tipo: {})", 
+                  id, archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType()));
+    }
+    
+    try {
+      SolicitudOutputDTO solicitudModificada = solicitudesService.modificarSolicitudConMultipart(
+          id, solicitudJson, archivos);
+      log.debug("Solicitud {} modificada exitosamente", id);
+      return ResponseEntity.ok(solicitudModificada);
+    } catch (IllegalArgumentException e) {
+      log.error("PATCH /api/solicitudes/{} - Formato de archivo no permitido: {}", id, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Formato de archivo no permitido: " + e.getMessage());
+    } catch (IOException e) {
+      log.error("PATCH /api/solicitudes/{} - Error procesando solicitud con archivos: {}", 
+          id, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Error procesando archivos: " + e.getMessage());
+    } catch (Exception e) {
+      log.error("Error modificando solicitud {}: {}", id, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Error al modificar la solicitud: " + e.getMessage());
+    }
   }
 
-  @PatchMapping("/{id}/aceptar")
+  @PatchMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+  public ResponseEntity<?> modificarSolicitudJson(
+      @PathVariable Long id,
+      @Valid @RequestBody SolicitudModificarUserInputDTO input) {
+    
+    log.info("PATCH /api/solicitudes/{} (JSON) - idContribuyente: {}, nuevoTitulo: {}, nuevoDescripcion: {}, nuevoNombreCategoria: {}, nuevoLatitud: {}, nuevoLongitud: {}, nuevoFechaDeAcontecimiento: {}, nuevoContenidoMultimedia: {}",
+            id, input.getIdContribuyente(), input.getNuevoTitulo(), input.getNuevoDescripcion(),
+            input.getNuevoNombreCategoria(), input.getNuevoLatitud(), input.getNuevoLongitud(),
+            input.getNuevoFechaDeAcontecimiento(), input.getNuevoContenidoMultimedia());
+    
+    try {
+      SolicitudOutputDTO solicitudModificada = solicitudesService.modificarSolicitud(id, input);
+      log.debug("Solicitud {} modificada exitosamente", id);
+      return ResponseEntity.ok(solicitudModificada);
+    } catch (Exception e) {
+      log.error("Error modificando solicitud {}: {}", id, e.getMessage(), e);
+      return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .body("Error al modificar la solicitud: " + e.getMessage());
+    }
+  }
+  @PostMapping("/{id}/aceptar")
   public ResponseEntity<SolicitudOutputDTO> aceptarSolicitud(@PathVariable Long id) {
     SolicitudModificarAdminInputDTO solicitudCambio = new SolicitudModificarAdminInputDTO();
     solicitudCambio.setNuevoEstadoSolicitud(ACEPTADO);
@@ -106,7 +157,7 @@ public class SolicitudesController {
     return ResponseEntity.ok(resultado);
   }
 
-  @PatchMapping("/{id}/rechazar")
+  @PostMapping("/{id}/rechazar")
   public ResponseEntity<SolicitudOutputDTO> rechazarSolicitud(@PathVariable Long id) {
     SolicitudModificarAdminInputDTO solicitudCambio = new SolicitudModificarAdminInputDTO();
     solicitudCambio.setNuevoEstadoSolicitud(RECHAZADO);
@@ -115,5 +166,6 @@ public class SolicitudesController {
     return ResponseEntity.ok(resultado);
 
   }
+
 }
 

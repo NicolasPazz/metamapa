@@ -41,7 +41,8 @@ public class ColeccionesController {
             @RequestParam(required = false) String fuente,
             @RequestParam(required = false) ModoNavegacion modo) {
 
-        log.info("[ColeccionesController] GET /api/colecciones/{}/hechos", handle);
+        log.info("[ColeccionesController] GET /api/colecciones/{}/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}, fuente: {}, modo: {}",
+                handle, categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente, modo);
 
         return coleccionesService.getHechosColeccionByHandle(
                 handle,
