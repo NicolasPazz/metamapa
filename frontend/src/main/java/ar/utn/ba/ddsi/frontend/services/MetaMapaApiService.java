@@ -15,9 +15,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 
 import java.util.Map;
 
-/**
- * Servicio para gestión de autenticación delegada al backend de usuarios
- */
 @Service
 public class MetaMapaApiService {
 
@@ -51,10 +48,8 @@ public class MetaMapaApiService {
         } catch (WebClientResponseException e) {
             log.error(e.getMessage());
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                // Login fallido - credenciales incorrectas
                 return null;
             }
-            // Otros errores HTTP
             throw new RuntimeException("Error en el servicio de autenticación: " + e.getMessage(), e);
         } catch (Exception e) {
             throw new RuntimeException("Error de conexión con el servicio de autenticación: " + e.getMessage(), e);
@@ -82,10 +77,8 @@ public class MetaMapaApiService {
                 errorMessage = "Ese nombre de usuario ya está en uso";
             } else {
                 try {
-                    // Intentar parsear el JSON de error del body
                     String responseBody = e.getResponseBodyAsString();
                     if (responseBody != null && !responseBody.isEmpty()) {
-                        // Parsear el JSON manualmente (formato: {"error":"mensaje"})
                         if (responseBody.contains("\"error\"")) {
                             int errorStart = responseBody.indexOf("\"error\"");
                             int valueStart = responseBody.indexOf(":", errorStart) + 1;
@@ -95,7 +88,6 @@ public class MetaMapaApiService {
                                 errorMessage = responseBody.substring(quoteStart, quoteEnd);
                             }
                         } else {
-                            // Si no tiene formato JSON, usar el body completo
                             errorMessage = responseBody;
                         }
                     }

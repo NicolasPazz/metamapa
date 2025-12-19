@@ -26,11 +26,9 @@ public class HomeController {
     @GetMapping("/")
     public String landing(Model model) {
         log.info("GET /");
-        // Obtener un solo hecho para la landing (optimizado)
         HechoDTO hecho = hechoService.getOneHecho();
         List<HechoDTO> hechos = hecho != null ? Collections.singletonList(hecho) : Collections.emptyList();
 
-        // Obtener una sola colección para la landing (optimizado)
         ColeccionDTO coleccion = coleccionService.getOneColeccion();
         List<ColeccionDTO> colecciones = coleccion != null ? Collections.singletonList(coleccion) : Collections.emptyList();
 

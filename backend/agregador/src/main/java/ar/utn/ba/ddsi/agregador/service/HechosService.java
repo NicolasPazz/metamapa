@@ -41,7 +41,6 @@ public class HechosService {
         String ubicacion,
         String fuente) {
 
-        // Obtener hechos locales desde la BD (solo hechos VISIBLES)
         List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,
@@ -84,10 +83,8 @@ public class HechosService {
 
         try {
 
-            // Convertir DTO a entidad
             Hecho hechoNuevo = hechoMapper.fromDTO(hechoInputDTO);
 
-            // Asignar provincia basada en coordenadas o nombre
             if (hechoNuevo.getLatitud() != null && hechoNuevo.getLongitud() != null) {
                 Provincia provincia =
                     provinciaService.obtenerProvinciaPorCoordenadas(
@@ -99,7 +96,6 @@ public class HechosService {
                 hechoNuevo.setProvincia(provincia);
             }
 
-            // Asignar nombreFuente si no está asignado
             if (hechoNuevo.getNombreFuente() == null && hechoNuevo.getFuenteId() != null) {
                 AFuente fuente = fuentesService.getFuenteById(hechoNuevo.getFuenteId());
                 if (fuente != null) {
@@ -190,20 +186,15 @@ public class HechosService {
     }
 
     public ResponseEntity<List<String>> getFuentesConHechos() {
-        // Obtener nombres de fuentes desde la configuración
         List<String> nombresFuentesConfig = fuentesProperties.getConfig().stream()
             .map(FuenteConfig::getNombre)
             .toList();
         
-        // Filtrar: incluir fuentes que tienen hechos visibles en la BD O que son de tiempo real
-        // (las de tiempo real pueden tener hechos aunque no estén persistidos)
         List<String> fuentesConHechos = nombresFuentesConfig.stream()
             .filter(nombre -> {
-                // Si tiene hechos en BD, incluirla
                 if (hechosRepository.existsByNombreFuenteAndEstadoVisible(nombre)) {
                     return true;
                 }
-                // Si es de tiempo real, verificar si tiene hechos consultando la fuente
                 FuenteConfig config = fuentesProperties.getConfig().stream()
                     .filter(c -> c.getNombre().equals(nombre))
                     .findFirst()
@@ -237,7 +228,6 @@ public class HechosService {
             return ResponseEntity.notFound().build();
         }
 
-        // Tomar el primer hecho (más reciente)
         HechoDTO hechoDTO = hechoMapper.toDTO(hechos.get(0));
         return ResponseEntity.ok(hechoDTO);
     }
@@ -252,8 +242,6 @@ public class HechosService {
         int page,
         int size) {
 
-
-        // Obtener todos los hechos con filtros
         List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,
@@ -262,7 +250,6 @@ public class HechosService {
 
         List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
 
-        // Intentar obtener hechos externos
         List<HechoDTO> externos = new ArrayList<>();
         try {
             ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
@@ -272,7 +259,6 @@ public class HechosService {
                 ubicacion);
             externos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
             
-            // Filtrar por fuente si se especificó (por nombre de fuente)
             if (fuente != null && !fuente.trim().isEmpty()) {
                 externos = externos.stream()
                     .filter(h -> h.getNombreFuente() != null && h.getNombreFuente().equals(fuente))
@@ -282,11 +268,9 @@ public class HechosService {
             log.warn("[HechosService] Error al obtener hechos externos en getAllPaginated: {}", e.getMessage());
         }
 
-        // Combinar
         List<HechoDTO> combinados = new ArrayList<>(locales);
         combinados.addAll(externos);
 
-        // Paginar
         int start = page * size;
         int end = Math.min(start + size, combinados.size());
 
@@ -361,7 +345,6 @@ public class HechosService {
             int page,
             int size) {
         
-        // Validar parámetros de paginación
         if (page < 0) {
             log.warn("[HechosService] Página inválida: {}, usando 0", page);
             page = 0;
@@ -381,8 +364,6 @@ public class HechosService {
         long totalLocales;
         long totalExternos = 0;
 
-        // Paginación híbrida: combinar locales (BD) + externos (fuentes en tiempo real)
-        // Siempre obtener locales para calcular totales correctamente
         ResponseEntity<List<HechoDTO>> localesResp = getAllLocal(
                 categoria, fecha_reporte_desde, fecha_reporte_hasta,
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
@@ -390,18 +371,14 @@ public class HechosService {
         List<HechoDTO> hechosLocales = Optional.ofNullable(localesResp.getBody()).orElse(new ArrayList<>());
         totalLocales = hechosLocales.size();
 
-        // Si la página está dentro de los locales, tomar de ahí
         if (start < hechosLocales.size()) {
             int endLocal = Math.min(start + size, hechosLocales.size());
             resultado.addAll(hechosLocales.subList(start, endLocal));
             needed = size - resultado.size();
         } else {
-            // La página está más allá de los locales, ajustar índice para externos
             start = start - (int)totalLocales;
         }
 
-        // Solo obtener externos si realmente se necesitan para completar esta página
-        // Optimización: evitar llamadas innecesarias a fuentes externas
         if (needed > 0 || start >= 0) {
             try {
                 ResponseEntity<List<HechoDTO>> externosResp = getAllExternal(
@@ -410,7 +387,6 @@ public class HechosService {
                 List<HechoDTO> hechosExternos = Optional.ofNullable(externosResp.getBody()).orElse(new ArrayList<>());
                 totalExternos = hechosExternos.size();
                 
-                // Completar página con hechos externos si faltan elementos
                 if (needed > 0 && !hechosExternos.isEmpty() && start >= 0 && start < hechosExternos.size()) {
                     int endExterno = Math.min(start + needed, hechosExternos.size());
                     resultado.addAll(hechosExternos.subList(start, endExterno));
@@ -420,7 +396,6 @@ public class HechosService {
             }
         }
 
-        // Calcular totales combinados para determinar si hay página siguiente
         long totalDisponibles = totalLocales + totalExternos;
         boolean hasNext = ((long)(page + 1)) * size < totalDisponibles;
 

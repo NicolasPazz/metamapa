@@ -47,14 +47,6 @@ public class SolicitudController {
                 dto.getNuevoNombreCategoria(), dto.getNuevoLatitud(), dto.getNuevoLongitud(),
                 dto.getNuevoFechaDeAcontecimiento(), dto.getNuevoContenidoMultimedia());
 
-
-
-        //solicitudService.procesarSolicitudEdicion(idSolicitud, dto);
-
-        //Prueba hardcodeada
-
-
-
         return ResponseEntity.ok("Solicitud recibida correctamente");
     }
 
@@ -102,7 +94,7 @@ public class SolicitudController {
         dtoPrueba.setNuevoTitulo("TEST: Título Modificado Hardcodeado");
         dtoPrueba.setNuevoDescripcion("Esta es una descripción de prueba generada manualmente en el backend para verificar el flujo de edición.");
         dtoPrueba.setNuevoNombreCategoria("Alau");
-        dtoPrueba.setNuevoLatitud(-34.603722); //
+        dtoPrueba.setNuevoLatitud(-34.603722);
         dtoPrueba.setNuevoLongitud(-58.381592);
         dtoPrueba.setNuevoFechaDeAcontecimiento(LocalDateTime.now().minusDays(1));
 

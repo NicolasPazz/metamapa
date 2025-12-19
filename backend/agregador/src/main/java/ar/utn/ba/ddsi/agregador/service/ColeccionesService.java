@@ -50,7 +50,6 @@ public class ColeccionesService {
     private final ObjectMapper objectMapper;
 
     public ResponseEntity<ColeccionDTO> getOneColeccion() {
-        // Intentar obtener de la BD local
         List<Coleccion> coleccionesLocales = coleccionesRepository.findAll();
 
         if (!coleccionesLocales.isEmpty()) {
@@ -95,7 +94,6 @@ public class ColeccionesService {
         todasLasColecciones.addAll(coleccionesLocales);
         todasLasColecciones.addAll(coleccionesFuentes);
 
-        // Paginar
         int start = page * size;
         int end = Math.min(start + size, todasLasColecciones.size());
 
@@ -165,7 +163,6 @@ public class ColeccionesService {
         List<HechoDTO> todosLosHechos = respuesta.getBody();
         long total = todosLosHechos.size();
 
-        // Paginar
         int start = page * size;
         int end = Math.min(start + size, todosLosHechos.size());
 
@@ -183,7 +180,6 @@ public class ColeccionesService {
 
         List<HechoDTO> paginados = todosLosHechos.subList(start, end);
 
-        // Determinar si hay página siguiente
         boolean hasNext = end < todosLosHechos.size();
 
         PageResponse<HechoDTO> response = new PageResponse<>(
@@ -280,13 +276,11 @@ public class ColeccionesService {
                         .toList());
                 }
 
-                // Verificar si la colección incluye hechos de fuentes externas (tiempo real)
                 List<Long> fuentesTiempoReal = fuentesService.getFuentesTiempoReal();
                 List<OrigenHecho> origenesTiempoReal = fuentesService.getOrigenesTiempoReal();
 
                 if (coleccion.tieneHechosExternos(fuentesTiempoReal, origenesTiempoReal, fuentesService.getNombresFuentesTiempoReal())) {
                     try {
-                        // Obtener hechos externos en tiempo real y aplicar criterios de pertenencia
                         ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
                             null, null, null, null, null, null);
                         List<HechoDTO> hechosExternosDTO = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
@@ -294,14 +288,11 @@ public class ColeccionesService {
 
                         List<Hecho> hechosExternosFiltrados = coleccion.aplicarCriteriosDePertenencia(hechosExternos);
 
-                        // En modo CURADA, aplicar algoritmo de consenso también a los externos
-                        // Combinar persistidos + externos, aplicar consenso, y filtrar solo los externos consensuados
                         if (modoNav == ModoNavegacion.CURADA && coleccion.getAlgoritmoConsenso() != null) {
                             int cantidadFuentes = calcularCantidadFuentes();
                             List<Hecho> todosHechos = new ArrayList<>(hechos);
                             todosHechos.addAll(hechosExternosFiltrados);
-                            List<Hecho> hechosPersistidos = hechos; // Variable final para lambda
-                            // Aplicar consenso a todos y quedarse solo con los externos que pasaron el consenso
+                            List<Hecho> hechosPersistidos = hechos;
                             hechosExternosFiltrados = coleccion.aplicarAlgoritmoConsenso(todosHechos, cantidadFuentes)
                                 .stream()
                                 .filter(h -> !hechosPersistidos.contains(h))
@@ -396,14 +387,12 @@ public class ColeccionesService {
                 todosHechosFiltrados = new ArrayList<>();
                 todosHechosConsensuados = new ArrayList<>();
             } else {
-                // Obtener hechos locales visibles desde BD
                 List<Hecho> hechosLocalesVisibles = hechosRepository.findAll().stream()
                     .filter(Hecho::esVisible)
                     .toList();
 
                 List<Hecho> todosHechos = new ArrayList<>(hechosLocalesVisibles);
 
-                // Si la colección incluye hechos externos, obtenerlos en tiempo real y agregarlos
                 if (coleccionTemporal.tieneHechosExternos(fuentesService.getFuentesTiempoReal(), fuentesService.getOrigenesTiempoReal(), fuentesService.getNombresFuentesTiempoReal())) {
                 try {
                     ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
@@ -412,7 +401,6 @@ public class ColeccionesService {
                     List<Hecho> hechosExternos = hechoMapper.fromDTO(hechosExternosDTO);
 
                     if (!hechosExternos.isEmpty()) {
-                        // Persistir categorías de hechos externos antes de agregarlos
                         categoriasService.persistirCategoriasDesdeHechos(hechosExternos);
                         todosHechos.addAll(hechosExternos);
                     }
@@ -485,7 +473,6 @@ public class ColeccionesService {
               }
             }
 
-            // Actualizar criterios y detectar si cambiaron (requiere recálculo completo)
             if (body.has("criterios")) {
               JsonNode criteriosNode = body.get("criterios");
 
@@ -587,7 +574,6 @@ public class ColeccionesService {
             .filter(Hecho::esVisible)
             .toList();
 
-        // Aplicar criterios de pertenencia y consenso usando métodos de dominio
         List<Hecho> hechosFiltrados = coleccion.aplicarCriteriosDePertenencia(hechosLocalesVisibles);
         coleccion.setHechos(new ArrayList<>(hechosFiltrados));
 
@@ -726,7 +712,6 @@ public class ColeccionesService {
     }
 
     public PageResponse<ColeccionDTO> getPaginatedColecciones(int page, int size) {
-        // Validar parámetros de paginación
         if (page < 0) {
             log.warn("[ColeccionesService] Página inválida: {}, usando 0", page);
             page = 0;
@@ -745,21 +730,17 @@ public class ColeccionesService {
         int start = page * size;
         int needed = size;
 
-        // Paginación híbrida: primero locales (BD), luego externas (fuentes)
         ResponseEntity<List<ColeccionDTO>> localesResp = getAllColeccionesLocales();
         List<ColeccionDTO> coleccionesLocales = Optional.ofNullable(localesResp.getBody()).orElse(new ArrayList<>());
 
-        // Si la página está dentro de las locales, tomar de ahí
         if (start < coleccionesLocales.size()) {
             int endLocal = Math.min(start + size, coleccionesLocales.size());
             resultado.addAll(coleccionesLocales.subList(start, endLocal));
             needed = size - resultado.size();
         } else {
-            // La página está más allá de las locales, ajustar índice para externas
             start = start - coleccionesLocales.size();
         }
 
-        // Si aún faltan elementos, completar con colecciones externas
         ResponseEntity<List<ColeccionDTO>> externasResp = getAllColeccionesExternas();
         List<ColeccionDTO> coleccionesExternas = Optional.ofNullable(externasResp.getBody()).orElse(new ArrayList<>());
 
@@ -768,7 +749,6 @@ public class ColeccionesService {
             resultado.addAll(coleccionesExternas.subList(start, endExterno));
         }
 
-        // Calcular totales combinados para determinar si hay página siguiente
         int totalDisponibles = coleccionesLocales.size() + coleccionesExternas.size();
         boolean hasNext = (page + 1) * size < totalDisponibles;
 

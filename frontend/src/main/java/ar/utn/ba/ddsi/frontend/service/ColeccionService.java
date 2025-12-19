@@ -33,7 +33,6 @@ public class ColeccionService {
             String categoria,
             String modo) {
 
-        // Convertir LocalDate a LocalDateTime (inicio y final del día)
         LocalDateTime fechaDesdeDateTime = fecha_desde != null ? fecha_desde.atStartOfDay() : null;
         LocalDateTime fechaHastaDateTime = fecha_hasta != null ? fecha_hasta.atTime(23, 59, 59) : null;
 
@@ -66,7 +65,6 @@ public class ColeccionService {
     }
 
     public List<String> getCategoriasUnicas(){
-        // Obtener categorías directamente desde el agregador
         List<String> categorias = webClient.get()
                 .uri("/front/categorias")
                 .retrieve()
@@ -77,7 +75,6 @@ public class ColeccionService {
     }
 
     public List<String> getFuentesConHechos(){
-        // Obtener fuentes con hechos desde el agregador
         List<String> fuentes = webClient.get()
                 .uri("/front/fuentes")
                 .retrieve()
@@ -88,7 +85,6 @@ public class ColeccionService {
     }
 
     public List<String> getProvinciasConHechos(){
-        // Obtener provincias con hechos desde el agregador
         List<String> provincias = webClient.get()
                 .uri("/front/provincias")
                 .retrieve()
@@ -99,7 +95,6 @@ public class ColeccionService {
     }
 
     public ColeccionDTO getOneColeccion() {
-        // Obtener una sola colección para la landing usando el endpoint optimizado
         try {
             return webClient.get()
                     .uri("/front/coleccion-reciente")
@@ -107,7 +102,6 @@ public class ColeccionService {
                     .bodyToMono(ColeccionDTO.class)
                     .block();
         } catch (Exception e) {
-            // Si falla el endpoint optimizado, no devolver nada (el landing mostrará el mensaje de "no hay colecciones")
             return null;
         }
     }
@@ -126,7 +120,6 @@ public class ColeccionService {
                     .bodyToMono(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {})
                     .block();
 
-            // Procesar respuesta y extraer datos
             if (response != null) {
                 List<ColeccionDTO> content = (List<ColeccionDTO>) response.getOrDefault("content", List.of());
                 Boolean hasNext = (Boolean) response.getOrDefault("hasNext", false);
@@ -193,7 +186,6 @@ public class ColeccionService {
                     .bodyToMono(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {})
                     .block();
 
-            // Procesar respuesta y extraer datos
             if (response != null) {
                 List<HechoDTO> content = (List<HechoDTO>) response.getOrDefault("content", List.of());
                 Boolean hasNext = (Boolean) response.getOrDefault("hasNext", false);

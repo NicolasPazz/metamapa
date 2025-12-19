@@ -33,7 +33,6 @@ public class LoginService {
         
         Usuario usuario = usuarioOpt.get();
         
-        // Verificar la password usando BCrypt
         if (!passwordEncoder.matches(password, usuario.getPassword())) {
             throw new RuntimeException("Credenciales inválidas");
         }
@@ -58,12 +57,10 @@ public class LoginService {
         
         Usuario usuario = usuarioOpt.get();
         
-        // Obtener el rol principal (tomamos el primero si hay múltiples)
         Rol rolPrincipal = usuario.getRoles() != null && !usuario.getRoles().isEmpty() 
             ? usuario.getRoles().get(0) 
             : Rol.CONTRIBUYENTE;
         
-        // Mapear roles a permisos según los requerimientos
         List<Permiso> permisos = obtenerPermisosPorRol(rolPrincipal);
         
         return UserRolesPermissionsDTO.builder()
@@ -75,46 +72,36 @@ public class LoginService {
     }
     
     public Usuario registrarUsuario(String username, String password, String nombre, String apellido) {
-        // Validar que el username no esté vacío
         if (username == null || username.trim().isEmpty()) {
             throw new RuntimeException("El username no puede estar vacío");
         }
         
-        // Validar que el password no esté vacío
         if (password == null || password.trim().isEmpty()) {
             throw new RuntimeException("La contraseña no puede estar vacía");
         }
         
-        // Validar que el nombre no esté vacío
         if (nombre == null || nombre.trim().isEmpty()) {
             throw new RuntimeException("El nombre no puede estar vacío");
         }
         
-        // Verificar si el username ya existe
         Optional<Usuario> usuarioExistente = usuariosRepository.findByUsername(username.trim());
         if (usuarioExistente.isPresent()) {
             throw new RuntimeException("Ese nombre de usuario ya está en uso");
         }
         
-        // Crear nuevo usuario
         Usuario nuevoUsuario = new Usuario();
         nuevoUsuario.setUsername(username.trim());
         nuevoUsuario.setPassword(passwordEncoder.encode(password));
         nuevoUsuario.setNombre(nombre.trim());
         nuevoUsuario.setApellido(apellido != null ? apellido.trim() : null);
         
-        // Asignar rol CONTRIBUYENTE por defecto
         List<Rol> roles = new ArrayList<>();
         roles.add(Rol.CONTRIBUYENTE);
         nuevoUsuario.setRoles(roles);
         
-        // Guardar usuario
         return usuariosRepository.save(nuevoUsuario);
     }
     
-    /**
-     * Mapea roles a permisos según los requerimientos del sistema
-     */
     private List<Permiso> obtenerPermisosPorRol(Rol rol) {
         List<Permiso> permisos = new ArrayList<>();
         

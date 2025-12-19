@@ -33,16 +33,13 @@ public class AuthController {
         log.info("POST /api/auth - username: {}, password: [PROTEGIDO]", username);
         try {
             
-            // Validación básica de credenciales
             if (username == null || username.trim().isEmpty() || 
                 password == null || password.trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
             }
             
-            // Autenticar usuario usando el LoginService
             loginService.autenticarUsuario(username, password);
             
-            // Generar tokens
             String accessToken = loginService.generarAccessToken(username);
             String refreshToken = loginService.generarRefreshToken(username);
             
@@ -69,7 +66,6 @@ public class AuthController {
         try {
             String username = JwtUtil.validarToken(request.getRefreshToken());
 
-            // Validar que el token sea de tipo refresh
             Claims claims = Jwts.parserBuilder()
                     .setSigningKey(JwtUtil.getKey())
                     .build()
@@ -99,7 +95,6 @@ public class AuthController {
         log.info("POST /api/auth/register - username: {}, password: [PROTEGIDO], nombre: {}, apellido: {}", username, nombre, apellido);
         try {
             
-            // Validación básica
             if (username == null || username.trim().isEmpty() || 
                 password == null || password.trim().isEmpty() ||
                 nombre == null || nombre.trim().isEmpty()) {
@@ -107,7 +102,6 @@ public class AuthController {
                     .body(Map.of("error", "Username, password y nombre son obligatorios"));
             }
             
-            // Registrar usuario
             loginService.registrarUsuario(username, password, nombre, apellido);
             
             log.info("Usuario registrado exitosamente: {}", username);

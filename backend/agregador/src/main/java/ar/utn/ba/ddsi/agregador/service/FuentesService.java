@@ -205,22 +205,19 @@ public class FuentesService {
 
 
   private void normalizarHecho(HechoDTO h, Long idFuente) {
-    // Normalizar ID: hechos externos usan idOrigen, no ID (que es para hechos locales)
     if (h.getId() == null) {
       log.warn("Hecho sin id recibido desde fuente {}", idFuente);
     } else {
       h.setIdOrigen(h.getId()); // Preservar ID original como idOrigen
-      h.setId(null); // Limpiar ID para evitar conflictos con hechos locales
+      h.setId(null);
     }
 
-    // Asignar fuente y nombre de fuente
     h.setFuenteId(idFuente);
     AFuente fuente = getFuenteById(idFuente);
     if (fuente != null) {
       h.setNombreFuente(fuente.getNombre());
     }
 
-    // Calcular provincia si no está asignada (usando coordenadas)
     if (h.getProvincia() == null && h.getLatitud() != null && h.getLongitud() != null) {
       Provincia provincia =
           provinciaService.obtenerProvinciaPorCoordenadas(h.getLatitud(), h.getLongitud());
@@ -229,7 +226,6 @@ public class FuentesService {
       }
     }
 
-    // Aplicar valores por defecto para campos opcionales
     if (h.getEstado() == null) {
       h.setEstado(EstadoHecho.VISIBLE);
     }
@@ -255,7 +251,6 @@ public class FuentesService {
     }
     c.setFuenteId(idFuente);
 
-    // Aplicar defaults para atributos que otras fuentes pueden no proveer
     if (c.getCriteriosDePertenencia() == null) {
       log.debug("Colección de fuente {} sin criterio de pertenencia", idFuente);
     }
@@ -267,7 +262,6 @@ public class FuentesService {
     if (c.getHechos() == null) {
       c.setHechos(new ArrayList<>());
     } else {
-      // Normalizar cada hecho dentro de la colección
       c.getHechos().forEach(h -> normalizarHecho(h, idFuente));
     }
 

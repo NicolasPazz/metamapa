@@ -1,4 +1,3 @@
-// java
 package ar.utn.ba.ddsi.frontend.controller;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
@@ -35,7 +34,6 @@ public class AdminController {
     private final ObjectMapper objectMapper;
     private final FuenteService fuenteService;
 
-    //@PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/admin")
     public String mostrarMenu(Model model) {
         log.info("GET /admin");
@@ -47,15 +45,12 @@ public class AdminController {
                 .collect(Collectors.toMap(FuenteDTO::getId, FuenteDTO::getNombre));
 
         model.addAttribute("titulo", "Panel De Control");
-        //model.addAttribute("coleccionesLimit", colecciones.subList(0,2));
-        // Mostrar hechos limitados de forma segura
         if (hechos != null && hechos.size() > 3) {
             int endIndex = Math.min(5, hechos.size());
             model.addAttribute("hechosLimit", hechos.subList(3, endIndex));
         } else {
             model.addAttribute("hechosLimit", java.util.Collections.emptyList());
         }
-        //model.addAttribute("solicitudesLimit", solicitudes.subList(0,2));
         model.addAttribute("colecciones", colecciones);
         model.addAttribute("hechos", hechos);
         model.addAttribute("solicitudes", solicitudes);
@@ -86,7 +81,6 @@ public class AdminController {
                 archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType());
 
         try {
-            // Llamamos al servicio que se comunica con el otro sistema
             adminService.enviarArchivoAlBackend(archivo);
             model.addAttribute("mensaje", "Archivo enviado exitosamente para procesamiento.");
         } catch (Exception e) {
@@ -94,7 +88,7 @@ public class AdminController {
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
 
-        return "redirect:/admin"; // Volvemos a la vista admin.html
+        return "redirect:/admin";
     }
 
     @PostMapping("/admin/crear-coleccion")
@@ -109,7 +103,6 @@ public class AdminController {
         }
 
         try {
-            // Llamamos al servicio que se comunica con el otro sistema
             adminService.crearColeccion(coleccionDTO);
             model.addAttribute("mensaje", "Colección creada correctamente.");
         } catch (Exception e) {
@@ -117,7 +110,7 @@ public class AdminController {
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
 
-        return "redirect:/admin"; // Volvemos a la vista admin.html
+        return "redirect:/admin";
     }
 
     @PostMapping("/admin/actualizar-coleccion")
@@ -131,7 +124,6 @@ public class AdminController {
         }
 
         try {
-            // Llamamos al servicio que se comunica con el otro sistema
             adminService.actualizarColeccion(coleccionDTO, handle);
             model.addAttribute("mensaje", "Colección actualizada correctamente.");
         } catch (Exception e) {
@@ -139,7 +131,7 @@ public class AdminController {
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
 
-        return "redirect:/admin"; // Volvemos a la vista admin.html
+        return "redirect:/admin";
     }
     @GetMapping("/solicitudes")
     public String verPanelSolicitudes(Model model) {
@@ -148,8 +140,6 @@ public class AdminController {
 
         model.addAttribute("solicitudes", solicitudes);
 
-        //TODO: Si pongo el solicitudes normal algo rompe cuando intenta cargarlas y no me doy cuenta que.
-        // Los flujos de crear y modificar ya estan.
         return "admin/solicitudesv2";
     }
 

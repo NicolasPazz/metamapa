@@ -59,16 +59,13 @@ public class SolicitudService {
     public List<SolicitudInputDTO> buscarTodasLasSolicitudes() {
         try {
             return webClient2.get()
-                    // La URL final será: http://localhost:8081/api/admin/solicitudes
-                    // Ajusta "/admin/solicitudes" según el @RequestMapping de tu controller backend
                     .uri("/admin/solicitudes")
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {})
-                    .block(); // Bloqueamos para esperar la respuesta sincrónica
+                    .block();
 
         } catch (Exception e) {
             log.error("Error al buscar todas las solicitudes: {}", e.getMessage(), e);
-            // En caso de error, devolvemos una lista vacía para no romper la pantalla admin
             return Collections.emptyList();
         }
     }
@@ -118,7 +115,6 @@ public class SolicitudService {
     public void procesarSolicitudEdicionConMultipart(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
         log.debug("Procesando edición de solicitud ID: {} con multipart", idSolicitud);
         
-        // Obtener la solicitud para verificar su estado
         SolicitudInputDTO solicitud = webClient2.get()
                 .uri("/solicitudes/" + idSolicitud)
                 .retrieve()
@@ -130,7 +126,6 @@ public class SolicitudService {
             throw new IllegalArgumentException("No se encontró la solicitud con ID: " + idSolicitud);
         }
 
-        // Validar que pasaron <= 7 días desde la creación
         if (solicitud.getFechaDeCargaSolicitud() != null) {
             long diasPasados = ChronoUnit.DAYS.between(solicitud.getFechaDeCargaSolicitud(), LocalDateTime.now());
             if (diasPasados > 7) {
@@ -138,7 +133,6 @@ public class SolicitudService {
             }
         }
 
-        // Construir el DTO para enviar al backend
         SolicitudModificacionDTO dto = new SolicitudModificacionDTO();
         dto.setIdContribuyente(formDTO.getContribuyente_id());
         if (formDTO.getTitulo() != null && !formDTO.getTitulo().trim().isEmpty()) {
@@ -160,20 +154,15 @@ public class SolicitudService {
             dto.setNuevoFechaDeAcontecimiento(formDTO.getFecha_acontecimiento());
         }
 
-        // Si hay archivos, enviar como multipart (igual que en la creación)
         if (formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) {
             try {
-                // Serializar el objeto a JSON string manualmente (el backend espera String)
-                String solicitudJson = objectMapper.writeValueAsString(dto);
+                String solicitudJson = objectMapper.writeValueAsString(dto); // Backend espera String
                 log.debug("SolicitudService.procesarSolicitudEdicionConMultipart - JSON serializado: {}", solicitudJson);
 
-                // Construir multipart igual que en la creación
                 MultipartBodyBuilder builder = new MultipartBodyBuilder();
                 
-                // Agregar datos de la solicitud como parte JSON (String)
                 builder.part("solicitud", solicitudJson);
 
-                // Agregar cada archivo multimedia
                 for (MultipartFile archivo : formDTO.getArchivos()) {
                     if (archivo != null && !archivo.isEmpty()) {
                         log.debug("SolicitudService.procesarSolicitudEdicionConMultipart - Agregando archivo: {} ({} bytes)",
@@ -204,7 +193,6 @@ public class SolicitudService {
                 throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
             }
         } else {
-            // Si no hay archivos, enviar como JSON
             procesarSolicitudEdicion(idSolicitud, dto);
         }
     }
@@ -212,7 +200,6 @@ public class SolicitudService {
     @Transactional
     public void procesarSolicitudEdicion(Long idSolicitud, SolicitudModificacionDTO dto) {
         log.debug("Procesando edición de solicitud ID: {}", idSolicitud);
-        // Obtener la solicitud para verificar su estado
         SolicitudInputDTO solicitud = webClient2.get()
                 .uri("/solicitudes/" + idSolicitud)
                 .retrieve()
@@ -224,7 +211,6 @@ public class SolicitudService {
             throw new IllegalArgumentException("No se encontró la solicitud con ID: " + idSolicitud);
         }
 
-        // Validar que pasaron <= 7 días desde la creación
         if (solicitud.getFechaDeCargaSolicitud() != null) {
             long diasPasados = ChronoUnit.DAYS.between(solicitud.getFechaDeCargaSolicitud(), LocalDateTime.now());
             if (diasPasados > 7) {
@@ -232,11 +218,6 @@ public class SolicitudService {
             }
         }
 
-        // Si la solicitud está en ACEPTADO o ACEPTADO_MODIFICADO, 
-        // el hecho se ocultará automáticamente cuando se vuelva a aceptar la solicitud
-        // (esto se maneja en el backend de dinámica al cambiar el estado)
-
-        // Modificar la solicitud en dinámica
         try {
             log.debug("Enviando PATCH a /solicitudes/{} para solicitud ID: {}", idSolicitud, idSolicitud);
             webClient2.patch()

@@ -23,7 +23,6 @@ public class ContenidoMultimediaInputDTO {
   private String contenidoBase64;
 
   public ContenidoMultimedia toContenidoMultimedia(SolicitudHecho solicitud) {
-    // Si no hay path pero hay contenido_base64, el path ya fue establecido al guardar el archivo
     if (this.pathArchivo == null || this.pathArchivo.isEmpty()) {
       throw new IllegalStateException("El path del archivo es obligatorio");
     }

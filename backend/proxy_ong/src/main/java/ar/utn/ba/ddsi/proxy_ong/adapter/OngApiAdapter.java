@@ -101,8 +101,6 @@ public class OngApiAdapter implements IApiExternaAdapter {
     List<HechoProxyDTO> todos = new ArrayList<>(firstPage.getData());
     Long lastPage = firstPage.getLast_page();
 
-    // En modo desarrollo, limitar a maxPagesDev páginas (solo primera si maxPagesDev=1)
-    // En producción (maxPagesDev=-1 o null), traer todas las páginas
     int maxPageToFetch = (maxPagesDev != null && maxPagesDev > 0) 
         ? Math.min(maxPagesDev, lastPage.intValue())
         : lastPage.intValue();

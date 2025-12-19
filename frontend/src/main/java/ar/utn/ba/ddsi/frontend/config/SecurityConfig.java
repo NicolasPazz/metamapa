@@ -30,20 +30,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/hechos/crear", "/hechos/**", "/solicitudes/**") // Permitir sin CSRF para AJAX
+                        .ignoringRequestMatchers("/hechos/crear", "/hechos/**", "/solicitudes/**") // Sin CSRF para AJAX
                 )
                 .authorizeHttpRequests(auth -> auth
-                        // Recursos estáticos y login público
                         .requestMatchers("/login", "/registro", "/403").permitAll()
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/img/**", "/static/**").permitAll()
-                        // Rutas públicas del sistema
                         .requestMatchers("/", "/hechos", "/hechos/**").permitAll()
                         .requestMatchers("/colecciones", "/colecciones/**").permitAll()
                         .requestMatchers("/terminos", "/privacidad", "/contacto").permitAll()
-                        // Rutas que requieren autenticación
                         .requestMatchers("/admin", "/admin/**").authenticated()
                         .requestMatchers("/mis-hechos", "/mis-hechos/**", "/misHechos", "/misHechos/**").authenticated()
-                        // Por defecto, todas las demás rutas son públicas
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form
@@ -62,11 +58,9 @@ public class SecurityConfig {
                         .permitAll()
                 )
                 .exceptionHandling(ex -> ex
-                        // Usuario no autenticado → redirigir a login
                         .authenticationEntryPoint((request, response, authException) ->
                                 response.sendRedirect("/login?unauthorized")
                         )
-                        // Usuario autenticado pero sin permisos → redirigir a página de error
                         .accessDeniedHandler((request, response, accessDeniedException) ->
                                 response.sendRedirect("/403")
                         )

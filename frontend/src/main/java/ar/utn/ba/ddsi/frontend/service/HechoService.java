@@ -74,19 +74,15 @@ public class HechoService {
 
         SolicitudCreacionDTO hechoOutput = new SolicitudCreacionDTO();
         hechoOutput.setDescripcion(hechoInput.getDescripcion());
-        // Asegurar que se copien correctamente las coordenadas
         hechoOutput.setLatitud(hechoInput.getLatitud());
         hechoOutput.setLongitud(hechoInput.getLongitud());
         hechoOutput.setTitulo(hechoInput.getTitulo());
-        
-        // Establecer contribuyente_id (null para anónimo por ahora)
-        hechoOutput.setIdContribuyente(obtenerContribuyenteIdDeSesion());
+        hechoOutput.setIdContribuyente(obtenerContribuyenteIdDeSesion()); // null para anónimo
 
         log.info("HechoService.crearHecho - DTO creado - Título: {}, Latitud: {}, Longitud: {}, Contribuyente: {}",
                 hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(),
                 hechoOutput.getIdContribuyente());
         
-        // Usar la fecha del formulario si está disponible, sino usar ahora
         if (hechoInput.getFechaAcontecimiento() != null) {
             hechoOutput.setFechaDeAcontecimiento(hechoInput.getFechaAcontecimiento());
         } else {
@@ -95,7 +91,6 @@ public class HechoService {
         
         hechoOutput.setCategoria(hechoInput.getCategoria());
         
-        // Si hay archivos multimedia, enviar como multipart
         if (hechoInput.getContenidoMultimedia() != null && !hechoInput.getContenidoMultimedia().isEmpty()) {
             MultipartBodyBuilder builder = new MultipartBodyBuilder();
             
@@ -106,14 +101,11 @@ public class HechoService {
                     hechoOutput.getCategoria(), hechoOutput.getFechaDeAcontecimiento());
             
             try {
-                // Serializar el objeto a JSON string manualmente (el backend espera String)
-                String solicitudJson = objectMapper.writeValueAsString(hechoOutput);
+                String solicitudJson = objectMapper.writeValueAsString(hechoOutput); // Backend espera String
                 log.debug("HechoService.crearHecho - JSON serializado: {}", solicitudJson);
 
-                // Agregar datos de la solicitud como parte JSON (String)
                 builder.part("solicitud", solicitudJson);
 
-                // Agregar cada archivo multimedia
                 for (MultipartFile archivo : hechoInput.getContenidoMultimedia()) {
                     if (!archivo.isEmpty()) {
                         log.debug("HechoService.crearHecho - Agregando archivo: {} ({} bytes)",
@@ -170,11 +162,9 @@ public class HechoService {
 
     @SuppressWarnings("unused")
     public List<HechoDTO> getAllHechosFilter(String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria ) {
-        // Convertir LocalDate a LocalDateTime (inicio y final del día)
         LocalDateTime fechaDesdeDateTime = fecha_desde != null ? fecha_desde.atStartOfDay() : null;
         LocalDateTime fechaHastaDateTime = fecha_hasta != null ? fecha_hasta.atTime(23, 59, 59) : null;
 
-        // Construir la URI con los parámetros de filtro
         List<HechoDTO> hechos = webClient.get()
                 .uri(uriBuilder -> {
                     uriBuilder.path("/hechos");
@@ -201,7 +191,6 @@ public class HechoService {
     }
 
     public List<String> obtenerCategoriasUnicas(){
-        // Obtener categorías directamente desde el agregador
         List<String> categorias = webClient.get()
                 .uri("/front/categorias")
                 .retrieve()
@@ -212,7 +201,6 @@ public class HechoService {
     }
 
     public List<String> obtenerFuentesConHechos(){
-        // Obtener fuentes directamente desde el agregador
         List<String> fuentes = webClient.get()
                 .uri("/front/fuentes")
                 .retrieve()
@@ -223,7 +211,6 @@ public class HechoService {
     }
 
     public List<String> obtenerProvinciasConHechos(){
-        // Obtener provincias con hechos desde el agregador
         List<String> provincias = webClient.get()
                 .uri("/front/provincias")
                 .retrieve()
@@ -240,9 +227,8 @@ public class HechoService {
         for (MultipartFile file : files) {
             if (!file.isEmpty()) {
                 ContenidoMultimediaDTO dto = new ContenidoMultimediaDTO();
-                // Convertir MIME type a enum TipoContenido esperado por el backend
                 String mimeType = file.getContentType();
-                String tipoContenido = convertirMimeTypeATipoContenido(mimeType);
+                String tipoContenido = convertirMimeTypeATipoContenido(mimeType); // Convierte MIME a enum TipoContenido
                 dto.setTipoContenido(tipoContenido);
                 dto.setPathArchivo(file.getOriginalFilename());
                 MultimediaLista.add(dto);
@@ -264,13 +250,11 @@ public class HechoService {
         } else if (mimeType.startsWith("audio/")) {
             return "AUDIO";
         } else {
-            // Si no se reconoce, intentar inferir por extensión o usar default
-            return "IMAGEN";
+            return "IMAGEN"; // Default si no se reconoce
         }
     }
 
     public HechoDTO getOneHecho() {
-        // Obtener un solo hecho para la landing usando el endpoint optimizado
         try {
             return webClient.get()
                     .uri("/front/hecho-reciente")
@@ -278,13 +262,11 @@ public class HechoService {
                     .bodyToMono(HechoDTO.class)
                     .block();
         } catch (Exception e) {
-            // Si falla el endpoint optimizado, no devolver nada (el landing mostrará el mensaje de "no hay hechos")
-            return null;
+            return null; // Landing mostrará mensaje de "no hay hechos"
         }
     }
 
     public HechoDTO getHechoById(Long id) {
-        // Intentar obtener un hecho específico por ID
         try {
             return webClient.get()
                     .uri("/hechos/" + id)
@@ -292,7 +274,6 @@ public class HechoService {
                     .bodyToMono(HechoDTO.class)
                     .block();
         } catch (Exception e) {
-            // Si el endpoint específico no existe, intentar obtenerlo de la lista
             try {
                 return getAllHechos().stream()
                         .filter(h -> h.getId() != null && h.getId().equals(id))
@@ -305,7 +286,6 @@ public class HechoService {
     }
 
     public HechoDTO getHechoByFuenteIdAndIdOrigen(Long fuenteId, Long idOrigen) {
-        // Buscar un hecho externo por fuenteId e idOrigen
         try {
             return getAllHechos().stream()
                     .filter(h -> h.getFuenteId() != null && h.getFuenteId().equals(fuenteId) &&
@@ -321,7 +301,6 @@ public class HechoService {
         Map<String, Object> datos = new java.util.HashMap<>();
         
         if (hechoId != null) {
-            // Mostrar solo un hecho específico por ID
             HechoDTO hechoEspecifico = getHechoById(hechoId);
             
             if (hechoEspecifico != null) {
@@ -332,7 +311,6 @@ public class HechoService {
                 datos.put("hechos", List.of());
             }
         } else if (fuenteId != null && idOrigen != null) {
-            // Mostrar solo un hecho externo por fuenteId e idOrigen
             HechoDTO hechoEspecifico = getHechoByFuenteIdAndIdOrigen(fuenteId, idOrigen);
             
             if (hechoEspecifico != null) {
@@ -344,7 +322,6 @@ public class HechoService {
                 datos.put("hechos", List.of());
             }
         } else {
-            // Mostrar todos los hechos
             List<HechoDTO> hechos = getAllHechos();
             datos.put("hechos", hechos);
         }
@@ -384,7 +361,6 @@ public class HechoService {
                     .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
                     .block();
 
-            // Procesar respuesta y extraer datos
             if (response != null) {
                 List<HechoDTO> content = (List<HechoDTO>) response.getOrDefault("content", List.of());
                 Boolean hasNext = (Boolean) response.getOrDefault("hasNext", false);

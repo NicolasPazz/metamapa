@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudHechoInputContribuyente
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarAdminInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.dto.output.HechoAgregadorDTO;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.ContenidoMultimedia;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.TipoContenido;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
@@ -76,7 +77,6 @@ public class SolicitudesService {
         .transiciones(new ArrayList<>())
         .build();
 
-    // Validaciones de dominio
     solicitud.validarCoordenadas();
     solicitud.validarFechaNoFutura();
 
@@ -115,10 +115,8 @@ public class SolicitudesService {
     log.debug("Modificando solicitud ID: {} con multipart (igual que en la creación)", id);
     log.debug("SolicitudesService.modificarSolicitudConMultipart - JSON recibido: {}", solicitudJson);
     
-    // Parsear el JSON igual que en la creación
     SolicitudModificarUserInputDTO inputDTO = parseJsonToModificarDTO(solicitudJson);
     
-    // Procesar archivos multimedia igual que en la creación
     if (archivos != null && !archivos.isEmpty()) {
       List<ContenidoMultimediaInputDTO> multimediaList = new ArrayList<>();
       for (MultipartFile archivo : archivos) {
@@ -155,22 +153,17 @@ public class SolicitudesService {
 
     solicitud.validarModificacionPorUsuario(inputDTO.getIdContribuyente());
 
-    // Guardar el estado anterior para verificar si estaba aceptada
     EstadoSolicitud estadoAnterior = solicitud.getEstado();
 
-    // Si la solicitud estaba en ACEPTADO o ACEPTADO_MODIFICADO, ocultar el hecho en agregador y eliminar el hecho en dinámica
     if (estadoAnterior == EstadoSolicitud.ACEPTADO || estadoAnterior == EstadoSolicitud.ACEPTADO_MODIFICADO) {
       log.debug("Solicitud estaba aceptada, procesando hecho para solicitud ID: {}", id);
       
-      // Buscar el hecho asociado a esta solicitud
       var hechoOpt = hechosRepository.findBySolicitud_Id(id);
       if (hechoOpt.isPresent()) {
         var hecho = hechoOpt.get();
         log.debug("Hecho encontrado para solicitud ID: {}, hecho ID: {}, enviado: {}", id, hecho.getId(), hecho.getEnviado());
         
-        // Si el hecho fue enviado al agregador, ocultarlo
         if (Boolean.TRUE.equals(hecho.getEnviado())) {
-          // Buscar el hecho en el agregador usando fuente_id=1 e id_origen=hecho.getId()
           try {
             Long idHechoAgregador = buscarIdHechoEnAgregador(1L, hecho.getId());
             if (idHechoAgregador != null) {
@@ -183,17 +176,14 @@ public class SolicitudesService {
           } catch (Exception e) {
             log.error("Error al ocultar hecho en agregador para solicitud ID: {}, hecho ID: {}: {}", 
                 id, hecho.getId(), e.getMessage(), e);
-            // No lanzar excepción para no bloquear la edición de la solicitud
           }
         }
         
-        // Eliminar el hecho en dinámica (esto limpia hecho_id, hecho_enviado)
         hechosRepository.delete(hecho);
         log.debug("Hecho eliminado en dinámica para solicitud ID: {}, hecho ID: {}", id, hecho.getId());
       }
     }
 
-    // Cambiar el estado a PENDIENTE
     solicitud.cambiarEstado(EstadoSolicitud.PENDIENTE);
     log.debug("Estado cambiado a PENDIENTE para solicitud ID: {}", id);
 
@@ -216,7 +206,6 @@ public class SolicitudesService {
             dto.getPathArchivo(), dto.getTipoContenido(), 
             dto.getContenidoBase64() != null && !dto.getContenidoBase64().isEmpty());
         
-        // Si tiene contenido_base64, guardar el archivo primero
         if (dto.getContenidoBase64() != null && !dto.getContenidoBase64().isEmpty()) {
           log.info("Guardando archivo desde base64 para solicitud ID: {}, tamaño base64: {} caracteres", 
               id, dto.getContenidoBase64().length());
@@ -235,8 +224,6 @@ public class SolicitudesService {
             log.error("Error inesperado guardando archivo multimedia desde base64 para solicitud ID {}: {}", id, e.getMessage(), e);
             throw new RuntimeException("Error guardando archivo multimedia: " + e.getMessage(), e);
           }
-        } else {
-          log.debug("DTO multimedia no tiene contenido_base64, usando path existente: {}", dto.getPathArchivo());
         }
         nuevaMultimedia.add(dto.toContenidoMultimedia(solicitud));
       }
@@ -303,15 +290,12 @@ public class SolicitudesService {
     log.debug("SolicitudesService.recibirSolicitudContribuyenteConMultipart - DTO parseado - Título: {}, Contribuyente: {}", 
             input.getTitulo(), input.getIdContribuyente());
     
-    // Procesar archivos multimedia: guardar físicamente y determinar tipo de contenido
     if (archivos != null && !archivos.isEmpty()) {
       List<ContenidoMultimediaInputDTO> multimediaList = new ArrayList<>();
       
       for (MultipartFile archivo : archivos) {
         if (!archivo.isEmpty()) {
-          // Guardar archivo en disco compartido (valida formato y retorna nombre único)
           String nombreArchivoGuardado = multimediaStorageService.guardarArchivo(archivo);
-          // Inferir tipo de contenido desde MIME type o extensión
           TipoContenido tipo = determinarTipoContenido(archivo.getContentType(), archivo.getOriginalFilename());
           
           ContenidoMultimediaInputDTO multimediaDTO = new ContenidoMultimediaInputDTO();
@@ -338,7 +322,6 @@ public class SolicitudesService {
   }
 
   private TipoContenido determinarTipoContenido(String contentType, String nombreArchivo) {
-    // Primero intentar inferir desde MIME type (más confiable)
     if (contentType != null) {
       TipoContenido resultado = switch (contentType) {
         case "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" -> TipoContenido.IMAGEN;
@@ -352,7 +335,6 @@ public class SolicitudesService {
 
     }
     
-    // Fallback: inferir por extensión del archivo si MIME type no está disponible
     if (nombreArchivo != null && nombreArchivo.contains(".")) {
       String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
       TipoContenido resultado = switch (extension) {
@@ -428,23 +410,6 @@ public class SolicitudesService {
       log.error("Error al ocultar hecho {} en agregador: {}", idHechoAgregador, e.getMessage(), e);
       throw new RuntimeException("Error al ocultar hecho en agregador: " + e.getMessage(), e);
     }
-  }
-
-  // DTO simple para recibir la respuesta del agregador
-  private static class HechoAgregadorDTO {
-    @com.fasterxml.jackson.annotation.JsonProperty("id")
-    private Long id;
-    @com.fasterxml.jackson.annotation.JsonProperty("fuente_id")
-    private Long fuenteId;
-    @com.fasterxml.jackson.annotation.JsonProperty("id_origen")
-    private Long idOrigen;
-
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
-    public Long getFuenteId() { return fuenteId; }
-    public void setFuenteId(Long fuenteId) { this.fuenteId = fuenteId; }
-    public Long getIdOrigen() { return idOrigen; }
-    public void setIdOrigen(Long idOrigen) { this.idOrigen = idOrigen; }
   }
 }
 

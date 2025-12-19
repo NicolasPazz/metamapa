@@ -24,12 +24,10 @@ public class CsvLocationService {
   private String csvStoragePath;
 
   public InputStream abrirArchivo(String nombreArchivo) throws IOException {
-    // Validar nombre de archivo
     validarNombreArchivo(nombreArchivo);
     
     Path rutaArchivo = obtenerDirectorio().resolve(nombreArchivo);
     
-    // Validar que el archivo esté dentro del directorio permitido
     Path directorioBase = obtenerDirectorio().toAbsolutePath().normalize();
     Path archivoNormalizado = rutaArchivo.toAbsolutePath().normalize();
     if (!archivoNormalizado.startsWith(directorioBase)) {
@@ -67,7 +65,6 @@ public class CsvLocationService {
   }
 
   public void guardarArchivo(String nombreArchivo, InputStream contenido) throws IOException {
-    // Validar nombre de archivo
     validarNombreArchivo(nombreArchivo);
     
     Path directorio = obtenerDirectorio();
@@ -75,7 +72,6 @@ public class CsvLocationService {
 
     Path destino = directorio.resolve(nombreArchivo);
     
-    // Validar que el destino esté dentro del directorio permitido
     Path directorioBase = directorio.toAbsolutePath().normalize();
     Path destinoNormalizado = destino.toAbsolutePath().normalize();
     if (!destinoNormalizado.startsWith(directorioBase)) {
@@ -92,12 +88,10 @@ public class CsvLocationService {
       throw new IllegalArgumentException("El nombre del archivo no puede estar vacío");
     }
     
-    // Prevenir path traversal y rutas absolutas
     if (nombreArchivo.contains("..") || nombreArchivo.contains("/") || nombreArchivo.contains("\\")) {
       throw new SecurityException("Nombre de archivo inválido: contiene caracteres no permitidos");
     }
     
-    // Validar que solo contenga caracteres seguros
     if (!nombreArchivo.matches("^[a-zA-Z0-9._-]+\\.csv$")) {
       throw new IllegalArgumentException("Nombre de archivo inválido: solo se permiten caracteres alfanuméricos, puntos, guiones y guiones bajos, y debe terminar en .csv");
     }

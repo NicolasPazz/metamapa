@@ -1,4 +1,3 @@
-// Java
 package ar.utn.ba.ddsi.frontend.controller;
 
 import ar.utn.ba.ddsi.frontend.services.MetaMapaApiService;
@@ -24,11 +23,10 @@ public class AccessController {
     @Autowired
     private MetaMapaApiService metaMapaApiService;
 
-    // Registro de Contribuyentes
     @GetMapping("/registro")
     public String mostrarFormularioRegistro(Model model) {
         log.info("GET /registro");
-        return "access/register"; // plantilla: 'src/main/resources/templates/registro.html'
+        return "access/register";
     }
 
     @PostMapping("/registro")
@@ -43,7 +41,6 @@ public class AccessController {
         try {
             metaMapaApiService.register(username, password, nombre, apellido);
             
-            // Si es una petición AJAX, devolver JSON
             if (isAjaxRequest(request)) {
                 Map<String, String> response = new HashMap<>();
                 response.put("success", "true");
@@ -51,11 +48,9 @@ public class AccessController {
                 return ResponseEntity.ok().contentType(MediaType.APPLICATION_JSON).body(response);
             }
             
-            // Si no es AJAX, redirigir normalmente
             redirectAttributes.addFlashAttribute("success", "true");
             return "redirect:/login";
         } catch (RuntimeException e) {
-            // Si es una petición AJAX, devolver JSON con error
             if (isAjaxRequest(request)) {
                 Map<String, String> response = new HashMap<>();
                 response.put("success", "false");
@@ -63,11 +58,9 @@ public class AccessController {
                 return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(response);
             }
             
-            // Si no es AJAX, redirigir normalmente
             redirectAttributes.addFlashAttribute("error", e.getMessage());
             return "redirect:/registro";
         } catch (Exception e) {
-            // Si es una petición AJAX, devolver JSON con error
             if (isAjaxRequest(request)) {
                 Map<String, String> response = new HashMap<>();
                 response.put("success", "false");
@@ -75,7 +68,6 @@ public class AccessController {
                 return ResponseEntity.badRequest().contentType(MediaType.APPLICATION_JSON).body(response);
             }
             
-            // Si no es AJAX, redirigir normalmente
             redirectAttributes.addFlashAttribute("error", "Error al registrar usuario. Por favor, intente nuevamente.");
             return "redirect:/registro";
         }
@@ -88,14 +80,12 @@ public class AccessController {
                (accept != null && accept.contains("application/json"));
     }
 
-    // Inicio de Sesión
     @GetMapping("/login")
     public String mostrarLogin(Model model) {
         log.info("GET /login");
-        return "access/login"; // plantilla: 'src/main/resources/templates/login.html'
+        return "access/login";
     }
 
-    // Página de error 403
     @GetMapping("/403")
     public String error403(Model model) {
         log.info("GET /403");

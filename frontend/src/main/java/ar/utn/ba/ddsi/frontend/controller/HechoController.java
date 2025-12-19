@@ -38,7 +38,6 @@ public class HechoController {
     
     @InitBinder
     public void initBinder(WebDataBinder binder) {
-        // Registrar editor personalizado para Double
         binder.registerCustomEditor(Double.class, new PropertyEditorSupport() {
             @Override
             public void setAsText(String text) throws IllegalArgumentException {
@@ -73,7 +72,6 @@ public class HechoController {
     {
         log.info("GET /hechos - ubicacion: {}, fecha_reporte_hasta: {}, fecha_reporte_desde: {}, categoria: {}, fuente: {}, modo_navegacion: {}, page: {}",
                 ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo_navegacion, page);
-        // Obtener hechos paginados del servicio (ya procesados)
         PageResponse<HechoDTO> pageResponse = hechoService.getAllHechosPaginados(
             null, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, page, pageSize);
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
@@ -87,12 +85,9 @@ public class HechoController {
         model.addAttribute("categorias", listaCategorias);
         model.addAttribute("provincias", listaProvincias);
         model.addAttribute("fuentes", listaFuentes);
-        // En /hechos: no mostrar botón Hechos, solo mostrar Colecciones
         model.addAttribute("showHechosBtn", false);
         model.addAttribute("showColeccionesBtn", true);
-        // Mostrar botón "Reportar nuevo hecho" solo en /hechos
         model.addAttribute("showReportarHechoBtn", true);
-        // Mostrar botón "Mis hechos" solo en /hechos
         model.addAttribute("showMisHechosBtn", true);
         return "hechos/hechosencoleccion";
 
@@ -108,12 +103,9 @@ public class HechoController {
         
         List<SolicitudInputDTO> solicitudes = solicitudService.obtenerSolicitudesPorContribuyente(contribuyenteId);
         
-        // Para cada solicitud con hecho enviado, buscar el ID del agregador
         for (SolicitudInputDTO solicitud : solicitudes) {
             if (solicitud.getIdHecho() != null && Boolean.TRUE.equals(solicitud.getHechoEnviado())) {
-                // La fuente Dinamica tiene ID=1 en agregador
-                // El id_origen en agregador es el ID del hecho en dinamica
-                HechoDTO hechoAgregador = hechoService.getHechoByFuenteIdAndIdOrigen(1L, solicitud.getIdHecho());
+                HechoDTO hechoAgregador = hechoService.getHechoByFuenteIdAndIdOrigen(1L, solicitud.getIdHecho()); // Fuente Dinamica ID=1, id_origen=hecho.getId()
                 if (hechoAgregador != null && hechoAgregador.getId() != null) {
                     solicitud.setIdHechoAgregador(hechoAgregador.getId());
                 }

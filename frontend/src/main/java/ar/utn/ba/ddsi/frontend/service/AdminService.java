@@ -20,8 +20,7 @@ public class AdminService {
                        @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
                        @Value("${app.api.estatica.base-url:http://localhost:8082/api}") String estaticaBaseUrl) {
         this.webClientAgregador = builder.baseUrl(agregadorBaseUrl + "/admin").build();
-        this.webClientEstatica = builder.baseUrl(estaticaBaseUrl).build(); //Se tiene que establecer una conexion con la estatica
-        // porque la carga de CSV tiene que ir directamente a la estatica
+        this.webClientEstatica = builder.baseUrl(estaticaBaseUrl).build();
     }
 
     public List<SolicitudDTO> getAllSolicitudes() {
@@ -50,7 +49,7 @@ public class AdminService {
         builder.part("archivo", archivo.getResource());
 
         webClientEstatica.post()
-                .uri("/csv") //
+                .uri("/csv")
                 .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
                 .toBodilessEntity()
@@ -63,7 +62,7 @@ public class AdminService {
                 .uri("/colecciones")
                 .bodyValue(dto)
                 .retrieve()
-                .bodyToMono(Void.class) // Deserialize the response
+                .bodyToMono(Void.class)
                 .block();
     }
 
