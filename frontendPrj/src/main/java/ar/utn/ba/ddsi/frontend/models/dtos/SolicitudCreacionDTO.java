@@ -17,7 +17,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class HechoSolicitudInputDTO {
+public class SolicitudCreacionDTO {
     @JsonProperty("contribuyente_id")
     private Long idContribuyente;
 

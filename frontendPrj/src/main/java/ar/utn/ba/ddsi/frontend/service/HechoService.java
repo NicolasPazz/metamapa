@@ -4,7 +4,7 @@ import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.ContenidoMultimediaDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.HechoSolicitudInputDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudCreacionDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
@@ -46,7 +46,7 @@ public class HechoService {
             throw new IllegalArgumentException("La fecha y hora no pueden ser futuras");
         }
 
-        HechoSolicitudInputDTO hechoOutput = new HechoSolicitudInputDTO();
+        SolicitudCreacionDTO hechoOutput = new SolicitudCreacionDTO();
         hechoOutput.setDescripcion(hechoInput.getDescripcion());
         // Asegurar que se copien correctamente las coordenadas
         hechoOutput.setLatitud(hechoInput.getLatitud());
@@ -81,7 +81,6 @@ public class HechoService {
                     builder.part("archivos", archivo.getResource());
                 }
             }
-            
             webClient2.post().uri("/solicitudes")
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(BodyInserters.fromMultipartData(builder.build()))

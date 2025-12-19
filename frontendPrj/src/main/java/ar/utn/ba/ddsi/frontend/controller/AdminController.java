@@ -35,7 +35,7 @@ public class AdminController {
     private final ObjectMapper objectMapper;
     private final FuenteService fuenteService;
 
-    @PreAuthorize("hasAnyRole('ADMIN')")
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/admin")
     public String mostrarMenu(Model model) {
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
@@ -125,6 +125,15 @@ public class AdminController {
         }
 
         return "redirect:/admin"; // Volvemos a la vista admin.html
+    }
+    @GetMapping("/solicitudes")
+    public String verPanelSolicitudes(Model model) {
+        List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
+
+        model.addAttribute("solicitudes", solicitudes);
+
+
+        return "admin/solicitudesv2";
     }
 
 }

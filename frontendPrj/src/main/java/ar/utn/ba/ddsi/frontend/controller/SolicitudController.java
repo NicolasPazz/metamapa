@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.frontend.controller;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificarHechoDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificacionDTO;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,15 +31,16 @@ public class SolicitudController {
 
 
     }
-    @PostMapping("/modificar/{idHecho}")
+    @PostMapping("/modificar/{idSolicitud}")
     public ResponseEntity<?> solicitarModificacion(
-            @PathVariable Long idHecho,
-            @RequestBody @Valid SolicitudModificarHechoDTO dto) {
+            @PathVariable Long idSolicitud  ,
+            @RequestBody @Valid SolicitudModificacionDTO dto) {
 
-        solicitudService.procesarSolicitudEdicion(idHecho, dto);
+        solicitudService.procesarSolicitudEdicion(idSolicitud, dto);
 
         return ResponseEntity.ok("Solicitud recibida correctamente");
     }
+    
 }
 
 
