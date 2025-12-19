@@ -23,17 +23,19 @@ public class OngApiAdapter implements IApiExternaAdapter {
   private String tokenType;
   private final Integer perPage = 100;
   private final String authHeader = "Authorization";
-  private String authHeaderValue;
 
-  @Value("${proxy_ong.auth.email}")
+  @Value("${proxy_ong.auth.email:}")
   private String email;
 
-  @Value("${proxy_ong.auth.password}")
+  @Value("${proxy_ong.auth.password:}")
   private String password;
+
+  @Value("${proxy_ong.dev.max-pages:-1}")
+  private Integer maxPagesDev;
 
   public OngApiAdapter(
       WebClient.Builder webClientBuilder,
-      @Value("${proxy_ong.api.url}") String apiUrl
+      @Value("${proxy_ong.api.url:http://localhost:8083/api}") String apiUrl
   ) {
     this.webClient = webClientBuilder.baseUrl(apiUrl).build();
   }
@@ -78,9 +80,10 @@ public class OngApiAdapter implements IApiExternaAdapter {
           (response != null ? response.getMessage() : "respuesta nula"));
     }
 
-    this.accessToken = response.getData().getAccess_token();
-    this.tokenType = response.getData().getToken_type();
-    this.authHeaderValue = tokenType + " " + accessToken;
+    String localAccessToken = response.getData().getAccess_token();
+    String localTokenType = response.getData().getToken_type();
+    this.accessToken = localAccessToken;
+    this.tokenType = localTokenType;
     log.info("Autenticación exitosa con la API externa de ONG");
   }
 
@@ -94,18 +97,30 @@ public class OngApiAdapter implements IApiExternaAdapter {
     List<HechoProxyDTO> todos = new ArrayList<>(firstPage.getData());
     Long lastPage = firstPage.getLast_page();
 
-    for (int page = 2; page <= lastPage; page++) {
+    // En modo desarrollo, limitar a maxPagesDev páginas (solo primera si maxPagesDev=1)
+    // En producción (maxPagesDev=-1 o null), traer todas las páginas
+    int maxPageToFetch = (maxPagesDev != null && maxPagesDev > 0) 
+        ? Math.min(maxPagesDev, lastPage.intValue())
+        : lastPage.intValue();
+
+    if (maxPagesDev != null && maxPagesDev > 0) {
+      log.info("Modo desarrollo activado: limitando a {} página(s) de un total de {}", maxPageToFetch, lastPage);
+    }
+
+    for (int page = 2; page <= maxPageToFetch; page++) {
       HechoProxyResponseDTO pageResult = obtenerPagina(page);
       if (pageResult != null && pageResult.getData() != null) {
         todos.addAll(pageResult.getData());
       }
     }
 
-    log.info("Se obtuvieron {} hechos de la API externa", todos.size());
+    log.info("Se obtuvieron {} hechos de la API externa ({} página(s) procesada(s))", 
+        todos.size(), maxPageToFetch);
     return todos;
   }
 
   private HechoProxyResponseDTO obtenerPagina(int page) {
+    String authHeaderValue = tokenType + " " + accessToken;
     return webClient.get()
         .uri(uriBuilder -> uriBuilder
             .path("/desastres")

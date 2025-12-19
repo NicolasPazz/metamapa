@@ -20,6 +20,9 @@ public class CriterioOrigen implements Criterio{
   }
 
   public boolean cumple(Hecho hecho) {
-    return this.origen == hecho.getOrigen();
+    if (this.origen == null) {
+      return hecho.getOrigen() == null;
+    }
+    return this.origen.equals(hecho.getOrigen());
   }
 }

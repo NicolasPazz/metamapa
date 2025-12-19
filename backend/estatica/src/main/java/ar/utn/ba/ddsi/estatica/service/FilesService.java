@@ -6,6 +6,7 @@ import jakarta.annotation.PostConstruct;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -32,7 +33,7 @@ public class FilesService {
 
   @Transactional
   protected void registrarArchivosExistentes() {
-    log.info("Registrando archivos existentes en disco...");
+    log.info("[FilesService] Registrando archivos existentes en disco...");
     List<String> archivosEnDisco = csvLocationService.listarArchivos();
 
     archivosEnDisco.forEach(nombreArchivo -> {
@@ -42,7 +43,7 @@ public class FilesService {
             .procesado(false)
             .build();
         archivoRepository.save(archivo);
-        log.info("Archivo registrado: {}", nombreArchivo);
+        log.info("[FilesService] Archivo registrado desde disco: {}", nombreArchivo);
       }
     });
   }
@@ -60,23 +61,37 @@ public class FilesService {
   }
 
   @Transactional
-  public void procesarCsvSubido(MultipartFile file) throws Exception {
+  public ResponseEntity<String> procesarCsvSubido(MultipartFile file) {
+    if (file == null || file.isEmpty()) {
+      return ResponseEntity.badRequest().body("No se recibió ningún archivo");
+    }
+
     validarArchivo(file);
 
-    String nombreArchivo = file.getOriginalFilename();
-    csvLocationService.guardarArchivo(nombreArchivo, file.getInputStream());
+    try {
+      String nombreArchivo = file.getOriginalFilename();
+      csvLocationService.guardarArchivo(nombreArchivo, file.getInputStream());
 
-    registrarArchivo(nombreArchivo);
+      registrarArchivo(nombreArchivo);
 
-    if (TransactionSynchronizationManager.isSynchronizationActive()) {
-      TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-        @Override
-        public void afterCommit() {
-          asyncProcessingService.ejecutarAsync(() -> procesarArchivosPendientes());
-        }
-      });
-    } else {
-      asyncProcessingService.ejecutarAsync(this::procesarArchivosPendientes);
+      // Procesar archivo de forma asíncrona después de que la transacción se confirme
+      // Esto evita procesar archivos que no se guardaron correctamente
+      if (TransactionSynchronizationManager.isSynchronizationActive()) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+          @Override
+          public void afterCommit() {
+            asyncProcessingService.ejecutarAsync(() -> procesarArchivosPendientes());
+          }
+        });
+      } else {
+        // Si no hay transacción activa, procesar directamente
+        asyncProcessingService.ejecutarAsync(this::procesarArchivosPendientes);
+      }
+
+      return ResponseEntity.ok("Archivo cargado correctamente.");
+    } catch (Exception e) {
+      log.error("Error procesando CSV: {}", e.getMessage(), e);
+      throw new RuntimeException("Error al procesar el archivo: " + e.getMessage(), e);
     }
   }
 
@@ -96,17 +111,17 @@ public class FilesService {
     Optional<Archivo> archivoExistente = archivoRepository.findByNombre(nombreArchivo);
 
     if (archivoExistente.isPresent()) {
+      // Archivo ya existe: marcarlo como no procesado para reprocesarlo
       Archivo archivo = archivoExistente.get();
       archivo.setProcesado(false);
       archivoRepository.save(archivo);
-      log.info("Archivo actualizado: {}", nombreArchivo);
     } else {
+      // Archivo nuevo: crear registro en BD para tracking
       Archivo archivo = Archivo.builder()
           .nombre(nombreArchivo)
           .procesado(false)
           .build();
       archivoRepository.save(archivo);
-      log.info("Archivo registrado: {}", nombreArchivo);
     }
   }
 }

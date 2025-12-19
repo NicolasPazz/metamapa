@@ -68,7 +68,7 @@ public class SolicitudHecho {
   private Double longitud;
 
   @NotNull(message = "La fecha de acontecimiento es obligatoria")
-  @Column(name = "fechaDeAcontecimiento", nullable = false)
+  @Column(name = "fecha_de_acontecimiento", nullable = false)
   private LocalDateTime fechaDeAcontecimiento;
 
   @OneToMany(mappedBy = "solicitudHecho", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -76,7 +76,7 @@ public class SolicitudHecho {
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
 
   @NotNull(message = "La fecha de carga es obligatoria")
-  @Column(name = "fechaDeCarga", nullable = false)
+  @Column(name = "fecha_de_carga", nullable = false)
   @Builder.Default
   private LocalDateTime fechaDeCargaSolicitud = LocalDateTime.now();
 
@@ -113,6 +113,24 @@ public class SolicitudHecho {
 
     if (this.fechaDeCargaSolicitud.plusDays(7).isBefore(LocalDateTime.now())) {
       throw new IllegalStateException("El período de modificación de 7 días ha expirado");
+    }
+  }
+
+  public void validarCoordenadas() {
+    if (this.latitud == null || this.longitud == null) {
+      throw new IllegalArgumentException("La latitud y longitud son obligatorias");
+    }
+    if (this.latitud < -90 || this.latitud > 90) {
+      throw new IllegalArgumentException("La latitud debe estar entre -90 y 90");
+    }
+    if (this.longitud < -180 || this.longitud > 180) {
+      throw new IllegalArgumentException("La longitud debe estar entre -180 y 180");
+    }
+  }
+
+  public void validarFechaNoFutura() {
+    if (this.fechaDeAcontecimiento != null && this.fechaDeAcontecimiento.isAfter(LocalDateTime.now())) {
+      throw new IllegalArgumentException("La fecha y hora no pueden ser futuras");
     }
   }
 

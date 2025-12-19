@@ -22,6 +22,7 @@ public class CsvParserService {
   private final CsvLocationService csvLocationService;
 
   public void parsearCsvLazy(String nombreArchivo, Consumer<Hecho> procesador) throws IOException {
+    // Parseo lazy: procesar fila por fila sin cargar todo el CSV en memoria
     try (InputStream inputStream = csvLocationService.abrirArchivo(nombreArchivo);
          InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8)) {
 
@@ -37,12 +38,14 @@ public class CsvParserService {
   private void procesarFilas(Iterator<Hecho> iterator, Consumer<Hecho> procesador, String nombreArchivo) {
     int filasProcessadas = 0;
 
+    // Procesar fila por fila: si una falla, continuar con la siguiente
     while (iterator.hasNext()) {
       try {
         Hecho hecho = iterator.next();
         procesador.accept(hecho);
         filasProcessadas++;
       } catch (Exception e) {
+        // Continuar procesando aunque una fila falle (resiliente a errores)
         log.warn("Error en fila {}: {}", filasProcessadas + 1, e.getMessage());
       }
     }

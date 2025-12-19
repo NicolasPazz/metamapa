@@ -1,22 +1,26 @@
 package ar.utn.ba.ddsi.dinamica.service;
 
+import ar.utn.ba.ddsi.dinamica.domain.dto.input.ContenidoMultimediaInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudHechoInputContribuyenteDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarAdminInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.ContenidoMultimedia;
+import ar.utn.ba.ddsi.dinamica.domain.hecho.TipoContenido;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.ISolicitudesRepository;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
-import java.time.LocalDate;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,8 @@ import org.springframework.stereotype.Service;
 public class SolicitudesService {
   private final ISolicitudesRepository solicitudesRepository;
   private final FuenteService fuenteService;
+  private final MultimediaStorageService multimediaStorageService;
+  private final ObjectMapper objectMapper;
 
   public List<SolicitudOutputDTO> buscarTodas() {
     log.debug("Buscando todas las solicitudes");
@@ -51,6 +57,10 @@ public class SolicitudesService {
         .multimedia(new ArrayList<>())
         .transiciones(new ArrayList<>())
         .build();
+
+    // Validaciones de dominio
+    solicitud.validarCoordenadas();
+    solicitud.validarFechaNoFutura();
 
     if (input.getMultimedia() != null && !input.getMultimedia().isEmpty()) {
       List<ContenidoMultimedia> multimedia = input.getMultimedia().stream()
@@ -154,6 +164,80 @@ public class SolicitudesService {
 
     log.info("Revisión completada para solicitud ID: {}", id);
     return solicitudActualizada.toOutputDTO();
+  }
+
+  @Transactional
+  public SolicitudHecho recibirSolicitudContribuyenteConMultipart(
+      String solicitudJson,
+      List<MultipartFile> archivos) throws IOException {
+    
+    SolicitudHechoInputContribuyenteDTO input = parseJsonToDTO(solicitudJson);
+    
+    // Procesar archivos multimedia: guardar físicamente y determinar tipo de contenido
+    if (archivos != null && !archivos.isEmpty()) {
+      List<ContenidoMultimediaInputDTO> multimediaList = new ArrayList<>();
+      
+      for (MultipartFile archivo : archivos) {
+        if (!archivo.isEmpty()) {
+          // Guardar archivo en disco compartido (valida formato y retorna nombre único)
+          String nombreArchivoGuardado = multimediaStorageService.guardarArchivo(archivo);
+          // Inferir tipo de contenido desde MIME type o extensión
+          TipoContenido tipo = determinarTipoContenido(archivo.getContentType(), archivo.getOriginalFilename());
+          
+          ContenidoMultimediaInputDTO multimediaDTO = new ContenidoMultimediaInputDTO();
+          multimediaDTO.setPathArchivo(nombreArchivoGuardado);
+          multimediaDTO.setTipoContenido(tipo);
+          
+          multimediaList.add(multimediaDTO);
+        }
+      }
+      
+      input.setMultimedia(multimediaList);
+    }
+
+    return recibirSolicitudContribuyente(input);
+  }
+
+  private SolicitudHechoInputContribuyenteDTO parseJsonToDTO(String solicitudJson) throws IOException {
+    try {
+      return objectMapper.readValue(solicitudJson, SolicitudHechoInputContribuyenteDTO.class);
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      log.error("Error parseando JSON de solicitud: {}", e.getMessage(), e);
+      throw new IOException("Error parseando JSON de solicitud: " + e.getMessage(), e);
+    }
+  }
+
+  private TipoContenido determinarTipoContenido(String contentType, String nombreArchivo) {
+    // Primero intentar inferir desde MIME type (más confiable)
+    if (contentType != null) {
+      TipoContenido resultado = switch (contentType) {
+        case "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" -> TipoContenido.IMAGEN;
+        case "video/mp4", "video/webm" -> TipoContenido.VIDEO;
+        case "audio/mpeg", "audio/mp3", "audio/wav", "audio/ogg" -> TipoContenido.AUDIO;
+        default -> null;
+      };
+      if (resultado != null) {
+        return resultado;
+      }
+
+    }
+    
+    // Fallback: inferir por extensión del archivo si MIME type no está disponible
+    if (nombreArchivo != null && nombreArchivo.contains(".")) {
+      String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
+      TipoContenido resultado = switch (extension) {
+        case "jpg", "jpeg", "png", "gif", "webp" -> TipoContenido.IMAGEN;
+        case "mp4", "webm" -> TipoContenido.VIDEO;
+        case "mp3", "wav", "ogg" -> TipoContenido.AUDIO;
+        default -> null;
+      };
+      if (resultado != null) {
+        return resultado;
+      }
+    }
+    
+    throw new IllegalArgumentException("Formato de archivo no permitido. Formatos permitidos: " +
+        "Imágenes: jpg, jpeg, png, gif, webp | Videos: mp4, webm | Audio: mp3, wav, ogg");
   }
 }
 

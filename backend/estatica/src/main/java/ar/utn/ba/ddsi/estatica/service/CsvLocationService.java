@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 @Service
 public class CsvLocationService {
 
-  @Value("${csv.storage.path:data/uploads}")
+  @Value("${csv.storage.path:backend/data/csv}")
   private String csvStoragePath;
 
   public InputStream abrirArchivo(String nombreArchivo) throws IOException {

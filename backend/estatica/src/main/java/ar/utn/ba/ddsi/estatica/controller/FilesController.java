@@ -21,13 +21,8 @@ public class FilesController {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> cargarCsv(@ModelAttribute CsvUploadRequestDTO request) {
-    if (request.getArchivo() == null || request.getArchivo().isEmpty()) {
-      return ResponseEntity.badRequest().body("No se recibió ningún archivo");
-    }
-
     try {
-      filesService.procesarCsvSubido(request.getArchivo());
-      return ResponseEntity.ok("Archivo cargado correctamente.");
+      return filesService.procesarCsvSubido(request.getArchivo());
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     } catch (Exception e) {

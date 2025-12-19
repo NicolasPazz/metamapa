@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.frontend.controller;
 
+import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.ColeccionDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
@@ -11,6 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.time.LocalDate;
@@ -21,13 +23,16 @@ import java.util.List;
 @RequestMapping("/colecciones")
 public class ColeccionController {
     private final ColeccionService coleccionService;
+    
+    @Value("${app.pagination.page-size:18}")
+    private int pageSize;
 
     @GetMapping
     public String listarColecciones(Model model,
             @RequestParam(defaultValue = "0") int page) {
         // Obtener colecciones paginadas del servicio (ya procesadas)
-        ar.utn.ba.ddsi.frontend.models.PageResponse<ColeccionDTO> pageResponse =
-            coleccionService.getAllColeccionesPaginadas(page, 100);
+        PageResponse<ColeccionDTO> pageResponse =
+            coleccionService.getAllColeccionesPaginadas(page, pageSize);
 
         model.addAttribute("colecciones", pageResponse.getContent());
         model.addAttribute("currentPage", page);
@@ -36,6 +41,7 @@ public class ColeccionController {
         // En /colecciones: mostrar botón Hechos, no mostrar Colecciones
         model.addAttribute("showHechosBtn", true);
         model.addAttribute("showColeccionesBtn", false);
+        model.addAttribute("showReportarHechoBtn", false);
 
         return "colecciones/listacolecciones";
     }
@@ -48,15 +54,17 @@ public class ColeccionController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_hasta,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
             @RequestParam(required = false) String categoria,
+            @RequestParam(required = false) String fuente,
             @RequestParam(required = false) String modo,
             @RequestParam(defaultValue = "0") int page) {
 
         // Obtener hechos de colección paginados del servicio (ya procesados)
-        ar.utn.ba.ddsi.frontend.models.PageResponse<HechoDTO> pageResponse =
+        PageResponse<HechoDTO> pageResponse =
             coleccionService.getHechosColeccionPaginados(
-                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, modo, page, 100);
+                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page, pageSize);
         List<String> listaCategorias = coleccionService.getCategoriasUnicas();
         List<String> listaProvincias = coleccionService.getProvinciasConHechos();
+        List<String> listaFuentes = coleccionService.getFuentesConHechos();
 
         model.addAttribute("hechos", pageResponse.getContent());
         model.addAttribute("currentPage", page);
@@ -64,16 +72,30 @@ public class ColeccionController {
         model.addAttribute("titulo", "Hechos de colección");
         model.addAttribute("categorias", listaCategorias);
         model.addAttribute("provincias", listaProvincias);
+        model.addAttribute("fuentes", listaFuentes);
         model.addAttribute("solicitud", new SolicitudDTO());
         model.addAttribute("esColeccion", true);
         model.addAttribute("handleColeccion", handle);
         // En /colecciones/{handle}/hechos: mostrar ambos botones
         model.addAttribute("showHechosBtn", true);
         model.addAttribute("showColeccionesBtn", true);
+        model.addAttribute("showReportarHechoBtn", false);
 
         return "hechos/hechosencoleccion";
     }
 
-
+    @GetMapping("/{handle}/mapa")
+    public String hechosColeccionMapa(
+            Model model,
+            @PathVariable String handle) {
+        // Obtener todos los hechos de la colección (sin paginación para el mapa)
+        List<HechoDTO> hechos = coleccionService.getHechosColeccionByHandle(
+                handle, null, null, null, null, null);
+        model.addAttribute("hechos", hechos);
+        model.addAttribute("titulo", "Mapa de Colección");
+        model.addAttribute("handleColeccion", handle);
+        model.addAttribute("showReportarHechoBtn", false);
+        return "mapa/mapa";
+    }
 
 }

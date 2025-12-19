@@ -10,19 +10,14 @@ import lombok.Setter;
 @Setter
 @Getter
 public class SolicitudOutputDTO {
-  @JsonProperty("id")
   private Long id;
   @JsonProperty("contribuyente_id")
   private Long idContribuyente;
-  @JsonProperty("titulo")
   private String titulo;
-  @JsonProperty("descripcion")
   private String descripcion;
   @JsonProperty("categoria")
   private String nombreCategoria;
-  @JsonProperty("latitud")
   private Double latitud;
-  @JsonProperty("longitud")
   private Double longitud;
   @JsonProperty("fecha_acontecimiento")
   private LocalDateTime fechaDeAcontecimiento;
@@ -30,7 +25,6 @@ public class SolicitudOutputDTO {
   private List<ContenidoMultimediaOutputDTO> contenidoMultimedia;
   @JsonProperty("fecha_carga")
   private LocalDateTime fechaDeCargaSolicitud;
-  @JsonProperty("estado")
   private EstadoSolicitud estado;
   @JsonProperty("transiciones")
   private List<TransicionEstadoOutputDTO> transiciones;

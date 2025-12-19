@@ -452,7 +452,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"titulo\": \"Colección de hechos estatica\",\r\n  \"descripcion\": \"ejemplo de uso\",\r\n   \"criterios\": [\r\n      {\r\n        \"cadena_a_comparar\": \"incendio\",\r\n        \"tipo_dato\": \"TITULO\"\r\n      },\r\n      {\r\n        \"origen\": \"DATASET\"\r\n      },\r\n      {\r\n        \"fuentes\": [0]\r\n      }\r\n  ]\r\n}",
+									"raw": "{\r\n  \"titulo\": \"Colección de hechos dinamica\",\r\n  \"descripcion\": \"ejemplo de uso\",\r\n   \"criterios\": [\r\n      {\r\n        \"nombres_fuentes\": [\"Fuente Dinámica\"]\r\n      }\r\n  ]\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -467,6 +467,43 @@
 									"path": [
 										"admin",
 										"colecciones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "actualizarColeccion2",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "    {\r\n        \"titulo\": \"modificado\",\r\n        \"descripcion\": \"modificado\",\r\n        \"algoritmo_consenso\": \"MULTIPLES_MENCIONES\"\r\n\r\n    }\r\n",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/admin/colecciones/:handle",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"admin",
+										"colecciones",
+										":handle"
+									],
+									"variable": [
+										{
+											"key": "handle",
+											"value": "fe90083b-5995-49d7-80c3-0abd2c45f0a2"
+										}
 									]
 								}
 							},
@@ -489,27 +526,6 @@
 										}
 									}
 								},
-								"url": {
-									"raw": "{{agregadorBaseURL}}/admin/colecciones",
-									"host": [
-										"{{agregadorBaseURL}}"
-									],
-									"path": [
-										"admin",
-										"colecciones"
-									]
-								}
-							},
-							"response": []
-						},
-						{
-							"name": "getAllColecciones",
-							"request": {
-								"auth": {
-									"type": "noauth"
-								},
-								"method": "GET",
-								"header": [],
 								"url": {
 									"raw": "{{agregadorBaseURL}}/admin/colecciones",
 									"host": [
@@ -555,6 +571,27 @@
 											"key": "handle",
 											"value": "26d38d73-3064-4859-a616-100c2ceb34b1"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "getAllColecciones",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/admin/colecciones",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"admin",
+										"colecciones"
 									]
 								}
 							},
@@ -786,6 +823,122 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "crearSolicitudEliminacion Externo",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fuente_id\": 3,\r\n    \"id_origen\": 1,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho debido a que contiene datos sensibles que, de permanecer accesibles públicamente, podrían poner en riesgo la seguridad, la integridad y la privacidad de las personas involucradas. La publicación incluye información que permite identificar ubicaciones específicas, horarios y nombres propios, o combinaciones de datos que facilitan la identificación de individuos sin el consentimiento explícito de los afectados. Además, el contenido presenta errores fácticos que ya fueron informados a la organización responsable, generando confusión y desinformación.\",\r\n  \"contribuyente_id\": 2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/solicitudes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "crearSolicitudEliminacion Corta",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"hecho_id\": 1,\r\n  \"texto_fundamentos\": \"Este texto contiene menos de 500 caracteres\",\r\n  \"contribuyente_id\": 2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/solicitudes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "crearSolicitudEliminacion Spam",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"hecho_id\": 1,\r\n  \"texto_fundamentos\": \"Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam Este texto es Spam\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/solicitudes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "crearSolicitudEliminacion Hecho No Existente",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"fuente_id\": 6,\r\n    \"id_origen\": 1,\r\n  \"texto_fundamentos\": \"Solicito la eliminación de este hecho debido a que contiene datos sensibles que, de permanecer accesibles públicamente, podrían poner en riesgo la seguridad, la integridad y la privacidad de las personas involucradas. La publicación incluye información que permite identificar ubicaciones específicas, horarios y nombres propios, o combinaciones de datos que facilitan la identificación de individuos sin el consentimiento explícito de los afectados. Además, el contenido presenta errores fácticos que ya fueron informados a la organización responsable, generando confusión y desinformación.\",\r\n  \"contribuyente_id\": 2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{agregadorBaseURL}}/solicitudes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -935,6 +1088,319 @@
 							"response": []
 						}
 					]
+				},
+				{
+					"name": "FrontController",
+					"item": [
+						{
+							"name": "Get Hechos Paginados",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/hechos?page=0&size=100",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"hechos"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "size",
+											"value": "100"
+										},
+										{
+											"key": "categoria",
+											"value": null,
+											"disabled": true
+										},
+										{
+											"key": "fuente",
+											"value": null,
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Colecciones Paginadas",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/colecciones?page=0&size=100",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"colecciones"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "size",
+											"value": "100"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Hechos Coleccion Paginados",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/colecciones/:handle/hechos?page=0&size=100",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"colecciones",
+										":handle",
+										"hechos"
+									],
+									"query": [
+										{
+											"key": "page",
+											"value": "0"
+										},
+										{
+											"key": "size",
+											"value": "100"
+										}
+									],
+									"variable": [
+										{
+											"key": "handle",
+											"value": "11111111-1111-1111-1111-111111111111"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Hecho Reciente",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/hecho-reciente",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"hecho-reciente"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Coleccion Reciente",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/coleccion-reciente",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"coleccion-reciente"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Categorias",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/categorias",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"categorias"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Provincias",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/provincias",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"provincias"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Fuentes",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/fuentes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"fuentes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Ejecutar Scheduler",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "POST",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/front/ejecutar-scheduler?obtenerHechosNuevos=true&recalcularCriterios=true&recalcularConsenso=true",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"front",
+										"ejecutar-scheduler"
+									],
+									"query": [
+										{
+											"key": "obtenerHechosNuevos",
+											"value": "true"
+										},
+										{
+											"key": "recalcularCriterios",
+											"value": "true"
+										},
+										{
+											"key": "recalcularConsenso",
+											"value": "true"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "FuentesController",
+					"item": [
+						{
+							"name": "Get All Fuentes",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/fuentes",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"fuentes"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "MultimediaController",
+					"item": [
+						{
+							"name": "Get Multimedia Archivo",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{agregadorBaseURL}}/multimedia/:nombreArchivo",
+									"host": [
+										"{{agregadorBaseURL}}"
+									],
+									"path": [
+										"multimedia",
+										":nombreArchivo"
+									],
+									"variable": [
+										{
+											"key": "nombreArchivo",
+											"value": "ejemplo.jpg"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -1016,7 +1482,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\r\n  \"estado\": \"ACEPTADO_MODIFICADO\",\r\n  \"titulo\": \"admin\",\r\n  \"descripcion\": \"admin\",\r\n  \"categoria\": \"admin\",\r\n  \"latitud\": -53.574039,\r\n  \"longitud\": -55.36991,\r\n  \"fecha_acontecimiento\": \"2013-11-11T00:00:00\",\r\n  \"multimedia\": [\r\n    {\r\n      \"path\": \"admin\",\r\n      \"tipo\": \"IMAGEN\"\r\n    }\r\n  ]\r\n}",
+							"raw": "{\r\n  \"estado\": \"ACEPTADO_MODIFICADO\",\r\n  \"titulo\": \"admin\",\r\n  \"descripcion\": \"admin\",\r\n  \"categoria\": \"admin\",\r\n  \"fecha_acontecimiento\": \"2013-11-11T00:00:00\"\r\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -1092,6 +1558,41 @@
 					"response": []
 				},
 				{
+					"name": "Create Solicitud Dinamica Multipart",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "solicitud",
+									"value": "{\"contribuyente_id\": 123, \"titulo\": \"Crisis sanitaria\", \"descripcion\": \"Descripción del hecho\", \"categoria\": \"desastre tecnológico\", \"latitud\": -23.574039, \"longitud\": -65.36991, \"fecha_acontecimiento\": \"2013-11-11T00:00:00\", \"multimedia\": []}",
+									"type": "text"
+								},
+								{
+									"key": "archivos",
+									"type": "file",
+									"src": []
+								}
+							]
+						},
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Get Nuevos Hechos Dinamica",
 					"event": [
 						{
@@ -1161,6 +1662,38 @@
 						}
 					},
 					"response": []
+				},
+				{
+					"name": "MultimediaController",
+					"item": [
+						{
+							"name": "Get Multimedia Archivo",
+							"request": {
+								"auth": {
+									"type": "noauth"
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{dinamicaBaseURL}}/multimedia/:nombreArchivo",
+									"host": [
+										"{{dinamicaBaseURL}}"
+									],
+									"path": [
+										"multimedia",
+										":nombreArchivo"
+									],
+									"variable": [
+										{
+											"key": "nombreArchivo",
+											"value": "ejemplo.jpg"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
 				}
 			]
 		},
@@ -1298,6 +1831,25 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Get Provincia Mas Hechos - Coleccion",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{estadisticasBaseURL}}/estadisticas/colecciones/provincia-mas-hechos",
+									"host": [
+										"{{estadisticasBaseURL}}"
+									],
+									"path": [
+										"estadisticas",
+										"colecciones",
+										"provincia-mas-hechos"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -1349,6 +1901,25 @@
 							"response": []
 						},
 						{
+							"name": "Get Provincia Mas Hechos - Categoria",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{estadisticasBaseURL}}/estadisticas/categorias/provincia-mas-hechos",
+									"host": [
+										"{{estadisticasBaseURL}}"
+									],
+									"path": [
+										"estadisticas",
+										"categorias",
+										"provincia-mas-hechos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
 							"name": "Get Hora Mas Hechos por Categoria",
 							"request": {
 								"method": "GET",
@@ -1369,6 +1940,25 @@
 											"key": "categoria",
 											"value": "vendaval"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Hora Mas Hechos - Categoria",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{estadisticasBaseURL}}/estadisticas/categorias/hora-mas-hechos",
+									"host": [
+										"{{estadisticasBaseURL}}"
+									],
+									"path": [
+										"estadisticas",
+										"categorias",
+										"hora-mas-hechos"
 									]
 								}
 							},

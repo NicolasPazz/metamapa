@@ -14,7 +14,7 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import lombok.Getter;
@@ -36,12 +36,12 @@ public class SolicitudEliminacion {
   @JoinColumn(name = "hecho_id", referencedColumnName = "id", nullable = true)
   private Hecho hecho;
 
-  @Column(name = "textoFundamentos", nullable = false, length = 2000)
+  @Column(name = "texto_fundamentos", nullable = false, length = 2000)
   private String textoFundamentos;
 
   @Column(name = "fecha_carga", nullable = false, updatable = false)
   @CreationTimestamp
-  private LocalDate fecha;
+  private LocalDateTime fecha;
 
   @Enumerated(EnumType.STRING)
   @Column(name="estado", nullable = false)

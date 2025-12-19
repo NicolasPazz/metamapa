@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.controller;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.dto.PageResponse;
+import ar.utn.ba.ddsi.agregador.service.AgregadorService;
 import ar.utn.ba.ddsi.agregador.service.ColeccionesService;
 import ar.utn.ba.ddsi.agregador.service.HechosService;
 import ar.utn.ba.ddsi.agregador.service.CategoriasService;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -26,6 +28,7 @@ public class FrontController {
     private final HechosService hechosService;
     private final ColeccionesService coleccionesService;
     private final CategoriasService categoriasService;
+    private final AgregadorService agregadorService;
 
     @GetMapping("/hechos")
     public ResponseEntity<PageResponse<HechoDTO>> getHechosPaginados(
@@ -35,6 +38,7 @@ public class FrontController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_hasta,
             @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String fuente,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
 
@@ -43,7 +47,7 @@ public class FrontController {
         PageResponse<HechoDTO> response = hechosService.getPaginatedHechos(
                 categoria, fecha_reporte_desde, fecha_reporte_hasta,
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-                ubicacion, page, size);
+                ubicacion, fuente, page, size);
 
         return ResponseEntity.ok(response);
     }
@@ -66,7 +70,10 @@ public class FrontController {
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_desde,
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_desde,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_hasta,
             @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String fuente,
             @RequestParam(required = false) String modo,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
@@ -75,7 +82,8 @@ public class FrontController {
 
         return coleccionesService.getHechosColeccionPaginated(
                 handle, ubicacion, fecha_reporte_desde, fecha_reporte_hasta,
-                categoria, modo, page, size);
+                fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+                categoria, fuente, modo, page, size);
     }
 
     @GetMapping("/hecho-reciente")
@@ -100,5 +108,33 @@ public class FrontController {
     public ResponseEntity<List<String>> getProvincias() {
         log.info("[FrontController] GET /api/front/provincias");
         return hechosService.getProvinciasConHechos();
+    }
+
+    @GetMapping("/fuentes")
+    public ResponseEntity<List<String>> getFuentes() {
+        log.info("[FrontController] GET /api/front/fuentes");
+        return hechosService.getFuentesConHechos();
+    }
+
+    @PostMapping("/ejecutar-scheduler")
+    public ResponseEntity<Map<String, Object>> ejecutarScheduler(
+            @RequestParam(required = false, defaultValue = "true") boolean obtenerHechosNuevos,
+            @RequestParam(required = false, defaultValue = "true") boolean recalcularCriterios,
+            @RequestParam(required = false, defaultValue = "true") boolean recalcularConsenso) {
+        
+        log.info("[FrontController] POST /api/front/ejecutar-scheduler - obtenerHechosNuevos: {}, recalcularCriterios: {}, recalcularConsenso: {}", 
+                obtenerHechosNuevos, recalcularCriterios, recalcularConsenso);
+        
+        try {
+            Map<String, Object> resultado = agregadorService.ejecutarScheduler(
+                    obtenerHechosNuevos, recalcularCriterios, recalcularConsenso);
+            return ResponseEntity.ok(resultado);
+        } catch (Exception e) {
+            log.error("[FrontController] ❌ Error al ejecutar scheduler: {}", e.getMessage(), e);
+            Map<String, Object> errorResult = new java.util.HashMap<>();
+            errorResult.put("exito", false);
+            errorResult.put("error", e.getMessage());
+            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
+        }
     }
 }

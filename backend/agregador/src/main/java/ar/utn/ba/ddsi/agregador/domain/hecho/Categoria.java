@@ -14,14 +14,21 @@ import lombok.Setter;
 @Table(name = "categoria")
 public class Categoria {
   @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "nombre", nullable = false, unique = true)
   private String nombre;
 
   public Categoria(String nombre) {
-    this.nombre = nombre.trim().toLowerCase();
+    this.nombre = normalizar(nombre);
+  }
+
+  public static String normalizar(String nombre) {
+    if (nombre == null) {
+      return null;
+    }
+    return nombre.trim().toLowerCase();
   }
 
   @Override

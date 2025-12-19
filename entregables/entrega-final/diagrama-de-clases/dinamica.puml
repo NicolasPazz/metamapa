@@ -29,7 +29,7 @@ class SolicitudHecho {
 -categoria: String
 -latitud: Double
 -longitud: Double
--fechaDeAcontecimiento: LocalDate
+-fechaDeAcontecimiento: LocalDateTime
 -multimedia: List<ContenidoMultimedia>
 -fechaDeCargaSolicitud: LocalDateTime
 -estado: EstadoSolicitud
@@ -37,6 +37,8 @@ class SolicitudHecho {
 +cambiarEstado(EstadoSolicitud): void
 +esAnonimo(): boolean
 +validarModificacionPorUsuario(Long): void
++validarCoordenadas(): void
++validarFechaNoFutura(): void
 +toOutputDTO(): SolicitudOutputDTO
 }
 

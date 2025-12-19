@@ -17,11 +17,16 @@ class Hecho {
 -categoria: Categoria
 -fuenteId: Long
 -idOrigen: Long
+-nombreFuente: String
 -transicionarEstado(): void
 +ocultar(): void
-+visibilizar(): void
 +esVisible(): boolean
 +contieneEtiqueta(String): boolean
++esLocal(): boolean
++asignarProvinciaSiNoTiene(Provincia): void
++validarCoordenadas(): void
++validarFechaNoFutura(): void
++asignarNombreFuenteSiNoTiene(String): void
 }
 
 Hecho --> Provincia
@@ -73,6 +78,7 @@ class Categoria {
 -nombre: String
 +equals(Object): Boolean
 +hashCode(): Int
++{static} normalizar(String): String
 }
 
 ContenidoMultimedia --> TipoContenido
@@ -160,17 +166,20 @@ CriterioFechas --> TipoFecha
 CriterioFechas --> TipoCriterio
 class CriterioFechas implements Criterio {
 - tipo: TipoCriterio
-- fechaInicial: LocalDate
-- fechaFinal: LocalDate
+- fechaInicial: LocalDateTime
+- fechaFinal: LocalDateTime
 - tipoFecha: TipoFecha
 + cumple(Hecho): Boolean
 }
 CriterioFuente --> TipoCriterio
 class CriterioFuente implements Criterio {
 - tipo: TipoCriterio
-- fuentesExcluidas: Set<Long>
-+ agregarExclusion(Long): void
-+ eliminarExclusion(Long): void
+- fuentes: Set<Long>
+- nombresFuentes: Set<String>
++ agregarFuente(Long): void
++ eliminarFuente(Long): void
++ agregarNombreFuente(String): void
++ eliminarNombreFuente(String): void
 + cumple(Hecho): Boolean
 }
 enum TipoDato {
@@ -248,17 +257,22 @@ Coleccion -->"*" Hecho : hechosConsensuados
 Coleccion -->"*" Criterio
 Coleccion --> AAlgoritmoConsenso
 class Coleccion {
-  - handle: String
+  - handle: UUID
   - titulo: String
   - descripcion: String
   - hechos: List<Hecho>
   - criteriosDePertenencia: List<Criterio>
   - algoritmoConsenso: AAlgoritmoConsenso
   - hechosConsensuados: List<Hecho>
-  + actualizarHechos(): void
-  + actualizarHechosConsensuados(int): void
+  - fechaDeCarga: LocalDateTime
   + agregarCriterio(Criterio): void
   + eliminarCriterio(Criterio): void
+  + aplicarCriteriosDePertenencia(List<Hecho>): List<Hecho>
+  + calcularHechosConsensuados(int): List<Hecho>
+  + recalcularHechos(List<Hecho>, int): void
+  + aplicarAlgoritmoConsenso(List<Hecho>, int): List<Hecho>
+  + tieneHechosExternos(List<Long>, List<OrigenHecho>, List<String>): boolean
+  + separarHechosLocales(List<Hecho>): List<Hecho>
 }
 
 
@@ -273,7 +287,7 @@ class SolicitudEliminacion {
 -id: Long
 -hecho: Hecho
 -textoFundamentos: String
--fecha: LocalDate
+-fecha: LocalDateTime
 -estado: EstadoSolicitud
 -contribuyenteId: Long
 -spam: Boolean
@@ -281,6 +295,7 @@ class SolicitudEliminacion {
 +transicionarEstado(EstadoSolicitud): void
 +aceptar(): void
 +rechazar(): void
++esSpam(): boolean
 }
 SolicitudEliminacion -->"*" TransicionEstadoSolicitud
 class TransicionEstadoSolicitud {

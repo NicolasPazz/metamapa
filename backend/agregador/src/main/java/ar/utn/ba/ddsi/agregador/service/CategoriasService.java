@@ -24,31 +24,23 @@ public class CategoriasService {
 
   public void persistirCategoriasDesdeHechos(List<Hecho> hechos) {
     if (hechos == null || hechos.isEmpty()) {
-      log.debug("[CategoriasService] No hay hechos para procesar");
       return;
     }
 
-    log.info("[CategoriasService] Iniciando normalización de categorías para {} hechos", hechos.size());
-
-    // Paso 1: Extraer nombres normalizados de las categorías
+    // Extraer y normalizar nombres de categorías (trim + lowercase)
     Set<String> nombresNormalizados = extraerNombresNormalizados(hechos);
-    log.debug("[CategoriasService] Se encontraron {} categorías únicas", nombresNormalizados.size());
 
-    // Paso 2: Cargar categorías existentes desde la base de datos
+    // Cargar categorías existentes desde BD para reutilizar instancias
     Map<String, Categoria> categoriasExistentes = cargarCategoriasExistentes(nombresNormalizados);
-    log.debug("[CategoriasService] Se encontraron {} categorías existentes en BD", categoriasExistentes.size());
 
-    // Paso 3: Asignar categorías a los hechos y detectar nuevas categorías
+    // Asignar categorías a hechos: reutilizar existentes o crear nuevas
+    // Retorna mapa de categorías nuevas detectadas
     Map<String, Categoria> categoriasNuevas = asignarCategoriasAHechos(hechos, categoriasExistentes);
-    log.debug("[CategoriasService] Se detectaron {} categorías nuevas", categoriasNuevas.size());
 
-    // Paso 4: Persistir nuevas categorías y actualizar referencias
+    // Persistir nuevas categorías en batch y actualizar referencias en hechos
     if (!categoriasNuevas.isEmpty()) {
       persistirNuevasCategorias(hechos, categoriasNuevas, categoriasExistentes);
-      log.info("[CategoriasService] Se persistieron {} categorías nuevas", categoriasNuevas.size());
     }
-
-    log.info("[CategoriasService] Normalización de categorías completada exitosamente");
   }
 
   private Set<String> extraerNombresNormalizados(List<Hecho> hechos) {
@@ -57,7 +49,7 @@ public class CategoriasService {
         .filter(Objects::nonNull)
         .map(Categoria::getNombre)
         .filter(Objects::nonNull)
-        .map(this::normalizarNombre)
+        .map(Categoria::normalizar)
         .collect(Collectors.toSet());
   }
 
@@ -69,9 +61,11 @@ public class CategoriasService {
     }
 
     List<Categoria> existentes = categoriaRepository.findByNombreIn(new ArrayList<>(nombresNormalizados));
-    existentes.forEach(categoria ->
-        categoriasMap.put(normalizarNombre(categoria.getNombre()), categoria)
-    );
+    existentes.forEach(categoria -> {
+      if (categoria.getNombre() != null) {
+        categoriasMap.put(Categoria.normalizar(categoria.getNombre()), categoria);
+      }
+    });
 
     return categoriasMap;
   }
@@ -89,7 +83,7 @@ public class CategoriasService {
         continue;
       }
 
-      String nombreNormalizado = normalizarNombre(categoriaActual.getNombre());
+      String nombreNormalizado = Categoria.normalizar(categoriaActual.getNombre());
 
       // Caso 1: La categoría ya existe en BD - reutilizar
       if (categoriasExistentes.containsKey(nombreNormalizado)) {
@@ -117,29 +111,26 @@ public class CategoriasService {
       Map<String, Categoria> categoriasNuevas,
       Map<String, Categoria> categoriasExistentes) {
 
-    // Persistir en batch todas las categorías nuevas
+    // Persistir en batch todas las categorías nuevas (más eficiente que una por una)
     List<Categoria> categoriasPersistidas = categoriaRepository.saveAll(
         new ArrayList<>(categoriasNuevas.values())
     );
 
-    // Actualizar el mapa de existentes con las recién persistidas
+    // Actualizar mapa de existentes con las recién persistidas (ahora tienen ID)
     categoriasPersistidas.forEach(categoria ->
-        categoriasExistentes.put(normalizarNombre(categoria.getNombre()), categoria)
+        categoriasExistentes.put(Categoria.normalizar(categoria.getNombre()), categoria)
     );
 
-    // Actualizar referencias en hechos (por si saveAll devolvió instancias distintas con ID)
+    // Actualizar referencias en hechos: si la categoría no tiene ID, usar la instancia persistida
+    // (saveAll puede devolver instancias distintas con ID asignado)
     for (Hecho hecho : hechos) {
       Categoria categoria = hecho.getCategoria();
 
       if (categoria != null && categoria.getId() == null) {
-        String nombreNormalizado = normalizarNombre(categoria.getNombre());
+        String nombreNormalizado = Categoria.normalizar(categoria.getNombre());
         hecho.setCategoria(categoriasExistentes.get(nombreNormalizado));
       }
     }
-  }
-
-  private String normalizarNombre(String nombre) {
-    return nombre.trim().toLowerCase();
   }
 
   public ResponseEntity<List<String>> getAllCategoriasNombres() {

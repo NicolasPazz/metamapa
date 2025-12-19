@@ -38,3 +38,29 @@ build/
 # Excepciones
 !README.md
 !justificaciones-de-disenio.md
+
+# Archivos multimedia (imágenes, audio, video)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.webp
+*.bmp
+*.svg
+*.ico
+*.mp3
+*.wav
+*.ogg
+*.aac
+*.flac
+*.m4a
+*.mp4
+*.webm
+*.avi
+*.mov
+*.mkv
+*.flv
+*.wmv
+
+# Archivos CSV
+*.csv

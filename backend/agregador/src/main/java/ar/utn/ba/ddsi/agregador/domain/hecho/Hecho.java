@@ -20,7 +20,7 @@ import lombok.*;
 @Table(name = "hecho")
 public class Hecho {
   @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Column(name = "titulo", nullable = false)
@@ -36,7 +36,7 @@ public class Hecho {
   private Double longitud;
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "provincia_id", referencedColumnName = "id")
+  @JoinColumn(name = "provincia_id")
   private Provincia provincia;
 
   @Column(name = "fecha_acontecimiento", nullable = false)
@@ -55,26 +55,25 @@ public class Hecho {
   private EstadoHecho estado = EstadoHecho.VISIBLE;
 
   @Column(name = "contribuyente_id", nullable = true)
-  @Builder.Default
-  private Long contribuyenteId = null;
+  private Long contribuyenteId;
 
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
+  @JoinColumn(name = "hecho_id")
   @Builder.Default
   private Set<Etiqueta> etiquetas = new HashSet<>();
 
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
+  @JoinColumn(name = "hecho_id")
   @Builder.Default
   private List<ContenidoMultimedia> multimedia = new ArrayList<>();
 
   @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-  @JoinColumn(name = "hecho_id", referencedColumnName = "id")
+  @JoinColumn(name = "hecho_id")
   @Builder.Default
   private List<TransicionEstadoHecho> transiciones = new ArrayList<>();
 
   @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "categoria_id", referencedColumnName = "id")
+  @JoinColumn(name = "categoria_id")
   private Categoria categoria;
 
   @Column(name = "fuente_id", nullable = false)
@@ -82,6 +81,9 @@ public class Hecho {
 
   @Column(name = "id_origen", nullable = false)
   private Long idOrigen;
+
+  @Column(name = "nombre_fuente", nullable = false)
+  private String nombreFuente;
 
   public Hecho(String titulo, String descripcion, Double latitud, Double longitud, LocalDateTime fechaDeAcontecimiento,
                OrigenHecho origen, Long contribuyenteId, Categoria categoria, Long fuenteId) {
@@ -114,10 +116,6 @@ public class Hecho {
     this.transicionarEstado(EstadoHecho.OCULTO);
   }
 
-  public void visibilizar() {
-    this.transicionarEstado(EstadoHecho.VISIBLE);
-  }
-
   public boolean esVisible() {
     return this.estado == EstadoHecho.VISIBLE;
   }
@@ -130,5 +128,39 @@ public class Hecho {
         .filter(Objects::nonNull)
         .map(String::toLowerCase)
         .anyMatch(nombre -> nombre.equals(etiquetaBuscada.trim().toLowerCase()));
+  }
+
+  public boolean esLocal() {
+    return this.id != null;
+  }
+
+  public void asignarProvinciaSiNoTiene(Provincia provincia) {
+    if (this.provincia == null && provincia != null) {
+      this.provincia = provincia;
+    }
+  }
+
+  public void validarCoordenadas() {
+    if (this.latitud == null || this.longitud == null) {
+      throw new IllegalArgumentException("La latitud y longitud son obligatorias");
+    }
+    if (this.latitud < -90 || this.latitud > 90) {
+      throw new IllegalArgumentException("La latitud debe estar entre -90 y 90");
+    }
+    if (this.longitud < -180 || this.longitud > 180) {
+      throw new IllegalArgumentException("La longitud debe estar entre -180 y 180");
+    }
+  }
+
+  public void validarFechaNoFutura() {
+    if (this.fechaDeAcontecimiento != null && this.fechaDeAcontecimiento.isAfter(LocalDateTime.now())) {
+      throw new IllegalArgumentException("La fecha y hora no pueden ser futuras");
+    }
+  }
+
+  public void asignarNombreFuenteSiNoTiene(String nombreFuente) {
+    if (this.nombreFuente == null && nombreFuente != null && !nombreFuente.trim().isEmpty()) {
+      this.nombreFuente = nombreFuente.trim();
+    }
   }
 }

@@ -61,8 +61,15 @@ public class SolicitudesService {
         }
         Hecho hecho = hechoOpt.get();
         log.info("[SolicitudesService] Hecho interno encontrado en BD: {}", hecho.getId());
+        
+        // Si el hecho local tiene fuenteId e idOrigen (fue importado de fuente externa),
+        // incluirlos en la solicitud para que quede en la blacklist al aceptarse
+        Long fuenteIdHecho = hecho.getFuenteId();
+        Long idOrigenHecho = hecho.getIdOrigen();
+        
         solicitudEliminacion = solicitudEliminacionFactory.crearSolicitud(
-            hecho, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getContribuyenteId(), null, null
+            hecho, solicitudInputDTO.getTextoFundamentos(), solicitudInputDTO.getContribuyenteId(), 
+            fuenteIdHecho, idOrigenHecho
         );
       } else if (solicitudInputDTO.getFuenteId() != null && solicitudInputDTO.getIdOrigen() != null) {
         // 2.b. Hecho externo: buscar por fuente_id e id_origen
@@ -132,11 +139,12 @@ public class SolicitudesService {
   }
 
   public Map<Long, Set<Long>> blacklist() {
-    log.debug("[SolicitudesService] Generando blacklist de hechos externos eliminados");
-
+    // Obtener todas las solicitudes aceptadas (hechos eliminados)
     List<SolicitudEliminacion> aceptadas =
         solicitudesRepository.findByEstado(EstadoSolicitud.ACEPTADA);
 
+    // Agrupar por fuenteId -> Set de idOrigen para consulta rápida
+    // Estructura: {fuenteId: {idOrigen1, idOrigen2, ...}}
     Map<Long, Set<Long>> blacklistMap = aceptadas.stream()
         .filter(s -> s.getFuenteId() != null && s.getIdOrigen() != null)
         .collect(Collectors.groupingBy(
@@ -146,10 +154,6 @@ public class SolicitudesService {
                 Collectors.toSet()
             )
         ));
-
-    log.debug("[SolicitudesService] Blacklist generada con {} fuentes y {} hechos externos eliminados",
-        blacklistMap.size(),
-        blacklistMap.values().stream().mapToInt(Set::size).sum());
 
     return blacklistMap;
   }
@@ -207,38 +211,26 @@ public class SolicitudesService {
 
   private boolean verificarHechoExisteEnFuentesExternas(Long fuenteId, Long idOrigen) {
     try {
-      log.debug("[SolicitudesService] Consultando fuentes en tiempo real para fuente_id={}, id_origen={}",
-          fuenteId, idOrigen);
-
-      // Obtener todos los hechos visibles desde las fuentes externas
+      // Obtener todos los hechos visibles desde fuentes externas (tiempo real)
       ResponseEntity<List<HechoDTO>> response =
           fuentesService.getAllHechosVisibles(null, null, null, null, null, null);
 
       if (response.getBody() == null || response.getBody().isEmpty()) {
-        log.debug("[SolicitudesService] No se obtuvieron hechos desde fuentes externas");
         return false;
       }
 
-      // Buscar el hecho por fuente_id e id_origen
+      // Buscar el hecho específico por fuente_id + id_origen en la lista obtenida
       boolean existe = response.getBody().stream()
           .anyMatch(hecho ->
               hecho.getFuenteId() != null && hecho.getFuenteId().equals(fuenteId) &&
               hecho.getIdOrigen() != null && hecho.getIdOrigen().equals(idOrigen)
           );
 
-      if (existe) {
-        log.info("[SolicitudesService] Hecho encontrado en fuentes en tiempo real: fuente_id={}, id_origen={}",
-            fuenteId, idOrigen);
-      } else {
-        log.debug("[SolicitudesService] Hecho NO encontrado en fuentes en tiempo real: fuente_id={}, id_origen={}",
-            fuenteId, idOrigen);
-      }
-
       return existe;
 
     } catch (Exception e) {
       log.error("[SolicitudesService] Error al verificar hecho en fuentes externas: {}", e.getMessage(), e);
-      // En caso de error, asumimos que no existe para evitar crear solicitudes huérfanas
+      // En caso de error, asumir que no existe para evitar crear solicitudes huérfanas
       return false;
     }
   }

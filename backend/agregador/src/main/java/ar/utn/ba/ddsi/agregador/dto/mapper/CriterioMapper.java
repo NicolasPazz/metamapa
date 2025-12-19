@@ -44,6 +44,7 @@ public class CriterioMapper {
   private CriterioFuenteDTO toFuenteDTO(CriterioFuente c) {
     CriterioFuenteDTO dto = new CriterioFuenteDTO();
     dto.setFuentes(c.getFuentes());
+    dto.setNombresFuentes(c.getNombresFuentes());
     return dto;
   }
 
@@ -86,6 +87,9 @@ public class CriterioMapper {
     CriterioFuente criterio = new CriterioFuente();
     if (dto.getFuentes() != null) {
       criterio.setFuentes(dto.getFuentes());
+    }
+    if (dto.getNombresFuentes() != null) {
+      criterio.setNombresFuentes(dto.getNombresFuentes());
     }
     return criterio;
   }

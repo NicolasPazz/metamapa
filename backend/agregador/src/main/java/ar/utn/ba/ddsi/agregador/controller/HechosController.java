@@ -28,7 +28,8 @@ public class HechosController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "dd-MM-yyyy") LocalDate fecha_reporte_hasta,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_desde,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime fecha_acontecimiento_hasta,
-            @RequestParam(required = false) String ubicacion) {
+            @RequestParam(required = false) String ubicacion,
+            @RequestParam(required = false) String fuente) {
 
         log.info("[HechosController] GET /api/hechos");
 
@@ -36,7 +37,7 @@ public class HechosController {
                 categoria,
                 fecha_reporte_desde, fecha_reporte_hasta,
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
-                ubicacion);
+                ubicacion, fuente);
     }
 }
 

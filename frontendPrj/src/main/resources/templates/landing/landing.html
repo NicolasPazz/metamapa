@@ -43,7 +43,6 @@
              th:data-hecho-id="${hechos[0].id}"
              onclick="if(event.target.tagName !== 'A') { openHechoPanel(this.dataset.hechoId); }"
              style="cursor: pointer;">
-          <div class="image-placeholder"></div>
           <p><strong>Hecho:</strong> <span th:text="${hechos[0].titulo}">Título del hecho</span></p>
           <p class="subtitle" th:text="${hechos[0].categoria != null ? hechos[0].categoria : 'Sin categoría'}">Categoría</p>
           <a th:href="@{/hechos}" class="btn primary btn-landing" onclick="event.stopPropagation();">Más Hechos</a>
@@ -54,7 +53,6 @@
              th:data-coleccion-handle="${colecciones[0].handle}"
              onclick="if(event.target.tagName !== 'A') { openColeccionPanel(this.dataset.coleccionHandle); }"
              style="cursor: pointer;">
-          <div class="image-placeholder"></div>
           <p><strong>Colección:</strong> <span th:text="${colecciones[0].titulo}">Título de la colección</span></p>
           <p class="subtitle" th:text="${#lists.size(colecciones[0].hechos)} + ' hechos'">Cantidad de hechos</p>
           <a th:href="@{/colecciones}" class="btn primary btn-landing" onclick="event.stopPropagation();">Más Colecciones</a>
@@ -71,31 +69,114 @@
 
   <!-- Panel lateral para Hecho -->
   <div id="hechoPanel" class="side-panel" th:if="${!#lists.isEmpty(hechos)}">
-    <div class="panel-header">
-      <h3>Detalles del Hecho</h3>
-      <button class="close-btn" onclick="closeHechoPanel()">&times;</button>
-    </div>
-    <div class="panel-content">
-      <h2 th:text="${hechos[0].titulo}">Título del hecho</h2>
-      <p><strong>Categoría:</strong> <span th:text="${hechos[0].categoria != null ? hechos[0].categoria : 'Sin categoría'}">Categoría</span></p>
-      <p><strong>Descripción:</strong> <span th:text="${hechos[0].descripcion != null ? hechos[0].descripcion : 'Sin descripción'}">Descripción</span></p>
-      <p th:if="${hechos[0].fechaDeAcontecimiento != null}">
-        <strong>Fecha:</strong> <span th:text="${#temporals.format(hechos[0].fechaDeAcontecimiento, 'dd/MM/yyyy')}">Fecha</span>
-      </p>
-      <p th:if="${hechos[0].provincia != null}">
-        <strong>Provincia:</strong> <span th:text="${hechos[0].provincia}">Provincia</span>
-      </p>
-      <p th:if="${hechos[0].latitud != null && hechos[0].longitud != null}">
-        <strong>Ubicación:</strong> <span th:text="${hechos[0].latitud} + ', ' + ${hechos[0].longitud}">Coordenadas</span>
-      </p>
-      <div th:if="${hechos[0].etiquetas != null && !#lists.isEmpty(hechos[0].etiquetas)}">
-        <strong>Etiquetas:</strong>
-        <div class="tags">
-          <span class="tag" th:each="etiqueta : ${hechos[0].etiquetas}" th:text="${etiqueta}">Etiqueta</span>
-        </div>
+      <div class="panel-header">
+          <h3>Detalles del Hecho</h3>
+          <button class="close-btn" onclick="closeHechoPanel()">&times;</button>
       </div>
-    </div>
+
+      <div class="panel-content">
+          <h2 th:text="${hechos[0].titulo}">Título del hecho</h2>
+
+          <p th:if="${hechos[0].categoria != null}">
+              <strong>Categoría:</strong>
+              <span th:text="${hechos[0].categoria}">Categoría</span>
+          </p>
+
+          <p th:if="${hechos[0].descripcion != null}">
+              <strong>Descripción:</strong>
+              <span th:text="${hechos[0].descripcion}">Descripción</span>
+          </p>
+
+          <p th:if="${hechos[0].fechaDeAcontecimiento != null}">
+              <strong>Fecha de acontecimiento:</strong>
+              <span th:text="${#temporals.format(
+            hechos[0].fechaDeAcontecimiento,
+            'dd/MM/yyyy, HH:mm:ss'
+          )}">Fecha</span>
+          </p>
+
+          <p th:if="${hechos[0].fechaDeCarga != null}">
+              <strong>Fecha de carga:</strong>
+              <span th:text="${#temporals.format(
+            hechos[0].fechaDeCarga,
+            'dd/MM/yyyy, HH:mm:ss'
+          )}">Fecha</span>
+          </p>
+
+          <p th:if="${hechos[0].provincia != null}">
+              <strong>Provincia:</strong>
+              <span th:text="${hechos[0].provincia}">Provincia</span>
+          </p>
+
+          <p th:if="${hechos[0].latitud != null && hechos[0].longitud != null}">
+              <strong>Ubicación:</strong>
+              <span th:text="${hechos[0].latitud} + ', ' + ${hechos[0].longitud}">
+        Coordenadas
+      </span>
+          </p>
+
+          <!-- 🏷️ Fuente -->
+          <p th:if="${hechos[0].nombreFuente != null}">
+              <strong>Fuente:</strong>
+              <span th:text="${hechos[0].nombreFuente != null && hechos[0].nombreFuente.startsWith('Fuente ') ? hechos[0].nombreFuente.substring(7) : hechos[0].nombreFuente}">Fuente</span>
+          </p>
+          <p th:if="${hechos[0].nombreFuente == null && hechos[0].origen != null}">
+              <strong>Fuente:</strong>
+              <span th:text="${hechos[0].origen}">Origen</span>
+          </p>
+
+          <!-- 🎞️ Multimedia -->
+          <p th:if="${hechos[0].contenidoMultimedia != null
+               && !#lists.isEmpty(hechos[0].contenidoMultimedia)}">
+              <strong>Multimedia:</strong>
+              <span th:text="${#lists.size(hechos[0].contenidoMultimedia)}">
+        0
+      </span> archivo(s)
+          </p>
+
+          <!-- 🏷️ Etiquetas -->
+          <div th:if="${hechos[0].etiquetas != null
+                 && !#lists.isEmpty(hechos[0].etiquetas)}">
+              <strong>Etiquetas:</strong>
+              <div class="tags">
+        <span class="tag"
+              th:each="etiqueta : ${hechos[0].etiquetas}"
+              th:text="${etiqueta}">
+          Etiqueta
+        </span>
+              </div>
+          </div>
+
+          <!-- Botón Ver en mapa (solo si tiene coordenadas válidas) -->
+          <div th:if="${hechos[0].latitud != null && hechos[0].longitud != null}" 
+               style="margin-top: 20px; text-align: center;">
+              <!-- Si tiene id, usar hechoId; si no, usar fuenteId e idOrigen -->
+              <a th:if="${hechos[0].id != null}"
+                 th:href="@{/hechos/mapa(hechoId=${hechos[0].id})}" 
+                 class="btn primary">
+                  Ver en mapa
+              </a>
+              <a th:if="${hechos[0].id == null && hechos[0].fuenteId != null && hechos[0].idOrigen != null}"
+                 th:href="@{/hechos/mapa(fuenteId=${hechos[0].fuenteId}, idOrigen=${hechos[0].idOrigen})}" 
+                 class="btn primary">
+                  Ver en mapa
+              </a>
+          </div>
+
+          <!-- Botón para solicitar eliminación -->
+          <div style="margin-top: 20px; text-align: center;">
+              <button id="btnSolicitarEliminacionLanding"
+                  th:data-hecho-id="${hechos[0].id}"
+                  th:data-fuente-id="${hechos[0].fuenteId}"
+                  th:data-id-origen="${hechos[0].idOrigen}"
+                  class="btn secondary" style="background: #dc3545; color: white; border: none;">
+                  Solicitar eliminación
+              </button>
+          </div>
+
+      </div>
   </div>
+
 
   <!-- Panel lateral para Colección -->
   <div id="coleccionPanel" class="side-panel" th:if="${!#lists.isEmpty(colecciones)}">
@@ -108,14 +189,72 @@
       <p><strong>Descripción:</strong> <span th:text="${colecciones[0].descripcion != null ? colecciones[0].descripcion : 'Sin descripción'}">Descripción</span></p>
       <p><strong>Hechos:</strong> <span th:text="${#lists.size(colecciones[0].hechos)}">0</span></p>
       <p th:if="${colecciones[0].fechaDeCarga != null}">
-        <strong>Fecha de creación:</strong> <span th:text="${#temporals.format(colecciones[0].fechaDeCarga, 'dd/MM/yyyy')}">Fecha</span>
+        <strong>Fecha de creación:</strong> <span th:text="${#temporals.format(colecciones[0].fechaDeCarga, 'dd/MM/yyyy, HH:mm:ss')}">Fecha</span>
       </p>
+      <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
       <a th:href="@{/colecciones/{handle}/hechos(handle=${colecciones[0].handle})}" class="btn primary">Ver todos los hechos</a>
+        <a th:href="@{/colecciones/{handle}/mapa(handle=${colecciones[0].handle})}" class="btn primary">Ver en mapa</a>
+      </div>
     </div>
   </div>
 
   <!-- Overlay para cerrar paneles -->
   <div id="overlay" class="overlay" onclick="closePanels()"></div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <!-- Modal de solicitud de eliminación -->
+  <div id="solicitudEliminacionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Solicitar Eliminación de Hecho</h3>
+        <button class="close-btn" onclick="closeSolicitudEliminacionModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="solicitudEliminacionForm">
+          <input type="hidden" id="solicitud_hecho_id" name="hecho_id">
+          <input type="hidden" id="solicitud_fuente_id" name="fuente_id">
+          <input type="hidden" id="solicitud_id_origen" name="id_origen">
+          
+          <div class="form-group">
+            <label for="texto_fundamentos">
+              Justificación <span style="color: #dc3545;">*</span>
+              <small>(Mínimo 500 caracteres)</small>
+            </label>
+            <textarea 
+              id="texto_fundamentos" 
+              name="texto_fundamentos" 
+              rows="8" 
+              required
+              minlength="500"
+              placeholder="Por favor, proporcione una justificación detallada de al menos 500 caracteres explicando por qué solicita la eliminación de este hecho..."
+              style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+            <div class="char-counter">
+              <span id="char_count">0</span> / 500 caracteres mínimos
+            </div>
+            <div id="texto_error" class="error-message" style="display: none;"></div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <p style="font-size: 0.9rem; color: #666; font-style: italic;">
+              <strong>Nota:</strong> Esta solicitud será revisada por los administradores. 
+              Si la justificación contiene spam, será rechazada automáticamente.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn secondary" onclick="closeSolicitudEliminacionModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn primary" id="submit_solicitud" style="background: #dc3545; color: white; border: none;">
+              Enviar Solicitud
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <!-- Footer -->
   <section class="block legal">
@@ -197,6 +336,202 @@
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closePanels();
+      }
+    });
+
+    // Abrir paneles si hay hash en la URL al cargar la página
+    window.addEventListener('load', function() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#hecho')) {
+        const hechoId = hash.replace('#hecho', '');
+        openHechoPanel(hechoId);
+      } else if (hash.startsWith('#coleccion')) {
+        const handle = hash.replace('#coleccion', '');
+        openColeccionPanel(handle);
+      }
+    });
+
+    // Funciones para el modal de solicitud de eliminación (usa apiFetch de common.js)
+    function openSolicitudEliminacionModal(hechoId, fuenteId, idOrigen) {
+      const modal = document.getElementById('solicitudEliminacionModal');
+      const form = document.getElementById('solicitudEliminacionForm');
+      const textoFundamentos = document.getElementById('texto_fundamentos');
+      const charCount = document.getElementById('char_count');
+      const errorDiv = document.getElementById('texto_error');
+      const submitBtn = document.getElementById('submit_solicitud');
+      
+      // Resetear completamente el formulario y estado
+      form.reset();
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      // Resetear botón a estado inicial
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar Solicitud';
+      
+      // Establecer valores ocultos
+      document.getElementById('solicitud_hecho_id').value = hechoId !== 'null' ? hechoId : '';
+      document.getElementById('solicitud_fuente_id').value = fuenteId !== 'null' ? fuenteId : '';
+      document.getElementById('solicitud_id_origen').value = idOrigen !== 'null' ? idOrigen : '';
+      
+      // Actualizar contador de caracteres
+      charCount.textContent = '0';
+      charCount.style.color = '#dc3545';
+      
+      // Mostrar modal
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      // Focus en textarea
+      setTimeout(() => textoFundamentos.focus(), 100);
+    }
+
+    function closeSolicitudEliminacionModal() {
+      const modal = document.getElementById('solicitudEliminacionModal');
+      const form = document.getElementById('solicitudEliminacionForm');
+      const submitBtn = document.getElementById('submit_solicitud');
+      const errorDiv = document.getElementById('texto_error');
+      
+      // Resetear estado antes de cerrar
+      form.reset();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar Solicitud';
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    // Inicializar formulario y toasts
+    document.addEventListener('DOMContentLoaded', function() {
+      // Botón de solicitar eliminación en landing
+      const btnSolicitarEliminacion = document.getElementById('btnSolicitarEliminacionLanding');
+      if (btnSolicitarEliminacion) {
+        btnSolicitarEliminacion.addEventListener('click', function() {
+          const hechoId = this.dataset.hechoId || 'null';
+          const fuenteId = this.dataset.fuenteId || 'null';
+          const idOrigen = this.dataset.idOrigen || 'null';
+          openSolicitudEliminacionModal(hechoId, fuenteId, idOrigen);
+        });
+      }
+
+      // Contador de caracteres
+      const textoFundamentos = document.getElementById('texto_fundamentos');
+      const charCount = document.getElementById('char_count');
+      
+      if (textoFundamentos && charCount) {
+        textoFundamentos.addEventListener('input', function() {
+          const length = this.value.trim().length;
+          charCount.textContent = length;
+          
+          // Cambiar color según si cumple el mínimo
+          if (length < 500) {
+            charCount.style.color = '#dc3545';
+          } else {
+            charCount.style.color = '#28a745';
+          }
+        });
+      }
+
+      // Manejar envío del formulario
+      const form = document.getElementById('solicitudEliminacionForm');
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const submitBtn = document.getElementById('submit_solicitud');
+          const errorDiv = document.getElementById('texto_error');
+          const textoFundamentos = document.getElementById('texto_fundamentos');
+          const texto = textoFundamentos.value.trim();
+          
+          // Validar longitud mínima
+          if (texto.length < 500) {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'La justificación debe tener al menos 500 caracteres. Actualmente tiene ' + texto.length + ' caracteres.';
+            return;
+          }
+          
+          // Deshabilitar botón durante el envío
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Enviando...';
+          errorDiv.style.display = 'none';
+          
+          // Preparar datos
+          const hechoId = document.getElementById('solicitud_hecho_id').value;
+          const fuenteId = document.getElementById('solicitud_fuente_id').value;
+          const idOrigen = document.getElementById('solicitud_id_origen').value;
+          
+          const solicitudData = {
+            texto_fundamentos: texto,
+            contribuyente_id: null // Siempre anónimo por ahora
+          };
+          
+          // Agregar identificadores según corresponda
+          if (hechoId) {
+            solicitudData.hecho_id = parseInt(hechoId);
+          } else if (fuenteId && idOrigen) {
+            solicitudData.fuente_id = parseInt(fuenteId);
+            solicitudData.id_origen = parseInt(idOrigen);
+          }
+          
+          try {
+            const response = await apiFetch('/solicitudes', {
+              method: 'POST',
+              body: JSON.stringify(solicitudData)
+            });
+            
+            const responseData = await response.text();
+            
+            // Resetear botón siempre (tanto en éxito como en error)
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Solicitud';
+            
+            if (response.ok) {
+              // Éxito - mostrar toast y cerrar modal
+              showToast('Solicitud de eliminación enviada exitosamente. Será revisada por los administradores.', 'success');
+              closeSolicitudEliminacionModal();
+            } else {
+              // Error - mostrar toast y mantener modal abierto
+              const errorMessage = responseData || 'Error al enviar la solicitud. Por favor, intente nuevamente.';
+              showToast(errorMessage, 'error');
+              
+              // Solo mostrar error en el formulario si NO es spam (el toast ya lo muestra)
+              if (!errorMessage.includes('Spam detectado')) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = errorMessage;
+              }
+            }
+          } catch (error) {
+            // Error de conexión - resetear botón, mostrar toast y mantener modal abierto
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Solicitud';
+            const errorMessage = 'Error de conexión: ' + error.message;
+            showToast(errorMessage, 'error');
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = errorMessage;
+          }
+        });
+      }
+
+      // Cerrar modal al hacer click fuera
+      const modal = document.getElementById('solicitudEliminacionModal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeSolicitudEliminacionModal();
+          }
+        });
+      }
+    });
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('solicitudEliminacionModal');
+        if (modal && modal.style.display === 'flex') {
+          closeSolicitudEliminacionModal();
+        }
       }
     });
   </script>

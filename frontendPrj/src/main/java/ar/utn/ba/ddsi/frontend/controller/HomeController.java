@@ -33,22 +33,26 @@ public class HomeController {
 
         model.addAttribute("hechos", hechos);
         model.addAttribute("colecciones", colecciones);
+        model.addAttribute("showReportarHechoBtn", false);
 
         return "landing/landing";
     }
 
     @GetMapping("/terminos")
-    public String terminos() {
+    public String terminos(Model model) {
+        model.addAttribute("showReportarHechoBtn", false);
         return "legal/terminos";
     }
 
     @GetMapping("/privacidad")
-    public String privacidad() {
+    public String privacidad(Model model) {
+        model.addAttribute("showReportarHechoBtn", false);
         return "legal/privacidad";
     }
 
     @GetMapping("/contacto")
-    public String contacto() {
+    public String contacto(Model model) {
+        model.addAttribute("showReportarHechoBtn", false);
         return "legal/contacto";
     }
 

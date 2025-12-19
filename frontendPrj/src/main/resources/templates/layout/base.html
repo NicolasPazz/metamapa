@@ -4,7 +4,9 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title th:text="${titulo} + ' - MetaMapa'"></title>
+        <meta name="api-base-url" th:content="${apiBaseUrl}">
         <link th:href="@{/css/landing.css}" rel="stylesheet">
+        <script th:src="@{/js/common.js}"></script>
     </head>
     <body>
         <!-- Header -->
@@ -15,6 +17,10 @@
                 <a th:if="${showHechosBtn == null || showHechosBtn}" th:href="@{/hechos}" class="btn secondary">Hechos</a>
                 <!-- Mostrar botón Colecciones solo si showColeccionesBtn es true o no está definido -->
                 <a th:if="${showColeccionesBtn == null || showColeccionesBtn}" th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
+                <!-- Mostrar botón Reportar nuevo hecho solo si showReportarHechoBtn es true o no está definido -->
+                <a th:if="${showReportarHechoBtn == null || showReportarHechoBtn}" th:href="@{/hechos/nuevo}" class="btn btn-primary btn-lg shadow-sm">
+                    <i class="bi bi-plus-circle-fill me-2"></i> Reportar nuevo hecho
+                </a>
             </nav>
             <nav class="nav-buttons">
                 <a th:href="@{/login}" class="btn secondary">Ingresar</a>

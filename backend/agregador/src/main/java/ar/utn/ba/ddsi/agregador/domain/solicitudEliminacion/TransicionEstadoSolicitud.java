@@ -21,7 +21,7 @@ import org.hibernate.annotations.CreationTimestamp;
 @Table(name = "transicion_estado_solicitud")
 public class TransicionEstadoSolicitud {
   @Id
-  @GeneratedValue(strategy= GenerationType.IDENTITY)
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
 
   @Enumerated(EnumType.STRING)

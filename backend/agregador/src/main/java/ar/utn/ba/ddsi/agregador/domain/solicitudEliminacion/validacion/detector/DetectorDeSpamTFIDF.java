@@ -35,11 +35,6 @@ public class DetectorDeSpamTFIDF implements DetectorDeSpam, Validacion {
       "viagra", "medicamento", "pastilla", "tratamiento", "cura", "http", ".com"
   ));
 
-  // Patrones sospechosos (caracteres repetidos, mayúsculas excesivas, etc.)
-  private final Set<String> patronesSospechosos = new HashSet<>(Arrays.asList(
-      "!!!", "???", "...", "===", "***", "###",
-      "AAAA", "aaaa", "1111", "0000"
-  ));
 
   // Umbral de spam score (0-1, mayor = más estricto)
   private final double umbralSpam = 0.35;

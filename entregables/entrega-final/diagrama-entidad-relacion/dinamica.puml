@@ -16,7 +16,7 @@ descripcion: TEXT
 categoria: VARCHAR(255)
 latitud: DOUBLE
 longitud: DOUBLE
-fecha_de_acontecimiento: DATE
+fecha_de_acontecimiento: DATETIMETIME
 fecha_de_carga_solicitud: DATETIME
 estado: ENUM
 }

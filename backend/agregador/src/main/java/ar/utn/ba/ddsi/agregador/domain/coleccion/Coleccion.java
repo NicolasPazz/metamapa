@@ -4,10 +4,10 @@ import ar.utn.ba.ddsi.agregador.repositorie.converter.AlgoritmoAttributeConverte
 import ar.utn.ba.ddsi.agregador.repositorie.converter.CriterioListAttributeConverter;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.algoritmosConsenso.AAlgoritmoConsenso;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
-import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioOrigen;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.CriterioFuente;
+import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public class Coleccion {
       return new ArrayList<>();
     }
     if (this.criteriosDePertenencia == null || this.criteriosDePertenencia.isEmpty()) {
-      return new ArrayList<>(hechos);
+      return new ArrayList<>();
     }
     return hechos.stream()
         .filter(hecho -> this.criteriosDePertenencia.stream()
@@ -111,8 +111,21 @@ public class Coleccion {
   }
 
   public void recalcularHechos(List<Hecho> hechosLocalesDisponibles, int cantidadFuentes) {
+    // Si no hay criterios, establecer listas vacías sin procesar hechos
+    if (this.criteriosDePertenencia == null || this.criteriosDePertenencia.isEmpty()) {
+      if (this.hechos == null) {
+        this.hechos = new ArrayList<>();
+      }
+      this.hechos.clear();
+      if (this.hechosConsensuados == null) {
+        this.hechosConsensuados = new ArrayList<>();
+      }
+      this.hechosConsensuados.clear();
+      return;
+    }
+
     List<Hecho> hechosPersistidos = hechosLocalesDisponibles.stream()
-        .filter(h -> h.getId() != null)
+        .filter(Hecho::esLocal)
         .toList();
     List<Hecho> hechosFiltrados = this.aplicarCriteriosDePertenencia(hechosPersistidos);
     if (this.hechos == null) {
@@ -128,7 +141,7 @@ public class Coleccion {
     this.hechosConsensuados.addAll(consensuados);
   }
 
-  public boolean tieneHechosExternos(List<Long> fuentesTiempoReal, List<OrigenHecho> origenesTiempoReal) {
+  public boolean tieneHechosExternos(List<Long> fuentesTiempoReal, List<OrigenHecho> origenesTiempoReal, List<String> nombresFuentesTiempoReal) {
     if (this.criteriosDePertenencia == null || this.criteriosDePertenencia.isEmpty()) {
       return false;
     }
@@ -138,8 +151,16 @@ public class Coleccion {
             return origenesTiempoReal.contains(criterioOrigen.getOrigen());
           }
           if (criterio instanceof CriterioFuente criterioFuente) {
-            return criterioFuente.getFuentes().stream()
-                .anyMatch(fuentesTiempoReal::contains);
+            // Verificar por IDs
+            boolean tieneIds = criterioFuente.getFuentes() != null && !criterioFuente.getFuentes().isEmpty();
+            if (tieneIds && criterioFuente.getFuentes().stream().anyMatch(fuentesTiempoReal::contains)) {
+              return true;
+            }
+            // Verificar por nombres
+            if (criterioFuente.getNombresFuentes() != null && !criterioFuente.getNombresFuentes().isEmpty() 
+                && criterioFuente.getNombresFuentes().stream().anyMatch(nombresFuentesTiempoReal::contains)) {
+              return true;
+            }
           }
           return false;
         });
@@ -151,6 +172,15 @@ public class Coleccion {
     }
     return todosHechos.stream()
         .filter(hecho -> this.algoritmoConsenso.esConsensuado(hecho, cantidadFuentes, todosHechos))
+        .collect(Collectors.toList());
+  }
+
+  public List<Hecho> separarHechosLocales(List<Hecho> hechos) {
+    if (hechos == null) {
+      return new ArrayList<>();
+    }
+    return hechos.stream()
+        .filter(Hecho::esLocal)
         .collect(Collectors.toList());
   }
 }

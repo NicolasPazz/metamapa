@@ -182,13 +182,18 @@ public class StubDataFixture {
 
   private void cargarColecciones() {
     // Colección 1: Todos los desastres
+    // Hechos consensuados: solo los primeros 5 (simulando que el algoritmo de consenso filtró algunos)
+    List<HechoDTO> hechosConsensuadosTodos = hechos.stream()
+        .limit(5)
+        .toList();
+    
     ColeccionDTO todosDesastres = ColeccionDTO.builder()
         .handle(UUID.fromString("11111111-1111-1111-1111-111111111111"))
         .titulo("Desastres Naturales Argentina 2025")
         .descripcion("Compilación de todos los eventos climáticos y geológicos reportados en Argentina durante 2025")
         .fechaDeCarga(LocalDateTime.of(2025, 1, 1, 0, 0))
         .hechos(new ArrayList<>(hechos))
-        .hechosConsensuados(new ArrayList<>(hechos))
+        .hechosConsensuados(new ArrayList<>(hechosConsensuadosTodos))
         .build();
 
     // Colección 2: Eventos climáticos
@@ -198,6 +203,11 @@ public class StubDataFixture {
                      h.getCategoria().contains("Tornado") ||
                      h.getCategoria().contains("Sequía"))
         .toList();
+    
+    // Hechos consensuados: solo los primeros 2 eventos climáticos
+    List<HechoDTO> eventosClimaticosConsensuados = eventosClimaticos.stream()
+        .limit(2)
+        .toList();
 
     ColeccionDTO climaticos = ColeccionDTO.builder()
         .handle(UUID.fromString("22222222-2222-2222-2222-222222222222"))
@@ -205,13 +215,17 @@ public class StubDataFixture {
         .descripcion("Fenómenos meteorológicos severos: inundaciones, tornados, granizo y sequías")
         .fechaDeCarga(LocalDateTime.of(2025, 1, 15, 0, 0))
         .hechos(new ArrayList<>(eventosClimaticos))
-        .hechosConsensuados(new ArrayList<>(eventosClimaticos))
+        .hechosConsensuados(new ArrayList<>(eventosClimaticosConsensuados))
         .build();
 
     // Colección 3: Incendios forestales
     List<HechoDTO> incendios = hechos.stream()
         .filter(h -> h.getCategoria().contains("Incendio"))
         .toList();
+    
+    // Hechos consensuados: todos los incendios (solo hay 1, así que es el mismo)
+    // Pero para que sea diferente, dejamos vacío o con el mismo
+    List<HechoDTO> incendiosConsensuados = new ArrayList<>(incendios);
 
     ColeccionDTO forestales = ColeccionDTO.builder()
         .handle(UUID.fromString("33333333-3333-3333-3333-333333333333"))
@@ -219,13 +233,18 @@ public class StubDataFixture {
         .descripcion("Registro de incendios en zonas forestales y rurales")
         .fechaDeCarga(LocalDateTime.of(2025, 2, 1, 0, 0))
         .hechos(new ArrayList<>(incendios))
-        .hechosConsensuados(new ArrayList<>(incendios))
+        .hechosConsensuados(new ArrayList<>(incendiosConsensuados))
         .build();
 
     // Colección 4: Eventos geológicos
     List<HechoDTO> geologicos = hechos.stream()
         .filter(h -> h.getCategoria().contains("Terremoto") ||
                      h.getCategoria().contains("Deslizamiento"))
+        .toList();
+    
+    // Hechos consensuados: solo el terremoto (el primero de los geológicos)
+    List<HechoDTO> geologicosConsensuados = geologicos.stream()
+        .filter(h -> h.getCategoria().contains("Terremoto"))
         .toList();
 
     ColeccionDTO sismicos = ColeccionDTO.builder()
@@ -234,7 +253,7 @@ public class StubDataFixture {
         .descripcion("Terremotos, sismos y deslizamientos de tierra en territorio argentino")
         .fechaDeCarga(LocalDateTime.of(2025, 3, 1, 0, 0))
         .hechos(new ArrayList<>(geologicos))
-        .hechosConsensuados(new ArrayList<>(geologicos))
+        .hechosConsensuados(new ArrayList<>(geologicosConsensuados))
         .build();
 
     // Colección 5: Contaminación ambiental
@@ -248,12 +267,17 @@ public class StubDataFixture {
         .descripcion("Incidentes de contaminación hídrica y ambiental")
         .fechaDeCarga(LocalDateTime.of(2025, 4, 1, 0, 0))
         .hechos(new ArrayList<>(contaminacion))
-        .hechosConsensuados(new ArrayList<>(contaminacion))
+        .hechosConsensuados(new ArrayList<>())
         .build();
 
     // Colección 6: Eventos del primer semestre
     List<HechoDTO> primerSemestre = hechos.stream()
         .filter(h -> h.getFechaDeAcontecimiento().getMonthValue() <= 6)
+        .toList();
+    
+    // Hechos consensuados: solo los primeros 3 del primer semestre
+    List<HechoDTO> primerSemestreConsensuados = primerSemestre.stream()
+        .limit(3)
         .toList();
 
     ColeccionDTO semestre1 = ColeccionDTO.builder()
@@ -262,7 +286,7 @@ public class StubDataFixture {
         .descripcion("Eventos ocurridos entre enero y junio de 2025")
         .fechaDeCarga(LocalDateTime.of(2025, 7, 1, 0, 0))
         .hechos(new ArrayList<>(primerSemestre))
-        .hechosConsensuados(new ArrayList<>(primerSemestre))
+        .hechosConsensuados(new ArrayList<>(primerSemestreConsensuados))
         .build();
 
     colecciones.addAll(List.of(

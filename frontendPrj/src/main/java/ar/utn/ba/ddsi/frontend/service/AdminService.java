@@ -1,7 +1,7 @@
 package ar.utn.ba.ddsi.frontend.service;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
-import org.springframework.http.MediaType;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,9 +16,11 @@ public class AdminService {
     private final WebClient webClientAgregador;
     private final WebClient webClientEstatica;
 
-    public AdminService(WebClient.Builder builder) {
-        this.webClientAgregador = builder.baseUrl("http://localhost:8084/api/admin").build();
-        this.webClientEstatica = builder.baseUrl("http://localhost:8082/api/hechos").build(); //Se tiene que establecer una conexion con la estatica
+    public AdminService(WebClient.Builder builder,
+                       @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
+                       @Value("${app.api.estatica.base-url:http://localhost:8082/api}") String estaticaBaseUrl) {
+        this.webClientAgregador = builder.baseUrl(agregadorBaseUrl + "/admin").build();
+        this.webClientEstatica = builder.baseUrl(estaticaBaseUrl).build(); //Se tiene que establecer una conexion con la estatica
         // porque la carga de CSV tiene que ir directamente a la estatica
     }
 
@@ -48,15 +50,15 @@ public class AdminService {
         builder.part("archivo", archivo.getResource());
 
         webClientEstatica.post()
-                .uri("/carga-masiva") //
+                .uri("/csv") //
                 .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
                 .toBodilessEntity()
                 .block();
     }
 
-    public Void crearColeccion(CrearColeccionDTO dto) {
-        return webClientAgregador
+    public void crearColeccion(CrearColeccionDTO dto) {
+        webClientAgregador
                 .post()
                 .uri("/colecciones")
                 .bodyValue(dto)

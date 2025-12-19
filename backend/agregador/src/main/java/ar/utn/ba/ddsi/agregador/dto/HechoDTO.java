@@ -32,11 +32,15 @@ public class HechoDTO {
   @JsonProperty("contribuyente_id")
   private Long contribuyenteId;
   private List<String> etiquetas;
+  @JsonProperty("multimedia")
   private List<ContenidoMultimediaDTO> multimedia;
+  @JsonProperty("transiciones")
   private List<TransicionEstadoHechoDTO> transiciones;
   private String categoria;
   @JsonProperty("fuente_id")
   private Long fuenteId;
   @JsonProperty("id_origen")
   private Long idOrigen;
+  @JsonProperty("nombre_fuente")
+  private String nombreFuente;
 }

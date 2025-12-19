@@ -1,167 +1,405 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nuevo Hecho | Metamapa</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<html lang="es" th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+  
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
 
-  <style>
-    body {
-      background-color: #f0f4f8; /* Azul grisáceo muy suave */
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .card-custom {
-      border: none;
-      border-radius: 15px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-    }
-    .form-label {
-      color: #0d6efd; /* Azul Bootstrap */
-      font-weight: 600;
-      font-size: 0.9rem;
-    }
-    .btn-primary-custom {
-      background-color: #0d6efd;
-      border: none;
-      padding: 10px 20px;
-      transition: all 0.3s;
-    }
-    .btn-primary-custom:hover {
-      background-color: #0b5ed7;
-      transform: translateY(-2px);
-    }
-    .preview-images img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 8px;
-      margin-right: 10px;
-      margin-top: 10px;
-      border: 2px solid #e9ecef;
-    }
-  </style>
-</head>
-<body>
-
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-12 col-md-8 col-lg-6">
-
-      <div class="card card-custom bg-white">
-        <div class="card-body p-4 p-md-5">
-
-          <div class="text-center mb-4">
-            <h2 class="fw-bold text-dark">Nuevo Hecho</h2>
-            <p class="text-muted">Reporta un nuevo suceso en el mapa</p>
-          </div>
-
-          <form th:action="@{/hechos/crear}" method="POST" enctype="multipart/form-data">
-
-            <div class="mb-4">
-              <label for="titulo" class="form-label">1. Título del Hecho</label>
-              <input type="text" class="form-control form-control-lg bg-light" id="titulo" name="titulo" placeholder="Ej: Inundación en Av. Corrientes" required>
-            </div>
-
-            <div class="mb-4">
-              <label class="form-label d-flex justify-content-between align-items-center">
-                <span>2. Ubicación</span>
-                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill" onclick="obtenerUbicacion()">
-                  <i class="bi bi-geo-alt-fill"></i> Usar mi ubicación
-                </button>
-              </label>
-              <div class="row g-2">
-                <div class="col-6">
-                  <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-globe"></i></span>
-                    <input type="number" step="any" class="form-control bg-light border-start-0" id="latitud" name="latitud" placeholder="Latitud" required>
-                  </div>
-                </div>
-                <div class="col-6">
-                  <div class="input-group">
-                    <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-globe"></i></span>
-                    <input type="number" step="any" class="form-control bg-light border-start-0" id="longitud" name="longitud" placeholder="Longitud" required>
-                  </div>
-                </div>
-              </div>
-              <div class="form-text text-muted" id="location-status">Ingresa coordenadas o usa el botón.</div>
-            </div>
-
-            <div class="mb-4">
-              <label for="fotos" class="form-label">3. Evidencia Fotográfica</label>
-              <input class="form-control" type="file" id="fotos" name="archivos" multiple accept="image/*" onchange="previewImages()">
-              <div class="preview-images d-flex flex-wrap" id="preview-container"></div>
-            </div>
-
-            <div class="mb-4">
-              <label for="descripcion" class="form-label">4. Descripción Detallada</label>
-              <textarea class="form-control bg-light" id="descripcion" name="descripcion" rows="4" placeholder="Describe qué sucedió, hora aproximada, daños, etc..." required></textarea>
-            </div>
-
-            <div class="d-grid gap-2 mt-5">
-              <button type="submit" class="btn btn-primary-custom text-white fw-bold shadow-sm">
-                Publicar Hecho
-              </button>
-              <a href="/" class="btn btn-link text-muted text-decoration-none text-center">Cancelar</a>
-            </div>
-
-          </form>
+  <section class="block" style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+    <div class="container">
+      <h2 style="color: var(--primary); margin-bottom: 1.5rem; text-align: center;">Nuevo Hecho</h2>
+      
+      <form id="hechoForm" enctype="multipart/form-data">
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label for="titulo" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
+            Título<span style="color: #dc3545;">*</span>
+          </label>
+          <input type="text" 
+                 class="form-control" 
+                 id="titulo" 
+                 name="titulo" 
+                 placeholder="Ej: Inundación en Av. Corrientes" 
+                 required
+                 style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
         </div>
-      </div>
 
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
+            Ubicación <span style="color: #dc3545;">*</span>
+          </label>
+          <div style="display: flex; gap: 1rem; align-items: stretch;">
+            <div style="flex: 1; display: flex; gap: 1rem;">
+              <div style="flex: 1;">
+                <input type="number" 
+                       step="any" 
+                       class="form-control" 
+                       id="latitud" 
+                       name="latitud" 
+                       placeholder="Latitud" 
+                       required
+                       min="-90"
+                       max="90"
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+              </div>
+              <div style="flex: 1;">
+                <input type="number" 
+                       step="any" 
+                       class="form-control" 
+                       id="longitud" 
+                       name="longitud" 
+                       placeholder="Longitud" 
+                       required
+                       min="-180"
+                       max="180"
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+              </div>
+            </div>
+            <button type="button" 
+                    onclick="obtenerUbicacion()" 
+                    class="btn secondary" 
+                    style="padding: 0.75rem 1rem; white-space: nowrap; display: flex; align-items: center; margin-top: 0;">
+              Usar mi ubicación
+            </button>
+          </div>
+          <div id="location-status" style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+            Ingresa coordenadas o usa el botón.
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label for="categoria" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
+            Categoría <span style="color: #dc3545;">*</span>
+          </label>
+          <div style="display: flex; gap: 0.5rem;">
+            <input type="text" 
+                   list="categorias-list" 
+                   class="form-control" 
+                   id="categoria" 
+                   name="categoria" 
+                   placeholder="Selecciona o escribe una nueva categoría" 
+                   required
+                   autocomplete="off"
+                   style="flex: 1; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+            <datalist id="categorias-list">
+              <option th:each="cat : ${categorias}" th:value="${cat}" th:text="${cat}"></option>
+            </datalist>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label for="fechaAcontecimiento" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
+            Fecha y Hora<span style="color: #dc3545;">*</span>
+          </label>
+          <input type="datetime-local" 
+                 class="form-control" 
+                 id="fechaAcontecimiento" 
+                 name="fechaAcontecimiento" 
+                 required
+                 max=""
+                 style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+          <div id="fecha-error" class="error-message" style="display: none; margin-top: 0.5rem; padding: 0.5rem; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c33;"></div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label for="fotos" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
+            Evidencia multimedia
+          </label>
+          <input type="file" 
+                 class="form-control" 
+                 id="fotos" 
+                 name="contenidoMultimedia" 
+                 multiple 
+                 accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/wav,audio/ogg" 
+                 onchange="previewMedia()"
+                 style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+          <div id="preview-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;"></div>
+          <small style="color: #666; font-size: 0.85rem;">
+            Formatos permitidos: Imágenes (jpg, jpeg, png, gif, webp) | Videos (mp4, webm) | Audio (mp3, wav, ogg)
+          </small>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 1.5rem;">
+          <label for="descripcion" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
+            Descripción Detallada <span style="color: #dc3545;">*</span>
+          </label>
+          <textarea class="form-control" 
+                    id="descripcion" 
+                    name="descripcion" 
+                    rows="4" 
+                    placeholder="Describe qué sucedió..."
+                    required
+                    style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+          <button type="submit" 
+                  class="btn primary" 
+                  id="submitBtn"
+                  style="flex: 1; padding: 0.75rem 1.5rem;">
+            Solicitar publicación
+          </button>
+          <a th:href="@{/}" class="btn secondary" style="padding: 0.75rem 1.5rem;">
+            Cancelar
+          </a>
+        </div>
+      </form>
     </div>
-  </div>
-</div>
+  </section>
 
-<script>
-  // 1. Función para obtener ubicación del navegador
-  function obtenerUbicacion() {
-    const status = document.getElementById('location-status');
-    if (!navigator.geolocation) {
-      status.textContent = "La geolocalización no es soportada por tu navegador.";
-    } else {
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    
+    // Función para obtener ubicación del navegador (usa función común)
+    function obtenerUbicacion() {
+      const status = document.getElementById('location-status');
+      
       status.textContent = "Localizando...";
-      navigator.geolocation.getCurrentPosition(
-              (position) => {
-                document.getElementById('latitud').value = position.coords.latitude;
-                document.getElementById('longitud').value = position.coords.longitude;
-                status.textContent = "¡Ubicación encontrada!";
-                status.classList.add('text-success');
-              },
-              () => {
-                status.textContent = "No se pudo obtener la ubicación.";
-                status.classList.add('text-danger');
-              }
+      status.style.color = '#666';
+      
+      obtenerUbicacionUsuario(
+        (coords) => {
+          // Asegurar que los valores sean números y se asignen correctamente
+          const lat = Number(coords.latitud);
+          const lng = Number(coords.longitud);
+          
+          // Debug: verificar valores recibidos
+          console.log('Coordenadas recibidas de geolocalización:', coords);
+          console.log('Latitud parseada:', lat, 'Longitud parseada:', lng);
+          
+          if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+            const latInput = document.getElementById('latitud');
+            const lngInput = document.getElementById('longitud');
+            
+            // Asignar valores directamente como números
+            latInput.value = lat;
+            lngInput.value = lng;
+            
+            // Disparar evento change para asegurar que el valor se registre
+            latInput.dispatchEvent(new Event('change', { bubbles: true }));
+            lngInput.dispatchEvent(new Event('change', { bubbles: true }));
+            
+            status.textContent = "¡Ubicación encontrada!";
+            status.style.color = '#28a745';
+          } else {
+            status.textContent = "Error: No se pudieron obtener coordenadas válidas.";
+            status.style.color = '#dc3545';
+          }
+        },
+        (error) => {
+          status.textContent = error;
+          status.style.color = '#dc3545';
+        }
       );
     }
-  }
 
-  // 2. Función para previsualizar imágenes antes de subir
-  function previewImages() {
-    const preview = document.getElementById('preview-container');
-    const fileInput = document.getElementById('fotos');
-    preview.innerHTML = ""; // Limpiar previos
+    // Función para previsualizar multimedia (imágenes, videos, audios)
+    function previewMedia() {
+      const preview = document.getElementById('preview-container');
+      const fileInput = document.getElementById('fotos');
+      preview.innerHTML = "";
 
-    if (fileInput.files) {
-      [].forEach.call(fileInput.files, readAndPreview);
+      if (fileInput.files) {
+        Array.from(fileInput.files).forEach(file => {
+          const reader = new FileReader();
+          
+          reader.addEventListener("load", function() {
+            const fileType = file.type;
+            let mediaElement;
+            
+            if (fileType.startsWith('image/')) {
+              // Es una imagen
+              mediaElement = document.createElement('img');
+              mediaElement.src = this.result;
+              mediaElement.style.width = '80px';
+              mediaElement.style.height = '80px';
+              mediaElement.style.objectFit = 'cover';
+            } else if (fileType.startsWith('video/')) {
+              // Es un video
+              mediaElement = document.createElement('video');
+              mediaElement.src = this.result;
+              mediaElement.style.width = '80px';
+              mediaElement.style.height = '80px';
+              mediaElement.style.objectFit = 'cover';
+              mediaElement.controls = false;
+              mediaElement.muted = true;
+            } else if (fileType.startsWith('audio/')) {
+              // Es un audio
+              mediaElement = document.createElement('div');
+              mediaElement.style.width = '80px';
+              mediaElement.style.height = '80px';
+              mediaElement.style.display = 'flex';
+              mediaElement.style.alignItems = 'center';
+              mediaElement.style.justifyContent = 'center';
+              mediaElement.style.background = '#f0f0f0';
+              mediaElement.style.borderRadius = '8px';
+              mediaElement.style.border = '2px solid #ddd';
+              mediaElement.innerHTML = '🎵';
+              mediaElement.title = file.name;
+            } else {
+              // Tipo no soportado
+              return;
+            }
+            
+            if (mediaElement.tagName !== 'DIV') {
+              mediaElement.style.borderRadius = '8px';
+              mediaElement.style.border = '2px solid #ddd';
+              mediaElement.title = file.name;
+            }
+            
+            preview.appendChild(mediaElement);
+          });
+          
+          reader.readAsDataURL(file);
+        });
+      }
     }
 
-    function readAndPreview(file) {
-      if (!/\.(jpe?g|png|gif)$/i.test(file.name)) return; // Solo imágenes
+    // showToast está definido en common.js
 
-      const reader = new FileReader();
-      reader.addEventListener("load", function() {
-        const image = new Image();
-        image.title = file.name;
-        image.src = this.result;
-        preview.appendChild(image);
-      });
-      reader.readAsDataURL(file);
+    // Validar fecha y hora
+    function validarFechaHora() {
+      const fechaInput = document.getElementById('fechaAcontecimiento');
+      const errorDiv = document.getElementById('fecha-error');
+      const fechaValue = fechaInput.value;
+
+      if (!fechaValue) {
+        errorDiv.style.display = 'none';
+        return true;
+      }
+
+      const fecha = new Date(fechaValue);
+      const ahora = new Date();
+
+      if (isNaN(fecha.getTime())) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'La fecha y hora ingresadas no son válidas.';
+        errorDiv.style.color = '#dc3545';
+        return false;
+      }
+
+      if (fecha > ahora) {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'La fecha y hora no pueden ser futuras.';
+        errorDiv.style.color = '#dc3545';
+        return false;
+      }
+
+      errorDiv.style.display = 'none';
+      return true;
     }
-  }
-</script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+    // Event listener para validar fecha en tiempo real
+    document.addEventListener('DOMContentLoaded', function() {
+      const fechaInput = document.getElementById('fechaAcontecimiento');
+      if (fechaInput) {
+        // Establecer fecha máxima como ahora
+        const ahora = new Date();
+        const fechaMax = ahora.toISOString().slice(0, 16);
+        fechaInput.setAttribute('max', fechaMax);
+        
+        fechaInput.addEventListener('change', validarFechaHora);
+        fechaInput.addEventListener('blur', validarFechaHora);
+      }
+
+      // Manejar envío del formulario
+      const form = document.getElementById('hechoForm');
+      const submitBtn = document.getElementById('submitBtn');
+
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          // Validar fecha antes de enviar
+          if (!validarFechaHora()) {
+            showToast('Por favor, corrige la fecha y hora antes de continuar.', 'error');
+            return;
+          }
+
+          // Deshabilitar botón durante el envío
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Enviando...';
+
+          // Obtener valores directamente de los inputs
+          const latInput = document.getElementById('latitud');
+          const lngInput = document.getElementById('longitud');
+          const latitudValue = latInput ? latInput.value : null;
+          const longitudValue = lngInput ? lngInput.value : null;
+          
+          // Crear FormData
+          const formData = new FormData(form);
+          
+          // Validar y convertir a número antes de enviar
+          if (!latitudValue || latitudValue.trim() === '') {
+            showToast('La latitud es obligatoria.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            return;
+          }
+          
+          if (!longitudValue || longitudValue.trim() === '') {
+            showToast('La longitud es obligatoria.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            return;
+          }
+          
+          const lat = Number(latitudValue);
+          const lng = Number(longitudValue);
+          
+          if (isNaN(lat) || lat < -90 || lat > 90) {
+            showToast('La latitud debe estar entre -90 y 90.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            return;
+          }
+          
+          if (isNaN(lng) || lng < -180 || lng > 180) {
+            showToast('La longitud debe estar entre -180 y 180.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            return;
+          }
+          
+          formData.set('latitud', lat.toString());
+          formData.set('longitud', lng.toString());
+          
+          // La fecha datetime-local ya viene en formato correcto para Spring
+          // No necesitamos convertirla, Spring la parsea automáticamente
+
+          try {
+            const response = await fetch('/hechos/crear', {
+              method: 'POST',
+              body: formData
+            });
+
+            // Resetear botón
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+
+            if (response.ok) {
+              showToast('Solicitud de publicación de hecho creado exitosamente. Será revisado por los administradores.', 'success').then(() => {
+                window.history.back();
+              });
+            } else {
+              const errorText = await response.text();
+              // Si es un error de tamaño de archivo (413), mostrar mensaje específico
+              if (response.status === 413 || response.status === 400) {
+                const mensaje = errorText || 'El archivo es demasiado grande. El tamaño máximo permitido es de 50 MB. Por favor, reduzca el tamaño del archivo e intente nuevamente.';
+                showToast(mensaje, 'error');
+              } else {
+                showToast(errorText || 'Error al crear el hecho. Por favor, intente nuevamente.', 'error');
+              }
+            }
+          } catch (error) {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Publicar Hecho';
+            showToast('Error de conexión: ' + error.message, 'error');
+          }
+        });
+      }
+    });
+    /*]]>*/
+  </script>
+</div>
 </html>

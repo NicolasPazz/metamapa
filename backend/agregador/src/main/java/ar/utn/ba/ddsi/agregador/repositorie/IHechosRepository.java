@@ -14,10 +14,10 @@ import org.springframework.data.repository.query.Param;
 
 public interface IHechosRepository extends JpaRepository<Hecho, Long> {
 
-  @Query("SELECT h FROM Hecho h LEFT JOIN FETCH h.categoria")
-  List<Hecho> findAllWithCategoria();
-
-  @Query("SELECT h FROM Hecho h LEFT JOIN FETCH h.provincia WHERE " +
+  @Query("SELECT DISTINCT h FROM Hecho h " +
+      "LEFT JOIN FETCH h.provincia " +
+      "LEFT JOIN FETCH h.multimedia " +
+      "WHERE " +
       "h.estado = 'VISIBLE' AND " +  // Filtrar solo hechos VISIBLES
       "(:categoria IS NULL OR h.categoria.nombre = :categoria) AND " +
       "(:fechaReporteDesde IS NULL OR h.fechaDeCarga >= :fechaReporteDesde) AND " +
@@ -25,7 +25,7 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
       "(:fechaAcontecimientoDesde IS NULL OR h.fechaDeAcontecimiento >= :fechaAcontecimientoDesde) AND " +
       "(:fechaAcontecimientoHasta IS NULL OR h.fechaDeAcontecimiento <= :fechaAcontecimientoHasta) AND " +
       "(:provincia IS NULL OR h.provincia.nombre = :provincia) AND " +
-      "(:latitud IS NULL OR :longitud IS NULL OR (h.latitud = :latitud AND h.longitud = :longitud))")
+      "(:fuente IS NULL OR h.nombreFuente = :fuente)")
   List<Hecho> findByFilters(
       @Param("categoria") String categoria,
       @Param("fechaReporteDesde") LocalDate fechaReporteDesde,
@@ -33,8 +33,7 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
       @Param("fechaAcontecimientoDesde") LocalDateTime fechaAcontecimientoDesde,
       @Param("fechaAcontecimientoHasta") LocalDateTime fechaAcontecimientoHasta,
       @Param("provincia") String provincia,
-      @Param("latitud") String latitud,
-      @Param("longitud") String longitud
+      @Param("fuente") String fuente
   );
 
   @Modifying
@@ -50,28 +49,16 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
                                                 LocalDate fechaReporteHasta,
                                                 LocalDateTime fechaAcontecimientoDesde,
                                                 LocalDateTime fechaAcontecimientoHasta,
-                                                String ubicacion) {
-    String provincia = null;
-    String latitud = null;
-    String longitud = null;
-
-    // Si ubicacion contiene coma, es latitud,longitud
-    if (ubicacion != null && ubicacion.contains(",")) {
-      String[] parts = ubicacion.split(",");
-      latitud = parts[0].trim();
-      longitud = parts[1].trim();
-    } else if (ubicacion != null && !ubicacion.isEmpty()) {
-      // Si no contiene coma, es nombre de provincia
-      provincia = ubicacion;
-    }
+                                                String ubicacion,
+                                                String fuente) {
+                                                  
+    String provincia = (ubicacion != null && !ubicacion.isEmpty()) ? ubicacion : null;
 
     return findByFilters(categoria, fechaReporteDesde, fechaReporteHasta,
-        fechaAcontecimientoDesde, fechaAcontecimientoHasta, provincia, latitud, longitud);
+        fechaAcontecimientoDesde, fechaAcontecimientoHasta, provincia, fuente);
   }
 
-  @Modifying
-  @Transactional
-  default void ocultar(Long idHecho) {
-    actualizarEstado(idHecho, EstadoHecho.OCULTO);
-  }
+  @Query("SELECT COUNT(h) > 0 FROM Hecho h " +
+         "WHERE h.estado = 'VISIBLE' AND h.nombreFuente = :nombreFuente")
+  boolean existsByNombreFuenteAndEstadoVisible(@Param("nombreFuente") String nombreFuente);
 }

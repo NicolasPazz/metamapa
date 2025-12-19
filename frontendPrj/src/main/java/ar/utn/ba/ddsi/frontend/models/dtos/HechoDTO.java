@@ -3,10 +3,9 @@ package ar.utn.ba.ddsi.frontend.models.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.time.temporal.Temporal;
 import java.util.List;
 
 @Getter
@@ -28,9 +27,19 @@ public class HechoDTO {
     private LocalDateTime fechaDeAcontecimiento;
     @JsonProperty("fecha_carga")
     private LocalDateTime fechaDeCarga;
+    @JsonProperty("ultima_modificacion")
     private LocalDateTime ultimaModificacion;
+    @JsonProperty("multimedia")
     private List<ContenidoMultimediaDTO> contenidoMultimedia;
+    @JsonProperty("transiciones")
     private List<TransicionEstadoHechoDTO> transicionesDeEstado;
+    @JsonProperty("fuente_id")
+    private Long fuenteId;
+    @JsonProperty("id_origen")
+    private Long idOrigen;
+    @JsonProperty("nombre_fuente")
+    private String nombreFuente;
+
 
 
 }
