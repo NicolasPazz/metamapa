@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.time.temporal.Temporal;
 import java.util.List;
 
 @Getter
@@ -38,6 +39,7 @@ public class HechoDTO {
     private Long idOrigen;
     @JsonProperty("nombre_fuente")
     private String nombreFuente;
+
 
 
 }
