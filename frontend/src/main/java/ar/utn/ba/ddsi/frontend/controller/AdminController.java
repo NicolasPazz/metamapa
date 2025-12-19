@@ -126,16 +126,7 @@ public class AdminController {
 
         return "redirect:/admin"; // Volvemos a la vista admin.html
     }
-    @GetMapping("/solicitudes")
-    public String verPanelSolicitudes(Model model) {
-        List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
 
-        model.addAttribute("solicitudes", solicitudes);
-
-        //TODO: Si pongo el solicitudes normal algo rompe cuando intenta cargarlas y no me doy cuenta que.
-        // Los flujos de crear y modificar ya estan.
-        return "admin/solicitudesv2";
-    }
 
 }
 

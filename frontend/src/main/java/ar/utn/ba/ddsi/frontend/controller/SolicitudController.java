@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.frontend.controller;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudInputDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificacionDTO;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
 import jakarta.validation.Valid;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -33,22 +35,18 @@ public class SolicitudController {
 
 
     }
+    @GetMapping()
+    public String verPanelSolicitudes(Model model) {
+        List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
+        model.addAttribute("solicitudes", solicitudes);
+        return "admin/solicitudes";
+    }
     @PostMapping("/modificar/{idSolicitud}")
     public ResponseEntity<?> solicitarModificacion(
             @PathVariable Long idSolicitud  ,
             @RequestBody @Valid SolicitudModificacionDTO dto) {
-
-
-
-        //solicitudService.procesarSolicitudEdicion(idSolicitud, dto);
-
-        //Prueba hardcodeada
-
-
-
         return ResponseEntity.ok("Solicitud recibida correctamente");
     }
-
 
     @GetMapping("/test1")
     public ResponseEntity<?> testearEdicion() {
