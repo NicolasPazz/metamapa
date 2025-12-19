@@ -10,7 +10,7 @@ import java.util.List;
 import lombok.Data;
 
 @Data
-public class SolicitudModificarHechoDTO {
+public class SolicitudModificacionDTO {
     @NotNull(message = "El ID del contribuyente es obligatorio para modificar")
     @JsonProperty("contribuyente_id")
     private Long idContribuyente;

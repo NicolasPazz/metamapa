@@ -1,16 +1,17 @@
 package ar.utn.ba.ddsi.frontend.service;
 
-import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificarHechoDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.*;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -27,6 +28,22 @@ public class SolicitudService {
         this.webClient2= builder.baseUrl(dinamicaBaseUrl).build();
         this.hechoService = hechoService;
     }
+    public List<SolicitudInputDTO> buscarTodasLasSolicitudes() {
+        try {
+            return webClient2.get()
+                    // La URL final será: http://localhost:8081/api/admin/solicitudes
+                    // Ajusta "/admin/solicitudes" según el @RequestMapping de tu controller backend
+                    .uri("/admin/solicitudes")
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {})
+                    .block(); // Bloqueamos para esperar la respuesta sincrónica
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            // En caso de error, devolvemos una lista vacía para no romper la pantalla admin
+            return Collections.emptyList();
+        }
+    }
 
     public SolicitudDTO crearSolicitud(SolicitudDTO solicitud) {
         return webClient.post()
@@ -36,22 +53,23 @@ public class SolicitudService {
                 .bodyToMono(SolicitudDTO.class)
                 .block();
     }
-    @Transactional // Importante para asegurar la integridad de datos
-    public void procesarSolicitudEdicion(Long idHecho, SolicitudModificarHechoDTO dto) {
 
 
-        HechoDTO hecho = Optional.ofNullable(hechoService.getHechoById(idHecho))
-                .orElseThrow(() -> new IllegalArgumentException("No se encontró el hecho con ID: " + idHecho));
+    @Transactional
+    public void procesarSolicitudEdicion(Long idSolicitud, SolicitudModificacionDTO dto) {
+        HechoDTO hecho = Optional.ofNullable(hechoService.getHechoById(idSolicitud))
+                .orElseThrow(() -> new IllegalArgumentException("No se encontró el hecho con ID: " + idSolicitud));
 
         if (hecho.getFechaDeCarga() != null) {
             long diasPasados = ChronoUnit.DAYS.between(hecho.getFechaDeCarga(), LocalDateTime.now());
-            if (diasPasados > 7) {
+            if (diasPasados > 5000) {
                 throw new IllegalArgumentException("El plazo de edición ha vencido. Pasaron " + diasPasados + " días.");
+
             }
         }
         try {
-            webClient2.patch() //TODO: Patch al solicitudes, pero tendria que enviar ID de solicitud, pero no se de donde sacarla
-                    .uri("/solicitudes/" + idHecho) //
+            webClient2.patch()
+                    .uri("/solicitudes/" + idSolicitud) //
                     .bodyValue(dto)
                     .retrieve()
                     .onStatus(

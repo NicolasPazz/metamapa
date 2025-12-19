@@ -4,7 +4,7 @@ import ar.utn.ba.ddsi.frontend.models.PageResponse;
 import ar.utn.ba.ddsi.frontend.models.dtos.ContenidoMultimediaDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.HechoFormDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.HechoSolicitudInputDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudCreacionDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +40,7 @@ public class HechoService {
         this.webClient2 = builder.baseUrl(dinamicaBaseUrl).build();
         this.objectMapper = objectMapper;
     }
-    
+
     private Long obtenerContribuyenteIdDeSesion() {
         try {
             ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
@@ -72,7 +72,7 @@ public class HechoService {
             throw new IllegalArgumentException("La fecha y hora no pueden ser futuras");
         }
 
-        HechoSolicitudInputDTO hechoOutput = new HechoSolicitudInputDTO();
+        SolicitudCreacionDTO hechoOutput = new SolicitudCreacionDTO();
         hechoOutput.setDescripcion(hechoInput.getDescripcion());
         // Asegurar que se copien correctamente las coordenadas
         hechoOutput.setLatitud(hechoInput.getLatitud());
@@ -81,9 +81,9 @@ public class HechoService {
         
         // Establecer contribuyente_id (null para anónimo por ahora)
         hechoOutput.setIdContribuyente(obtenerContribuyenteIdDeSesion());
-        
-        log.info("HechoService.crearHecho - DTO creado - Título: {}, Latitud: {}, Longitud: {}, Contribuyente: {}", 
-                hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(), 
+
+        log.info("HechoService.crearHecho - DTO creado - Título: {}, Latitud: {}, Longitud: {}, Contribuyente: {}",
+                hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(),
                 hechoOutput.getIdContribuyente());
         
         // Usar la fecha del formulario si está disponible, sino usar ahora
@@ -99,29 +99,29 @@ public class HechoService {
         if (hechoInput.getContenidoMultimedia() != null && !hechoInput.getContenidoMultimedia().isEmpty()) {
             MultipartBodyBuilder builder = new MultipartBodyBuilder();
             
-            log.info("HechoService.crearHecho - Enviando solicitud MULTIPART con {} archivos", 
+            log.info("HechoService.crearHecho - Enviando solicitud MULTIPART con {} archivos",
                     hechoInput.getContenidoMultimedia().size());
-            log.info("HechoService.crearHecho - Datos: Título={}, Latitud={}, Longitud={}, Categoría={}, Fecha={}", 
-                    hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(), 
+            log.info("HechoService.crearHecho - Datos: Título={}, Latitud={}, Longitud={}, Categoría={}, Fecha={}",
+                    hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(),
                     hechoOutput.getCategoria(), hechoOutput.getFechaDeAcontecimiento());
             
             try {
                 // Serializar el objeto a JSON string manualmente (el backend espera String)
                 String solicitudJson = objectMapper.writeValueAsString(hechoOutput);
                 log.debug("HechoService.crearHecho - JSON serializado: {}", solicitudJson);
-                
+
                 // Agregar datos de la solicitud como parte JSON (String)
                 builder.part("solicitud", solicitudJson);
-                
+
                 // Agregar cada archivo multimedia
                 for (MultipartFile archivo : hechoInput.getContenidoMultimedia()) {
                     if (!archivo.isEmpty()) {
-                        log.debug("HechoService.crearHecho - Agregando archivo: {} ({} bytes)", 
+                        log.debug("HechoService.crearHecho - Agregando archivo: {} ({} bytes)",
                                 archivo.getOriginalFilename(), archivo.getSize());
                         builder.part("archivos", archivo.getResource());
                     }
                 }
-                
+
                 log.info("HechoService.crearHecho - Enviando POST a /api/solicitudes (MULTIPART)");
                 String response = webClient2.post().uri("/solicitudes")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -129,23 +129,23 @@ public class HechoService {
                         .retrieve()
                         .bodyToMono(String.class)
                         .block();
-                
+
                 log.info("HechoService.crearHecho - Respuesta recibida del backend: {}", response);
             } catch (WebClientResponseException e) {
-                log.error("HechoService.crearHecho - Error del backend (status {}): {}", 
+                log.error("HechoService.crearHecho - Error del backend (status {}): {}",
                         e.getStatusCode(), e.getResponseBodyAsString());
                 throw new RuntimeException("Error del backend: " + e.getResponseBodyAsString(), e);
             } catch (Exception e) {
-                log.error("HechoService.crearHecho - Error inesperado al enviar solicitud multipart: {}", 
+                log.error("HechoService.crearHecho - Error inesperado al enviar solicitud multipart: {}",
                         e.getMessage(), e);
                 throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
             }
         } else {
             log.info("HechoService.crearHecho - Enviando solicitud JSON (sin archivos)");
-            log.info("HechoService.crearHecho - Datos: Título={}, Latitud={}, Longitud={}, Categoría={}, Fecha={}", 
-                    hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(), 
+            log.info("HechoService.crearHecho - Datos: Título={}, Latitud={}, Longitud={}, Categoría={}, Fecha={}",
+                    hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(),
                     hechoOutput.getCategoria(), hechoOutput.getFechaDeAcontecimiento());
-            
+
             try {
                 log.info("HechoService.crearHecho - Enviando POST a /api/solicitudes (JSON)");
                 String response = webClient2.post().uri("/solicitudes")
@@ -154,14 +154,14 @@ public class HechoService {
                         .retrieve()
                         .bodyToMono(String.class)
                         .block();
-                
+
                 log.info("HechoService.crearHecho - Respuesta recibida del backend: {}", response);
             } catch (WebClientResponseException e) {
-                log.error("HechoService.crearHecho - Error del backend (status {}): {}", 
+                log.error("HechoService.crearHecho - Error del backend (status {}): {}",
                         e.getStatusCode(), e.getResponseBodyAsString());
                 throw new RuntimeException("Error del backend: " + e.getResponseBodyAsString(), e);
             } catch (Exception e) {
-                log.error("HechoService.crearHecho - Error inesperado al enviar solicitud JSON: {}", 
+                log.error("HechoService.crearHecho - Error inesperado al enviar solicitud JSON: {}",
                         e.getMessage(), e);
                 throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
             }
