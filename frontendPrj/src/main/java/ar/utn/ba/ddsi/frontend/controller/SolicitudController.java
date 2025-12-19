@@ -31,27 +31,16 @@ public class SolicitudController {
 
 
     }
-    @PutMapping("/modificar/{idHecho}")
+    @PostMapping("/modificar/{idHecho}")
     public ResponseEntity<?> solicitarModificacion(
             @PathVariable Long idHecho,
             @RequestBody @Valid SolicitudModificarHechoDTO dto) {
 
-
-        //solicitudService.procesarSolicitudEdicion(idHecho, dto);
+        solicitudService.procesarSolicitudEdicion(idHecho, dto);
 
         return ResponseEntity.ok("Solicitud recibida correctamente");
     }
 }
 
-    /*
-    @PostMapping("/edicion") // La URL completa será: POST /api/solicitudes/edicion
-    public ResponseEntity<?> crearSolicitudEdicion(@RequestBody SolicitudEdicionInputDTO input) {
 
-        log.info("Nueva solicitud de edición para hecho ID: {}", input.getHechoId());
-
-        // Llamamos al servicio
-        solicitudesService.procesarSolicitudEdicion(input);
-
-        return ResponseEntity.ok("Solicitud de edición creada correctamente");
-    }*/
 

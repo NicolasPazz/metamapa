@@ -797,8 +797,7 @@
             };
 
             const hechoId = document.getElementById('edit_hecho_id').value;
-            const url = '/api/solicitudes/modificar/' + hechoId; // O la ruta que definas
-
+            const url = '/api/solicitudes/modificar/' + hechoId;
             const response = await apiFetch(url, {
               method: 'POST', //
               headers: { 'Content-Type': 'application/json' },
