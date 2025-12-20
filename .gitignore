@@ -1,8 +1,10 @@
 HELP.md
+
+# Directorios de compilación Maven
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+**/target/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
 
 ### STS ###
 .apt_generated
@@ -64,10 +66,16 @@ build/
 
 # Archivos CSV
 *.csv
+
+# Archivos de log
 *.log
+**/*.log
 
 # Directorios de datos y almacenamiento
 backend/data/
+**/data/
+**/multimedia/
+**/csv/
 
 # Archivos de entorno y configuración local
 .env
@@ -85,10 +93,9 @@ ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# Archivos compilados Java (por si acaso)
+# Archivos compilados Java
 *.class
-!**/src/main/**/*.class
-!**/src/test/**/*.class
+**/*.class
 
 # Node modules (si hay proyectos frontend con npm)
 node_modules/
@@ -102,3 +109,10 @@ yarn-error.log*
 *.swp
 *.swo
 *~
+**/*.tmp
+**/*.temp
+
+# Archivos de Maven
+.mvn/wrapper/maven-wrapper.jar
+**/.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
