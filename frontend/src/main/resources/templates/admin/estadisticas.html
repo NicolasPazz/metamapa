@@ -1,0 +1,105 @@
+<html th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+
+<div class="main-container">
+
+    <div class="content">
+
+        <div class="intro" style="text-align: left; background: transparent; padding: 0 0 2rem 0;">
+            <h1>Panel de Estadísticas</h1>
+            <p>Visualización de métricas de colecciones, categorías y solicitudes.</p>
+        </div>
+
+        <div class="dashboard-highlight">
+            <div class="stat-highlight-card">
+                <h3>Categoría Dominante</h3>
+                <div class="stat-name" th:text="${estadisticas.categoriaDominante.categoriaNombre}"></div>
+                <div class="stat-number" th:text="${estadisticas.categoriaDominante.cantidadHechos + ' hechos registrados'}"></div>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <h3>Colección por Provincia</h3>
+            <table class="stats-table">
+                <thead>
+                <tr>
+                    <th>Handle</th>
+                    <th>Título</th>
+                    <th>Provincia</th>
+                    <th>Cantidad de Hechos</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="distribucion:${estadisticas.distribucionGeograficaColecciones}">
+                    <td th:text="${distribucion.coleccionHandle}"></td>
+                    <td th:text="${distribucion.coleccionTitulo}"></td>
+                    <td th:text="${distribucion.provinciaNombre}"></td>
+                    <td th:text="${distribucion.cantidadHechos}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrapper">
+            <h3>Categoría por Provincia</h3>
+            <table class="stats-table">
+                <thead>
+                <tr>
+                    <th>Provincia</th>
+                    <th>Categoría</th>
+                    <th>Hechos</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="categoria:${estadisticas.concentracionGeograficaCategorias}">
+                    <td th:text="${categoria.provinciaNombre}"></td>
+                    <td th:text="${categoria.categoriaNombre}"></td>
+                    <td th:text="${categoria.cantidadHechos}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrapper">
+            <h3>Hechos por Categoría y Hora</h3>
+            <table class="stats-table">
+                <thead>
+                <tr>
+                    <th>Categoría</th>
+                    <th>Hora</th>
+                    <th>Cantidad de Hechos</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="categoria:${estadisticas.distribucionTemporalCategorias}">
+                    <td th:text="${categoria.categoriaNombre}"></td>
+                    <td th:text="${categoria.hora}"></td>
+                    <td th:text="${categoria.cantidadHechos}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrapper">
+            <h3>Análisis de Solicitudes (Spam)</h3>
+            <table class="stats-table">
+                <thead>
+                <tr>
+                    <th>Total Solicitudes</th>
+                    <th>Cantidad Spam</th>
+                    <th>Porcentaje Spam</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td th:text="${estadisticas.estadisticaSpam.totalSolicitudes}"></td>
+                    <td th:text="${estadisticas.estadisticaSpam.solicitudesSpam}">250</td>
+                    <td><span class="badge-percentage" th:text="${estadisticas.estadisticaSpam.porcentajeSpam}">5%</span></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+    </div> </div>
+</div>
+</html>

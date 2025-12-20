@@ -1492,3 +1492,100 @@ input:focus + .slider {
   width: 12px;
   height: 12px;
 }
+
+.dashboard-highlight {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-highlight-card {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  border-left: 5px solid var(--secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.stat-highlight-card h3 {
+  color: #666;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 0.5rem;
+}
+
+.stat-highlight-card .stat-name {
+  color: var(--primary);
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.stat-highlight-card .stat-number {
+  font-size: 1.2rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+/* Table Styling (Matches your color schema) */
+.table-wrapper {
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  overflow-x: auto; /* Responsive scroll */
+}
+
+.table-wrapper h3 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--light-gray);
+}
+
+.stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* Forces scroll on small screens */
+}
+
+.stats-table thead {
+  background-color: var(--primary);
+  color: white;
+}
+
+.stats-table th,
+.stats-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #eee;
+}
+
+.stats-table th {
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.stats-table tbody tr:hover {
+  background-color: rgba(25, 118, 210, 0.05); /* var(--secondary) with opacity */
+}
+
+.stats-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Badge for percentages */
+.badge-percentage {
+  background-color: var(--light-gray);
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: bold;
+  color: var(--primary);
+  border: 1px solid #ddd;
+}
