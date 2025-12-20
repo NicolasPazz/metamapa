@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.proxy_metamapa.service.impl;
+package ar.utn.ba.ddsi.proxy_metamapa.service;
 
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;

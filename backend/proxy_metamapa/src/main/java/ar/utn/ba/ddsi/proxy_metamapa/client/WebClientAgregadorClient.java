@@ -2,7 +2,7 @@ package ar.utn.ba.ddsi.proxy_metamapa.client;
 
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.service.impl.FuenteService;
+import ar.utn.ba.ddsi.proxy_metamapa.service.FuenteService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
