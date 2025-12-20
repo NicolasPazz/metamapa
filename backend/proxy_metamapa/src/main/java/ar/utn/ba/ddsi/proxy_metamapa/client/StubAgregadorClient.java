@@ -27,11 +27,16 @@ public class StubAgregadorClient implements AgregadorClient {
                                                              LocalDateTime fad, LocalDateTime fah,
                                                              String ubicacion) {
 
+    // Normalizar categoría de búsqueda para comparación exacta
+    String categoriaNormalizada = categoria != null 
+        ? categoria.trim().toLowerCase() 
+        : null;
+
     List<HechoDTO> filtrados = fixture.getHechos().stream()
 
-        .filter(h -> categoria == null ||
-            h.getCategoria() != null &&
-                h.getCategoria().toLowerCase().contains(categoria.toLowerCase()))
+        .filter(h -> categoriaNormalizada == null ||
+            (h.getCategoria() != null &&
+                h.getCategoria().trim().toLowerCase().equals(categoriaNormalizada)))
 
         .filter(h -> frd == null ||
             (h.getFechaDeCarga() != null &&
@@ -92,10 +97,16 @@ public class StubAgregadorClient implements AgregadorClient {
       return ResponseEntity.notFound().build();
     }
 
+    // Normalizar categoría de búsqueda para comparación exacta
+    String categoriaNormalizada = categoria != null 
+        ? categoria.trim().toLowerCase() 
+        : null;
+
     List<HechoDTO> hechosFiltrados = Optional.ofNullable(encontrada.getHechos())
         .orElse(List.of())
         .stream()
-        .filter(h -> categoria == null || (h.getCategoria() != null && h.getCategoria().toLowerCase().contains(categoria.toLowerCase())))
+        .filter(h -> categoriaNormalizada == null || 
+            (h.getCategoria() != null && h.getCategoria().trim().toLowerCase().equals(categoriaNormalizada)))
         .filter(h -> ubicacion == null || (h.getLatitud() + "," + h.getLongitud()).equals(ubicacion))
         .filter(h -> fecha_reporte_desde == null || !h.getFechaDeCarga().toLocalDate().isBefore(fecha_reporte_desde))
         .filter(h -> fecha_reporte_hasta == null || !h.getFechaDeCarga().toLocalDate().isAfter(fecha_reporte_hasta))

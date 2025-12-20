@@ -38,6 +38,7 @@ public class SecurityConfig {
                         .requestMatchers("/", "/hechos", "/hechos/**").permitAll()
                         .requestMatchers("/colecciones", "/colecciones/**").permitAll()
                         .requestMatchers("/terminos", "/privacidad", "/contacto").permitAll()
+                        .requestMatchers("/health", "/actuator/health").permitAll()
                         .requestMatchers("/admin", "/admin/**").authenticated()
                         .requestMatchers("/mis-hechos", "/mis-hechos/**", "/misHechos", "/misHechos/**").authenticated()
                         .anyRequest().permitAll()

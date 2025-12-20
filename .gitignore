@@ -1,5 +1,3 @@
-HELP.md
-
 # Directorios de compilación Maven
 target/
 **/target/
@@ -34,48 +32,53 @@ build/
 ### VS Code ###
 .vscode/
 
-# Ignorar todos los Markdown
+# Ignorar todos los Markdown en todas las jerarquías
+**/*.md
 *.md
 
-# Excepciones
+# Excepciones para archivos Markdown específicos
 !README.md
 !justificaciones-de-disenio.md
 
-# Archivos multimedia (imágenes, audio, video)
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.webp
-*.bmp
-*.svg
-*.ico
-*.mp3
-*.wav
-*.ogg
-*.aac
-*.flac
-*.m4a
-*.mp4
-*.webm
-*.avi
-*.mov
-*.mkv
-*.flv
-*.wmv
-
-# Archivos CSV
+# Archivos CSV en todas las jerarquías
+**/*.csv
 *.csv
 
-# Archivos de log
-*.log
-**/*.log
+# Archivos multimedia (imágenes, audio, video) en todas las jerarquías
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.gif
+**/*.webp
+**/*.bmp
+**/*.svg
+**/*.ico
+**/*.mp3
+**/*.wav
+**/*.ogg
+**/*.aac
+**/*.flac
+**/*.m4a
+**/*.mp4
+**/*.webm
+**/*.avi
+**/*.mov
+**/*.mkv
+**/*.flv
+**/*.wmv
 
-# Directorios de datos y almacenamiento
-backend/data/
-**/data/
-**/multimedia/
-**/csv/
+# Mantener carpetas vacías backend/data con subcarpetas csv y multimedia
+# Las carpetas se mantienen pero su contenido (archivos) se ignora
+!backend/data/
+!backend/data/csv/
+!backend/data/multimedia/
+# Ignorar todo el contenido dentro de estas carpetas
+backend/data/csv/**
+backend/data/multimedia/**
+
+# Archivos de log
+**/*.log
+*.log
 
 # Archivos de entorno y configuración local
 .env
@@ -94,8 +97,8 @@ Thumbs.db
 desktop.ini
 
 # Archivos compilados Java
-*.class
 **/*.class
+*.class
 
 # Node modules (si hay proyectos frontend con npm)
 node_modules/
@@ -104,13 +107,13 @@ yarn-debug.log*
 yarn-error.log*
 
 # Archivos temporales
+**/*.tmp
+**/*.temp
 *.tmp
 *.temp
 *.swp
 *.swo
 *~
-**/*.tmp
-**/*.temp
 
 # Archivos de Maven
 .mvn/wrapper/maven-wrapper.jar

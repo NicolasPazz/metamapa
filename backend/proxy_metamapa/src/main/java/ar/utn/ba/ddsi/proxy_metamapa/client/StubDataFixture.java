@@ -43,7 +43,7 @@ public class StubDataFixture {
         -64.19,
         LocalDateTime.of(2025, 3, 21, 12, 0, 0),
         LocalDateTime.of(2025, 3, 21, 14, 30),
-        List.of(new ContenidoMultimediaDTO("incendio-cordoba.jpg", "IMAGEN")),
+        List.of(),
         List.of(transVisible)
     );
     incendioCordoba.setId(1L);
@@ -60,7 +60,7 @@ public class StubDataFixture {
         -57.95,
         LocalDateTime.of(2025, 4, 2, 8, 30, 0),
         LocalDateTime.of(2025, 4, 2, 16, 0),
-        List.of(new ContenidoMultimediaDTO("inundacion-laplata.jpg", "IMAGEN")),
+        List.of(),
         List.of(transVisible)
     );
     inundacionLaPlata.setId(2L);
@@ -77,7 +77,7 @@ public class StubDataFixture {
         -68.83,
         LocalDateTime.of(2025, 5, 15, 8, 45, 0),
         LocalDateTime.of(2025, 5, 15, 8, 45),
-        List.of(new ContenidoMultimediaDTO("terremoto-mendoza.jpg", "IMAGEN")),
+        List.of(),
         List.of(transVisible)
     );
     terremotoMendoza.setId(3L);
@@ -94,7 +94,7 @@ public class StubDataFixture {
         -60.69,
         LocalDateTime.of(2025, 6, 10, 17, 20, 0),
         LocalDateTime.of(2025, 6, 10, 17, 20),
-        List.of(new ContenidoMultimediaDTO("tornado-santafe.jpg", "IMAGEN")),
+        List.of(),
         List.of(transVisible)
     );
     tornadoSantaFe.setId(4L);
@@ -111,7 +111,7 @@ public class StubDataFixture {
         -58.37,
         LocalDateTime.of(2025, 7, 5, 11, 30, 0),
         LocalDateTime.of(2025, 7, 5, 11, 30),
-        List.of(new ContenidoMultimediaDTO("contaminacion-riachuelo.jpg", "IMAGEN")),
+        List.of(),
         List.of(transVisible)
     );
     contaminacionRiachuelo.setId(5L);
@@ -128,7 +128,7 @@ public class StubDataFixture {
         -60.64,
         LocalDateTime.of(2025, 8, 20, 19, 15, 0),
         LocalDateTime.of(2025, 8, 20, 19, 15),
-        List.of(new ContenidoMultimediaDTO("granizo-rosario.jpg", "IMAGEN")),
+        List.of(),
         List.of(transVisible)
     );
     granizoRosario.setId(6L);
@@ -145,7 +145,7 @@ public class StubDataFixture {
         -65.41,
         LocalDateTime.of(2025, 9, 1, 10, 0, 0),
         LocalDateTime.of(2025, 9, 1, 10, 0),
-        List.of(new ContenidoMultimediaDTO("sequia-salta.jpg", "IMAGEN")),
+        List.of(),
         List.of(transVisible)
     );
     sequiaSalta.setId(7L);
@@ -162,7 +162,7 @@ public class StubDataFixture {
         -65.22,
         LocalDateTime.of(2025, 10, 12, 14, 0, 0),
         LocalDateTime.of(2025, 10, 12, 14, 0),
-        List.of(new ContenidoMultimediaDTO("deslizamiento-tucuman.jpg", "IMAGEN")),
+        List.of(),
         List.of(transVisible)
     );
     deslizamientoTucuman.setId(8L);
