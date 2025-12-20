@@ -8,13 +8,14 @@
         <div class="intro" style="text-align: left; background: transparent; padding: 0 0 2rem 0;">
             <h1>Panel de Estadísticas</h1>
             <p>Visualización de métricas de colecciones, categorías y solicitudes.</p>
+            <h2 th:href="@{/admin}">Volver al panel de control</h2>
         </div>
 
         <div class="dashboard-highlight">
             <div class="stat-highlight-card">
                 <h3>Categoría Dominante</h3>
-                <div class="stat-name" th:text="${estadisticas.categoriaDominante.categoriaNombre}"></div>
-                <div class="stat-number" th:text="${estadisticas.categoriaDominante.cantidadHechos + ' hechos registrados'}"></div>
+                <div class="stat-name" th:text="${categoriaDominante.categoriaNombre}"></div>
+                <div class="stat-number" th:text="${categoriaDominante.cantidadHechos + ' hechos registrados'}"></div>
             </div>
         </div>
 
@@ -30,7 +31,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="distribucion:${estadisticas.distribucionGeograficaColecciones}">
+                <tr th:each="distribucion:${coleccionesProvincia}">
                     <td th:text="${distribucion.coleccionHandle}"></td>
                     <td th:text="${distribucion.coleccionTitulo}"></td>
                     <td th:text="${distribucion.provinciaNombre}"></td>
@@ -47,11 +48,11 @@
                 <tr>
                     <th>Provincia</th>
                     <th>Categoría</th>
-                    <th>Hechos</th>
+                    <th>Cantidad de hechos</th>
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="categoria:${estadisticas.concentracionGeograficaCategorias}">
+                <tr th:each="categoria:${categoriasProvincia}">
                     <td th:text="${categoria.provinciaNombre}"></td>
                     <td th:text="${categoria.categoriaNombre}"></td>
                     <td th:text="${categoria.cantidadHechos}"></td>
@@ -71,7 +72,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="categoria:${estadisticas.distribucionTemporalCategorias}">
+                <tr th:each="categoria:${categoriasHora}">
                     <td th:text="${categoria.categoriaNombre}"></td>
                     <td th:text="${categoria.hora}"></td>
                     <td th:text="${categoria.cantidadHechos}"></td>
@@ -92,9 +93,9 @@
                 </thead>
                 <tbody>
                 <tr>
-                    <td th:text="${estadisticas.estadisticaSpam.totalSolicitudes}"></td>
-                    <td th:text="${estadisticas.estadisticaSpam.solicitudesSpam}">250</td>
-                    <td><span class="badge-percentage" th:text="${estadisticas.estadisticaSpam.porcentajeSpam}">5%</span></td>
+                    <td th:text="${spam.totalSolicitudes}"></td>
+                    <td th:text="${spam.solicitudesSpam}">250</td>
+                    <td><span class="badge-percentage" th:text="${spam.porcentajeSpam}">5%</span></td>
                 </tr>
                 </tbody>
             </table>

@@ -15,7 +15,7 @@ public class EstadisticasService {
         this.webClient = builder.baseUrl("http://localhost:8085/api").build();
     }
 
-    public List<EstadisticasCompletasDTO> obtenerEstadisticas() {
-        return webClient.get().uri("/estadisticas").retrieve().bodyToFlux(EstadisticasCompletasDTO.class).collectList().block();
+    public EstadisticasCompletasDTO obtenerEstadisticas() {
+        return webClient.get().uri("/estadisticas").retrieve().bodyToMono(EstadisticasCompletasDTO.class).block();
     }
 }
