@@ -2,9 +2,10 @@ package ar.utn.ba.ddsi.agregador.schedulers;
 
 import ar.utn.ba.ddsi.agregador.service.AgregadorService;
 import ar.utn.ba.ddsi.agregador.service.ColeccionesService;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ public class AgregadorScheduler {
     private final ColeccionesService coleccionesService;
 
 
-    @PostConstruct
+    @EventListener(ApplicationReadyEvent.class)
     public void onStartup() {
         try {
             agregadorService.actualizarHechos();
