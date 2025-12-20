@@ -6,18 +6,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.Logger;
-import org.springframework.cglib.core.Local;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,7 +19,7 @@ import java.util.stream.Collectors;
 @Controller
 @RequiredArgsConstructor
 @Slf4j
-
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final ColeccionService coleccionService;
     private final HechoService hechoService;

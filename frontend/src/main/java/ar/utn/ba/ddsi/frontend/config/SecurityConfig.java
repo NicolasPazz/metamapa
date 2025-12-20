@@ -7,14 +7,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity()
 @Configuration
 public class SecurityConfig {
 
@@ -39,7 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/colecciones", "/colecciones/**").permitAll()
                         .requestMatchers("/terminos", "/privacidad", "/contacto").permitAll()
                         .requestMatchers("/health", "/actuator/health").permitAll()
-                        .requestMatchers("/admin", "/admin/**").authenticated()
+                        .requestMatchers("/admin", "/admin/**").hasRole("ADMIN")
                         .requestMatchers("/mis-hechos", "/mis-hechos/**", "/misHechos", "/misHechos/**").authenticated()
                         .anyRequest().permitAll()
                 )
