@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
@@ -155,6 +156,21 @@ public class AdminController {
         return "redirect:/admin/solicitudes";
     }
 
+    @PostMapping("/admin/agregar-etiquetas")
+    public String agregarEtiquetas(@RequestParam("hechoId") Long hechoId,
+                                   @RequestParam("etiquetas") List<String> etiquetas,
+                                   RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/agregar-etiquetas - hechoId: {}, etiquetas: {}", hechoId, etiquetas);
+        try {
+            adminService.agregarEtiquetasAHecho(hechoId, etiquetas);
+            log.info("Etiquetas agregadas correctamente al hecho {}", hechoId);
+            redirectAttributes.addFlashAttribute("success", "Etiquetas agregadas correctamente!");
+        } catch (Exception e) {
+            log.error("Error al agregar etiquetas al hecho {}", hechoId, e);
+            redirectAttributes.addFlashAttribute("error", "Error al agregar etiquetas: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
 
 }
 

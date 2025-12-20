@@ -105,6 +105,19 @@
            style="cursor: pointer;">
         <h3 th:text="${hecho.titulo}"></h3>
         <p th:text="${hecho.descripcion}"></p>
+        
+        <!-- Etiquetas -->
+        <div th:if="${hecho.etiquetas != null and !#lists.isEmpty(hecho.etiquetas)}" 
+             class="etiquetas-preview" 
+             style="margin-top: 10px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px;"
+             onclick="event.stopPropagation();">
+          <span th:each="etiqueta : ${hecho.etiquetas}" 
+                class="tag" 
+                style="display: inline-block; background-color: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; font-weight: 500;"
+                th:text="${etiqueta}">
+          </span>
+        </div>
+        
         <span class="ver-detalles-link">Ver detalles</span>
       </div>
     </div>

@@ -75,4 +75,20 @@ public class AdminService {
                 .bodyToMono(Void.class)
                 .block();
     }
+
+    public void agregarEtiquetasAHecho(Long hechoId, List<String> etiquetas) {
+        if (hechoId == null) {
+            throw new IllegalArgumentException("El ID del hecho no puede ser nulo");
+        }
+        if (etiquetas == null || etiquetas.isEmpty()) {
+            throw new IllegalArgumentException("Debe proporcionar al menos una etiqueta");
+        }
+
+        webClientAgregador.patch()
+                .uri("/hechos/"+ hechoId + "/etiquetas")
+                .bodyValue(etiquetas)
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
 }
