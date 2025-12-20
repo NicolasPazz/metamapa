@@ -6,49 +6,99 @@
 <body>
 
 <div th:fragment="contenido">
-    <div class="container mt-5">
+    <div class="container mt-5 mb-5">
         <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
+            <div class="col-md-10 col-lg-8">
 
-                <div class="card shadow border-0 rounded-3">
-                    <div class="card-header bg-warning bg-opacity-10 py-3">
-                        <h4 class="mb-0 fw-bold text-dark">
-                            <i class="bi bi-pencil-square me-2"></i>Editar Solicitud
+                <div class="card shadow-lg border-0 rounded-4 overflow-hidden">
+                    <div class="card-header bg-warning bg-opacity-25 py-3 border-bottom border-warning border-opacity-25">
+                        <h4 class="mb-0 fw-bold text-dark d-flex align-items-center">
+                            <i class="bi bi-pencil-square me-2 fs-3"></i>
+                            <span>Editar Solicitud</span>
                         </h4>
                     </div>
 
-                    <div class="card-body p-4">
-                        <form th:action="@{/solicitudes/{id}/editar(id=${solicitud.id})}" method="post">
+                    <div class="card-body p-4 p-md-5 bg-white">
+                        <form id="editarSolicitudForm"
+                              th:data-id="${solicitud.id}"
+                              method="post"
+                              enctype="multipart/form-data">
+                            <input type="hidden" name="contribuyente_id" th:value="${solicitud.idContribuyente}">
 
-                            <div class="mb-3">
-                                <label class="form-label text-muted small fw-bold">ID Referencia</label>
-                                <input type="text" class="form-control bg-light" th:value="${solicitud.id}" disabled>
+                            <div class="mb-4">
+                                <label class="form-label text-muted small fw-bold text-uppercase ls-1">ID Referencia</label>
+                                <input type="text" class="form-control bg-light border-0 fw-bold text-secondary"
+                                       th:value="'#' + ${solicitud.id}" disabled>
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label for="titulo" class="form-label fw-bold">Título <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-lg" id="titulo" name="titulo"
+                                           th:value="${solicitud.titulo}" placeholder="Ej: Bache en Av. Corrientes" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="categoria" class="form-label fw-bold">Categoría <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control form-control-lg" id="categoria" name="categoria"
+                                           th:value="${solicitud.nombreCategoria}" required>
+                                </div>
+                            </div>
+
+                            <div class="card bg-light border-0 mb-3 rounded-3">
+                                <div class="card-body">
+                                    <label class="form-label fw-bold text-primary mb-3"><i class="bi bi-geo-alt-fill"></i> Ubicación Geográfica</label>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white border-end-0 text-muted">Lat</span>
+                                                <input type="number" step="any" class="form-control border-start-0 ps-0"
+                                                       id="latitud" name="latitud"
+                                                       th:value="${solicitud.latitud}" required min="-90" max="90">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white border-end-0 text-muted">Lng</span>
+                                                <input type="number" step="any" class="form-control border-start-0 ps-0"
+                                                       id="longitud" name="longitud"
+                                                       th:value="${solicitud.longitud}" required min="-180" max="180">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <div class="mb-3">
-                                <label for="titulo" class="form-label fw-bold">Título</label>
-                                <input type="text" class="form-control" id="titulo" name="titulo"
-                                       th:value="${solicitud.titulo}" required>
-                            </div>
-
-                            <div class="mb-3">
-                                <label for="nombreCategoria" class="form-label fw-bold">Categoría</label>
-                                <input type="text" class="form-control" id="nombreCategoria" name="nombreCategoria"
-                                       th:value="${solicitud.nombreCategoria}" required>
+                                <label for="fechaAcontecimiento" class="form-label fw-bold">Fecha y Hora <span class="text-danger">*</span></label>
+                                <input type="datetime-local" class="form-control" id="fechaAcontecimiento"
+                                       name="fecha_acontecimiento"
+                                       th:value="${solicitud.fechaDeAcontecimiento}" required>
+                                <div class="form-text">Cuándo sucedió el hecho.</div>
                             </div>
 
                             <div class="mb-4">
-                                <label for="descripcion" class="form-label fw-bold">Descripción</label>
+                                <label for="fotos" class="form-label fw-bold">Agregar Evidencia</label>
+                                <input type="file" class="form-control" id="fotos" name="archivos" multiple
+                                       accept="image/*,video/*">
+                                <div class="form-text text-muted small mt-1">
+                                    <i class="bi bi-info-circle"></i> Sube nuevas fotos para adjuntar (jpg, png, mp4).
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label for="descripcion" class="form-label fw-bold">Descripción Detallada</label>
                                 <textarea class="form-control" id="descripcion" name="descripcion" rows="5"
+                                          placeholder="Describa los detalles del incidente..."
                                           th:text="${solicitud.descripcion}"></textarea>
                             </div>
 
-                            <div class="d-flex justify-content-between">
-                                <a th:href="@{/admin/solicitudes}" class="btn btn-outline-secondary">
-                                    <i class="bi bi-arrow-left"></i> Volver
+                            <hr class="my-4 text-muted opacity-25">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <a th:href="@{/admin/solicitudes}" class="btn btn-outline-secondary px-4 rounded-pill fw-semibold">
+                                    <i class="bi bi-arrow-left me-2"></i> Cancelar
                                 </a>
-                                <button type="submit" class="btn btn-warning fw-bold text-dark px-4">
-                                    <i class="bi bi-save"></i> Guardar Cambios
+                                <button type="submit" class="btn btn-warning px-5 rounded-pill fw-bold text-dark shadow-sm">
+                                    <i class="bi bi-check-lg me-2"></i> Guardar Cambios
                                 </button>
                             </div>
                         </form>
@@ -58,6 +108,50 @@
             </div>
         </div>
     </div>
+
+    <script>
+        document.getElementById('fechaAcontecimiento').max = new Date().toISOString().slice(0, 16);
+        
+        // Interceptar el submit del formulario para hacer una petición PATCH
+        document.getElementById('editarSolicitudForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const solicitudId = form.getAttribute('data-id');
+            const url = '/solicitudes/' + solicitudId;
+            
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    body: formData
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    // Mostrar mensaje de éxito y redirigir
+                    alert('Solicitud actualizada correctamente');
+                    window.location.href = '/admin/solicitudes';
+                } else {
+                    // Mostrar error
+                    alert('Error al actualizar la solicitud: ' + result);
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error al actualizar la solicitud. Por favor, intente nuevamente.');
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }
+        });
+    </script>
 </div>
 
 </body>

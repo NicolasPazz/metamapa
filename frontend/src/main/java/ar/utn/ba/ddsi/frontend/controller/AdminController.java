@@ -141,26 +141,18 @@ public class AdminController {
 
         return "redirect:/admin"; // Volvemos a la vista admin.html
     }
-    @GetMapping("admin/solicitudes")
-    public String verPanelSolicitudes(Model model) {
-        List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
-        model.addAttribute("solicitudes", solicitudes);
-        return "admin/solicitudes";
-    }
-    @PostMapping("/solicitudes/{id}/editar")
-    public String procesarEdicion(@PathVariable Long id, @ModelAttribute SolicitudEdicionFormDTO solicitudEditada) {
-        // Llamamos al servicio para guardar
-        solicitudService.procesarSolicitudEdicionConMultipart(id, solicitudEditada);
-
-        // Redirigimos al listado principal
+    @PostMapping("solicitudes/{id}/aceptar")
+    public String aceptarSolicitud(@PathVariable Long id) {
+        solicitudService.cambiarEstado(id, "ACEPTADO");
         return "redirect:/admin/solicitudes";
-    }
-    @GetMapping("/solicitudes/{id}/editar")
-    public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
-        // Buscamos la solicitud (asegúrate de tener este método en tu service)
-        //SolicitudDTO solicitud =
 
-        return "admin/editar_solicitud"; // Nombre del nuevo archivo HTML
+    }
+
+    @PostMapping("solicitudes/{id}/rechazar")
+    public String rechazarSolicitud(@PathVariable Long id) {
+        solicitudService.cambiarEstado(id, "RECHAZADO");
+
+        return "redirect:/admin/solicitudes";
     }
 
 

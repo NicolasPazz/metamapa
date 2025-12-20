@@ -88,30 +88,35 @@ public class SolicitudController {
             return ResponseEntity.status(500).body("Error al actualizar la solicitud: " + e.getMessage());
         }
     }
-
-    @PostMapping("/{id}/aceptar")
-    public String aceptarSolicitud(@PathVariable Long id) {
-        solicitudService.cambiarEstado(id, "ACEPTADO");
-        return "redirect:/admin/solicitudes";
-
+    @GetMapping()
+    public String verPanelSolicitudes(Model model) {
+        List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
+        model.addAttribute("solicitudes", solicitudes);
+        return "admin/solicitudes";
     }
-
-    @GetMapping("/solicitudes/{id}/editar")
+    @GetMapping("/{id}/editar")
     public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
+        log.info("Intento de acceder a edición de solicitud ID: {}", id);
         try {
             SolicitudInputDTO solicitud = solicitudService.buscarSolicitudPorId(id);
+
             if (solicitud == null) {
+                log.warn("La solicitud ID {} retornó NULL desde el servicio.", id);
                 return "redirect:/admin/solicitudes?error=NoEncontrado";
             }
+
+            log.info("Solicitud encontrada: {}", solicitud); // Asegúrate que tu DTO tenga toString()
             model.addAttribute("solicitud", solicitud);
-            return "admin/editar_solicitud"; // Nombre del archivo HTML
+            return "admin/editar_solicitud";
+
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error grave al intentar buscar la solicitud ID: " + id, e);
             return "redirect:/admin/solicitudes?error=ErrorInterno";
         }
     }
 
-    @PostMapping("/solicitudes/{id}/editar/")
+
+    @PostMapping("/{id}/editar/")
     public String procesarEdicion(@PathVariable Long id, @ModelAttribute SolicitudEdicionFormDTO solicitudEditada) {
         solicitudService.procesarSolicitudEdicionConMultipart(id, solicitudEditada);
 
@@ -120,12 +125,6 @@ public class SolicitudController {
     }
 
 
-    @PostMapping("/{id}/rechazar")
-    public String rechazarSolicitud(@PathVariable Long id) {
-        solicitudService.cambiarEstado(id, "RECHAZADO");
-
-        return "redirect:/admin/solicitudes";
-    }
     
 }
 
