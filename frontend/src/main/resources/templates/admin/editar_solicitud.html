@@ -14,13 +14,15 @@
                     <div class="card-header bg-warning bg-opacity-25 py-3 border-bottom border-warning border-opacity-25">
                         <h4 class="mb-0 fw-bold text-dark d-flex align-items-center">
                             <i class="bi bi-pencil-square me-2 fs-3"></i>
-                            <span>Editar Solicitud</span>
+                            <span th:if="${esAceptarConModificaciones == null or !esAceptarConModificaciones}">Editar Solicitud</span>
+                            <span th:if="${esAceptarConModificaciones != null and esAceptarConModificaciones}">Aceptar Solicitud con Modificaciones</span>
                         </h4>
                     </div>
 
                     <div class="card-body p-4 p-md-5 bg-white">
                         <form id="editarSolicitudForm"
                               th:data-id="${solicitud.id}"
+                              th:data-es-aceptar="${esAceptarConModificaciones != null and esAceptarConModificaciones}"
                               method="post"
                               enctype="multipart/form-data">
                             <input type="hidden" name="contribuyente_id" th:value="${solicitud.idContribuyente}">
@@ -98,7 +100,9 @@
                                     <i class="bi bi-arrow-left me-2"></i> Cancelar
                                 </a>
                                 <button type="submit" class="btn btn-warning px-5 rounded-pill fw-bold text-dark shadow-sm">
-                                    <i class="bi bi-check-lg me-2"></i> Guardar Cambios
+                                    <i class="bi bi-check-lg me-2"></i>
+                                    <span th:if="${esAceptarConModificaciones == null or !esAceptarConModificaciones}">Guardar Cambios</span>
+                                    <span th:if="${esAceptarConModificaciones != null and esAceptarConModificaciones}">Aceptar con Modificaciones</span>
                                 </button>
                             </div>
                         </form>
@@ -119,7 +123,8 @@
             const form = e.target;
             const formData = new FormData(form);
             const solicitudId = form.getAttribute('data-id');
-            const url = '/solicitudes/' + solicitudId;
+            const esAceptar = form.getAttribute('data-es-aceptar') === 'true';
+            const url = esAceptar ? '/solicitudes/' + solicitudId + '/aceptar-con-modificaciones' : '/solicitudes/' + solicitudId;
             
             const submitButton = form.querySelector('button[type="submit"]');
             const originalText = submitButton.innerHTML;

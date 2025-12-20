@@ -97,6 +97,12 @@
                                 <i class="bi bi-pencil-square"></i> Editar
                             </a>
 
+                            <a th:href="@{/solicitudes/{id}/aceptar-con-modificaciones(id=${sol.id})}"
+                               class="btn btn-sm btn-info btn-action text-white"
+                               title="Aceptar con Modificaciones">
+                                <i class="bi bi-check-circle"></i> Aceptar con Modificaciones
+                            </a>
+
                             <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3"
                                     th:data-id="${sol.id}"
                                     onclick="cargarDatosEnModal(this.getAttribute('data-id'))">

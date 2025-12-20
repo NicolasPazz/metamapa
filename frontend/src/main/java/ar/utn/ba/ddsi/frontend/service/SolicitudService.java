@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.frontend.service;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
+import ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -127,129 +128,19 @@ public class SolicitudService {
     @Transactional
     public void procesarSolicitudEdicionConMultipart(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
         log.debug("Procesando edición de solicitud ID: {} con multipart", idSolicitud);
-
-        // Obtener la solicitud para verificar su estado
-        SolicitudInputDTO solicitud = this.buscarSolicitudPorId(idSolicitud);
-
-        // Validar que pasaron <= 7 días desde la creación
-        if (solicitud.getFechaDeCargaSolicitud() != null) {
-            long diasPasados = ChronoUnit.DAYS.between(solicitud.getFechaDeCargaSolicitud(), LocalDateTime.now());
-            if (diasPasados > 7) {
-                throw new IllegalArgumentException("El plazo de edición ha vencido. Pasaron " + diasPasados + " días.");
-            }
-        }
-
-        // Construir el DTO para enviar al backend
-        SolicitudModificacionDTO dto = new SolicitudModificacionDTO();
-        dto.setIdContribuyente(formDTO.getContribuyente_id());
-        if (formDTO.getTitulo() != null && !formDTO.getTitulo().trim().isEmpty()) {
-            dto.setNuevoTitulo(formDTO.getTitulo());
-        }
-        if (formDTO.getDescripcion() != null && !formDTO.getDescripcion().trim().isEmpty()) {
-            dto.setNuevoDescripcion(formDTO.getDescripcion());
-        }
-        if (formDTO.getCategoria() != null && !formDTO.getCategoria().trim().isEmpty()) {
-            dto.setNuevoNombreCategoria(formDTO.getCategoria());
-        }
-        if (formDTO.getLatitud() != null) {
-            dto.setNuevoLatitud(formDTO.getLatitud());
-        }
-        if (formDTO.getLongitud() != null) {
-            dto.setNuevoLongitud(formDTO.getLongitud());
-        }
-        if (formDTO.getFecha_acontecimiento() != null) {
-            dto.setNuevoFechaDeAcontecimiento(formDTO.getFecha_acontecimiento());
-        }
-
-        // Si hay archivos, enviar como multipart (igual que en la creación)
-        if (formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) {
-            try {
-                // Serializar el objeto a JSON string manualmente (el backend espera String)
-                String solicitudJson = objectMapper.writeValueAsString(dto);
-                log.debug("SolicitudService.procesarSolicitudEdicionConMultipart - JSON serializado: {}", solicitudJson);
-
-                // Construir multipart igual que en la creación
-                MultipartBodyBuilder builder = new MultipartBodyBuilder();
-
-                // Agregar datos de la solicitud como parte JSON (String)
-                builder.part("solicitud", solicitudJson);
-
-                // Agregar cada archivo multimedia
-                for (MultipartFile archivo : formDTO.getArchivos()) {
-                    if (archivo != null && !archivo.isEmpty()) {
-                        log.debug("SolicitudService.procesarSolicitudEdicionConMultipart - Agregando archivo: {} ({} bytes)",
-                                archivo.getOriginalFilename(), archivo.getSize());
-                        builder.part("archivos", archivo.getResource());
-                    }
-                }
-
-                log.info("SolicitudService.procesarSolicitudEdicionConMultipart - Enviando PATCH a /solicitudes/{} (MULTIPART)", idSolicitud);
-                webClient2.patch()
-                        .uri("/solicitudes/" + idSolicitud)
-                        .contentType(MediaType.MULTIPART_FORM_DATA)
-                        .body(BodyInserters.fromMultipartData(builder.build()))
-                        .retrieve()
-                        .onStatus(
-                                status -> status.is4xxClientError() || status.is5xxServerError(),
-                                response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
-                        )
-                        .toBodilessEntity()
-                        .block();
-                log.debug("PATCH multipart exitoso para solicitud ID: {}", idSolicitud);
-            } catch (WebClientResponseException e) {
-                log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}",
-                        idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
-                throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
-            } catch (Exception e) {
-                log.error("Error al enviar solicitud multipart para ID: {}", idSolicitud, e);
-                throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
-            }
-        } else {
-            // Si no hay archivos, enviar como JSON
-            procesarSolicitudEdicion(idSolicitud, dto);
-        }
+        
+        validarPlazoEdicion(idSolicitud);
+        
+        SolicitudModificacionDTO dto = construirSolicitudModificacionDTO(formDTO);
+        
+        enviarModificacionSolicitud(idSolicitud, dto, formDTO.getArchivos(), "/solicitudes/");
     }
 
     @Transactional
     public void procesarSolicitudEdicion(Long idSolicitud, SolicitudModificacionDTO dto) {
         log.debug("Procesando edición de solicitud ID: {}", idSolicitud);
-        // Obtener la solicitud para verificar su estado
-        SolicitudInputDTO solicitud =this.buscarSolicitudPorId(idSolicitud);
-        // Validar que pasaron <= 7 días desde la creación
-        if (solicitud.getFechaDeCargaSolicitud() != null) {
-            long diasPasados = ChronoUnit.DAYS.between(solicitud.getFechaDeCargaSolicitud(), LocalDateTime.now());
-            if (diasPasados > 7) {
-                throw new IllegalArgumentException("El plazo de edición ha vencido. Pasaron " + diasPasados + " días.");
-            }
-        }
-
-        // Si la solicitud está en ACEPTADO o ACEPTADO_MODIFICADO, 
-        // el hecho se ocultará automáticamente cuando se vuelva a aceptar la solicitud
-        // (esto se maneja en el backend de dinámica al cambiar el estado)
-
-        // Modificar la solicitud en dinámica
-        try {
-            log.debug("Enviando PATCH a /solicitudes/{} para solicitud ID: {}", idSolicitud, idSolicitud);
-            webClient2.patch()
-                    .uri("/solicitudes/" + idSolicitud)
-                    .bodyValue(dto)
-                    .retrieve()
-                    .onStatus(
-                            status -> status.is4xxClientError() || status.is5xxServerError(),
-                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
-                    )
-                    .toBodilessEntity()
-                    .block();
-            log.debug("PATCH exitoso para solicitud ID: {}", idSolicitud);
-
-        } catch (WebClientResponseException e) {
-            log.error("Error del backend al modificar solicitud ID: {}, status: {}, body: {}",
-                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
-            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
-        } catch (Exception e) {
-            log.error("Error al conectar con el servicio de Dinámica para solicitud ID: {}", idSolicitud, e);
-            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
-        }
+        validarPlazoEdicion(idSolicitud);
+        enviarModificacionSolicitud(idSolicitud, dto, null, "/solicitudes/");
     }
 
 
@@ -273,6 +164,197 @@ public class SolicitudService {
         } catch (WebClientResponseException e) {
             throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
         } catch (Exception e) {
+            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
+        }
+    }
+
+    @Transactional
+    public void procesarAceptarConModificaciones(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
+        log.debug("Procesando aceptación con modificaciones de solicitud ID: {}", idSolicitud);
+        
+        java.util.Map<String, Object> adminDTO = construirMapAdminDTO(formDTO, EstadoSolicitud.ACEPTADO_MODIFICADO);
+        
+        enviarModificacionAdminSolicitud(idSolicitud, adminDTO);
+    }
+
+    // ========== MÉTODOS PRIVADOS HELPER ==========
+
+    /**
+     * Valida que no hayan pasado más de 7 días desde la creación de la solicitud
+     */
+    private void validarPlazoEdicion(Long idSolicitud) {
+        SolicitudInputDTO solicitud = this.buscarSolicitudPorId(idSolicitud);
+        if (solicitud.getFechaDeCargaSolicitud() != null) {
+            long diasPasados = ChronoUnit.DAYS.between(solicitud.getFechaDeCargaSolicitud(), LocalDateTime.now());
+            if (diasPasados > 7) {
+                throw new IllegalArgumentException("El plazo de edición ha vencido. Pasaron " + diasPasados + " días.");
+            }
+        }
+    }
+
+    /**
+     * Construye un SolicitudModificacionDTO a partir de un SolicitudEdicionFormDTO
+     */
+    private SolicitudModificacionDTO construirSolicitudModificacionDTO(SolicitudEdicionFormDTO formDTO) {
+        SolicitudModificacionDTO dto = new SolicitudModificacionDTO();
+        dto.setIdContribuyente(formDTO.getContribuyente_id());
+        
+        if (formDTO.getTitulo() != null && !formDTO.getTitulo().trim().isEmpty()) {
+            dto.setNuevoTitulo(formDTO.getTitulo());
+        }
+        if (formDTO.getDescripcion() != null && !formDTO.getDescripcion().trim().isEmpty()) {
+            dto.setNuevoDescripcion(formDTO.getDescripcion());
+        }
+        if (formDTO.getCategoria() != null && !formDTO.getCategoria().trim().isEmpty()) {
+            dto.setNuevoNombreCategoria(formDTO.getCategoria());
+        }
+        if (formDTO.getLatitud() != null) {
+            dto.setNuevoLatitud(formDTO.getLatitud());
+        }
+        if (formDTO.getLongitud() != null) {
+            dto.setNuevoLongitud(formDTO.getLongitud());
+        }
+        if (formDTO.getFecha_acontecimiento() != null) {
+            dto.setNuevoFechaDeAcontecimiento(formDTO.getFecha_acontecimiento());
+        }
+        
+        return dto;
+    }
+
+    /**
+     * Construye un Map para el endpoint de administración con el estado especificado
+     */
+    private java.util.Map<String, Object> construirMapAdminDTO(SolicitudEdicionFormDTO formDTO, EstadoSolicitud estado) {
+        java.util.Map<String, Object> adminDTO = new java.util.HashMap<>();
+        adminDTO.put("estado", estado.name());
+        
+        if (formDTO.getTitulo() != null && !formDTO.getTitulo().trim().isEmpty()) {
+            adminDTO.put("titulo", formDTO.getTitulo());
+        }
+        if (formDTO.getDescripcion() != null && !formDTO.getDescripcion().trim().isEmpty()) {
+            adminDTO.put("descripcion", formDTO.getDescripcion());
+        }
+        if (formDTO.getCategoria() != null && !formDTO.getCategoria().trim().isEmpty()) {
+            adminDTO.put("categoria", formDTO.getCategoria());
+        }
+        if (formDTO.getLatitud() != null) {
+            adminDTO.put("latitud", formDTO.getLatitud());
+        }
+        if (formDTO.getLongitud() != null) {
+            adminDTO.put("longitud", formDTO.getLongitud());
+        }
+        if (formDTO.getFecha_acontecimiento() != null) {
+            adminDTO.put("fecha_acontecimiento", formDTO.getFecha_acontecimiento().toString());
+        }
+        
+        return adminDTO;
+    }
+
+    /**
+     * Envía la modificación de solicitud al backend (soporta multipart y JSON)
+     */
+    private void enviarModificacionSolicitud(Long idSolicitud, SolicitudModificacionDTO dto, 
+                                             List<MultipartFile> archivos, String uriBase) {
+        if (archivos != null && !archivos.isEmpty()) {
+            enviarModificacionMultipart(idSolicitud, dto, archivos, uriBase);
+        } else {
+            enviarModificacionJSON(idSolicitud, dto, uriBase);
+        }
+    }
+
+    /**
+     * Envía modificación con archivos multipart
+     */
+    private void enviarModificacionMultipart(Long idSolicitud, SolicitudModificacionDTO dto, 
+                                             List<MultipartFile> archivos, String uriBase) {
+        try {
+            String solicitudJson = objectMapper.writeValueAsString(dto);
+            log.debug("JSON serializado para solicitud ID: {}", idSolicitud);
+
+            MultipartBodyBuilder builder = new MultipartBodyBuilder();
+            builder.part("solicitud", solicitudJson);
+
+            for (MultipartFile archivo : archivos) {
+                if (archivo != null && !archivo.isEmpty()) {
+                    log.debug("Agregando archivo: {} ({} bytes)", archivo.getOriginalFilename(), archivo.getSize());
+                    builder.part("archivos", archivo.getResource());
+                }
+            }
+
+            log.info("Enviando PATCH a {}{} (MULTIPART)", uriBase, idSolicitud);
+            webClient2.patch()
+                    .uri(uriBase + idSolicitud)
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(builder.build()))
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                    )
+                    .toBodilessEntity()
+                    .block();
+            log.debug("PATCH multipart exitoso para solicitud ID: {}", idSolicitud);
+        } catch (WebClientResponseException e) {
+            log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}",
+                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error al enviar solicitud multipart para ID: {}", idSolicitud, e);
+            throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Envía modificación como JSON
+     */
+    private void enviarModificacionJSON(Long idSolicitud, SolicitudModificacionDTO dto, String uriBase) {
+        try {
+            log.debug("Enviando PATCH a {}{} (JSON)", uriBase, idSolicitud);
+            webClient2.patch()
+                    .uri(uriBase + idSolicitud)
+                    .bodyValue(dto)
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                    )
+                    .toBodilessEntity()
+                    .block();
+            log.debug("PATCH JSON exitoso para solicitud ID: {}", idSolicitud);
+        } catch (WebClientResponseException e) {
+            log.error("Error del backend al modificar solicitud ID: {}, status: {}, body: {}",
+                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error al conectar con el servicio de Dinámica para solicitud ID: {}", idSolicitud, e);
+            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
+        }
+    }
+
+    /**
+     * Envía modificación al endpoint de administración (solo JSON)
+     */
+    private void enviarModificacionAdminSolicitud(Long idSolicitud, java.util.Map<String, Object> adminDTO) {
+        try {
+            log.info("Enviando PATCH a /admin/solicitudes/{} para aceptar con modificaciones", idSolicitud);
+            webClient2.patch()
+                    .uri("/admin/solicitudes/" + idSolicitud)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(adminDTO)
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                    )
+                    .toBodilessEntity()
+                    .block();
+            log.debug("PATCH exitoso para aceptar solicitud {} con modificaciones", idSolicitud);
+        } catch (WebClientResponseException e) {
+            log.error("Error del backend al aceptar solicitud con modificaciones ID: {}, status: {}, body: {}",
+                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error al conectar con el servicio de Dinámica para aceptar solicitud con modificaciones ID: {}", idSolicitud, e);
             throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
         }
     }
