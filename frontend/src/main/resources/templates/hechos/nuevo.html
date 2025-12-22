@@ -3,30 +3,28 @@
 <div th:fragment="contenido">
   <link rel="stylesheet" th:href="@{/css/landing.css}">
   
-  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
   <section class="block" style="padding: 2rem; max-width: 800px; margin: 0 auto;">
     <div class="container">
-      <h2 style="color: var(--primary); margin-bottom: 1.5rem; text-align: center;">Nuevo Hecho</h2>
+      <h2 style="text-align: center;">Nuevo Hecho</h2>
       
       <form id="hechoForm" enctype="multipart/form-data">
-        <div class="form-group" style="margin-bottom: 1.5rem;">
-          <label for="titulo" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
-            Título <span style="color: #dc3545;">*</span>
+        <div class="form-group">
+          <label for="titulo">
+            Título <span class="required-indicator">*</span>
           </label>
           <input type="text" 
                  class="form-control" 
                  id="titulo" 
                  name="titulo" 
                  placeholder="Ej: Inundación en Av. Corrientes" 
-                 required
-                 style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+                 required>
         </div>
 
-        <div class="form-group" style="margin-bottom: 1.5rem;">
-          <label style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
-            Ubicación <span style="color: #dc3545;">*</span>
+        <div class="form-group">
+          <label>
+            Ubicación <span class="required-indicator">*</span>
           </label>
           <div style="display: flex; gap: 1rem; align-items: stretch;">
             <div style="flex: 1; display: flex; gap: 1rem;">
@@ -39,8 +37,7 @@
                        placeholder="Latitud" 
                        required
                        min="-90"
-                       max="90"
-                       style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+                       max="90">
               </div>
               <div style="flex: 1;">
                 <input type="number" 
@@ -51,25 +48,24 @@
                        placeholder="Longitud" 
                        required
                        min="-180"
-                       max="180"
-                       style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+                       max="180">
               </div>
             </div>
             <button type="button" 
                     onclick="obtenerUbicacion()" 
                     class="btn secondary" 
-                    style="padding: 0.75rem 1rem; white-space: nowrap; display: flex; align-items: center; margin-top: 0;">
+                    style="white-space: nowrap; margin-top: 0;">
               Usar mi ubicación
             </button>
           </div>
-          <div id="location-status" style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+          <div id="location-status" class="form-text">
             Ingresa coordenadas o usa el botón.
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 1.5rem;">
-          <label for="categoria" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
-            Categoría <span style="color: #dc3545;">*</span>
+        <div class="form-group">
+          <label for="categoria">
+            Categoría <span class="required-indicator">*</span>
           </label>
           <div style="display: flex; gap: 0.5rem;">
             <input type="text" 
@@ -80,25 +76,24 @@
                    placeholder="Selecciona o escribe una nueva categoría" 
                    required
                    autocomplete="off"
-                   style="flex: 1; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
+                   style="flex: 1;">
             <datalist id="categorias-list">
               <option th:each="cat : ${categorias}" th:value="${cat}" th:text="${cat}"></option>
             </datalist>
           </div>
         </div>
 
-        <div class="form-group" style="margin-bottom: 1.5rem;">
-          <label for="fechaAcontecimiento" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
-            Fecha y Hora <span style="color: #dc3545;">*</span>
+        <div class="form-group">
+          <label for="fechaAcontecimiento">
+            Fecha y Hora <span class="required-indicator">*</span>
           </label>
           <input type="datetime-local" 
                  class="form-control" 
                  id="fechaAcontecimiento" 
                  name="fechaAcontecimiento" 
                  required
-                 max=""
-                 style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
-          <div id="fecha-error" class="error-message" style="display: none; margin-top: 0.5rem; padding: 0.5rem; background: #fee; border: 1px solid #fcc; border-radius: 4px; color: #c33;"></div>
+                 max="">
+          <div id="fecha-error" class="error-message" style="display: none;"></div>
         </div>
 
         <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -162,10 +157,6 @@
           // Asegurar que los valores sean números y se asignen correctamente
           const lat = Number(coords.latitud);
           const lng = Number(coords.longitud);
-          
-          // Debug: verificar valores recibidos
-          console.log('Coordenadas recibidas de geolocalización:', coords);
-          console.log('Latitud parseada:', lat, 'Longitud parseada:', lng);
           
           if (!isNaN(lat) && !isNaN(lng) && lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
             const latInput = document.getElementById('latitud');

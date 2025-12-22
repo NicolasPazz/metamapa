@@ -53,11 +53,4 @@ public class HomeController {
         return "legal/privacidad";
     }
 
-    @GetMapping("/contacto")
-    public String contacto(Model model) {
-        log.info("GET /contacto");
-        model.addAttribute("showReportarHechoBtn", false);
-        return "legal/contacto";
-    }
-
 }

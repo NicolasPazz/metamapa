@@ -4,13 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMapa - Ingresar</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
   <link rel="stylesheet" th:href="@{/css/landing.css}">
   <script th:src="@{/js/common.js}"></script>
 </head>
 <body>
   <!-- Header -->
   <header class="navbar">
-    <a th:href="@{/}" class="logo">MetaMapa</a>
+    <a th:href="@{/}" class="logo">
+      <img th:src="@{/images/metamapa-header.svg}" alt="MetaMapa" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+      <span class="logo-text" style="display: none;">MetaMapa</span>
+    </a>
     <nav class="nav-buttons-center">
       <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
       <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
@@ -22,18 +28,16 @@
     </nav>
   </header>
 
-      <!-- Login form -->
       <section class="login-block">
         <div class="login-card">
           <h2>Ingresar</h2>
           <form th:action="@{/login}" method="post">
-            <label for="username">Usuario <span style="color: #dc3545;">*</span></label>
-            <input type="text" id="username" name="username" placeholder="usuario" required>
+            <label for="username">Usuario <span class="required-indicator">*</span></label>
+            <input type="text" id="username" name="username" placeholder="usuario" required class="form-control">
 
-            <label for="password">Contraseña <span style="color: #dc3545;">*</span></label>
-            <input type="password" id="password" name="password" placeholder="••••••••" required>
+            <label for="password">Contraseña <span class="required-indicator">*</span></label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required class="form-control">
 
-            <!-- Mostrar errores de autenticación si existen -->
             <div th:if="${param.error}" style="color: red; margin-top: 1rem;">
               Usuario o contraseña incorrectos
             </div>
@@ -50,7 +54,6 @@
     </div>
   </section>
   
-  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
   
   <script>

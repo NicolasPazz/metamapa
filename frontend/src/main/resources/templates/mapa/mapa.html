@@ -180,12 +180,10 @@
     }
   </style>
 
-  <!-- Botón flotante Volver -->
   <div class="floating-back-button">
     <a href="javascript:history.back()" class="btn secondary">Volver</a>
   </div>
 
-  <!-- Map -->
   <div id="map"></div>
   <div id="no-hechos-message" style="display: none; text-align: center; padding: 20px; margin-top: 20px;">
     <p>No hay hechos con ubicación geográfica para mostrar en el mapa.</p>
@@ -249,160 +247,16 @@
       zoomToBoundsOnClick: true
     });
 
-    // Función para construir el contenido del popup
+    // Función para construir el contenido del popup (usa función reutilizable)
     function construirPopupContent(hecho) {
       let popupContent = '<div class="popup-content">';
-      popupContent += '<h3>' + (hecho.titulo || 'Sin título') + '</h3>';
-      
-      // Categoría
-      if (hecho.categoria) {
-        popupContent += '<p><strong>Categoría:</strong> ' + hecho.categoria + '</p>';
-      }
-
-      // Descripción completa
-      if (hecho.descripcion) {
-        popupContent += '<p><strong>Descripción:</strong> ' + hecho.descripcion + '</p>';
-      }
-
-      // Fecha de acontecimiento
-      if (hecho.fecha_acontecimiento) {
-        const fecha = new Date(hecho.fecha_acontecimiento);
-        popupContent += '<p><strong>Fecha de acontecimiento:</strong> ' +
-          fecha.toLocaleString('es-AR', { 
-            year: 'numeric', 
-            month: '2-digit', 
-            day: '2-digit', 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }) + '</p>';
-      }
-
-      // Fecha de carga
-      if (hecho.fecha_carga) {
-        const fechaCarga = new Date(hecho.fecha_carga);
-        popupContent += '<p><strong>Fecha de carga:</strong> ' +
-          fechaCarga.toLocaleString('es-AR', { 
-            year: 'numeric', 
-            month: '2-digit', 
-            day: '2-digit', 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          }) + '</p>';
-      }
-
-      // Provincia
-      if (hecho.provincia) {
-        popupContent += '<p><strong>Provincia:</strong> ' + hecho.provincia + '</p>';
-      }
-
-      // Ubicación (coordenadas)
-      if (hecho.latitud != null && hecho.longitud != null) {
-        popupContent += '<p><strong>Ubicación:</strong> ' + 
-          hecho.latitud.toFixed(6) + ', ' + hecho.longitud.toFixed(6) + '</p>';
-      }
-
-      // Fuente
-      if (hecho.nombre_fuente) {
-        let nombreFuente = hecho.nombre_fuente;
-        // Eliminar prefijo "Fuente " si existe
-        if (nombreFuente.startsWith('Fuente ')) {
-          nombreFuente = nombreFuente.substring(7);
-        }
-        popupContent += '<p><strong>Fuente:</strong> ' + nombreFuente + '</p>';
-      } else if (hecho.origen) {
-        popupContent += '<p><strong>Fuente:</strong> ' + hecho.origen + '</p>';
-      }
-
-      // Multimedia - mostrar carrusel
-      const multimedia = hecho.multimedia || hecho.contenidoMultimedia;
-      if (multimedia && Array.isArray(multimedia) && multimedia.length > 0) {
-        const carouselId = 'popup-carousel-' + (hecho.id || Date.now());
-        popupContent += '<div class="multimedia-carousel" id="' + carouselId + '">';
-        popupContent += '<div class="carousel-container">';
-        
-        // Preparar items del carrusel
-        const items = [];
-        multimedia.forEach(function(item, index) {
-          let tipoRaw = item.tipoContenido || item.tipo;
-          if (tipoRaw && typeof tipoRaw === 'object') {
-            tipoRaw = tipoRaw.name || tipoRaw.toString();
-          }
-          const tipo = (tipoRaw || '').toString().toUpperCase();
-          const path = item.pathArchivo || item.path || '';
-          
-          let fileUrl;
-          if (path.startsWith('http')) {
-            fileUrl = path;
-          } else {
-            const apiBaseUrl = getApiBaseUrl();
-            fileUrl = apiBaseUrl + '/multimedia/' + encodeURIComponent(path);
-          }
-          
-          items.push({ tipo, path, fileUrl, index });
-        });
-        
-        // Botón anterior
-        if (items.length > 1) {
-          popupContent += '<button class="carousel-btn carousel-prev" onclick="carouselPrev(\'' + carouselId + '\')" aria-label="Anterior">‹</button>';
-        }
-        
-        // Contenedor de slides
-        popupContent += '<div class="carousel-slides">';
-        items.forEach(function(item, index) {
-          popupContent += '<div class="carousel-slide' + (index === 0 ? ' active' : '') + '">';
-          
-          if (item.tipo === 'IMAGEN') {
-            popupContent += '<div class="carousel-item-image">';
-            popupContent += '<img src="' + item.fileUrl + '" alt="' + item.path + '" loading="lazy" ';
-            popupContent += 'onclick="window.open(\'' + item.fileUrl + '\', \'_blank\')" ';
-            popupContent += 'onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" />';
-            popupContent += '<div class="carousel-error" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px;">';
-            popupContent += '<span style="font-size: 1.5rem;">🖼️</span>';
-            popupContent += '<span>Imagen no disponible</span>';
-            popupContent += '</div>';
-            popupContent += '</div>';
-          } else if (item.tipo === 'VIDEO') {
-            popupContent += '<div class="carousel-item-video">';
-            popupContent += '<video src="' + item.fileUrl + '" controls preload="metadata" ';
-            popupContent += 'onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';"></video>';
-            popupContent += '<div class="carousel-error" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 10px;">';
-            popupContent += '<span style="font-size: 1.5rem;">🎬</span>';
-            popupContent += '<span>Video no disponible</span>';
-            popupContent += '</div>';
-            popupContent += '</div>';
-          } else if (item.tipo === 'AUDIO') {
-            popupContent += '<div class="carousel-item-audio">';
-            popupContent += '<div style="font-size: 2rem; text-align: center; margin-bottom: 10px;">🎵</div>';
-            popupContent += '<audio src="' + item.fileUrl + '" controls style="width: 100%;" ';
-            popupContent += 'onerror="this.onerror=null; this.parentElement.querySelector(\'.carousel-error\').style.display=\'flex\';"></audio>';
-            popupContent += '<div class="carousel-error" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 10px;">';
-            popupContent += '<span style="font-size: 1.5rem;">🎵</span>';
-            popupContent += '<span>Audio no disponible</span>';
-            popupContent += '</div>';
-            popupContent += '</div>';
-          }
-          
-          popupContent += '</div>';
-        });
-        popupContent += '</div>'; // carousel-slides
-        
-        // Botón siguiente
-        if (items.length > 1) {
-          popupContent += '<button class="carousel-btn carousel-next" onclick="carouselNext(\'' + carouselId + '\')" aria-label="Siguiente">›</button>';
-        }
-        popupContent += '</div>'; // carousel-container
-        
-        popupContent += '</div>'; // multimedia-carousel
-      }
-
-      // Etiquetas
-      if (hecho.etiquetas && hecho.etiquetas.length > 0) {
-        popupContent += '<div><strong>Etiquetas:</strong><div class="tags">';
-        hecho.etiquetas.forEach(etiqueta => {
-          popupContent += '<span class="tag">' + etiqueta + '</span>';
-        });
-        popupContent += '</div></div>';
-      }
+      // Usar función reutilizable para renderizar detalles
+      popupContent += renderHechoDetails(hecho, {
+        showMultimedia: true,
+        showMapButton: false, // No mostrar botón de mapa en popup
+        showTags: true,
+        carouselIdPrefix: 'popup-carousel'
+      });
 
       popupContent += '</div>';
       return popupContent;

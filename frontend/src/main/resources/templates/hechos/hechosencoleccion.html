@@ -9,12 +9,8 @@
 <html lang="es" th:replace="~{layout/base :: html}">
 <div th:fragment="contenido">
   <section class="hechos-block">
-    <!--<h2>Colección: Derechos Humanos</h2> -->
-
-    <!-- Switch de modo solo visible en colecciones - fuera de filtros -->
     <div class="modo-switch-fixed" th:if="${esColeccion != null and esColeccion}">
       <form method="get" th:action="'/colecciones/' + ${handleColeccion} + '/hechos'" style="margin: 0;">
-        <!-- Mantener los filtros actuales como hidden inputs -->
         <input type="hidden" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}">
         <input type="hidden" name="fecha_reporte_hasta" th:value="${param.fecha_reporte_hasta}">
         <input type="hidden" name="ubicacion" th:value="${param.ubicacion}">
@@ -213,7 +209,6 @@
     </div>
   </div>
 
-  <!-- Modal de solicitud de eliminación -->
   <div id="solicitudEliminacionModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
       <div class="modal-header">
@@ -270,205 +265,26 @@
     const hechosData = /*[[${hechos}]]*/ [];
 
     function openHechoDetailPanel(element) {
-      const hechoId = element.dataset.hechoId;
-      const fuenteId = element.dataset.fuenteId;
-      const idOrigen = element.dataset.idOrigen;
-      const hechoIndex = element.dataset.hechoIndex;
-      let hecho = null;
-      if (hechoId && hechoId !== 'null') {
-        const hechoIdNum = Number(hechoId);
-        hecho = hechosData.find(h => h.id != null && Number(h.id) === hechoIdNum);
-      }
-      if (!hecho && fuenteId && fuenteId !== 'null' && idOrigen && idOrigen !== 'null') {
-        const fuenteIdNum = Number(fuenteId);
-        const idOrigenNum = Number(idOrigen);
-        hecho = hechosData.find(h => 
-          h.fuente_id != null && Number(h.fuente_id) === fuenteIdNum && 
-          h.id_origen != null && Number(h.id_origen) === idOrigenNum
-        );
-      }
-      if (!hecho && hechoIndex !== undefined) {
-        hecho = hechosData[parseInt(hechoIndex)];
-      }
+      // Usar función reutilizable para buscar el hecho
+      const hecho = findHecho(hechosData, {
+        hechoId: element.dataset.hechoId,
+        fuenteId: element.dataset.fuenteId,
+        idOrigen: element.dataset.idOrigen,
+        hechoIndex: element.dataset.hechoIndex
+      });
       
       if (!hecho) return;
 
-      const panel = document.getElementById('hechoDetailPanel');
-      const overlay = document.getElementById('overlay');
-      const content = document.getElementById('hechoDetailContent');
+      // Usar función reutilizable para renderizar detalles
+      let html = renderHechoDetails(hecho, {
+        showMultimedia: true,
+        showMapButton: true,
+        showTags: true,
+        carouselIdPrefix: 'multimedia-carousel'
+      });
 
-      let html = '<h2>' + hecho.titulo + '</h2>';
-
-        if (hecho.categoria) {
-            html += '<p><strong>Categoría:</strong> ' + hecho.categoria + '</p>';
-        }
-
-        if (hecho.descripcion) {
-            html += '<p><strong>Descripción:</strong> ' + hecho.descripcion + '</p>';
-        }
-
-        if (hecho.fecha_acontecimiento) {
-            const fecha = new Date(hecho.fecha_acontecimiento);
-            html += '<p><strong>Fecha de acontecimiento:</strong> ' +
-                fecha.toLocaleString('es-AR') + '</p>';
-        }
-
-        if (hecho.fecha_carga) {
-            const fechaCarga = new Date(hecho.fecha_carga);
-            html += '<p><strong>Fecha de carga:</strong> ' +
-                fechaCarga.toLocaleString('es-AR') + '</p>';
-        }
-
-        if (hecho.provincia) {
-            html += '<p><strong>Provincia:</strong> ' + hecho.provincia + '</p>';
-        }
-
-        if (hecho.latitud != null && hecho.longitud != null) {
-            html += '<p><strong>Ubicación:</strong> ' +
-                hecho.latitud + ', ' + hecho.longitud + '</p>';
-        }
-
-        if (hecho.nombre_fuente) {
-            let nombreFuente = hecho.nombre_fuente;
-            if (nombreFuente.startsWith('Fuente ')) {
-                nombreFuente = nombreFuente.substring(7);
-            }
-            html += '<p><strong>Fuente:</strong> ' + nombreFuente + '</p>';
-        } else if (hecho.origen) {
-            html += '<p><strong>Fuente:</strong> ' + hecho.origen + '</p>';
-        }
-
-        // El campo puede venir como 'multimedia' (JSON del agregador) o 'contenidoMultimedia' (Java/Thymeleaf)
-        // Thymeleaf puede serializar el campo Java 'contenidoMultimedia' con ese nombre o con el @JsonProperty 'multimedia'
-        let multimedia = hecho.multimedia;
-        if (!multimedia || !Array.isArray(multimedia) || multimedia.length === 0) {
-            multimedia = hecho.contenidoMultimedia;
-        }
-        
-        // Verificar que multimedia sea un array válido
-        if (multimedia && Array.isArray(multimedia) && multimedia.length > 0) {
-            const carouselId = 'multimedia-carousel-' + (hecho.id || Date.now());
-            html += '<div style="margin-top: 20px;">';
-            html += '<div class="multimedia-carousel" id="' + carouselId + '">';
-            html += '<div class="carousel-container">';
-            
-            // Preparar items del carrusel
-            const items = [];
-            multimedia.forEach(function(item, index) {
-                // El campo 'tipo' puede venir como enum serializado o como string
-                // También puede venir como 'tipoContenido' en algunos casos
-                let tipoRaw = item.tipoContenido || item.tipo;
-                // Si es un objeto (enum serializado), obtener el valor
-                if (tipoRaw && typeof tipoRaw === 'object') {
-                    tipoRaw = tipoRaw.name || tipoRaw.toString();
-                }
-                const tipo = (tipoRaw || '').toString().toUpperCase();
-                const path = item.pathArchivo || item.path || '';
-                
-                // Construir URL del archivo - los archivos están en la carpeta compartida
-                // El agregador puede servir los archivos desde /api/multimedia
-                let fileUrl;
-                if (path.startsWith('http')) {
-                    fileUrl = path;
-                } else {
-                    // Usar el endpoint del agregador para servir multimedia
-                    const apiBaseUrl = getApiBaseUrl();
-                    fileUrl = apiBaseUrl + '/multimedia/' + encodeURIComponent(path);
-                }
-                
-                items.push({ tipo, path, fileUrl, index });
-            });
-            
-            // Botón anterior
-            html += '<button class="carousel-btn carousel-prev" onclick="carouselPrev(\'' + carouselId + '\')" aria-label="Anterior">‹</button>';
-            
-            // Contenedor de slides
-            html += '<div class="carousel-slides">';
-            items.forEach(function(item, index) {
-                html += '<div class="carousel-slide' + (index === 0 ? ' active' : '') + '">';
-                
-                if (item.tipo === 'IMAGEN') {
-                    html += '<div class="carousel-item-image">';
-                    html += '<img src="' + item.fileUrl + '" alt="' + item.path + '" loading="lazy" ';
-                    html += 'onclick="window.open(\'' + item.fileUrl + '\', \'_blank\')" ';
-                    html += 'onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" />';
-                    html += '<div class="carousel-error" style="display: none;">';
-                    html += '<span style="font-size: 2rem;">🖼️</span>';
-                    html += '<span>Imagen no disponible</span>';
-                    html += '</div>';
-                    html += '</div>';
-                } else if (item.tipo === 'VIDEO') {
-                    html += '<div class="carousel-item-video">';
-                    html += '<video src="' + item.fileUrl + '" controls preload="metadata" ';
-                    html += 'onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';"></video>';
-                    html += '<div class="carousel-error" style="display: none;">';
-                    html += '<span style="font-size: 2rem;">🎬</span>';
-                    html += '<span>Video no disponible</span>';
-                    html += '</div>';
-                    html += '</div>';
-                } else if (item.tipo === 'AUDIO') {
-                    html += '<div class="carousel-item-audio">';
-                    html += '<div style="font-size: 4rem; text-align: center; margin-bottom: 20px;">🎵</div>';
-                    html += '<audio src="' + item.fileUrl + '" controls style="width: 100%;" ';
-                    html += 'onerror="this.onerror=null; this.parentElement.querySelector(\'.carousel-error\').style.display=\'flex\';"></audio>';
-                    html += '<div class="carousel-error" style="display: none; flex-direction: column; align-items: center; gap: 10px; margin-top: 20px;">';
-                    html += '<span style="font-size: 2rem;">🎵</span>';
-                    html += '<span>Audio no disponible</span>';
-                    html += '</div>';
-                    html += '<div style="font-size: 0.85rem; color: #666; text-align: center; margin-top: 10px; word-break: break-all;" title="' + item.path + '">' + item.path + '</div>';
-                    html += '</div>';
-                } else {
-                    html += '<div class="carousel-item-file">';
-                    html += '<a href="' + item.fileUrl + '" target="_blank" class="file-link">';
-                    html += '<span style="font-size: 3rem;">📎</span>';
-                    html += '<span>' + item.path + '</span>';
-                    html += '</a>';
-                    html += '</div>';
-                }
-                
-                html += '</div>';
-            });
-            html += '</div>'; // carousel-slides
-            
-            // Botón siguiente
-            html += '<button class="carousel-btn carousel-next" onclick="carouselNext(\'' + carouselId + '\')" aria-label="Siguiente">›</button>';
-            html += '</div>'; // carousel-container
-            
-            html += '</div></div>'; // multimedia-carousel y div principal
-        }
-
-        if (hecho.etiquetas && hecho.etiquetas.length > 0) {
-            html += '<div><strong>Etiquetas:</strong><div class="tags">';
-            hecho.etiquetas.forEach(etiqueta => {
-                html += '<span class="tag">' + etiqueta + '</span>';
-            });
-            html += '</div></div>';
-        }
-
-        if (hecho.latitud != null && hecho.longitud != null && 
-            !isNaN(hecho.latitud) && !isNaN(hecho.longitud) &&
-            hecho.latitud >= -90 && hecho.latitud <= 90 &&
-            hecho.longitud >= -180 && hecho.longitud <= 180) {
-            let mapaUrl = null;
-            if (hecho.id != null) {
-                mapaUrl = '/hechos/mapa?hechoId=' + hecho.id;
-            } else if (hecho.fuente_id != null && hecho.id_origen != null) {
-                mapaUrl = '/hechos/mapa?fuenteId=' + hecho.fuente_id + '&idOrigen=' + hecho.id_origen;
-            }
-            
-            if (mapaUrl != null) {
-                html += '<div style="margin-top: 20px; text-align: center;">';
-                html += '<a href="' + mapaUrl + '" class="btn primary">';
-                html += 'Ver en mapa';
-                html += '</a>';
-                html += '</div>';
-            }
-        }
-
-      // --- BOTONES DE ACCIÓN (Eliminación) ---
+      // Agregar botones de acción específicos de esta página
       html += '<div style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">';
-
-      // Botón Solicitar Eliminación (Rojo - Existente)
       html += '<button onclick="openSolicitudEliminacionModal(' +
               (hecho.id ? hecho.id : 'null') + ', ' +
               (hecho.fuente_id ? hecho.fuente_id : 'null') + ', ' +
@@ -476,8 +292,11 @@
               ')" class="btn secondary" style="background: #dc3545; color: white; border: none;">';
       html += 'Solicitar eliminación';
       html += '</button>';
-
       html += '</div>';
+
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+      const content = document.getElementById('hechoDetailContent');
 
       content.innerHTML = html;
 
@@ -494,13 +313,9 @@
     }
 
     function closeHechoDetailPanel() {
-      const panel = document.getElementById('hechoDetailPanel');
-      const overlay = document.getElementById('overlay');
-
-      panel.classList.remove('active');
-      overlay.classList.remove('active');
-      document.body.style.overflow = '';
-
+      // Usar función reutilizable
+      window.closeHechoDetailPanel('hechoDetailPanel', 'overlay');
+      
       const baseUrl = window.location.pathname + window.location.search;
       history.pushState(null, '', baseUrl);
     }
@@ -916,7 +731,11 @@
 
 
 
-    function carouselPrev(carouselId) {
+    // Funciones del carousel básicas ahora están en carousel.js
+    // carouselPrev y carouselNext están disponibles globalmente desde carousel.js
+    
+    // Función específica para manejar indicadores (extiende carouselPrev)
+    function carouselPrevWithIndicators(carouselId) {
       const carousel = document.getElementById(carouselId);
       if (!carousel) return;
       
@@ -934,34 +753,14 @@
       
       const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
       
-      slides[currentIndex].classList.remove('active');
-      slides[prevIndex].classList.add('active');
+      // Usar función base de carousel.js
+      carouselPrev(carouselId);
       
+      // Actualizar indicadores
       if (indicators.length > 0) {
         indicators[currentIndex].classList.remove('active');
         indicators[prevIndex].classList.add('active');
       }
-    }
-
-    function carouselNext(carouselId) {
-      const carousel = document.getElementById(carouselId);
-      if (!carousel) return;
-      
-      const slides = carousel.querySelectorAll('.carousel-slide');
-      let currentIndex = -1;
-      
-      slides.forEach((slide, index) => {
-        if (slide.classList.contains('active')) {
-          currentIndex = index;
-        }
-      });
-      
-      if (currentIndex === -1) return;
-      
-      const nextIndex = (currentIndex + 1) % slides.length;
-      
-      slides[currentIndex].classList.remove('active');
-      slides[nextIndex].classList.add('active');
     }
 
     function carouselGoTo(carouselId, index) {

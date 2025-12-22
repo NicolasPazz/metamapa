@@ -4,12 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Política de Privacidad - MetaMapa</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
   <link rel="stylesheet" th:href="@{/css/landing.css}">
 </head>
 <body>
   <!-- Header -->
   <header class="navbar">
-    <a th:href="@{/}" class="logo">MetaMapa</a>
+    <a th:href="@{/}" class="logo">
+      <img th:src="@{/images/metamapa-header.svg}" alt="MetaMapa" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+      <span class="logo-text" style="display: none;">MetaMapa</span>
+    </a>
     <nav class="nav-buttons-center">
       <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
       <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
@@ -112,10 +118,10 @@
           Los cambios significativos serán notificados a través de la plataforma.
         </p>
 
-        <h2 style="color: var(--secondary); margin-top: 2rem;">10. Contacto</h2>
+        <h2 style="color: var(--secondary); margin-top: 2rem;">10. Modificaciones</h2>
         <p>
-          Si tiene preguntas sobre esta política de privacidad, puede contactarnos a través de
-          nuestra <a th:href="@{/contacto}" style="color: var(--secondary);">página de contacto</a>.
+          Nos reservamos el derecho de modificar esta política de privacidad en cualquier momento.
+          Las modificaciones entrarán en vigor desde su publicación en esta página.
         </p>
 
         <p style="margin-top: 2rem; text-align: center;">
@@ -128,11 +134,15 @@
   <!-- Footer -->
   <section class="block legal">
     <div class="container">
+      <h2>Información Legal y Privacidad</h2>
+      <p>
+        MetaMapa protege la identidad de quienes utilizan la plataforma. 
+        Todos los datos son tratados de manera segura y transparente. 
+      </p>
       <p>
         © 2025 MetaMapa. Todos los derechos reservados.<br>
         <a th:href="@{/terminos}" class="footer-link">Términos de uso</a> ·
-        <a th:href="@{/privacidad}" class="footer-link">Política de privacidad</a> ·
-        <a th:href="@{/contacto}" class="footer-link">Contacto</a>
+        <a th:href="@{/privacidad}" class="footer-link">Política de privacidad</a>
       </p>
     </div>
   </section>

@@ -5,21 +5,50 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title th:text="${titulo} + ' - MetaMapa'"></title>
         <meta name="api-base-url" th:content="${apiBaseUrl}">
+        
+        <!-- Favicon -->
+        <link rel="icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
+        <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
+        
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:title" th:content="${titulo} + ' - MetaMapa'">
+        <meta property="og:description" content="Plataforma colaborativa para mapear y reportar hechos de interés público">
+        <meta property="og:image" content="https://metamapa-dds.ddns.net/images/open-graph.png">
+        <meta property="og:url" th:if="${#httpServletRequest != null}" th:content="'https://metamapa-dds.ddns.net' + #httpServletRequest.requestURI">
+        <meta property="og:url" th:if="${#httpServletRequest == null}" content="https://metamapa-dds.ddns.net">
+        <meta property="og:site_name" content="MetaMapa">
+        
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:title" th:content="${titulo} + ' - MetaMapa'">
+        <meta name="twitter:description" content="Plataforma colaborativa para mapear y reportar hechos de interés público">
+        <meta name="twitter:image" content="https://metamapa-dds.ddns.net/images/open-graph.png">
+        
         <link th:href="@{/css/landing.css}" rel="stylesheet">
         <script th:src="@{/js/common.js}"></script>
+        <script th:src="@{/js/carousel.js}"></script>
+        <script th:src="@{/js/hechos.js}"></script>
     </head>
     <body>
-        <!-- Header -->
         <header class="navbar">
-            <a th:href="@{/}" class="logo">MetaMapa</a>
+            <a th:href="@{/}" class="logo">
+                <img th:src="@{/images/metamapa-header.svg}" 
+                     th:if="${!#strings.contains(#httpServletRequest.requestURI, '/admin')}"
+                     alt="MetaMapa" 
+                     class="logo-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <img th:src="@{/images/metamapa-header-admin.svg}" 
+                     th:if="${#strings.contains(#httpServletRequest.requestURI, '/admin')}"
+                     alt="MetaMapa Admin" 
+                     class="logo-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <span class="logo-text" style="display: none;">MetaMapa</span>
+            </a>
             <nav class="nav-buttons-center">
-                <!-- Mostrar botón Hechos solo si showHechosBtn es true o no está definido -->
                 <a th:if="${showHechosBtn == null || showHechosBtn}" th:href="@{/hechos}" class="btn secondary">Hechos</a>
-                <!-- Mostrar botón Colecciones solo si showColeccionesBtn es true o no está definido -->
                 <a th:if="${showColeccionesBtn == null || showColeccionesBtn}" th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
-                <!-- Mostrar botón Mis hechos solo si showMisHechosBtn es true y el usuario está autenticado -->
                 <a sec:authorize="isAuthenticated()" th:if="${showMisHechosBtn == null || showMisHechosBtn}" th:href="@{/hechos/mis-hechos}" class="btn secondary">Mis hechos</a>
-                <!-- Mostrar botón Reportar nuevo hecho solo si showReportarHechoBtn es true o no está definido -->
                 <a th:if="${showReportarHechoBtn == null || showReportarHechoBtn}" th:href="@{/hechos/nuevo}" class="btn btn-primary btn-lg shadow-sm">
                     <i class="bi bi-plus-circle-fill me-2"></i> Reportar nuevo hecho
                 </a>
@@ -33,7 +62,6 @@
             </nav>
         </header>
 
-        <!-- Contenido principal -->
         <div th:replace=":: contenido"></div>
     </body>
 </html>

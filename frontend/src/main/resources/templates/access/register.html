@@ -4,13 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMapa - Registrarse</title>
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
   <link rel="stylesheet" th:href="@{/css/landing.css}">
   <script th:src="@{/js/common.js}"></script>
 </head>
 <body>
   <!-- Header -->
   <header class="navbar">
-    <a th:href="@{/}" class="logo">MetaMapa</a>
+    <a th:href="@{/}" class="logo">
+      <img th:src="@{/images/metamapa-header.svg}" alt="MetaMapa" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+      <span class="logo-text" style="display: none;">MetaMapa</span>
+    </a>
     <nav class="nav-buttons-center">
       <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
       <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
@@ -22,33 +28,29 @@
     </nav>
   </header>
 
-  <!-- Register form -->
   <section class="login-block">
     <div class="login-card">
       <h2>Registrarse</h2>
       
-      <!-- Mostrar mensajes de error -->
       <div th:if="${error}" style="color: red; margin-bottom: 1rem; padding: 0.75rem; background: #fee; border: 1px solid #fcc; border-radius: 6px;">
         <span th:text="${error}">Error</span>
       </div>
       
       <form id="registerForm" th:action="@{/registro}" method="post">
-        <!-- Mandatory fields -->
-        <label for="username">Usuario <span style="color: #dc3545;">*</span></label>
-        <input type="text" id="username" name="username" placeholder="Nombre de usuario" required>
+        <label for="username">Usuario <span class="required-indicator">*</span></label>
+        <input type="text" id="username" name="username" placeholder="Nombre de usuario" required class="form-control">
 
-        <label for="nombre">Nombre <span style="color: #dc3545;">*</span></label>
-        <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required>
+        <label for="nombre">Nombre <span class="required-indicator">*</span></label>
+        <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required class="form-control">
 
-        <label for="password">Contraseña <span style="color: #dc3545;">*</span></label>
-        <input type="password" id="password" name="password" placeholder="••••••••" required>
+        <label for="password">Contraseña <span class="required-indicator">*</span></label>
+        <input type="password" id="password" name="password" placeholder="••••••••" required class="form-control">
 
-        <!-- Optional fields -->
         <label for="apellido">Apellido</label>
-        <input type="text" id="apellido" name="apellido" placeholder="Tu apellido">
+        <input type="text" id="apellido" name="apellido" placeholder="Tu apellido" class="form-control">
 
         <label for="fecha">Fecha de nacimiento</label>
-        <input type="date" id="fecha">
+        <input type="date" id="fecha" class="form-control">
 
         <button type="submit" class="btn primary" id="submitBtn">Crear cuenta</button>
       </form>
@@ -59,7 +61,6 @@
     </div>
   </section>
   
-  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
   
   <script>

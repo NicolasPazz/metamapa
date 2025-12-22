@@ -1,7 +1,8 @@
 <html th:replace="~{layout/base :: html}">
 <div th:fragment="contenido">
+  <div id="toastContainer" class="toast-container"></div>
+  
   <div class="main-container">
-  <!-- Sidebar -->
   <nav class="sidebar">
     <h2>MetaMapa Admin</h2>
     <a href="#dashboard" class="active">Panel de Control</a>
@@ -11,9 +12,7 @@
     <a href="#carga">Carga Masiva</a>
   </nav>
 
-  <!-- Main Content -->
   <div class="content">
-    <!-- Dashboard -->
     <section id="dashboard">
       <h2>Panel de Control</h2>
       <div class="summary-grid">
@@ -38,7 +37,6 @@
       </div>
     </section>
 
-    <!-- Colecciones -->
     <section id="colecciones">
       <h2>Gestión de Colecciones</h2>
       <a href="#nueva-coleccion" class="btn">+ Crear Nueva Colección</a>
@@ -69,7 +67,6 @@
       </div>
     </section>
 
-    <!-- Hechos -->
     <section id="hechos">
       <h2>Moderación de Hechos</h2>
       <div class="hechos-grid">
@@ -145,7 +142,6 @@
           </div> </div> </div>
     </section>
 
-    <!-- Carga Masiva -->
     <section id="carga">
       <h2>Carga Masiva de Hechos</h2>
       <form method="post" th:action="@{/admin/subir-csv}" enctype="multipart/form-data">
@@ -158,7 +154,6 @@
   </div>
   </div>
 
-  <!-- Nueva Colección Panel -->
   <div id="nueva-coleccion" class="panel">
     <h3>Crear Nueva Colección</h3>
     <form method="post" th:action="@{/admin/crear-coleccion}" id="main-form">
@@ -189,32 +184,32 @@
             <option value="ACONTECIMIENTO">Acontecimiento</option>
           </select>
 
-          <label>Desde:</label>
-          <input type="datetime-local" id="input-fecha-inicio">
+          <label>Desde: <span class="required-indicator">*</span></label>
+          <input type="datetime-local" id="input-fecha-inicio" required class="form-control">
 
-          <label>Hasta:</label>
-          <input type="datetime-local" id="input-fecha-fin">
+          <label>Hasta: <span class="required-indicator">*</span></label>
+          <input type="datetime-local" id="input-fecha-fin" required class="form-control">
         </div>
 
         <div id="opcion-lugar" class="conditional-section" style="display:none;">
-          <label>Latitud:</label>
-          <input type="number" step="any" id="input-lat" placeholder="-34.6037">
+          <label>Latitud: <span class="required-indicator">*</span></label>
+          <input type="number" step="any" id="input-lat" placeholder="-34.6037" required min="-90" max="90" class="form-control">
 
-          <label>Longitud:</label>
-          <input type="number" step="any" id="input-lng" placeholder="-58.3816">
+          <label>Longitud: <span class="required-indicator">*</span></label>
+          <input type="number" step="any" id="input-lng" placeholder="-58.3816" required min="-180" max="180" class="form-control">
         </div>
 
         <div id="opcion-igualdad" class="conditional-section" style="display:none;">
           <label>Campo a comparar:</label>
-          <select id="input-igualdad-campo">
+          <select id="input-igualdad-campo" class="form-control">
             <option value="CATEGORIA">Categoría</option>
             <option value="DESCRIPCION">Descripción</option>
             <option value="ETIQUETA">Etiqueta</option>
             <option value="TITULO">Título</option>
           </select>
 
-          <label>Valor exacto:</label>
-          <input type="text" id="input-igualdad-valor" placeholder="Ej: Robo, Accidente...">
+          <label>Valor exacto: <span class="required-indicator">*</span></label>
+          <input type="text" id="input-igualdad-valor" placeholder="Ej: Robo, Accidente..." required>
         </div>
 
         <div id="opcion-origen" class="conditional-section" style="display:none;">
@@ -250,8 +245,8 @@
 
       <div id="hidden-inputs-container"></div>
 
-      <label for="consenso">Algoritmo de Consenso <span style="color: #dc3545;">*</span></label>
-      <select name="algoritmoConsenso" id="consenso" required>
+      <label for="consenso">Algoritmo de Consenso <span class="required-indicator">*</span></label>
+      <select name="algoritmoConsenso" id="consenso" required class="form-control">
         <option value="MAYORIA_SIMPLE">Mayoría Simple</option>
         <option value="MULTIPLES_MENCIONES">Múltiples Menciones</option>
         <option value="ABSOLUTA">Absoluta</option>
@@ -279,7 +274,8 @@
       function agregarCriterioALista() {
         const tipo = document.getElementById("selector-criterio").value;
         if (!tipo) {
-          alert("Seleccione un tipo de criterio.");
+          showToast("Seleccione un tipo de criterio.", "error");
+          document.getElementById("selector-criterio").focus();
           return;
         }
 
@@ -290,48 +286,77 @@
         // --- CASE 1: FECHA ---
         if (tipo === "fecha") {
           const tipoFecha = document.getElementById("input-tipo-fecha").value;
-          const ini = document.getElementById("input-fecha-inicio").value;
-          const fin = document.getElementById("input-fecha-fin").value;
+          const ini = document.getElementById("input-fecha-inicio");
+          const fin = document.getElementById("input-fecha-fin");
 
-          if (!ini || !fin) { alert("Complete las fechas"); return; }
+          if (!ini.value || !fin.value) {
+            showToast("Complete las fechas de inicio y fin.", "error");
+            if (!ini.value) ini.focus();
+            else if (!fin.value) fin.focus();
+            return;
+          }
 
           // Bind to DTO: tipo, tipoFecha, fechaInicial, fechaFinal
           createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "fecha");
           createHiddenInput(container, `criterios[${contadorCriterios}].tipoFecha`, tipoFecha);
-          createHiddenInput(container, `criterios[${contadorCriterios}].fechaInicial`, ini);
-          createHiddenInput(container, `criterios[${contadorCriterios}].fechaFinal`, fin);
+          createHiddenInput(container, `criterios[${contadorCriterios}].fechaInicial`, ini.value);
+          createHiddenInput(container, `criterios[${contadorCriterios}].fechaFinal`, fin.value);
 
-          descripcion = `📅 <b>Fecha</b> (${tipoFecha}): ${ini} al ${fin}`;
+          descripcion = `📅 <b>Fecha</b> (${tipoFecha}): ${ini.value} al ${fin.value}`;
         }
 
         // --- CASE 2: LUGAR ---
         else if (tipo === "lugar") {
-          const lat = document.getElementById("input-lat").value;
-          const lng = document.getElementById("input-lng").value;
+          const lat = document.getElementById("input-lat");
+          const lng = document.getElementById("input-lng");
 
-          if (!lat || !lng) { alert("Complete latitud y longitud"); return; }
+          if (!lat.value || !lng.value) {
+            showToast("Complete latitud y longitud.", "error");
+            if (!lat.value) lat.focus();
+            else if (!lng.value) lng.focus();
+            return;
+          }
+          
+          const latNum = parseFloat(lat.value);
+          const lngNum = parseFloat(lng.value);
+          
+          if (isNaN(latNum) || latNum < -90 || latNum > 90) {
+            showToast("La latitud debe estar entre -90 y 90.", "error");
+            lat.focus();
+            return;
+          }
+          
+          if (isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+            showToast("La longitud debe estar entre -180 y 180.", "error");
+            lng.focus();
+            return;
+          }
 
           // Bind to DTO: tipo, lat, lng
           createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "lugar");
-          createHiddenInput(container, `criterios[${contadorCriterios}].lat`, lat);
-          createHiddenInput(container, `criterios[${contadorCriterios}].lng`, lng);
+          createHiddenInput(container, `criterios[${contadorCriterios}].lat`, lat.value);
+          createHiddenInput(container, `criterios[${contadorCriterios}].lng`, lng.value);
 
-          descripcion = `📍 <b>Lugar</b>: ${lat}, ${lng}`;
+          descripcion = `📍 <b>Lugar</b>: ${lat.value}, ${lng.value}`;
         }
 
         // --- CASE 3: IGUALDAD ---
         else if (tipo === "igualdad") {
           const campo = document.getElementById("input-igualdad-campo").value;
-          const valor = document.getElementById("input-igualdad-valor").value;
+          const valor = document.getElementById("input-igualdad-valor");
 
-          if (!valor) { alert("Escriba un valor"); return; }
+          if (!valor.value || valor.value.trim() === "") {
+            showToast("Escriba un valor para comparar.", "error");
+            valor.focus();
+            return;
+          }
 
           // Bind to DTO: tipo, tipoDeDato, cadenaAComparar
           createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "igualdad");
           createHiddenInput(container, `criterios[${contadorCriterios}].tipoDeDato`, campo);
-          createHiddenInput(container, `criterios[${contadorCriterios}].cadenaAComparar`, valor);
+          createHiddenInput(container, `criterios[${contadorCriterios}].cadenaAComparar`, valor.value.trim());
 
-          descripcion = `🟰 <b>Igualdad</b>: ${campo} = "${valor}"`;
+          descripcion = `🟰 <b>Igualdad</b>: ${campo} = "${valor.value.trim()}"`;
         }
 
         // --- CASE 4: ORIGEN ---
@@ -352,7 +377,8 @@
           const selectedOptions = Array.from(select.selectedOptions);
 
           if (selectedOptions.length === 0) {
-            alert("Seleccione al menos una fuente.");
+            showToast("Seleccione al menos una fuente.", "error");
+            select.focus();
             return;
           }
 
