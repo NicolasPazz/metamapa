@@ -81,10 +81,13 @@ backend/data/multimedia/**
 *.log
 
 # Archivos de entorno y configuración local
+# Ignorar archivos .env reales (con datos sensibles)
 .env
 .env.local
+.env.prod
 .env.*.local
-*.env
+# PERMITIR archivos .example (sin datos sensibles)
+!.env*.example
 
 # Archivos del sistema operativo
 .DS_Store

@@ -1,0 +1,47 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# IDE
+.idea
+.vscode
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings
+
+# Maven
+target/
+**/target/
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentación
+README*.md
+*.md
+!README-DOCKER.md
+
+# Entregables
+entregables/
+
+# Data (se montan como volúmenes)
+backend/data/csv/*
+backend/data/multimedia/*
+!backend/data/csv/.gitkeep
+!backend/data/multimedia/.gitkeep
+
