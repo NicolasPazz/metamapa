@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.frontend.service;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
@@ -11,15 +12,18 @@ import org.springframework.web.reactive.function.client.WebClient;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class AdminService {
     private final WebClient webClientAgregador;
     private final WebClient webClientEstatica;
+    private final WebClient webClientAgregadorBase;
 
     public AdminService(WebClient.Builder builder,
                        @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
                        @Value("${app.api.estatica.base-url:http://localhost:8082/api}") String estaticaBaseUrl) {
         this.webClientAgregador = builder.baseUrl(agregadorBaseUrl + "/admin").build();
+        this.webClientAgregadorBase = builder.baseUrl(agregadorBaseUrl).build();
         this.webClientEstatica = builder.baseUrl(estaticaBaseUrl).build();
     }
 
@@ -89,5 +93,21 @@ public class AdminService {
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
+    }
+
+    public void ejecutarSchedulerAgregador() {
+        webClientAgregadorBase.post()
+                .uri("/front/ejecutar-scheduler")
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+    }
+
+    public void actualizarEstadisticas() {
+        // TODO: Hacer endpoint en estadisticas por ahora solo tira un log
+        // Cuando esté definido, debería hacer un POST a /estadisticas/actualizar o similar
+
+        log.info("Actualización de estadísticas solicitada (endpoint aún no implementado)");
+
     }
 }

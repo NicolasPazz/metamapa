@@ -167,5 +167,33 @@ public class AdminController {
         return "redirect:/admin";
     }
 
+    @PostMapping("/admin/actualizar-agregador")
+    public String actualizarAgregador(RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/actualizar-agregador - Ejecutando scheduler del agregador");
+        try {
+            adminService.ejecutarSchedulerAgregador();
+            log.info("Scheduler del agregador ejecutado correctamente");
+            redirectAttributes.addFlashAttribute("success", "Agregador actualizado correctamente!");
+        } catch (Exception e) {
+            log.error("Error al ejecutar scheduler del agregador", e);
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar agregador: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/actualizar-estadisticas")
+    public String actualizarEstadisticas(RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/actualizar-estadisticas - Actualizando estadísticas (mockeado)");
+        try {
+            adminService.actualizarEstadisticas();
+            log.info("Estadísticas actualizadas (mockeado)");
+            redirectAttributes.addFlashAttribute("success", "Estadísticas actualizadas correctamente!");
+        } catch (Exception e) {
+            log.error("Error al actualizar estadísticas", e);
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar estadísticas: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
+
 }
 
