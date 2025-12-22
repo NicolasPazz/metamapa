@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.frontend.controller;
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
 import ar.utn.ba.ddsi.frontend.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,8 +30,11 @@ public class AdminController {
     private final FuenteService fuenteService;
 
     @GetMapping("/admin")
-    public String mostrarMenu(Model model) {
+    public String mostrarMenu(Model model, HttpServletRequest request) {
         log.info("GET /admin");
+        if (request != null) {
+            model.addAttribute("httpServletRequest", request);
+        }
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
         List<HechoDTO> hechos = hechoService.getAllHechos();
         List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();

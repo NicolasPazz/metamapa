@@ -34,13 +34,18 @@
         <header class="navbar">
             <a th:href="@{/}" class="logo">
                 <img th:src="@{/images/metamapa-header.svg}" 
-                     th:if="${!#strings.contains(#httpServletRequest.requestURI, '/admin')}"
+                     th:if="${#httpServletRequest != null && !#strings.contains(#httpServletRequest.requestURI, '/admin')}"
                      alt="MetaMapa" 
                      class="logo-img"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                 <img th:src="@{/images/metamapa-header-admin.svg}" 
-                     th:if="${#strings.contains(#httpServletRequest.requestURI, '/admin')}"
+                     th:if="${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/admin')}"
                      alt="MetaMapa Admin" 
+                     class="logo-img"
+                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+                <img th:src="@{/images/metamapa-header.svg}" 
+                     th:if="${#httpServletRequest == null}"
+                     alt="MetaMapa" 
                      class="logo-img"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                 <span class="logo-text" style="display: none;">MetaMapa</span>

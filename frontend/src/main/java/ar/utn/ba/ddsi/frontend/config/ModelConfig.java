@@ -1,5 +1,6 @@
 package ar.utn.ba.ddsi.frontend.config;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -15,6 +16,11 @@ public class ModelConfig {
     @ModelAttribute("apiBaseUrl")
     public String getApiBaseUrl() {
         return apiAgregadorBaseUrl;
+    }
+
+    @ModelAttribute("httpServletRequest")
+    public HttpServletRequest getHttpServletRequest(HttpServletRequest request) {
+        return request;
     }
 }
 
