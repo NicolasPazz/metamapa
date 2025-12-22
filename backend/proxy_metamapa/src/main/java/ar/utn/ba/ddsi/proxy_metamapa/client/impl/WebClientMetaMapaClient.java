@@ -1,5 +1,6 @@
-package ar.utn.ba.ddsi.proxy_metamapa.client;
+package ar.utn.ba.ddsi.proxy_metamapa.client.impl;
 
+import ar.utn.ba.ddsi.proxy_metamapa.client.MetaMapaClient;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.service.FuenteService;
@@ -12,9 +13,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
-@Profile("prod")
+@Profile("prod-metamapa-external")
 @RequiredArgsConstructor
-public class WebClientAgregadorClient implements AgregadorClient {
+public class WebClientMetaMapaClient implements MetaMapaClient {
 
   private final FuenteService fuenteService;
 

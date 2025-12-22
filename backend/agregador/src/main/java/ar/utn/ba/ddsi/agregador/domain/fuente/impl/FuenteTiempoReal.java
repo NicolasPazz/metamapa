@@ -24,7 +24,6 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue("TIEMPO_REAL")
 public class FuenteTiempoReal extends AFuente {
-
   @Transient
   @Getter
   @Setter
@@ -42,16 +41,35 @@ public class FuenteTiempoReal extends AFuente {
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion) {
+    // Construir query string manualmente para evitar problemas con UriBuilder y hosts con guiones bajos
+    StringBuilder queryBuilder = new StringBuilder("/api/hechos");
+    boolean firstParam = true;
+    if (categoria != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(java.net.URLEncoder.encode(categoria, java.nio.charset.StandardCharsets.UTF_8));
+      firstParam = false;
+    }
+    if (fecha_reporte_desde != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_desde=").append(fecha_reporte_desde);
+      firstParam = false;
+    }
+    if (fecha_reporte_hasta != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_hasta=").append(fecha_reporte_hasta);
+      firstParam = false;
+    }
+    if (fecha_acontecimiento_desde != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_desde=").append(fecha_acontecimiento_desde);
+      firstParam = false;
+    }
+    if (fecha_acontecimiento_hasta != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_hasta=").append(fecha_acontecimiento_hasta);
+      firstParam = false;
+    }
+    if (ubicacion != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(java.net.URLEncoder.encode(ubicacion, java.nio.charset.StandardCharsets.UTF_8));
+    }
+    
     List<HechoDTO> hechos = webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path("/hechos")
-            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
-            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
-            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
-            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
-            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
-            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
-            .build())
+        .uri(queryBuilder.toString())
         .retrieve()
         .bodyToFlux(HechoDTO.class)
         .collectList()
@@ -70,8 +88,14 @@ public class FuenteTiempoReal extends AFuente {
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     try {
       log.info("Obteniendo colecciones de fuente tiempo real: {}", getNombre());
-      List<ColeccionDTO> colecciones = getWebClient().get()
-          .uri("/colecciones")
+      
+      if (webClient == null) {
+        log.error("WebClient no está inicializado para fuente: {}", getNombre());
+        return ResponseEntity.ok(List.of());
+      }
+      
+      List<ColeccionDTO> colecciones = webClient.get()
+          .uri("/api/colecciones")
           .retrieve()
           .bodyToFlux(ColeccionDTO.class)
           .collectList()
@@ -93,17 +117,39 @@ public class FuenteTiempoReal extends AFuente {
       LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion,
       String modo) {
+    // Construir query string manualmente para evitar problemas con UriBuilder y hosts con guiones bajos
+    StringBuilder queryBuilder = new StringBuilder(String.format("/colecciones/%s/hechos", handle));
+    boolean firstParam = true;
+    if (categoria != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(java.net.URLEncoder.encode(categoria, java.nio.charset.StandardCharsets.UTF_8));
+      firstParam = false;
+    }
+    if (fecha_reporte_desde != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_desde=").append(fecha_reporte_desde);
+      firstParam = false;
+    }
+    if (fecha_reporte_hasta != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_hasta=").append(fecha_reporte_hasta);
+      firstParam = false;
+    }
+    if (fecha_acontecimiento_desde != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_desde=").append(fecha_acontecimiento_desde);
+      firstParam = false;
+    }
+    if (fecha_acontecimiento_hasta != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_hasta=").append(fecha_acontecimiento_hasta);
+      firstParam = false;
+    }
+    if (ubicacion != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(java.net.URLEncoder.encode(ubicacion, java.nio.charset.StandardCharsets.UTF_8));
+      firstParam = false;
+    }
+    if (modo != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("modo=").append(java.net.URLEncoder.encode(modo, java.nio.charset.StandardCharsets.UTF_8));
+    }
+    
     List<HechoDTO> hechos = webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path(String.format("/colecciones/%s/hechos", handle))
-            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
-            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
-            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
-            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
-            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
-            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
-            .queryParamIfPresent("modo", Optional.ofNullable(modo))
-            .build(handle))
+        .uri(queryBuilder.toString())
         .retrieve()
         .bodyToFlux(HechoDTO.class)
         .collectList()

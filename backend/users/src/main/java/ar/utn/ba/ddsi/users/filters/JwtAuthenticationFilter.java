@@ -35,8 +35,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Token inválido");
                 return;
             }
-        } else {
-            System.out.println("No hay token de autorización");
         }
 
         filterChain.doFilter(request, response);
@@ -45,6 +43,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
         String path = request.getRequestURI();
-        return path.equals("/api/auth") || path.equals("/api/auth/refresh");
+        return path.equals("/api/auth") || 
+               path.equals("/api/auth/refresh") || 
+               path.startsWith("/actuator");
     }
 }

@@ -1,6 +1,6 @@
 package ar.utn.ba.ddsi.proxy_metamapa.controller;
 
-import ar.utn.ba.ddsi.proxy_metamapa.client.AgregadorClient;
+import ar.utn.ba.ddsi.proxy_metamapa.client.MetaMapaClient;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
 import java.time.LocalDate;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class FuenteController {
-  private final AgregadorClient agregador;
+  private final MetaMapaClient metaMapaClient;
 
   @GetMapping("/hechos")
   public ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
@@ -46,7 +46,7 @@ public class FuenteController {
       @RequestParam(required = false) String ubicacion) {
     log.info("GET /api/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}",
             categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
-    return agregador.getAllHechosVisibles(
+    return metaMapaClient.getAllHechosVisibles(
         categoria,
         fecha_reporte_desde, fecha_reporte_hasta,
         fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
@@ -56,7 +56,7 @@ public class FuenteController {
   @GetMapping("/colecciones")
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     log.info("GET /api/colecciones");
-    return agregador.getAllColecciones();
+    return metaMapaClient.getAllColecciones();
   }
 
   @GetMapping("/colecciones/{handle}/hechos")
@@ -82,7 +82,7 @@ public class FuenteController {
   ) {
     log.info("GET /api/colecciones/{}/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}",
             handle, categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
-    return agregador.getHechosColeccionByHandle(
+    return metaMapaClient.getHechosColeccionByHandle(
         handle,
         categoria,
         fecha_reporte_desde, fecha_reporte_hasta,

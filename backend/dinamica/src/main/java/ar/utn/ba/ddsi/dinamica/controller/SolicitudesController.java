@@ -5,6 +5,7 @@ import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
 import ar.utn.ba.ddsi.dinamica.service.SolicitudesService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +30,12 @@ public class SolicitudesController {
   @GetMapping("/{id}")
   public ResponseEntity<SolicitudOutputDTO> obtenerSolicitudPorId(@PathVariable Long id) {
     log.info("GET /api/solicitudes/{}", id);
-    return ResponseEntity.ok(solicitudesService.obtenerSolicitud(id));
+    try {
+      return ResponseEntity.ok(solicitudesService.obtenerSolicitud(id));
+    } catch (EntityNotFoundException e) {
+      log.warn("Solicitud no encontrada con ID: {}", id);
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    }
   }
 
   @GetMapping("/contribuyente/{idContribuyente}")
@@ -108,6 +114,9 @@ public class SolicitudesController {
           id, solicitudJson, archivos);
       log.debug("Solicitud {} modificada exitosamente", id);
       return ResponseEntity.ok(solicitudModificada);
+    } catch (EntityNotFoundException e) {
+      log.warn("PATCH /api/solicitudes/{} - Solicitud no encontrada: {}", id, e.getMessage());
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
     } catch (IllegalArgumentException e) {
       log.error("PATCH /api/solicitudes/{} - Formato de archivo no permitido: {}", id, e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.BAD_REQUEST)
@@ -138,6 +147,13 @@ public class SolicitudesController {
       SolicitudOutputDTO solicitudModificada = solicitudesService.modificarSolicitud(id, input);
       log.debug("Solicitud {} modificada exitosamente", id);
       return ResponseEntity.ok(solicitudModificada);
+    } catch (EntityNotFoundException e) {
+      log.warn("PATCH /api/solicitudes/{} - Solicitud no encontrada: {}", id, e.getMessage());
+      return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    } catch (IllegalArgumentException e) {
+      log.warn("PATCH /api/solicitudes/{} - Solicitud inválida: {}", id, e.getMessage());
+      return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+          .body("Error: " + e.getMessage());
     } catch (Exception e) {
       log.error("Error modificando solicitud {}: {}", id, e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

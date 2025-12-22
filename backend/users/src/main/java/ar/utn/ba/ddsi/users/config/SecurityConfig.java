@@ -15,14 +15,14 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        System.out.println("=== CONFIGURANDO SECURITY ===");
-        
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, OriginFilter originFilter) throws Exception {
         http
             .csrf(AbstractHttpConfigurer::disable)
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .addFilterBefore(originFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> {
                 auth.requestMatchers("/api/auth", "/api/auth/refresh", "/api/auth/register").permitAll();
+                auth.requestMatchers("/actuator/**").permitAll();
                 auth.requestMatchers("/api/auth/user/roles-permisos").authenticated();
                 auth.anyRequest().authenticated();
             })

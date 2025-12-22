@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
 
-public interface AgregadorClient {
+public interface MetaMapaClient {
   ResponseEntity<List<HechoDTO>> getAllHechosVisibles(
       String categoria,
       LocalDate fechaReporteDesde,

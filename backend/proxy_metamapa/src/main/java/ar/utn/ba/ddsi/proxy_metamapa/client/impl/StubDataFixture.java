@@ -1,12 +1,10 @@
-package ar.utn.ba.ddsi.proxy_metamapa.client;
+package ar.utn.ba.ddsi.proxy_metamapa.client.impl;
 
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
-import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ContenidoMultimediaDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.TransicionEstadoHechoDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.enums.EstadoHecho;
 import lombok.Getter;
-import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -14,7 +12,6 @@ import java.util.List;
 import java.util.UUID;
 
 @Component
-@Profile({"dev"})
 @Getter
 public class StubDataFixture {
 

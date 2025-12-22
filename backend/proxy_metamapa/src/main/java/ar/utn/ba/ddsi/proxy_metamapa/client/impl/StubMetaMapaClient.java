@@ -1,5 +1,6 @@
-package ar.utn.ba.ddsi.proxy_metamapa.client;
+package ar.utn.ba.ddsi.proxy_metamapa.client.impl;
 
+import ar.utn.ba.ddsi.proxy_metamapa.client.MetaMapaClient;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
 import java.time.LocalDate;
@@ -8,16 +9,13 @@ import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
-
 @Slf4j
 @Service
-@Profile({"dev"})
 @RequiredArgsConstructor
-public class StubAgregadorClient implements AgregadorClient {
+public class StubMetaMapaClient implements MetaMapaClient {
 
   private final StubDataFixture fixture;
 

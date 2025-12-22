@@ -24,7 +24,6 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue("CRON")
 public class FuenteCron extends AFuente {
-
   @Transient
   @Getter
   @Setter
@@ -51,7 +50,7 @@ public class FuenteCron extends AFuente {
     try {
       log.info("🔍 [FuenteCron] Obteniendo hechos nuevos de fuente: {}", getNombre());
       List<HechoDTO> hechos = webClient.get()
-          .uri("/hechos/nuevos")
+          .uri("/api/hechos/nuevos")
           .retrieve()
           .bodyToFlux(HechoDTO.class)
           .collectList()
