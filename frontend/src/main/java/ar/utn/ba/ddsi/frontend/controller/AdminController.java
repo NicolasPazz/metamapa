@@ -6,19 +6,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.Logger;
-import org.springframework.cglib.core.Local;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -35,6 +29,7 @@ public class AdminController {
     private final ObjectMapper objectMapper;
     private final FuenteService fuenteService;
 
+    //@PreAuthorize("hasAnyRole('ADMIN')")
     @GetMapping("/admin")
     public String mostrarMenu(Model model) {
         log.info("GET /admin");
@@ -46,12 +41,15 @@ public class AdminController {
                 .collect(Collectors.toMap(FuenteDTO::getId, FuenteDTO::getNombre));
 
         model.addAttribute("titulo", "Panel De Control");
+        //model.addAttribute("coleccionesLimit", colecciones.subList(0,2));
+        // Mostrar hechos limitados de forma segura
         if (hechos != null && hechos.size() > 3) {
             int endIndex = Math.min(5, hechos.size());
             model.addAttribute("hechosLimit", hechos.subList(3, endIndex));
         } else {
             model.addAttribute("hechosLimit", java.util.Collections.emptyList());
         }
+        //model.addAttribute("solicitudesLimit", solicitudes.subList(0,2));
         model.addAttribute("colecciones", colecciones);
         model.addAttribute("hechos", hechos);
         model.addAttribute("solicitudes", solicitudes);
@@ -82,6 +80,7 @@ public class AdminController {
                 archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType());
 
         try {
+            // Llamamos al servicio que se comunica con el otro sistema
             adminService.enviarArchivoAlBackend(archivo);
             model.addAttribute("mensaje", "Archivo enviado exitosamente para procesamiento.");
         } catch (Exception e) {
@@ -89,7 +88,7 @@ public class AdminController {
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
 
-        return "redirect:/admin";
+        return "redirect:/admin"; // Volvemos a la vista admin.html
     }
 
     @PostMapping("/admin/crear-coleccion")
@@ -104,6 +103,7 @@ public class AdminController {
         }
 
         try {
+            // Llamamos al servicio que se comunica con el otro sistema
             adminService.crearColeccion(coleccionDTO);
             model.addAttribute("mensaje", "Colección creada correctamente.");
         } catch (Exception e) {
@@ -111,7 +111,7 @@ public class AdminController {
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
 
-        return "redirect:/admin";
+        return "redirect:/admin"; // Volvemos a la vista admin.html
     }
 
     @PostMapping("/admin/actualizar-coleccion")
@@ -125,6 +125,7 @@ public class AdminController {
         }
 
         try {
+            // Llamamos al servicio que se comunica con el otro sistema
             adminService.actualizarColeccion(coleccionDTO, handle);
             model.addAttribute("mensaje", "Colección actualizada correctamente.");
         } catch (Exception e) {
@@ -132,8 +133,9 @@ public class AdminController {
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
 
-        return "redirect:/admin";
+        return "redirect:/admin"; // Volvemos a la vista admin.html
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("solicitudes/{id}/aceptar")
     public String aceptarSolicitud(@PathVariable Long id) {
         solicitudService.cambiarEstado(id, "ACEPTADO");
@@ -141,6 +143,7 @@ public class AdminController {
 
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("solicitudes/{id}/rechazar")
     public String rechazarSolicitud(@PathVariable Long id) {
         solicitudService.cambiarEstado(id, "RECHAZADO");

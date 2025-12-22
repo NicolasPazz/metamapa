@@ -2,14 +2,16 @@ package ar.utn.ba.ddsi.frontend.controller;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudEdicionFormDTO;
-import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificacionDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudInputDTO;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
@@ -18,7 +20,6 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -90,8 +91,29 @@ public class SolicitudController {
     }
     @GetMapping()
     public String verPanelSolicitudes(Model model) {
-        List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
+        // Verificar si el usuario es admin
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        boolean isAdmin = authentication != null && authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .anyMatch(authority -> authority.equals("ROLE_ADMIN"));
+        
+        List<SolicitudInputDTO> solicitudes;
+        if (isAdmin) {
+            // Si es admin, mostrar todas las solicitudes
+            solicitudes = solicitudService.buscarTodasLasSolicitudes();
+        } else {
+            // Si no es admin, mostrar solo las solicitudes del usuario
+            Long userId = solicitudService.obtenerContribuyenteIdDeSesion();
+            if (userId != null) {
+                solicitudes = solicitudService.obtenerSolicitudesPorContribuyente(userId);
+            } else {
+                solicitudes = List.of(); // Si no hay userId, lista vacía
+            }
+        }
+        
         model.addAttribute("solicitudes", solicitudes);
+        model.addAttribute("isAdmin", isAdmin);
+        
         return "admin/solicitudes";
     }
     @GetMapping("/{id}/editar")
@@ -124,6 +146,7 @@ public class SolicitudController {
         return "redirect:/admin/solicitudes";
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}/aceptar-con-modificaciones")
     public String mostrarFormularioAceptarConModificaciones(@PathVariable Long id, Model model) {
         log.info("Intento de acceder a aceptar con modificaciones de solicitud ID: {}", id);
@@ -145,6 +168,7 @@ public class SolicitudController {
         }
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PatchMapping(value = "/{id}/aceptar-con-modificaciones", consumes = "multipart/form-data")
     @ResponseBody
     public ResponseEntity<?> procesarAceptarConModificaciones(
