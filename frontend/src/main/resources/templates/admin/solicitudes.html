@@ -1,61 +1,118 @@
 <!DOCTYPE html>
 <html lang="es" th:replace="~{layout/base :: html}">
 <head>
-    <title>Listado de Solicitudes</title>
+    <title>Administración de Solicitudes</title>
 </head>
 <body>
 
 <div th:fragment="contenido">
-    <div class="container mt-4">
 
+    <style>
+        .badge-status { font-size: 0.75rem; padding: 0.5em 0.8em; border-radius: 50rem; font-weight: 700; letter-spacing: 0.5px; }
+        .bg-pendiente { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .bg-aprobada { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .bg-rechazada { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Modal Z-Index fix */
+        .modal { z-index: 100050 !important; }
+        .modal-backdrop { z-index: 100040 !important; }
+
+        /* Estilos Detalle */
+        .detail-label { font-size: 0.7rem; text-transform: uppercase; color: #6c757d; font-weight: 700; margin-bottom: 4px; }
+        .detail-value { font-size: 1rem; color: #212529; font-weight: 500; margin-bottom: 1rem; }
+        .multimedia-box { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 8px 12px; display: inline-flex; align-items: center; gap: 8px; margin: 0 5px 5px 0; font-size: 0.9rem; }
+
+        /* Botones Acción */
+        .btn-action { margin-right: 3px; display: inline-flex; align-items: center; gap: 5px; }
+    </style>
+
+    <div class="container mt-5">
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Panel de Solicitudes (Total: <span th:text="${solicitudes.size()}">0</span>)</h2>
+            <div>
+                <h2 class="fw-bold mb-0">Panel de Solicitudes</h2>
+                <div class="text-muted small">Administración de Solicitudes</div>
+            </div>
+            <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill shadow-sm">
+                Total: <span th:text="${solicitudes.size()}">0</span>
+            </span>
         </div>
 
-        <div class="card shadow-sm">
+        <div class="card shadow-sm border-0 rounded-3 overflow-hidden">
             <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="bg-light border-bottom">
+                    <tr class="text-secondary small text-uppercase">
+                        <th class="ps-4">ID</th>
                         <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Hecho Relacionado</th>
+                        <th>Categoría</th>
+                        <th>Título</th>
                         <th>Usuario</th>
                         <th>Estado</th>
-                        <th class="text-end">Detalles</th>
+                        <th class="text-end pe-4" style="min-width: 320px;">Acciones</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="sol : ${solicitudes}">
-                        <td th:text="${sol.id}">1</td>
-                        <td th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></td>
-
-                        <td th:text="${sol.tipo}">TIPO</td>
+                        <td class="ps-4 fw-bold text-secondary" th:text="${sol.id}">#</td>
 
                         <td>
-                            <span th:if="${sol.hecho != null}" th:text="${sol.hecho.titulo}">Título</span>
-                            <span th:if="${sol.hecho == null}" class="text-muted fst-italic">Hecho desconocido</span>
+                            <span th:if="${sol.fechaDeCargaSolicitud != null}"
+                                  th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></span>
+                            <span th:if="${sol.fechaDeCargaSolicitud == null}" class="text-muted small">-</span>
                         </td>
 
-                        <td th:text="${sol.contribuyenteId != null ? sol.contribuyenteId : 'Anónimo'}">User</td>
+                        <td><span class="badge bg-light text-dark border" th:text="${sol.nombreCategoria}">Cat</span></td>
 
-                        <td th:text="${sol.estado}">ESTADO</td>
-<!--
+                        <td class="fw-bold text-truncate" style="max-width: 150px;" th:text="${sol.titulo}">Título</td>
 
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-info text-white"
-                                    th:onclick="verDetalle([[${sol}]])">
-                                Ver info
+                        <td class="small text-muted" th:text="${sol.idContribuyente != null ? 'User #' + sol.idContribuyente : 'Anónimo'}"></td>
+
+                        <td>
+                            <span th:if="${sol.estado != null}"
+                                  th:class="'badge-status ' +
+                                  ( ${sol.estado.name() == 'PENDIENTE'} ? 'bg-pendiente' :
+                                  ( ${sol.estado.name() == 'ACEPTADO'} ? 'bg-aprobada' : 'bg-rechazada' ) )"
+                                  th:text="${sol.estado}">
+                            </span>
+                        </td>
+
+                        <td class="text-end pe-4">
+                            <form th:action="@{/solicitudes/{id}/aceptar(id=${sol.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-success btn-action" title="Aceptar"
+                                        >
+                                    <i class="bi bi-check-lg"></i> Aceptar
+                                </button>
+                            </form>
+
+                            <form th:action="@{/solicitudes/{id}/rechazar(id=${sol.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-sm btn-danger btn-action" title="Rechazar"
+                                        >
+                                    <i class="bi bi-x-lg"></i> Rechazar
+                                </button>
+                            </form>
+
+                            <a th:href="@{/solicitudes/{id}/editar(id=${sol.id})}"
+                               class="btn btn-sm btn-warning btn-action text-white"
+                               title="Editar">
+                                <i class="bi bi-pencil-square"></i> Editar
+                            </a>
+
+                            <a th:href="@{/solicitudes/{id}/aceptar-con-modificaciones(id=${sol.id})}"
+                               class="btn btn-sm btn-info btn-action text-white"
+                               title="Aceptar con Modificaciones">
+                                <i class="bi bi-check-circle"></i> Aceptar con Modificaciones
+                            </a>
+
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                    th:data-id="${sol.id}"
+                                    onclick="cargarDatosEnModal(this.getAttribute('data-id'))">
+                                Detalle
                             </button>
                         </td>
--->
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(solicitudes)}">
-                        <td colspan="7" class="text-center py-5 text-muted">
-                            No hay solicitudes registradas en el sistema.
-                        </td>
+                        <td colspan="7" class="text-center py-5 text-muted">No hay solicitudes registradas.</td>
                     </tr>
                     </tbody>
                 </table>
@@ -64,66 +121,54 @@
     </div>
 
     <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalle de Solicitud #<span id="modalId"></span></h5>
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-light px-4 py-3">
+                    <div>
+                        <h5 class="modal-title fw-bold">Detalle de Solicitud</h5>
+                        <small class="text-muted">Referencia #<span id="mdlId"></span></small>
+                    </div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <strong>Tipo:</strong> <span id="modalTipo"></span><br>
-                        <strong>Estado:</strong> <span id="modalEstado"></span>
-                    </div>
-
-                    <div class="card bg-light">
-                        <div class="card-body">
-                            <h6>Contenido / Justificación:</h6>
-                            <pre id="modalContenido" style="white-space: pre-wrap; font-size: 0.9em;"></pre>
+                <div class="modal-body p-4">
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <div class="detail-label">Título</div>
+                            <div class="detail-value fs-5 fw-bold text-primary" id="mdlTitulo"></div>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="detail-label">Estado</div>
+                            <span id="mdlEstadoBadge" class="badge bg-secondary">ESTADO</span>
                         </div>
                     </div>
+                    <hr class="text-muted opacity-25">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="detail-label">Categoría</div>
+                            <div class="detail-value" id="mdlCategoria"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="detail-label">Coordenadas</div>
+                            <div class="detail-value font-monospace small" id="mdlUbicacion"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="detail-label">Fecha Suceso</div>
+                            <div class="detail-value" id="mdlFechaSuceso"></div>
+                        </div>
+                    </div>
+                    <div class="mt-2">
+                        <div class="detail-label">Descripción</div>
+                        <div class="p-3 bg-light border rounded text-secondary" style="white-space: pre-wrap;" id="mdlDescripcion"></div>
+                    </div>
+                    <div id="divMultimedia" class="mt-4" style="display:none;">
+                        <div class="detail-label mb-2"><i class="bi bi-paperclip"></i> Adjuntos</div>
+                        <div id="listaMultimedia"></div>
+                    </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer bg-light px-4">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
                 </div>
             </div>
         </div>
     </div>
-
-    <script th:inline="javascript">
-        let modal = null;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
-        });
-
-        function verDetalle(solicitud) {
-            // Llenar datos básicos
-            document.getElementById('modalId').textContent = solicitud.id;
-            document.getElementById('modalTipo').textContent = solicitud.tipo;
-            document.getElementById('modalEstado').textContent = solicitud.estado;
-
-            // Formatear el contenido (detalle)
-            const contenidoDiv = document.getElementById('modalContenido');
-
-            if (!solicitud.detalle) {
-                contenidoDiv.textContent = "Sin detalles adicionales.";
-            } else {
-                // Intentamos ver si es un JSON (caso Edición) para mostrarlo bonito
-                try {
-                    const json = JSON.parse(solicitud.detalle);
-                    // Lo mostramos indentado
-                    contenidoDiv.textContent = JSON.stringify(json, null, 2);
-                } catch (e) {
-                    // Si no es JSON (caso Eliminación con texto plano), mostramos el texto tal cual
-                    contenidoDiv.textContent = solicitud.detalle;
-                }
-            }
-
-            modal.show();
-        }
-    </script>
 </div>
-
-</body>
-</html>

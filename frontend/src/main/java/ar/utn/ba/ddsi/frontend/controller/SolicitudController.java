@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.frontend.controller;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudEdicionFormDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificacionDTO;
+import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudInputDTO;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Controller
 @RequiredArgsConstructor
@@ -30,7 +32,7 @@ public class SolicitudController {
                                  Model model,
                                  RedirectAttributes redirectAttributes) {
         try {
-            solicitudService.crearSolicitud(solicitudDTO);
+            //solicitudService.crearSolicitud(solicitudDTO);
             return "redirect:/hechos";
         } catch (Exception e) {
             return "redirect:/hechos";
@@ -38,6 +40,7 @@ public class SolicitudController {
 
 
     }
+/*
     @PostMapping("/modificar/{idSolicitud}")
     public ResponseEntity<?> solicitarModificacion(
             @PathVariable Long idSolicitud  ,
@@ -49,6 +52,7 @@ public class SolicitudController {
 
         return ResponseEntity.ok("Solicitud recibida correctamente");
     }
+*/
 
 
     @PatchMapping(value = "/{id}", consumes = "multipart/form-data")
@@ -84,24 +88,97 @@ public class SolicitudController {
             return ResponseEntity.status(500).body("Error al actualizar la solicitud: " + e.getMessage());
         }
     }
-
-    @GetMapping("/test1")
-    public ResponseEntity<?> testearEdicion() {
-        log.info("GET /solicitudes/test1");
-        SolicitudModificacionDTO dtoPrueba = new SolicitudModificacionDTO();
-
-        dtoPrueba.setIdContribuyente(1L);
-        dtoPrueba.setNuevoTitulo("TEST: Título Modificado Hardcodeado");
-        dtoPrueba.setNuevoDescripcion("Esta es una descripción de prueba generada manualmente en el backend para verificar el flujo de edición.");
-        dtoPrueba.setNuevoNombreCategoria("Alau");
-        dtoPrueba.setNuevoLatitud(-34.603722);
-        dtoPrueba.setNuevoLongitud(-58.381592);
-        dtoPrueba.setNuevoFechaDeAcontecimiento(LocalDateTime.now().minusDays(1));
-
-        solicitudService.procesarSolicitudEdicion(1L, dtoPrueba);
-
-        return ResponseEntity.ok("Solicitud hardcodeada enviada con éxito");
+    @GetMapping()
+    public String verPanelSolicitudes(Model model) {
+        List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
+        model.addAttribute("solicitudes", solicitudes);
+        return "admin/solicitudes";
     }
+    @GetMapping("/{id}/editar")
+    public String mostrarFormularioEdicion(@PathVariable Long id, Model model) {
+        log.info("Intento de acceder a edición de solicitud ID: {}", id);
+        try {
+            SolicitudInputDTO solicitud = solicitudService.buscarSolicitudPorId(id);
+
+            if (solicitud == null) {
+                log.warn("La solicitud ID {} retornó NULL desde el servicio.", id);
+                return "redirect:/admin/solicitudes?error=NoEncontrado";
+            }
+
+            log.info("Solicitud encontrada: {}", solicitud); // Asegúrate que tu DTO tenga toString()
+            model.addAttribute("solicitud", solicitud);
+            return "admin/editar_solicitud";
+
+        } catch (Exception e) {
+            log.error("Error grave al intentar buscar la solicitud ID: " + id, e);
+            return "redirect:/admin/solicitudes?error=ErrorInterno";
+        }
+    }
+
+
+    @PostMapping("/{id}/editar/")
+    public String procesarEdicion(@PathVariable Long id, @ModelAttribute SolicitudEdicionFormDTO solicitudEditada) {
+        solicitudService.procesarSolicitudEdicionConMultipart(id, solicitudEditada);
+
+        // Redirigimos al listado principal
+        return "redirect:/admin/solicitudes";
+    }
+
+    @GetMapping("/{id}/aceptar-con-modificaciones")
+    public String mostrarFormularioAceptarConModificaciones(@PathVariable Long id, Model model) {
+        log.info("Intento de acceder a aceptar con modificaciones de solicitud ID: {}", id);
+        try {
+            SolicitudInputDTO solicitud = solicitudService.buscarSolicitudPorId(id);
+
+            if (solicitud == null) {
+                log.warn("La solicitud ID {} retornó NULL desde el servicio.", id);
+                return "redirect:/admin/solicitudes?error=NoEncontrado";
+            }
+
+            log.info("Solicitud encontrada para aceptar con modificaciones: {}", solicitud);
+            model.addAttribute("solicitud", solicitud);
+            model.addAttribute("esAceptarConModificaciones", true);
+            return "admin/editar_solicitud";
+        } catch (Exception e) {
+            log.error("Error grave al intentar buscar la solicitud ID: " + id, e);
+            return "redirect:/admin/solicitudes?error=ErrorInterno";
+        }
+    }
+
+    @PatchMapping(value = "/{id}/aceptar-con-modificaciones", consumes = "multipart/form-data")
+    @ResponseBody
+    public ResponseEntity<?> procesarAceptarConModificaciones(
+            @PathVariable Long id,
+            @ModelAttribute SolicitudEdicionFormDTO formDTO) {
+        log.info("PATCH /solicitudes/{}/aceptar-con-modificaciones - contribuyente_id: {}, titulo: {}, descripcion: {}, categoria: {}, latitud: {}, longitud: {}, fecha_acontecimiento: {}, archivos: {}",
+                id, formDTO.getContribuyente_id(), formDTO.getTitulo(), formDTO.getDescripcion(),
+                formDTO.getCategoria(), formDTO.getLatitud(), formDTO.getLongitud(),
+                formDTO.getFecha_acontecimiento(), formDTO.getArchivos() != null ? formDTO.getArchivos().size() : 0);
+        try {
+            solicitudService.procesarAceptarConModificaciones(id, formDTO);
+            log.debug("Solicitud {} aceptada con modificaciones correctamente", id);
+            return ResponseEntity.ok("Solicitud aceptada con modificaciones correctamente");
+        } catch (MaxUploadSizeExceededException e) {
+            log.warn("Archivo demasiado grande al aceptar solicitud con modificaciones: {}", e.getMessage());
+            return ResponseEntity.status(HttpStatus.PAYLOAD_TOO_LARGE)
+                    .body("El tamaño del archivo excede el límite permitido de 50 MB. " +
+                          "Por favor, comprima o reduzca el tamaño de los archivos multimedia e intente nuevamente.");
+        } catch (IllegalArgumentException e) {
+            log.warn("Error de validación al aceptar solicitud con modificaciones {}: {}", id, e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (WebClientResponseException e) {
+            String mensajeErrorDelBackend = e.getResponseBodyAsString();
+            log.error("Error del backend al aceptar solicitud con modificaciones: {}", mensajeErrorDelBackend);
+            String mensaje = !mensajeErrorDelBackend.isEmpty()
+                            ? mensajeErrorDelBackend 
+                            : "Error al aceptar la solicitud con modificaciones. Por favor, intente nuevamente.";
+            return ResponseEntity.status(e.getStatusCode()).body(mensaje);
+        } catch (Exception e) {
+            log.error("Error al aceptar la solicitud {} con modificaciones: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(500).body("Error al aceptar la solicitud con modificaciones: " + e.getMessage());
+        }
+    }
+
     
 }
 

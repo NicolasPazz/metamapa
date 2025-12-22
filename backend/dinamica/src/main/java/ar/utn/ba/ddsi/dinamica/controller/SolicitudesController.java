@@ -1,6 +1,7 @@
 package ar.utn.ba.ddsi.dinamica.controller;
 
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudHechoInputContribuyenteDTO;
+import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarAdminInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
@@ -16,6 +17,9 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
+
+import static ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud.ACEPTADO;
+import static ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud.RECHAZADO;
 
 @RestController
 @RequestMapping("/api/solicitudes")
@@ -144,5 +148,24 @@ public class SolicitudesController {
           .body("Error al modificar la solicitud: " + e.getMessage());
     }
   }
+  @PostMapping("/{id}/aceptar")
+  public ResponseEntity<SolicitudOutputDTO> aceptarSolicitud(@PathVariable Long id) {
+    SolicitudModificarAdminInputDTO solicitudCambio = new SolicitudModificarAdminInputDTO();
+    solicitudCambio.setNuevoEstadoSolicitud(ACEPTADO);
+
+    SolicitudOutputDTO resultado = solicitudesService.revisionSolicitud(id, solicitudCambio);
+    return ResponseEntity.ok(resultado);
+  }
+
+  @PostMapping("/{id}/rechazar")
+  public ResponseEntity<SolicitudOutputDTO> rechazarSolicitud(@PathVariable Long id) {
+    SolicitudModificarAdminInputDTO solicitudCambio = new SolicitudModificarAdminInputDTO();
+    solicitudCambio.setNuevoEstadoSolicitud(RECHAZADO);
+
+    SolicitudOutputDTO resultado = solicitudesService.revisionSolicitud(id, solicitudCambio);
+    return ResponseEntity.ok(resultado);
+
+  }
+
 }
 

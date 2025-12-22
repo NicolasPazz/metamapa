@@ -76,11 +76,34 @@
       <div class="hechos-grid">
         <div th:each="hecho:${hechos}" class="hecho-card">
           <h3 th:text="${hecho.titulo}"></h3>
+          <p th:text="${hecho.id}"></p>
           <p th:text="${'Subido por usuario ' + hecho.contribuyente}"></p>
           <p th:text="${'Estado: ' + hecho.estado}"></p>
-          <button>Aceptar</button>
-          <button>Denegar</button>
-          <button>Aceptar con cambios</button>
+          
+          <!-- Etiquetas -->
+          <div th:if="${hecho.etiquetas != null and !#lists.isEmpty(hecho.etiquetas)}" 
+               class="etiquetas-preview" 
+               style="margin-top: 10px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px;"
+               onclick="event.stopPropagation();">
+            <span th:each="etiqueta : ${hecho.etiquetas}" 
+                  class="tag" 
+                  style="display: inline-block; background-color: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; font-weight: 500;"
+                  th:text="${etiqueta}">
+            </span>
+          </div>
+          
+          <div style="margin-top: 10px;">
+            <button>Aceptar</button>
+            <button>Denegar</button>
+            <button>Aceptar con cambios</button>
+            <button class="btn-etiquetas" 
+                    th:data-hecho-id="${hecho.id}"
+                    th:data-hecho-titulo="${hecho.titulo}"
+                    onclick="abrirPanelEtiquetas(this)"
+                    style="font-size: 0.85em; padding: 5px 10px; margin-left: 5px;">
+              Agregar etiquetas
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -679,6 +702,164 @@
       input.name = name;
       input.value = value;
       parent.appendChild(input);
+    }
+  </script>
+
+  <!-- Panel de Etiquetas -->
+  <div id="panel-etiquetas" class="panel" style="display: none; width: 400px; max-width: 90vw;">
+    <h3>Agregar Etiquetas</h3>
+    <p id="etiquetas-hecho-titulo" style="color: #666; font-size: 0.9em; margin-bottom: 15px;"></p>
+    
+    <form id="form-etiquetas" method="post" th:action="@{/admin/agregar-etiquetas}">
+      <input type="hidden" name="hechoId" id="etiquetas-hecho-id">
+      
+      <div id="etiquetas-container" style="margin-bottom: 15px;">
+        <!-- Las etiquetas se agregarán aquí dinámicamente -->
+      </div>
+      
+      <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+        <input type="text" 
+               id="nueva-etiqueta-input" 
+               placeholder="Escribe una etiqueta..."
+               style="flex: 1; padding: 8px; border: 1px solid #ddd; border-radius: 4px;"
+               onkeypress="if(event.key === 'Enter') { event.preventDefault(); agregarEtiquetaInput(); }">
+        <button type="button" 
+                onclick="agregarEtiquetaInput()"
+                style="padding: 8px 15px; background-color: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          + Agregar
+        </button>
+      </div>
+      
+      <div id="etiquetas-lista" style="min-height: 100px; max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #f9f9f9; margin-bottom: 15px;">
+        <p style="color: #999; font-size: 0.9em; margin: 0;">No hay etiquetas agregadas</p>
+      </div>
+      
+      <div style="display: flex; gap: 10px;">
+        <button type="submit" 
+                style="flex: 1; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">
+          Guardar
+        </button>
+        <button type="button" 
+                onclick="cerrarPanelEtiquetas()"
+                style="flex: 1; padding: 10px; background-color: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+          Cancelar
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    let contadorEtiquetas = 0;
+    const etiquetasAgregadas = [];
+
+    function abrirPanelEtiquetas(btn) {
+      const hechoId = btn.getAttribute('data-hecho-id');
+      const hechoTitulo = btn.getAttribute('data-hecho-titulo');
+      
+      document.getElementById('etiquetas-hecho-id').value = hechoId;
+      document.getElementById('etiquetas-hecho-titulo').textContent = 'Hecho: ' + hechoTitulo;
+      
+      // Limpiar el panel
+      contadorEtiquetas = 0;
+      etiquetasAgregadas.length = 0;
+      document.getElementById('etiquetas-lista').innerHTML = '<p style="color: #999; font-size: 0.9em; margin: 0;">No hay etiquetas agregadas</p>';
+      document.getElementById('nueva-etiqueta-input').value = '';
+      
+      // Mostrar el panel
+      const panel = document.getElementById('panel-etiquetas');
+      panel.style.display = 'block';
+      panel.style.right = '0';
+      panel.style.top = '0';
+      panel.style.position = 'fixed';
+      panel.style.height = '100vh';
+      panel.style.zIndex = '1000';
+      panel.style.backgroundColor = 'white';
+      panel.style.boxShadow = '-2px 0 10px rgba(0,0,0,0.1)';
+      panel.style.overflowY = 'auto';
+      panel.style.padding = '20px';
+    }
+
+    function cerrarPanelEtiquetas() {
+      document.getElementById('panel-etiquetas').style.display = 'none';
+    }
+
+    function agregarEtiquetaInput() {
+      const input = document.getElementById('nueva-etiqueta-input');
+      const etiqueta = input.value.trim();
+      
+      if (!etiqueta) {
+        alert('Por favor, escribe una etiqueta');
+        return;
+      }
+      
+      if (etiquetasAgregadas.includes(etiqueta)) {
+        alert('Esta etiqueta ya fue agregada');
+        return;
+      }
+      
+      // Agregar a la lista
+      etiquetasAgregadas.push(etiqueta);
+      
+      // Crear input hidden para el formulario
+      const container = document.getElementById('etiquetas-container');
+      const hiddenInput = document.createElement('input');
+      hiddenInput.type = 'hidden';
+      hiddenInput.name = 'etiquetas';
+      hiddenInput.value = etiqueta;
+      container.appendChild(hiddenInput);
+      
+      // Agregar visualmente a la lista
+      const lista = document.getElementById('etiquetas-lista');
+      if (lista.querySelector('p') && lista.querySelector('p').textContent === 'No hay etiquetas agregadas') {
+        lista.innerHTML = '';
+      }
+      
+      const divEtiqueta = document.createElement('div');
+      divEtiqueta.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 5px; background-color: white; border: 1px solid #ddd; border-radius: 4px;';
+      divEtiqueta.innerHTML = `
+        <span>${etiqueta}</span>
+        <button type="button" onclick="eliminarEtiqueta('${etiqueta}', ${contadorEtiquetas})" 
+                style="background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 3px; cursor: pointer; font-size: 0.85em;">
+          Eliminar
+        </button>
+      `;
+      lista.appendChild(divEtiqueta);
+      
+      contadorEtiquetas++;
+      input.value = '';
+      input.focus();
+    }
+
+    function eliminarEtiqueta(etiqueta, index) {
+      // Remover de la lista
+      const indexEnArray = etiquetasAgregadas.indexOf(etiqueta);
+      if (indexEnArray > -1) {
+        etiquetasAgregadas.splice(indexEnArray, 1);
+      }
+      
+      // Remover el input hidden
+      const container = document.getElementById('etiquetas-container');
+      const inputs = container.querySelectorAll('input[type="hidden"]');
+      inputs.forEach(input => {
+        if (input.value === etiqueta) {
+          input.remove();
+        }
+      });
+      
+      // Remover visualmente
+      const lista = document.getElementById('etiquetas-lista');
+      const divs = lista.querySelectorAll('div');
+      divs.forEach(div => {
+        if (div.textContent.includes(etiqueta)) {
+          div.remove();
+        }
+      });
+      
+      // Si no hay más etiquetas, mostrar mensaje
+      if (lista.children.length === 0) {
+        lista.innerHTML = '<p style="color: #999; font-size: 0.9em; margin: 0;">No hay etiquetas agregadas</p>';
+      }
+      
     }
   </script>
 </div>

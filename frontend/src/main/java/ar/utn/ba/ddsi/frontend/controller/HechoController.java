@@ -126,7 +126,7 @@ public class HechoController {
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
         model.addAttribute("categorias", listaCategorias);
         model.addAttribute("titulo", "Nuevo Hecho");
-        model.addAttribute("showReportarHechoBtn", false);
+        model.addAttribute("showReportarHechoBtn", true);
         return "hechos/nuevo";
     }
 

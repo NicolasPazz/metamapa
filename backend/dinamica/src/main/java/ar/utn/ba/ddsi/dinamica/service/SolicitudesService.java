@@ -411,5 +411,23 @@ public class SolicitudesService {
       throw new RuntimeException("Error al ocultar hecho en agregador: " + e.getMessage(), e);
     }
   }
+
+  // DTO simple para recibir la respuesta del agregador
+  private static class HechoAgregadorDTO {
+    @com.fasterxml.jackson.annotation.JsonProperty("id")
+    private Long id;
+    @com.fasterxml.jackson.annotation.JsonProperty("fuente_id")
+    private Long fuenteId;
+    @com.fasterxml.jackson.annotation.JsonProperty("id_origen")
+    private Long idOrigen;
+
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
+    public Long getFuenteId() { return fuenteId; }
+    public void setFuenteId(Long fuenteId) { this.fuenteId = fuenteId; }
+    public Long getIdOrigen() { return idOrigen; }
+    public void setIdOrigen(Long idOrigen) { this.idOrigen = idOrigen; }
+  }
+
 }
 
