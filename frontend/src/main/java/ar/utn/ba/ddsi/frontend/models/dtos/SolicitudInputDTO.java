@@ -36,4 +36,5 @@ public class SolicitudInputDTO {
     private Long idHechoAgregador;
     @JsonProperty("hecho_enviado")
     private Boolean hechoEnviado;
+    private Integer diasRestantesEdicion;
 }

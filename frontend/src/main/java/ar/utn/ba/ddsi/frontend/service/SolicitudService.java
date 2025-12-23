@@ -155,6 +155,14 @@ public class SolicitudService {
         }
 
         if (formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) {
+            // Validar cantidad máxima de archivos
+            long archivosNoVacios = formDTO.getArchivos().stream()
+                    .filter(archivo -> archivo != null && !archivo.isEmpty())
+                    .count();
+            if (archivosNoVacios > 5) {
+                throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + archivosNoVacios + " archivos.");
+            }
+            
             try {
                 String solicitudJson = objectMapper.writeValueAsString(dto); // Backend espera String
                 log.debug("SolicitudService.procesarSolicitudEdicionConMultipart - JSON serializado: {}", solicitudJson);

@@ -81,6 +81,11 @@ public class SolicitudesService {
     solicitud.validarFechaNoFutura();
 
     if (input.getMultimedia() != null && !input.getMultimedia().isEmpty()) {
+      // Validar cantidad máxima de archivos
+      if (input.getMultimedia().size() > 5) {
+        throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + input.getMultimedia().size() + " archivos.");
+      }
+      
       List<ContenidoMultimedia> multimedia = input.getMultimedia().stream()
           .map(dto -> dto.toContenidoMultimedia(solicitud))
           .toList();
@@ -118,6 +123,12 @@ public class SolicitudesService {
     SolicitudModificarUserInputDTO inputDTO = parseJsonToModificarDTO(solicitudJson);
     
     if (archivos != null && !archivos.isEmpty()) {
+      // Validar cantidad máxima de archivos
+      long archivosNoVacios = archivos.stream().filter(archivo -> !archivo.isEmpty()).count();
+      if (archivosNoVacios > 5) {
+        throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + archivosNoVacios + " archivos.");
+      }
+      
       List<ContenidoMultimediaInputDTO> multimediaList = new ArrayList<>();
       for (MultipartFile archivo : archivos) {
         if (!archivo.isEmpty()) {
@@ -198,6 +209,11 @@ public class SolicitudesService {
     }
 
     if (inputDTO.getNuevoContenidoMultimedia() != null) {
+      // Validar cantidad máxima de archivos
+      if (inputDTO.getNuevoContenidoMultimedia().size() > 5) {
+        throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + inputDTO.getNuevoContenidoMultimedia().size() + " archivos.");
+      }
+      
       log.debug("Procesando multimedia para solicitud ID: {}, cantidad: {}", id, inputDTO.getNuevoContenidoMultimedia().size());
       solicitud.getMultimedia().clear();
       List<ContenidoMultimedia> nuevaMultimedia = new ArrayList<>();
@@ -230,8 +246,22 @@ public class SolicitudesService {
       solicitud.getMultimedia().addAll(nuevaMultimedia);
     }
 
+    // La fechaDeCargaSolicitud NO debe actualizarse durante la modificación
+    // para mantener el plazo de 7 días desde la creación original
+    LocalDateTime fechaDeCargaOriginal = solicitud.getFechaDeCargaSolicitud();
+    
     log.debug("Guardando solicitud modificada ID: {}", id);
     SolicitudHecho solicitudActualizada = solicitudesRepository.save(solicitud);
+    
+    // Protección: asegurar que la fecha no se haya actualizado
+    if (solicitudActualizada.getFechaDeCargaSolicitud() != null && 
+        fechaDeCargaOriginal != null &&
+        !solicitudActualizada.getFechaDeCargaSolicitud().equals(fechaDeCargaOriginal)) {
+      log.warn("ADVERTENCIA: fechaDeCargaSolicitud fue modificada durante save. Restaurando valor original.");
+      solicitudActualizada.setFechaDeCargaSolicitud(fechaDeCargaOriginal);
+      solicitudActualizada = solicitudesRepository.save(solicitudActualizada);
+    }
+    
     log.debug("Solicitud guardada exitosamente ID: {}", id);
 
     return agregarIdHecho(solicitudActualizada.toOutputDTO(), id);
@@ -243,6 +273,10 @@ public class SolicitudesService {
 
     SolicitudHecho solicitud = solicitudesRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Solicitud no encontrada con ID: " + id));
+    
+    // La fechaDeCargaSolicitud NO debe actualizarse durante la revisión administrativa
+    // para mantener el plazo de 7 días desde la creación original
+    LocalDateTime fechaDeCargaOriginal = solicitud.getFechaDeCargaSolicitud();
 
     if (inputDTO.getNuevoTitulo() != null) solicitud.setTitulo(inputDTO.getNuevoTitulo());
     if (inputDTO.getNuevoDescripcion() != null) solicitud.setDescripcion(inputDTO.getNuevoDescripcion());
@@ -265,7 +299,18 @@ public class SolicitudesService {
     log.debug("Cambiando estado de solicitud ID: {} a {}", id, nuevoEstado);
     solicitud.cambiarEstado(nuevoEstado);
 
+    // IMPORTANTE: La fechaDeCargaSolicitud NO debe actualizarse durante la revisión administrativa
+    // para mantener el plazo de 7 días desde la creación original
     SolicitudHecho solicitudActualizada = solicitudesRepository.save(solicitud);
+    
+    // Protección: asegurar que la fecha no se haya actualizado
+    if (solicitudActualizada.getFechaDeCargaSolicitud() != null && 
+        fechaDeCargaOriginal != null &&
+        !solicitudActualizada.getFechaDeCargaSolicitud().equals(fechaDeCargaOriginal)) {
+      log.warn("ADVERTENCIA: fechaDeCargaSolicitud fue modificada durante save en revisión. Restaurando valor original.");
+      solicitudActualizada.setFechaDeCargaSolicitud(fechaDeCargaOriginal);
+      solicitudActualizada = solicitudesRepository.save(solicitudActualizada);
+    }
 
     if (solicitud.getEstado() == EstadoSolicitud.ACEPTADO ||
         solicitud.getEstado() == EstadoSolicitud.ACEPTADO_MODIFICADO) {
@@ -291,6 +336,12 @@ public class SolicitudesService {
             input.getTitulo(), input.getIdContribuyente());
     
     if (archivos != null && !archivos.isEmpty()) {
+      // Validar cantidad máxima de archivos
+      long archivosNoVacios = archivos.stream().filter(archivo -> !archivo.isEmpty()).count();
+      if (archivosNoVacios > 5) {
+        throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + archivosNoVacios + " archivos.");
+      }
+      
       List<ContenidoMultimediaInputDTO> multimediaList = new ArrayList<>();
       
       for (MultipartFile archivo : archivos) {
