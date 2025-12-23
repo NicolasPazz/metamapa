@@ -6,6 +6,7 @@ services:
   mysql:
     image: mysql:8.0
     container_name: metamapa-mysql
+    init: true
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: metamapa
@@ -33,6 +34,7 @@ services:
         MODULE_PATH: backend/users
         MODULE_NAME: users
     container_name: metamapa-users
+    init: true
     environment:
       PORT: 8087
       DB_HOST: mysql
@@ -68,6 +70,7 @@ services:
         MODULE_PATH: backend/estatica
         MODULE_NAME: estatica
     container_name: metamapa-estatica
+    init: true
     environment:
       PORT: 8082
       DB_HOST: mysql
@@ -104,6 +107,7 @@ services:
         MODULE_PATH: backend/dinamica
         MODULE_NAME: dinamica
     container_name: metamapa-dinamica
+    init: true
     environment:
       PORT: 8081
       DB_HOST: mysql
@@ -142,6 +146,7 @@ services:
         MODULE_PATH: backend/proxy_ong
         MODULE_NAME: proxy_ong
     container_name: metamapa-proxy-ong
+    init: true
     environment:
       PORT: 8083
       DB_HOST: mysql
@@ -178,6 +183,7 @@ services:
         MODULE_PATH: backend/proxy_metamapa
         MODULE_NAME: proxy_metamapa
     container_name: metamapa-proxy-metamapa
+    init: true
     environment:
       PORT: 8086
       SPRING_PROFILES_ACTIVE: dev
@@ -205,6 +211,7 @@ services:
         MODULE_PATH: backend/agregador
         MODULE_NAME: agregador
     container_name: metamapa-agregador
+    init: true
     environment:
       PORT: 8084
       DB_HOST: mysql
@@ -256,6 +263,7 @@ services:
         MODULE_PATH: backend/estadistica
         MODULE_NAME: estadistica
     container_name: metamapa-estadistica
+    init: true
     environment:
       PORT: 8085
       DB_HOST: mysql
@@ -292,6 +300,7 @@ services:
         MODULE_PATH: frontend
         MODULE_NAME: frontend
     container_name: metamapa-frontend
+    init: true
     environment:
       PORT: 8080
       AGREGADOR_URL: http://agregador:8084

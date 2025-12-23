@@ -11,6 +11,7 @@ services:
         MODULE_PATH: backend/users
         MODULE_NAME: users
     container_name: metamapa-users
+    init: true
     environment:
       PORT: 8087
       DB_HOST: ${RDS_HOST}  # Endpoint de RDS
@@ -43,6 +44,7 @@ services:
         MODULE_PATH: backend/estatica
         MODULE_NAME: estatica
     container_name: metamapa-estatica
+    init: true
     environment:
       PORT: 8082
       DB_HOST: ${RDS_HOST}
@@ -76,6 +78,7 @@ services:
         MODULE_PATH: backend/dinamica
         MODULE_NAME: dinamica
     container_name: metamapa-dinamica
+    init: true
     environment:
       PORT: 8081
       DB_HOST: ${RDS_HOST}
@@ -111,6 +114,7 @@ services:
         MODULE_PATH: backend/proxy_ong
         MODULE_NAME: proxy_ong
     container_name: metamapa-proxy-ong
+    init: true
     environment:
       PORT: 8083
       DB_HOST: ${RDS_HOST}
@@ -144,6 +148,7 @@ services:
         MODULE_PATH: backend/proxy_metamapa
         MODULE_NAME: proxy_metamapa
     container_name: metamapa-proxy-metamapa
+    init: true
     environment:
       PORT: 8086
       AGREGADOR_URL: http://agregador:8084
@@ -171,6 +176,7 @@ services:
         MODULE_PATH: backend/agregador
         MODULE_NAME: agregador
     container_name: metamapa-agregador
+    init: true
     environment:
       PORT: 8084
       DB_HOST: ${RDS_HOST}
@@ -218,6 +224,7 @@ services:
         MODULE_PATH: backend/estadistica
         MODULE_NAME: estadistica
     container_name: metamapa-estadistica
+    init: true
     environment:
       PORT: 8085
       DB_HOST: ${RDS_HOST}
@@ -252,6 +259,7 @@ services:
         MODULE_PATH: frontend
         MODULE_NAME: frontend
     container_name: metamapa-frontend
+    init: true
     environment:
       PORT: 8080
       AGREGADOR_URL: http://agregador:8084
@@ -286,6 +294,7 @@ services:
   certbot:
     image: certbot/certbot:latest
     container_name: metamapa-certbot
+    init: true
     environment:
       CERTBOT_EMAIL: ${CERTBOT_EMAIL}
       CERTBOT_DOMAIN: ${CERTBOT_DOMAIN:-metamapa-dds.ddns.net}
@@ -304,6 +313,7 @@ services:
   nginx:
     image: nginx:alpine
     container_name: metamapa-nginx
+    init: true
     environment:
       CERTBOT_DOMAIN: ${CERTBOT_DOMAIN:-metamapa-dds.ddns.net}
     ports:
