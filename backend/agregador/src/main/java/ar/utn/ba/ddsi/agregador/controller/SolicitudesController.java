@@ -18,7 +18,7 @@ public class SolicitudesController {
 
     @PostMapping
     public ResponseEntity<?> crearSolicitudEliminacion(@RequestBody SolicitudEliminacionInputDTO solicitudInputDTO) {
-        log.info("[SolicitudesController] POST /api/solicitudes - id: {}, hechoId: {}, textoFundamentos: {}, fecha: {}, estado: {}, contribuyenteId: {}, fuenteId: {}, idOrigen: {}",
+        log.info("[SolicitudesController] - POST - /api/solicitudes - id: {}, hechoId: {}, textoFundamentos: {}, fecha: {}, estado: {}, contribuyenteId: {}, fuenteId: {}, idOrigen: {}",
                 solicitudInputDTO.getId(), solicitudInputDTO.getHechoId(), solicitudInputDTO.getTextoFundamentos(),
                 solicitudInputDTO.getFecha(), solicitudInputDTO.getEstado(), solicitudInputDTO.getContribuyenteId(),
                 solicitudInputDTO.getFuenteId(), solicitudInputDTO.getIdOrigen());

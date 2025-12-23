@@ -92,6 +92,14 @@ public class HechoService {
         hechoOutput.setCategoria(hechoInput.getCategoria());
         
         if (hechoInput.getContenidoMultimedia() != null && !hechoInput.getContenidoMultimedia().isEmpty()) {
+            // Validar cantidad máxima de archivos
+            long archivosNoVacios = hechoInput.getContenidoMultimedia().stream()
+                    .filter(archivo -> archivo != null && !archivo.isEmpty())
+                    .count();
+            if (archivosNoVacios > 5) {
+                throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + archivosNoVacios + " archivos.");
+            }
+            
             MultipartBodyBuilder builder = new MultipartBodyBuilder();
             
             log.info("HechoService.crearHecho - Enviando solicitud MULTIPART con {} archivos",

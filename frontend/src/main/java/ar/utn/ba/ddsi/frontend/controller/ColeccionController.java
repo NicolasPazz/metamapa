@@ -32,8 +32,7 @@ public class ColeccionController {
     @GetMapping
     public String listarColecciones(Model model,
             @RequestParam(defaultValue = "0") int page) {
-        log.info("GET /colecciones - page: {}", page);
-        // Obtener colecciones paginadas del servicio (ya procesadas)
+        log.info("[ColeccionController] - GET - /colecciones - page: {}", page);
         PageResponse<ColeccionDTO> pageResponse =
             coleccionService.getAllColeccionesPaginadas(page, pageSize);
 
@@ -41,7 +40,6 @@ public class ColeccionController {
         model.addAttribute("currentPage", page);
         model.addAttribute("hasNextPage", pageResponse.isHasNext());
         model.addAttribute("titulo", "Listado de colecciones");
-        // En /colecciones: mostrar botón Hechos, no mostrar Colecciones
         model.addAttribute("showHechosBtn", true);
         model.addAttribute("showColeccionesBtn", false);
         model.addAttribute("showReportarHechoBtn", false);
@@ -60,9 +58,8 @@ public class ColeccionController {
             @RequestParam(required = false) String fuente,
             @RequestParam(required = false) String modo,
             @RequestParam(defaultValue = "0") int page) {
-        log.info("GET /colecciones/{}/hechos - ubicacion: {}, fecha_reporte_hasta: {}, fecha_reporte_desde: {}, categoria: {}, fuente: {}, modo: {}, page: {}",
-                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page);
-        // Obtener hechos de colección paginados del servicio (ya procesados)
+        log.info("[ColeccionController] - GET - /colecciones/{}/hechos - handle: {}, ubicacion: {}, fecha_reporte_hasta: {}, fecha_reporte_desde: {}, categoria: {}, fuente: {}, modo: {}, page: {}",
+                handle, handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page);
         PageResponse<HechoDTO> pageResponse =
             coleccionService.getHechosColeccionPaginados(
                 handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page, pageSize);
@@ -80,7 +77,6 @@ public class ColeccionController {
         model.addAttribute("solicitud", new SolicitudDTO());
         model.addAttribute("esColeccion", true);
         model.addAttribute("handleColeccion", handle);
-        // En /colecciones/{handle}/hechos: mostrar ambos botones
         model.addAttribute("showHechosBtn", true);
         model.addAttribute("showColeccionesBtn", true);
         model.addAttribute("showReportarHechoBtn", false);
@@ -92,8 +88,7 @@ public class ColeccionController {
     public String hechosColeccionMapa(
             Model model,
             @PathVariable String handle) {
-        log.info("GET /colecciones/{}/mapa", handle);
-        // Obtener todos los hechos de la colección (sin paginación para el mapa)
+        log.info("[ColeccionController] - GET - /colecciones/{}/mapa - handle: {}", handle, handle);
         List<HechoDTO> hechos = coleccionService.getHechosColeccionByHandle(
                 handle, null, null, null, null, null);
         model.addAttribute("hechos", hechos);

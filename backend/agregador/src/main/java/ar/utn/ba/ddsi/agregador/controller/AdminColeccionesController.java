@@ -22,7 +22,7 @@ public class AdminColeccionesController {
 
     @PostMapping
     public ResponseEntity<?> crearColeccion(@RequestBody @Valid ColeccionDTO dto) {
-        log.info("[AdminColeccionesController] POST /api/admin/colecciones - titulo: {}, descripcion: {}, handle: {}, algoritmoConsenso: {}, fuenteId: {}, idOrigen: {}, criterios: {}",
+        log.info("[AdminColeccionesController] - POST - /api/admin/colecciones - titulo: {}, descripcion: {}, handle: {}, algoritmoConsenso: {}, fuenteId: {}, idOrigen: {}, criterios: {}",
                 dto.getTitulo(), dto.getDescripcion(), dto.getHandle(), dto.getAlgoritmoConsenso(),
                 dto.getFuenteId(), dto.getIdOrigen(), dto.getCriteriosDePertenencia());
         return coleccionesService.crearColeccion(dto);
@@ -30,7 +30,7 @@ public class AdminColeccionesController {
 
     @GetMapping
     public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
-        log.info("[AdminColeccionesController] GET /api/admin/colecciones (solo locales)");
+        log.info("[AdminColeccionesController] - GET - /api/admin/colecciones");
         return coleccionesService.getAllColeccionesLocales();
     }
 
@@ -39,14 +39,14 @@ public class AdminColeccionesController {
         @PathVariable String handle,
         @RequestBody JsonNode body) {
 
-      log.info("[AdminColeccionesController] PATCH /api/admin/colecciones/{} - body: {}", handle, body);
+      log.info("[AdminColeccionesController] - PATCH - /api/admin/colecciones/{} - handle: {}, body: {}", handle, handle, body);
       return coleccionesService.actualizarColeccion(handle, body);
     }
 
 
     @DeleteMapping("/{handle}")
     public ResponseEntity<?> eliminarColeccion(@PathVariable String handle) {
-        log.info("[AdminColeccionesController] DELETE /api/admin/colecciones/{}", handle);
+        log.info("[AdminColeccionesController] - DELETE - /api/admin/colecciones/{} - handle: {}", handle, handle);
         return coleccionesService.eliminarColeccion(handle);
     }
 }

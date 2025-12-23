@@ -21,7 +21,7 @@ public class FuenteController {
 
   @GetMapping("/nuevos")
   public ResponseEntity<List<HechoOutputDTO>> getAllHechosNuevos() {
-    log.info("GET /api/hechos/nuevos");
+    log.info("[FuenteController] - GET - /api/hechos/nuevos");
     return fuenteService.getAllHechosNuevos();
   }
 }

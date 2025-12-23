@@ -31,7 +31,7 @@ public class AdminController {
 
     @GetMapping("/admin")
     public String mostrarMenu(Model model, HttpServletRequest request) {
-        log.info("GET /admin");
+        log.info("[AdminController] - GET - /admin");
         if (request != null) {
             model.addAttribute("httpServletRequest", request);
         }
@@ -62,7 +62,7 @@ public class AdminController {
     public String actualizarSolicitud(@RequestParam("id") Long solicitudId,
                                       @RequestParam("estado") String estado,
                                       RedirectAttributes redirectAttributes) {
-        log.info("POST /admin/actualizarSolicitud - id: {}, estado: {}", solicitudId, estado);
+        log.info("[AdminController] - POST - /admin/actualizarSolicitud - id: {}, estado: {}", solicitudId, estado);
         try {
             adminService.actualizarSolicitud(solicitudId, estado);
             redirectAttributes.addFlashAttribute("success", "Solicitud actualizada!");
@@ -75,65 +75,55 @@ public class AdminController {
 
     @PostMapping("/admin/subir-csv")
     public String procesarCsv(@RequestParam("archivo") MultipartFile archivo, Model model) {
-        log.info("POST /admin/subir-csv - archivo: {} ({} bytes, tipo: {})",
+        log.info("[AdminController] - POST - /admin/subir-csv - archivo: {} ({} bytes, tipo: {})",
                 archivo.getOriginalFilename(), archivo.getSize(), archivo.getContentType());
-
         try {
             adminService.enviarArchivoAlBackend(archivo);
             model.addAttribute("mensaje", "Archivo enviado exitosamente para procesamiento.");
         } catch (Exception e) {
-            log.error("Error al subir archivo", e);
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
-
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/crear-coleccion")
     public String crearColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, Model model) {
-        log.info("POST /admin/crear-coleccion - titulo: {}, descripcion: {}, criterios: {}, algoritmoConsenso: {}, fuenteId: {}",
+        log.info("[AdminController] - POST - /admin/crear-coleccion - titulo: {}, descripcion: {}, criterios: {}, algoritmoConsenso: {}, fuenteId: {}",
                 coleccionDTO.getTitulo(), coleccionDTO.getDescripcion(), coleccionDTO.getCriterios(),
                 coleccionDTO.getAlgoritmoConsenso(), coleccionDTO.getFuenteId());
-
         if(!coleccionDTO.isValid()) {
             model.addAttribute("mensaje", "Error: faltan datos para la colección");
             return "redirect:/admin";
         }
-
         try {
             adminService.crearColeccion(coleccionDTO);
             model.addAttribute("mensaje", "Colección creada correctamente.");
         } catch (Exception e) {
-            log.error("Error al crear coleccion", e);
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
-
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/actualizar-coleccion")
     public String actualizarColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, @RequestParam("handle") String handle, Model model) {
-        log.info("POST /admin/actualizar-coleccion - handle: {}, titulo: {}, descripcion: {}, criterios: {}, algoritmoConsenso: {}, fuenteId: {}",
+        log.info("[AdminController] - POST - /admin/actualizar-coleccion - handle: {}, titulo: {}, descripcion: {}, criterios: {}, algoritmoConsenso: {}, fuenteId: {}",
                 handle, coleccionDTO.getTitulo(), coleccionDTO.getDescripcion(), coleccionDTO.getCriterios(),
                 coleccionDTO.getAlgoritmoConsenso(), coleccionDTO.getFuenteId());
         if(!coleccionDTO.isValid()) {
             model.addAttribute("mensaje", "Error: faltan datos para la colección");
             return "redirect:/admin";
         }
-
         try {
             adminService.actualizarColeccion(coleccionDTO, handle);
             model.addAttribute("mensaje", "Colección actualizada correctamente.");
         } catch (Exception e) {
-            log.error("Error al actualizar coleccion", e);
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
-
         return "redirect:/admin";
     }
     @GetMapping("/solicitudes")
     public String verPanelSolicitudes(Model model) {
-        log.info("GET /solicitudes");
+        log.info("[AdminController] - GET - /solicitudes");
         List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
 
         model.addAttribute("solicitudes", solicitudes);

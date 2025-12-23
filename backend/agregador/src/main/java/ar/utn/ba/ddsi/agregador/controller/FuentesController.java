@@ -20,7 +20,7 @@ public class FuentesController {
 
     @GetMapping
     public ResponseEntity<List<FuenteDTO>> getAllFuentes() {
-        log.info("[FuentesController] GET /api/fuentes");
+        log.info("[FuentesController] - GET - /api/fuentes");
         return fuentesService.getAllFuentes();
     }
 }

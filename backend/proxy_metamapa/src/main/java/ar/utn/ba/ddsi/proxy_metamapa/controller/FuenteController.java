@@ -44,7 +44,7 @@ public class FuenteController {
       LocalDateTime fecha_acontecimiento_hasta,
 
       @RequestParam(required = false) String ubicacion) {
-    log.info("GET /api/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}",
+    log.info("[FuenteController] - GET - /api/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}",
             categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
     return metaMapaClient.getAllHechosVisibles(
         categoria,
@@ -55,7 +55,7 @@ public class FuenteController {
 
   @GetMapping("/colecciones")
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
-    log.info("GET /api/colecciones");
+    log.info("[FuenteController] - GET - /api/colecciones");
     return metaMapaClient.getAllColecciones();
   }
 
@@ -80,8 +80,8 @@ public class FuenteController {
 
       @RequestParam(required = false) String ubicacion
   ) {
-    log.info("GET /api/colecciones/{}/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}",
-            handle, categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
+    log.info("[FuenteController] - GET - /api/colecciones/{}/hechos - handle: {}, categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}",
+            handle, handle, categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion);
     return metaMapaClient.getHechosColeccionByHandle(
         handle,
         categoria,

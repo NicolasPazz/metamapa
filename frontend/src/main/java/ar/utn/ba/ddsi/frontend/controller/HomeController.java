@@ -25,7 +25,7 @@ public class HomeController {
 
     @GetMapping("/")
     public String landing(Model model) {
-        log.info("GET /");
+        log.info("[HomeController] - GET - /");
         HechoDTO hecho = hechoService.getOneHecho();
         List<HechoDTO> hechos = hecho != null ? Collections.singletonList(hecho) : Collections.emptyList();
 
@@ -41,14 +41,14 @@ public class HomeController {
 
     @GetMapping("/terminos")
     public String terminos(Model model) {
-        log.info("GET /terminos");
+        log.info("[HomeController] - GET - /terminos");
         model.addAttribute("showReportarHechoBtn", false);
         return "legal/terminos";
     }
 
     @GetMapping("/privacidad")
     public String privacidad(Model model) {
-        log.info("GET /privacidad");
+        log.info("[HomeController] - GET - /privacidad");
         model.addAttribute("showReportarHechoBtn", false);
         return "legal/privacidad";
     }

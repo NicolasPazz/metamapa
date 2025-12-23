@@ -25,7 +25,7 @@ public class AccessController {
 
     @GetMapping("/registro")
     public String mostrarFormularioRegistro(Model model) {
-        log.info("GET /registro");
+        log.info("[AccessController] - GET - /registro");
         return "access/register";
     }
 
@@ -37,7 +37,7 @@ public class AccessController {
             @RequestParam(required = false) String apellido,
             RedirectAttributes redirectAttributes,
             HttpServletRequest request) {
-        log.info("POST /registro - username: {}, password: [PROTEGIDO], nombre: {}, apellido: {}", username, nombre, apellido);
+        log.info("[AccessController] - POST - /registro - username: {}, password: [PROTEGIDO], nombre: {}, apellido: {}", username, nombre, apellido);
         try {
             metaMapaApiService.register(username, password, nombre, apellido);
             
@@ -82,13 +82,31 @@ public class AccessController {
 
     @GetMapping("/login")
     public String mostrarLogin(Model model) {
-        log.info("GET /login");
+        log.info("[AccessController] - GET - /login");
         return "access/login";
     }
 
     @GetMapping("/403")
     public String error403(Model model) {
-        log.info("GET /403");
+        log.info("[AccessController] - GET - /403");
         return "error/403";
+    }
+
+    @GetMapping("/404")
+    public String error404(Model model) {
+        log.info("[AccessController] - GET - /404");
+        return "error/404";
+    }
+
+    @GetMapping("/500")
+    public String error500(Model model) {
+        log.info("[AccessController] - GET - /500");
+        return "error/500";
+    }
+
+    @GetMapping("/error")
+    public String error(Model model) {
+        log.info("[AccessController] - GET - /error");
+        return "error/error";
     }
 }

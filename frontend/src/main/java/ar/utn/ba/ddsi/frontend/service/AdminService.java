@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.Objects;
@@ -23,11 +26,36 @@ public class AdminService {
         this.webClientEstatica = builder.baseUrl(estaticaBaseUrl).build();
     }
 
+    private String getAccessTokenFromSession() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpServletRequest request = attributes.getRequest();
+            return (String) request.getSession().getAttribute("accessToken");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public List<SolicitudDTO> getAllSolicitudes() {
-        return webClientAgregador.get().uri("/solicitudes").retrieve().bodyToFlux(SolicitudDTO.class).collectList().block();
+        String accessToken = getAccessTokenFromSession();
+        if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+        return webClientAgregador.get()
+                .uri("/solicitudes")
+                .header("Authorization", "Bearer " + accessToken)
+                .retrieve()
+                .bodyToFlux(SolicitudDTO.class)
+                .collectList()
+                .block();
     }
 
     public void actualizarSolicitud(Long id, String estado) {
+        String accessToken = getAccessTokenFromSession();
+        if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+        
         SolicitudOutputDTO dtoBack = new SolicitudOutputDTO();
 
         if(Objects.equals(estado, "RECHAZADO")) dtoBack.setEstado(EstadoSolicitud.RECHAZADO);
@@ -35,6 +63,7 @@ public class AdminService {
 
         webClientAgregador.patch()
                 .uri("/solicitudes/" + id)
+                .header("Authorization", "Bearer " + accessToken)
                 .bodyValue(dtoBack)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -57,9 +86,15 @@ public class AdminService {
     }
 
     public void crearColeccion(CrearColeccionDTO dto) {
+        String accessToken = getAccessTokenFromSession();
+        if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+        
         webClientAgregador
                 .post()
                 .uri("/colecciones")
+                .header("Authorization", "Bearer " + accessToken)
                 .bodyValue(dto)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -67,8 +102,14 @@ public class AdminService {
     }
 
     public void actualizarColeccion(CrearColeccionDTO dto, String handle) {
+        String accessToken = getAccessTokenFromSession();
+        if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+        
         webClientAgregador.patch()
                 .uri("/colecciones/" + handle)
+                .header("Authorization", "Bearer " + accessToken)
                 .bodyValue(dto)
                 .retrieve()
                 .bodyToMono(Void.class)

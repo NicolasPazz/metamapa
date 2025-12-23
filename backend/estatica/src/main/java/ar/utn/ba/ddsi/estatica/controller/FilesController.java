@@ -21,7 +21,7 @@ public class FilesController {
 
   @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
   public ResponseEntity<String> cargarCsv(@ModelAttribute CsvUploadRequestDTO request) {
-    log.info("POST /api/csv - archivo: {} ({} bytes, tipo: {})",
+    log.info("[FilesController] - POST - /api/csv - archivo: {} ({} bytes, tipo: {})",
             request.getArchivo() != null ? request.getArchivo().getOriginalFilename() : "null",
             request.getArchivo() != null ? request.getArchivo().getSize() : 0,
             request.getArchivo() != null ? request.getArchivo().getContentType() : "null");
@@ -30,7 +30,6 @@ public class FilesController {
     } catch (IllegalArgumentException e) {
       return ResponseEntity.badRequest().body(e.getMessage());
     } catch (Exception e) {
-      log.error("Error procesando CSV: {}", e.getMessage(), e);
       return ResponseEntity.internalServerError().body("Error al procesar el archivo");
     }
   }

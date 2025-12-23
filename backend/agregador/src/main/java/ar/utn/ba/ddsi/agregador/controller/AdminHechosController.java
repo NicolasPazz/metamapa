@@ -21,7 +21,7 @@ public class AdminHechosController {
     public ResponseEntity<?> actualizarEtiquetas(
             @PathVariable Long id,
             @RequestBody List<String> etiquetas) {
-        log.info("[AdminHechosController] PATCH /api/admin/hechos/{}/etiquetas - etiquetas: {}", id, etiquetas);
+        log.info("[AdminHechosController] - PATCH - /api/admin/hechos/{}/etiquetas - id: {}, etiquetas: {}", id, id, etiquetas);
         return hechosService.actualizarEtiquetas(id, etiquetas);
     }
 }
