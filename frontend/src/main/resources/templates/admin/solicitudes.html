@@ -1,120 +1,283 @@
 <!DOCTYPE html>
 <html lang="es" th:replace="~{layout/base :: html}">
 <head>
-    <title>Listado de Solicitudes</title>
+    <title>Administración de Solicitudes</title>
 </head>
 <body>
 
 <div th:fragment="contenido">
-    <div class="container mt-4">
+
+    <style>
+        .badge-status {
+            font-size: 0.75rem;
+            padding: 0.5em 0.8em;
+            border-radius: 50rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+        .bg-pendiente {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .bg-aprobada {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .bg-rechazada {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .solicitud-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .solicitud-card:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            transform: translateY(-2px);
+        }
+
+        .solicitud-card-header {
+            padding: 1.25rem;
+            border-bottom: 2px solid #f5f5f5;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .solicitud-card-body {
+            padding: 1.25rem;
+        }
+
+        .solicitud-card-footer {
+            padding: 1rem 1.25rem;
+            background-color: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #212529;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .card-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6c757d;
+            font-size: 0.875rem;
+        }
+
+        .meta-item i {
+            color: #adb5bd;
+        }
+
+        .card-description {
+            color: #495057;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            margin-top: 0.75rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .multimedia-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .multimedia-badge {
+            background: #e7f3ff;
+            border: 1px solid #b3d9ff;
+            border-radius: 6px;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.8rem;
+            color: #004085;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .solicitud-id {
+            font-size: 0.875rem;
+            color: #6c757d;
+            font-weight: 600;
+        }
+
+        .btn-action {
+            margin-right: 0;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            font-size: 0.875rem;
+        }
+
+        .solicitud-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #6c757d;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.3;
+        }
+    </style>
+
+    <div class="container mt-5">
+        <!-- Mensajes Flash -->
+        <div th:if="${success}"
+             style="padding: 12px 20px; margin-bottom: 20px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 6px;">
+            <strong>✓ Éxito:</strong> <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}"
+             style="padding: 12px 20px; margin-bottom: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 6px;">
+            <strong>✗ Error:</strong> <span th:text="${error}"></span>
+        </div>
 
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2>Panel de Solicitudes (Total: <span th:text="${solicitudes.size()}">0</span>)</h2>
-        </div>
-
-        <div class="card shadow-sm">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Fecha</th>
-                        <th>Tipo</th>
-                        <th>Hecho Relacionado</th>
-                        <th>Usuario</th>
-                        <th>Estado</th>
-                        <th class="text-end">Detalles</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <tr th:each="sol : ${solicitudes}">
-                        <td th:text="${sol.id}">1</td>
-                        <td><span class="date-display" th:attr="data-utc-date=${sol.fechaDeCargaSolicitud != null ? sol.fechaDeCargaSolicitud.toString() : ''}" th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></span></td>
-
-                        <td th:text="${sol.tipo}">TIPO</td>
-
-                        <td>
-                            <span th:if="${sol.hecho != null}" th:text="${sol.hecho.titulo}">Título</span>
-                            <span th:if="${sol.hecho == null}" class="text-muted fst-italic">Hecho desconocido</span>
-                        </td>
-
-                        <td th:text="${sol.contribuyenteId != null ? sol.contribuyenteId : 'Anónimo'}">User</td>
-
-                        <td th:text="${sol.estado}">ESTADO</td>
-                    </tr>
-
-                    <tr th:if="${#lists.isEmpty(solicitudes)}">
-                        <td colspan="7" class="text-center py-5 text-muted">
-                            No hay solicitudes registradas en el sistema.
-                        </td>
-                    </tr>
-                    </tbody>
-                </table>
+            <div>
+                <h2 class="fw-bold mb-0">Panel de Solicitudes</h2>
+                <div class="text-muted small">Administración de Solicitudes</div>
             </div>
+            <span class="badge bg-primary fs-6 px-3 py-2 rounded-pill shadow-sm">
+                Total: <span th:text="${solicitudes.size()}">0</span>
+            </span>
         </div>
-    </div>
 
-    <div class="modal fade" id="modalDetalle" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Detalle de Solicitud #<span id="modalId"></span></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        <div th:if="${#lists.isEmpty(solicitudes)}" class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <h4 class="text-muted">No hay solicitudes registradas</h4>
+            <p class="text-muted mt-2">Las solicitudes aparecerán aquí cuando sean creadas.</p>
+        </div>
+
+        <div th:if="${!#lists.isEmpty(solicitudes)}" class="solicitud-grid">
+            <div th:each="sol : ${solicitudes}" class="solicitud-card shadow-sm">
+                <div class="solicitud-card-header">
+                    <div>
+                        <div class="solicitud-id">#<span th:text="${sol.id}">ID</span></div>
+                        <div class="card-title" th:text="${sol.titulo}">Título</div>
+                    </div>
+                    <span th:if="${sol.estado != null}"
+                          th:class="'badge-status ' +
+                          ( ${sol.estado.name() == 'PENDIENTE'} ? 'bg-pendiente' :
+                          ( ${sol.estado.name() == 'ACEPTADO'} ? 'bg-aprobada' : 'bg-rechazada' ) )"
+                          th:text="${sol.estado}">
+                    </span>
                 </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <strong>Tipo:</strong> <span id="modalTipo"></span><br>
-                        <strong>Estado:</strong> <span id="modalEstado"></span>
+
+                <div class="solicitud-card-body">
+                    <div th:if="${sol.descripcion != null && !sol.descripcion.isEmpty()}"
+                         class="card-description"
+                         th:text="${sol.descripcion}">
+                        Descripción de la solicitud
+                    </div>
+                    <div th:if="${sol.descripcion == null || sol.descripcion.isEmpty()}"
+                         class="card-description text-muted font-italic">
+                        Sin descripción
                     </div>
 
-                    <div class="card bg-light">
-                        <div class="card-body">
-                            <h6>Contenido / Justificación:</h6>
-                            <pre id="modalContenido" style="white-space: pre-wrap; font-size: 0.9em;"></pre>
+                    <div class="card-meta">
+                        <div class="meta-item" th:if="${sol.nombreCategoria != null}">
+                            <i class="bi bi-tag-fill"></i>
+                            <span th:text="${sol.nombreCategoria}">Categoría</span>
+                        </div>
+                        <div class="meta-item" th:if="${sol.fechaDeCargaSolicitud != null}">
+                            <i class="bi bi-calendar3"></i>
+                            <span th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                        </div>
+                        <div class="meta-item" th:if="${sol.fechaDeAcontecimiento != null}">
+                            <i class="bi bi-clock-history"></i>
+                            <span>Suceso: <span th:text="${#temporals.format(sol.fechaDeAcontecimiento, 'dd/MM/yyyy')}">Fecha</span></span>
+                        </div>
+                        <div class="meta-item" th:if="${sol.idContribuyente != null}">
+                            <i class="bi bi-person-fill"></i>
+                            <span>Usuario #<span th:text="${sol.idContribuyente}">ID</span></span>
+                        </div>
+                        <div class="meta-item" th:if="${sol.idContribuyente == null}">
+                            <i class="bi bi-person-fill"></i>
+                            <span>Anónimo</span>
+                        </div>
+                        <div class="meta-item" th:if="${sol.latitud != null && sol.longitud != null}">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span class="font-monospace small" th:text="${sol.latitud + ', ' + sol.longitud}">Coords</span>
+                        </div>
+                    </div>
+
+                    <div th:if="${sol.contenidoMultimedia != null && !sol.contenidoMultimedia.isEmpty()}"
+                         class="multimedia-preview">
+                        <div th:each="media : ${sol.contenidoMultimedia}" class="multimedia-badge">
+                            <i class="bi bi-paperclip"></i>
+                            <span th:text="${media.pathArchivo != null ? media.pathArchivo : 'Archivo'}"></span>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+
+                <div class="solicitud-card-footer">
+                    <!-- Botones de administrador -->
+                    <div th:if="${isAdmin}">
+                        <form th:action="@{/solicitudes/{id}/aceptar(id=${sol.id})}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-success btn-action" title="Aceptar">
+                                <i class="bi bi-check-lg"></i> Aceptar
+                            </button>
+                        </form>
+
+                        <form th:action="@{/solicitudes/{id}/rechazar(id=${sol.id})}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger btn-action" title="Rechazar">
+                                <i class="bi bi-x-lg"></i> Rechazar
+                            </button>
+                        </form>
+
+                        <a th:href="@{/solicitudes/{id}/aceptar-con-modificaciones(id=${sol.id})}"
+                           class="btn btn-sm btn-info btn-action text-white"
+                           title="Aceptar con Modificaciones">
+                            <i class="bi bi-check-circle"></i> Aceptar con Modificaciones
+                        </a>
+                    </div>
+
+                    <!-- Botón de editar (visible para todos los usuarios) -->
+                    <a th:href="@{/solicitudes/{id}/editar(id=${sol.id})}"
+                       class="btn btn-sm btn-warning btn-action text-white"
+                       title="Editar">
+                        <i class="bi bi-pencil-square"></i> Editar
+                    </a>
                 </div>
             </div>
         </div>
     </div>
 
-    <script th:inline="javascript">
-        let modal = null;
-
-        document.addEventListener('DOMContentLoaded', function() {
-            modal = new bootstrap.Modal(document.getElementById('modalDetalle'));
-        });
-
-        function verDetalle(solicitud) {
-            // Llenar datos básicos
-            document.getElementById('modalId').textContent = solicitud.id;
-            document.getElementById('modalTipo').textContent = solicitud.tipo;
-            document.getElementById('modalEstado').textContent = solicitud.estado;
-
-            // Formatear el contenido (detalle)
-            const contenidoDiv = document.getElementById('modalContenido');
-
-            if (!solicitud.detalle) {
-                contenidoDiv.textContent = "Sin detalles adicionales.";
-            } else {
-                // Intentamos ver si es un JSON (caso Edición) para mostrarlo bonito
-                try {
-                    const json = JSON.parse(solicitud.detalle);
-                    // Lo mostramos indentado
-                    contenidoDiv.textContent = JSON.stringify(json, null, 2);
-                } catch (e) {
-                    // Si no es JSON (caso Eliminación con texto plano), mostramos el texto tal cual
-                    contenidoDiv.textContent = solicitud.detalle;
-                }
-            }
-
-            modal.show();
-        }
-    </script>
 </div>
-
-</body>
-</html>

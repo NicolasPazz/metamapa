@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="es" th:replace="~{layout/base :: html}">
+<head>
+    <title>Editar Solicitud</title>
+</head>
+<body>
+
+<div th:fragment="contenido">
+    <style>
+        .edit-form-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 3rem 0;
+            border-radius: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .form-card {
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+            overflow: hidden;
+            border: none;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            padding: 2rem;
+            color: #fff;
+            border-bottom: none;
+        }
+
+        .form-header h4 {
+            color: #fff;
+            margin: 0;
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+
+        .form-header .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+        }
+
+        .form-body {
+            padding: 2.5rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .form-label .required {
+            color: #e53e3e;
+            margin-left: 0.25rem;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            background-color: #fff;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            background-color: #fff;
+        }
+
+        .form-control:disabled {
+            background-color: #f7fafc;
+            border-color: #e2e8f0;
+            color: #718096;
+            cursor: not-allowed;
+        }
+
+        .input-group-text {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            border: none;
+            font-weight: 600;
+            padding: 0.75rem 1rem;
+        }
+
+        .location-card {
+            background: linear-gradient(135deg, #f6f8ff 0%, #f0f4ff 100%);
+            border: 2px solid #e2e8f0;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .location-card .form-label {
+            color: #4c51bf;
+            font-size: 1rem;
+        }
+
+        .file-upload-area {
+            border: 2px dashed #cbd5e0;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload-area:hover {
+            border-color: #667eea;
+            background: #edf2f7;
+        }
+
+        .file-upload-area.has-files {
+            border-color: #48bb78;
+            background: #f0fff4;
+        }
+
+        .file-input-label {
+            cursor: pointer;
+            display: block;
+        }
+
+        .file-upload-icon {
+            font-size: 3rem;
+            color: #a0aec0;
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-area:hover .file-upload-icon {
+            color: #667eea;
+        }
+
+        .file-list {
+            margin-top: 1rem;
+            text-align: left;
+        }
+
+        .file-item {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .id-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            display: inline-block;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .btn-submit {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            border: none;
+            color: #fff;
+            font-weight: 700;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.4);
+        }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.5);
+            color: #fff;
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-cancel {
+            border: 2px solid #cbd5e0;
+            color: #4a5568;
+            font-weight: 600;
+            padding: 0.875rem 2rem;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-cancel:hover {
+            border-color: #a0aec0;
+            background: #f7fafc;
+            color: #2d3748;
+        }
+
+        .form-text {
+            color: #718096;
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        .textarea-custom {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        @media (max-width: 768px) {
+            .form-body {
+                padding: 1.5rem;
+            }
+            
+            .form-header {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+
+    <div class="edit-form-container">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-9 col-xl-8">
+                    <div class="form-card">
+                        <div class="form-header">
+                            <div class="d-flex align-items-center">
+                                <div class="icon-wrapper">
+                                    <i class="bi bi-pencil-square fs-3"></i>
+                                </div>
+                                <div>
+                                    <h4 th:if="${esAceptarConModificaciones == null or !esAceptarConModificaciones}">
+                                        Editar Solicitud
+                                    </h4>
+                                    <h4 th:if="${esAceptarConModificaciones != null and esAceptarConModificaciones}">
+                                        Aceptar Solicitud con Modificaciones
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-body">
+                            <form id="editarSolicitudForm"
+                                  th:data-id="${solicitud.id}"
+                                  th:data-es-aceptar="${esAceptarConModificaciones != null and esAceptarConModificaciones}"
+                                  method="post"
+                                  enctype="multipart/form-data">
+                                <input type="hidden" name="contribuyente_id" th:value="${solicitud.idContribuyente}">
+
+                                <div class="form-section">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <span class="id-badge">
+                                            <i class="bi bi-hash me-1"></i>Referencia #<span th:text="${solicitud.id}">ID</span>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <div class="row g-4">
+                                        <div class="col-md-6">
+                                            <label for="titulo" class="form-label">
+                                                <i class="bi bi-type-h1 text-primary"></i>
+                                                Título <span class="required">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="titulo" name="titulo"
+                                                   th:value="${solicitud.titulo}" 
+                                                   placeholder="Ej: Bache en Av. Corrientes" required>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="categoria" class="form-label">
+                                                <i class="bi bi-tag-fill text-success"></i>
+                                                Categoría <span class="required">*</span>
+                                            </label>
+                                            <input type="text" class="form-control" id="categoria" name="categoria"
+                                                   th:value="${solicitud.nombreCategoria}" required>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <div class="location-card">
+                                        <label class="form-label">
+                                            <i class="bi bi-geo-alt-fill"></i>
+                                            Ubicación Geográfica
+                                        </label>
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <div class="input-group">
+                                                    <span class="input-group-text">Lat</span>
+                                                    <input type="number" step="any" class="form-control"
+                                                           id="latitud" name="latitud"
+                                                           th:value="${solicitud.latitud}" 
+                                                           required min="-90" max="90"
+                                                           placeholder="-34.603722">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="input-group">
+                                                    <span class="input-group-text">Lng</span>
+                                                    <input type="number" step="any" class="form-control"
+                                                           id="longitud" name="longitud"
+                                                           th:value="${solicitud.longitud}" 
+                                                           required min="-180" max="180"
+                                                           placeholder="-58.381592">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <label for="fechaAcontecimiento" class="form-label">
+                                        <i class="bi bi-calendar-event text-info"></i>
+                                        Fecha y Hora del Acontecimiento <span class="required">*</span>
+                                    </label>
+                                    <input type="datetime-local" class="form-control" id="fechaAcontecimiento"
+                                           name="fecha_acontecimiento"
+                                           th:value="${solicitud.fechaDeAcontecimiento}" required>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> Indique cuándo sucedió el hecho reportado.
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <label for="fotos" class="form-label">
+                                        <i class="bi bi-image text-warning"></i>
+                                        Agregar Evidencia Multimedia
+                                    </label>
+                                    <div class="file-upload-area" id="fileUploadArea">
+                                        <label for="fotos" class="file-input-label">
+                                            <div class="file-upload-icon">
+                                                <i class="bi bi-cloud-upload"></i>
+                                            </div>
+                                            <div class="fw-semibold text-dark mb-2">
+                                                Arrastra archivos aquí o haz clic para seleccionar
+                                            </div>
+                                            <div class="form-text">
+                                                Formatos soportados: JPG, PNG, MP4, AVI
+                                            </div>
+                                            <input type="file" class="d-none" id="fotos" name="archivos" multiple
+                                                   accept="image/*,video/*">
+                                        </label>
+                                        <div id="fileList" class="file-list"></div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
+                                    <label for="descripcion" class="form-label">
+                                        <i class="bi bi-text-paragraph text-secondary"></i>
+                                        Descripción Detallada
+                                    </label>
+                                    <textarea class="form-control textarea-custom" id="descripcion" name="descripcion" rows="5"
+                                              placeholder="Describa los detalles del incidente, situación observada, y cualquier información relevante que considere importante..."
+                                              th:text="${solicitud.descripcion}"></textarea>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> Proporcione una descripción clara y detallada del hecho.
+                                    </div>
+                                </div>
+
+                                <hr class="my-5" style="border-color: #e2e8f0;">
+
+                                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                                    <a th:href="@{/admin/solicitudes}" class="btn btn-cancel">
+                                        <i class="bi bi-arrow-left me-2"></i>Cancelar
+                                    </a>
+                                    <button type="submit" class="btn btn-submit">
+                                        <i class="bi bi-check-lg me-2"></i>
+                                        <span th:if="${esAceptarConModificaciones == null or !esAceptarConModificaciones}">
+                                            Guardar Cambios
+                                        </span>
+                                        <span th:if="${esAceptarConModificaciones != null and esAceptarConModificaciones}">
+                                            Aceptar con Modificaciones
+                                        </span>
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configurar fecha máxima para el campo de fecha
+        document.getElementById('fechaAcontecimiento').max = new Date().toISOString().slice(0, 16);
+        
+        // Manejo de archivos seleccionados
+        const fileInput = document.getElementById('fotos');
+        const fileUploadArea = document.getElementById('fileUploadArea');
+        const fileList = document.getElementById('fileList');
+        
+        function updateFileList() {
+            const files = fileInput.files;
+            fileList.innerHTML = '';
+            
+            if (files.length > 0) {
+                fileUploadArea.classList.add('has-files');
+                for (let i = 0; i < files.length; i++) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    const icon = files[i].type.startsWith('image/') ? 'bi-image' : 'bi-camera-video';
+                    fileItem.innerHTML = `
+                        <i class="bi ${icon} text-primary"></i>
+                        <span class="flex-grow-1">${files[i].name}</span>
+                        <span class="text-muted small">${(files[i].size / 1024 / 1024).toFixed(2)} MB</span>
+                    `;
+                    fileList.appendChild(fileItem);
+                }
+            } else {
+                fileUploadArea.classList.remove('has-files');
+            }
+        }
+        
+        fileInput.addEventListener('change', updateFileList);
+        
+        // Permitir arrastrar y soltar archivos
+        fileUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUploadArea.style.borderColor = '#667eea';
+            fileUploadArea.style.background = '#edf2f7';
+        });
+        
+        fileUploadArea.addEventListener('dragleave', () => {
+            if (fileInput.files.length === 0) {
+                fileUploadArea.style.borderColor = '#cbd5e0';
+                fileUploadArea.style.background = '#f7fafc';
+            }
+        });
+        
+        fileUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                // Crear un nuevo DataTransfer para asignar los archivos
+                const dataTransfer = new DataTransfer();
+                for (let i = 0; i < files.length; i++) {
+                    dataTransfer.items.add(files[i]);
+                }
+                fileInput.files = dataTransfer.files;
+                updateFileList();
+                fileUploadArea.style.borderColor = '#48bb78';
+                fileUploadArea.style.background = '#f0fff4';
+            }
+        });
+        
+        // Interceptar el submit del formulario para hacer una petición PATCH
+        document.getElementById('editarSolicitudForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const form = e.target;
+            const formData = new FormData(form);
+            const solicitudId = form.getAttribute('data-id');
+            const esAceptar = form.getAttribute('data-es-aceptar') === 'true';
+            const url = esAceptar ? '/solicitudes/' + solicitudId + '/aceptar-con-modificaciones' : '/solicitudes/' + solicitudId;
+            
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalText = submitButton.innerHTML;
+            submitButton.disabled = true;
+            submitButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Guardando...';
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'PATCH',
+                    body: formData
+                });
+                
+                const result = await response.text();
+                
+                if (response.ok) {
+                    // Mostrar mensaje de éxito y redirigir
+                    alert('✓ Solicitud actualizada correctamente');
+                    window.location.href = '/solicitudes';
+                } else {
+                    // Mostrar error
+                    alert('✗ Error al actualizar la solicitud: ' + result);
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = originalText;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('✗ Error al actualizar la solicitud. Por favor, intente nuevamente.');
+                submitButton.disabled = false;
+                submitButton.innerHTML = originalText;
+            }
+        });
+    </script>
+</div>
+
+</body>
+</html>

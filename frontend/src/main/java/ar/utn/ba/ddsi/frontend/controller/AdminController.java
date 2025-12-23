@@ -121,6 +121,26 @@ public class AdminController {
         }
         return "redirect:/admin";
     }
+    @GetMapping("/admin/solicitudes")
+    public String redirigirASolicitudes() {
+        return "redirect:/solicitudes";
+    }
+
+    @PostMapping("/admin/agregar-etiquetas")
+    public String agregarEtiquetas(@RequestParam("hechoId") Long hechoId,
+                                   @RequestParam("etiquetas") List<String> etiquetas,
+                                   RedirectAttributes redirectAttributes) {
+        log.info("POST /admin/agregar-etiquetas - hechoId: {}, etiquetas: {}", hechoId, etiquetas);
+        try {
+            adminService.agregarEtiquetasAHecho(hechoId, etiquetas);
+            log.info("Etiquetas agregadas correctamente al hecho {}", hechoId);
+            redirectAttributes.addFlashAttribute("success", "Etiquetas agregadas correctamente!");
+        } catch (Exception e) {
+            log.error("Error al agregar etiquetas al hecho {}", hechoId, e);
+            redirectAttributes.addFlashAttribute("error", "Error al agregar etiquetas: " + e.getMessage());
+        }
+        return "redirect:/admin";
+    }
     @GetMapping("/solicitudes")
     public String verPanelSolicitudes(Model model) {
         log.info("[AdminController] - GET - /solicitudes");
@@ -131,5 +151,32 @@ public class AdminController {
         return "admin/solicitudesv2";
     }
 
+    @PostMapping("/admin/actualizar-agregador")
+    public String actualizarAgregador(RedirectAttributes redirectAttributes) {
+      log.info("POST /admin/actualizar-agregador - Ejecutando scheduler del agregador");
+      try {
+        adminService.ejecutarSchedulerAgregador();
+        log.info("Scheduler del agregador ejecutado correctamente");
+        redirectAttributes.addFlashAttribute("success", "Agregador actualizado correctamente!");
+      } catch (Exception e) {
+        log.error("Error al ejecutar scheduler del agregador", e);
+        redirectAttributes.addFlashAttribute("error", "Error al actualizar agregador: " + e.getMessage());
+      }
+      return "redirect:/admin";
+    }
+
+    @PostMapping("/admin/actualizar-estadisticas")
+    public String actualizarEstadisticas(RedirectAttributes redirectAttributes) {
+      log.info("POST /admin/actualizar-estadisticas - Actualizando estadísticas");
+      try {
+        adminService.actualizarEstadisticas();
+        log.info("Estadísticas actualizadas ");
+        redirectAttributes.addFlashAttribute("success", "Estadísticas actualizadas correctamente!");
+      } catch (Exception e) {
+        log.error("Error al actualizar estadísticas", e);
+        redirectAttributes.addFlashAttribute("error", "Error al actualizar estadísticas: " + e.getMessage());
+      }
+      return "redirect:/admin";
+    }
 }
 

@@ -4,7 +4,6 @@ import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudEdicionFormDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificacionDTO;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,14 +16,23 @@ import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
-
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/solicitudes")
 @Slf4j
 public class SolicitudController {
     private final SolicitudService solicitudService;
+    public String crearSolicitud(@ModelAttribute("solicitud") SolicitudDTO solicitudDTO,
+                                 BindingResult bindingResult,
+                                 Model model,
+                                 RedirectAttributes redirectAttributes) {
+        try {
+            //solicitudService.crearSolicitud(solicitudDTO);
+            return "redirect:/hechos";
+        } catch (Exception e) {
+            return "redirect:/hechos";
+        }
+    }
 
     @PostMapping("/modificar/{idSolicitud}")
     public ResponseEntity<?> solicitarModificacion(
@@ -65,8 +73,6 @@ public class SolicitudController {
             return ResponseEntity.status(500).body("Error al actualizar la solicitud: " + e.getMessage());
         }
     }
-
-    
 }
 
 
