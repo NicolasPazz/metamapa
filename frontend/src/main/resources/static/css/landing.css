@@ -44,14 +44,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 2rem;
+    padding: 0.5rem 1rem;
     background: var(--bg);
     color: var(--text-main);
     border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
     z-index: 10;
-    min-height: 70px;
+    min-height: 50px;
   }
   
   .logo {
@@ -67,7 +67,7 @@
   }
 
   .logo-img {
-    height: 60px;
+    height: 45px;
     width: auto;
     max-width: 300px;
     object-fit: contain;
@@ -80,8 +80,36 @@
     color: var(--primary);
   }
 
+  .logo-admin-text {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--primary);
+    margin-left: 0.5rem;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+  }
+
   .logo:hover .logo-img {
     opacity: 0.9;
+  }
+
+  .logo:focus,
+  .logo:active,
+  .logo:focus-visible,
+  .logo:visited {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .logo:focus .logo-img,
+  .logo:active .logo-img,
+  .logo:focus-visible .logo-img,
+  .logo-img:focus,
+  .logo-img:active {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 
   .nav-buttons-center {
@@ -95,13 +123,14 @@
   }
 
   .nav-buttons-center .btn {
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     text-decoration: none;
     border-radius: 5px;
     font-weight: 500;
     margin: 0;
     display: inline-flex;
     align-items: center;
+    font-size: 0.9rem;
   }
 
   .nav-buttons {
@@ -112,25 +141,30 @@
   }
 
   .nav-buttons .btn {
-    padding: 0.5rem 1rem;
+    padding: 0.4rem 0.8rem;
     text-decoration: none;
     border-radius: 5px;
     font-weight: 500;
     margin: 0;
     display: inline-flex;
     align-items: center;
+    font-size: 0.9rem;
   }
 
-  .navbar .btn.secondary {
-    background: transparent;
-    border: 1px solid var(--secondary);
-    color: var(--secondary);
+  .navbar .btn.secondary,
+  .nav-buttons-center .btn.secondary,
+  .nav-buttons .btn.secondary {
+    background: transparent !important;
+    border: 1px solid var(--secondary) !important;
+    color: var(--secondary) !important;
   }
 
-  .navbar .btn.secondary:hover {
-    background: var(--blue-light);
-    border-color: var(--secondary);
-    color: var(--secondary);
+  .navbar .btn.secondary:hover,
+  .nav-buttons-center .btn.secondary:hover,
+  .nav-buttons .btn.secondary:hover {
+    background: var(--blue-light) !important;
+    border-color: var(--secondary) !important;
+    color: var(--secondary) !important;
   }
 
   .navbar .btn.primary {
@@ -756,10 +790,6 @@
   }
 }
 
-svg {
-  width: 100%;
-  display: block;
-}
 
 .marker {
   fill: var(--secondary);
@@ -993,7 +1023,7 @@ svg {
 
 .colecciones-block {
   padding: 3rem 2rem;
-  background: var(--green-soft);
+  background: var(--bg);
 }
 
 .colecciones-block h2 {
@@ -1155,7 +1185,7 @@ body {
 
 button, .btn {
   margin-top: 0.5rem;
-  padding: 0.6rem 1rem;
+  padding: 0.5rem 0.9rem;
   border: none;
   border-radius: 6px;
   background: var(--secondary);
@@ -1163,6 +1193,7 @@ button, .btn {
   cursor: pointer;
   text-decoration: none;
   display: inline-block;
+  font-size: 0.9rem;
 }
 
 button:hover, .btn:hover {
@@ -1427,12 +1458,12 @@ button:hover, .btn:hover {
 .modo-switch-label {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   margin: 0;
 }
 
 .modo-text {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   font-weight: 500;
   color: var(--text);
   white-space: nowrap;
@@ -1442,8 +1473,8 @@ button:hover, .btn:hover {
 .switch {
   position: relative;
   display: inline-block;
-  width: 50px;
-  height: 26px;
+  width: 40px;
+  height: 20px;
 }
 
 .switch input {
@@ -1462,16 +1493,16 @@ button:hover, .btn:hover {
   bottom: 0;
   background-color: var(--primary);
   transition: 0.4s;
-  border-radius: 26px;
+  border-radius: 20px;
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 20px;
-  width: 20px;
-  left: 3px;
-  bottom: 3px;
+  height: 16px;
+  width: 16px;
+  left: 2px;
+  bottom: 2px;
   background-color: white;
   transition: 0.4s;
   border-radius: 50%;
@@ -1482,7 +1513,7 @@ input:checked + .slider {
 }
 
 input:checked + .slider:before {
-  transform: translateX(24px);
+  transform: translateX(20px);
 }
 
 input:focus + .slider {
@@ -1500,7 +1531,7 @@ input:focus + .slider {
 .modo-switch-fixed {
   display: flex;
   justify-content: flex-end;
-  padding: 1rem;
+  padding: 0.75rem;
   margin-bottom: 1rem;
   background-color: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
@@ -1760,4 +1791,361 @@ input:focus + .slider {
   background: var(--primary);
   width: 12px;
   height: 12px;
+}
+
+/* ===== VALIDACIÓN VISUAL DE CAMPOS ===== */
+.field-invalid {
+  border-color: var(--error) !important;
+  box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.2) !important;
+}
+
+.field-valid {
+  border-color: var(--success) !important;
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2) !important;
+}
+
+.field-error {
+  display: none;
+  color: var(--error);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #fee;
+  border-left: 3px solid var(--error);
+  border-radius: 4px;
+}
+
+.optional-indicator {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: normal;
+  font-style: italic;
+}
+
+/* ===== PLazo de edición visual ===== */
+.editar-btn-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.plazo-info {
+  font-size: 0.85rem;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: #e3f2fd;
+  border-left: 3px solid #2196f3;
+}
+
+.plazo-text {
+  color: #1976d2;
+  display: block;
+}
+
+.plazo-expirado {
+  color: var(--error) !important;
+  background: #fee !important;
+  border-left-color: var(--error) !important;
+}
+
+.btn-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ===== TOOLTIPS Y HINTS ===== */
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-trigger {
+  cursor: help;
+  color: var(--secondary);
+  font-size: 0.9rem;
+  margin-left: 0.25rem;
+  text-decoration: none;
+  border-bottom: 1px dotted var(--secondary);
+}
+
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 5px;
+  padding: 0.5rem 0.75rem;
+  background: var(--text-main);
+  color: var(--bg);
+  font-size: 0.85rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  max-width: 250px;
+  white-space: normal;
+}
+
+.tooltip-trigger:hover + .tooltip,
+.tooltip-trigger:focus + .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 5px solid transparent;
+  border-top-color: var(--text-main);
+}
+
+.hint-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-top: 0.25rem;
+}
+
+/* ===== SPINNERS Y SKELETON SCREENS ===== */
+.spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: white;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s ease-in-out infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-text {
+  height: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.skeleton-title {
+  height: 1.5rem;
+  width: 60%;
+  margin-bottom: 1rem;
+}
+
+.skeleton-card {
+  padding: 1rem;
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loading-spinner-large {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--blue-light);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ===== ACCESIBILIDAD WCAG AA ===== */
+/* Foco visible mejorado */
+*:focus {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+button:focus,
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+  outline: 3px solid var(--primary);
+  outline-offset: 2px;
+}
+
+
+/* Mejoras de contraste */
+.btn.secondary {
+  border-width: 2px;
+}
+
+/* Navegación por teclado mejorada */
+[role="button"],
+button,
+a[href] {
+  min-height: 48px;
+  min-width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ARIA labels mejorados */
+[aria-hidden="true"] {
+  display: none;
+}
+
+/* Contraste mejorado para texto */
+.text-low-contrast {
+  color: var(--text-main);
+}
+
+/* ===== HIT ÁREA MÍNIMA 48x48px ===== */
+/* Asegurar que todos los elementos clickeables tengan área mínima */
+.btn,
+button,
+a.btn,
+input[type="submit"],
+input[type="button"] {
+  min-height: 40px;
+  min-width: 40px;
+  padding: 0.6rem 1.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+}
+
+.close-btn {
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.carousel-btn {
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
+}
+
+.carousel-indicator {
+  min-width: 48px;
+  min-height: 48px;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Links pequeños también deben tener área mínima */
+a:not(.btn) {
+  min-height: 44px;
+  padding: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Iconos clickeables */
+.icon-button {
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ajustes responsive para hit área */
+@media (max-width: 768px) {
+  .btn,
+  button,
+  a.btn {
+    min-height: 40px;
+    padding: 0.5rem 1rem;
+  }
+  
+  .close-btn {
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+/* Mejoras adicionales de accesibilidad */
+[aria-busy="true"] {
+  cursor: wait;
+}
+
+[aria-disabled="true"] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Mejorar visibilidad de estados de carga */
+button:disabled,
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Asegurar que los elementos con role tienen estilos apropiados */
+[role="alert"] {
+  font-weight: 500;
+}
+
+[role="status"] {
+  font-style: italic;
+}
+
+/* Mejorar contraste en modo de alto contraste */
+@media (prefers-contrast: high) {
+  .btn {
+    border-width: 2px;
+  }
+  
+  .field-invalid {
+    border-width: 3px;
+  }
+}
+
+/* Reducir animaciones para usuarios que lo prefieren */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .spinner {
+    animation: none;
+    border-top-color: transparent;
+  }
 }

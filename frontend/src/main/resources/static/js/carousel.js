@@ -3,7 +3,26 @@ function renderMultimediaCarousel(multimedia, carouselId, showControls = true) {
     return '';
   }
 
-  const apiBaseUrl = getApiBaseUrl();
+  // Para multimedia de solicitudes, usar la URL de dinamica (puerto 8081)
+  // ya que las imágenes se guardan en dinamica, no en agregador
+  let apiBaseUrl;
+  if (typeof getDinamicaApiBaseUrl === 'function') {
+    apiBaseUrl = getDinamicaApiBaseUrl();
+  } else {
+    // Fallback: construir URL de dinamica manualmente
+    const baseUrl = getApiBaseUrl();
+    // Reemplazar puerto 8084 (agregador) por 8081 (dinamica)
+    apiBaseUrl = baseUrl.replace(':8084', ':8081');
+    // Reemplazar hosts internos de Docker por localhost para acceso desde navegador
+    apiBaseUrl = apiBaseUrl.replace(/https?:\/\/[^\/:]+(:\d+)?/, function(match) {
+      // Extraer el protocolo y puerto
+      const protocol = match.startsWith('https') ? 'https' : 'http';
+      const portMatch = match.match(/:(\d+)/);
+      const port = portMatch ? portMatch[1] : '8081';
+      return protocol + '://localhost:' + port;
+    });
+  }
+  
   let html = '<div class="multimedia-carousel" id="' + carouselId + '">';
   html += '<div class="carousel-container">';
   
@@ -60,7 +79,7 @@ function renderMultimediaItem(item) {
     html += 'onclick="window.open(\'' + item.fileUrl + '\', \'_blank\')" ';
     html += 'onerror="this.onerror=null; this.style.display=\'none\'; this.nextElementSibling.style.display=\'flex\';" />';
     html += '<div class="carousel-error" style="display: none;">';
-    html += '<span style="font-size: 2rem;">🖼️</span>';
+    html += '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block;"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>';
     html += '<span>Imagen no disponible</span>';
     html += '</div>';
     html += '</div>';
