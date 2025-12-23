@@ -6,11 +6,9 @@
         <title th:text="${titulo} + ' - MetaMapa'"></title>
         <meta name="api-base-url" th:content="${apiBaseUrl}">
         
-        <!-- Favicon -->
-        <link rel="icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
-        <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
+        <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+        <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
         
-        <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
         <meta property="og:title" th:content="${titulo} + ' - MetaMapa'">
         <meta property="og:description" content="Plataforma colaborativa para mapear y reportar hechos de interés público">
@@ -19,7 +17,6 @@
         <meta property="og:url" th:if="${#httpServletRequest == null}" content="https://metamapa-dds.ddns.net">
         <meta property="og:site_name" content="MetaMapa">
         
-        <!-- Twitter Card -->
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" th:content="${titulo} + ' - MetaMapa'">
         <meta name="twitter:description" content="Plataforma colaborativa para mapear y reportar hechos de interés público">
@@ -29,44 +26,126 @@
         <script th:src="@{/js/common.js}"></script>
         <script th:src="@{/js/carousel.js}"></script>
         <script th:src="@{/js/hechos.js}"></script>
+        <script>
+          // Convertir todas las fechas mostradas de UTC a zona local del navegador al cargar la página
+          document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.date-display[data-utc-date]').forEach(function(element) {
+              const utcDate = element.getAttribute('data-utc-date');
+              if (utcDate && typeof formatDateInLocalTimezone === 'function') {
+                // Detectar el formato original del texto para mantener consistencia
+                const originalText = element.textContent.trim();
+                let format = 'dd/MM/yyyy HH:mm';
+                if (originalText.includes(',')) {
+                  format = 'dd/MM/yyyy, HH:mm:ss';
+                } else if (originalText.split(' ').length === 3) {
+                  format = 'dd/MM/yyyy HH:mm';
+                }
+                const localDate = formatDateInLocalTimezone(utcDate, format);
+                if (localDate) {
+                  element.textContent = localDate;
+                }
+              }
+            });
+          });
+        </script>
     </head>
     <body>
-        <header class="navbar">
+        <header class="navbar" role="banner">
             <a th:href="@{/}" class="logo">
                 <img th:src="@{/images/metamapa-header.svg}" 
-                     th:if="${#httpServletRequest != null && !#strings.contains(#httpServletRequest.requestURI, '/admin')}"
-                     alt="MetaMapa" 
-                     class="logo-img"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                <img th:src="@{/images/metamapa-header-admin.svg}" 
-                     th:if="${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/admin')}"
-                     alt="MetaMapa Admin" 
-                     class="logo-img"
-                     onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
-                <img th:src="@{/images/metamapa-header.svg}" 
-                     th:if="${#httpServletRequest == null}"
                      alt="MetaMapa" 
                      class="logo-img"
                      onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
                 <span class="logo-text" style="display: none;">MetaMapa</span>
+                <span th:if="${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/admin')}" 
+                      class="logo-admin-text">Admin</span>
             </a>
-            <nav class="nav-buttons-center">
-                <a th:if="${showHechosBtn == null || showHechosBtn}" th:href="@{/hechos}" class="btn secondary">Hechos</a>
-                <a th:if="${showColeccionesBtn == null || showColeccionesBtn}" th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
-                <a sec:authorize="isAuthenticated()" th:if="${showMisHechosBtn == null || showMisHechosBtn}" th:href="@{/hechos/mis-hechos}" class="btn secondary">Mis hechos</a>
-                <a th:if="${showReportarHechoBtn == null || showReportarHechoBtn}" th:href="@{/hechos/nuevo}" class="btn btn-primary btn-lg shadow-sm">
-                    <i class="bi bi-plus-circle-fill me-2"></i> Reportar nuevo hecho
+            <nav class="nav-buttons-center" role="navigation" aria-label="Navegación principal">
+                <th:block th:with="isAdmin=${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/admin')},
+                                    isColecciones=${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/colecciones')},
+                                    isColeccionesHechos=${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/colecciones') && #strings.contains(#httpServletRequest.requestURI, '/hechos')},
+                                    isHechos=${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/hechos') && !#strings.contains(#httpServletRequest.requestURI, '/colecciones')},
+                                    isMisHechos=${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/hechos/mis-hechos')},
+                                    isNuevoHecho=${#httpServletRequest != null && #strings.contains(#httpServletRequest.requestURI, '/hechos/nuevo')},
+                                    showHechos=${(!isMisHechos && !isNuevoHecho && isHechos) || (isColecciones && !isColeccionesHechos) || isColeccionesHechos},
+                                    showMisHechos=${isMisHechos || (isHechos && !isNuevoHecho && !isColecciones)},
+                                    showColecciones=${isColeccionesHechos || (isHechos && !isMisHechos && !isNuevoHecho)}">
+                
+                <a th:if="${showHechos}" 
+                   th:href="@{/hechos}" 
+                   class="btn secondary"
+                   aria-label="Ver hechos">Hechos</a>
+                
+                <a sec:authorize="isAuthenticated()" 
+                   th:if="${showMisHechos}" 
+                   th:href="@{/hechos/mis-hechos}" 
+                   class="btn secondary"
+                   aria-label="Ver mis hechos">Mis hechos</a>
+                
+                <a sec:authorize="isAuthenticated()"
+                   th:if="${isMisHechos && !isNuevoHecho}" 
+                   th:href="@{/hechos/nuevo}" 
+                   class="btn btn-primary btn-lg shadow-sm"
+                   aria-label="Reportar un nuevo hecho">
+                    <i class="bi bi-plus-circle-fill me-2" aria-hidden="true"></i> Reportar nuevo hecho
                 </a>
+                <a sec:authorize="!isAuthenticated()"
+                   th:if="${isHechos && !isMisHechos && !isNuevoHecho}" 
+                   th:href="@{/hechos/nuevo}" 
+                   class="btn btn-primary btn-lg shadow-sm"
+                   aria-label="Reportar un nuevo hecho">
+                    <i class="bi bi-plus-circle-fill me-2" aria-hidden="true"></i> Reportar nuevo hecho
+                </a>
+                
+                <a th:if="${showColecciones}" 
+                   th:href="@{/colecciones}" 
+                   class="btn secondary"
+                   aria-label="Ver colecciones">Colecciones</a>
+                
+                </th:block>
+                
+                <a th:if="${(#httpServletRequest == null || (#httpServletRequest != null && !#strings.contains(#httpServletRequest.requestURI, '/hechos') && !#strings.contains(#httpServletRequest.requestURI, '/colecciones'))) && (showHechosBtn == null || showHechosBtn)}" 
+                   th:href="@{/hechos}" 
+                   class="btn secondary"
+                   aria-label="Ver hechos">Hechos</a>
+                <a sec:authorize="isAuthenticated()" 
+                   th:if="${(#httpServletRequest == null || (#httpServletRequest != null && !#strings.contains(#httpServletRequest.requestURI, '/hechos') && !#strings.contains(#httpServletRequest.requestURI, '/colecciones'))) && (showMisHechosBtn == null || showMisHechosBtn)}" 
+                   th:href="@{/hechos/mis-hechos}" 
+                   class="btn secondary"
+                   aria-label="Ver mis hechos">Mis hechos</a>
+                <a th:if="${(#httpServletRequest == null || (#httpServletRequest != null && !#strings.contains(#httpServletRequest.requestURI, '/hechos') && !#strings.contains(#httpServletRequest.requestURI, '/colecciones'))) && (showReportarHechoBtn == null || showReportarHechoBtn)}" 
+                   th:href="@{/hechos/nuevo}" 
+                   class="btn btn-primary btn-lg shadow-sm"
+                   aria-label="Reportar un nuevo hecho">
+                    <i class="bi bi-plus-circle-fill me-2" aria-hidden="true"></i> Reportar nuevo hecho
+                </a>
+                <a th:if="${(#httpServletRequest == null || (#httpServletRequest != null && !#strings.contains(#httpServletRequest.requestURI, '/hechos') && !#strings.contains(#httpServletRequest.requestURI, '/colecciones'))) && (showColeccionesBtn == null || showColeccionesBtn)}" 
+                   th:href="@{/colecciones}" 
+                   class="btn secondary"
+                   aria-label="Ver colecciones">Colecciones</a>
             </nav>
-            <nav class="nav-buttons">
-                <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn secondary">Ingresar</a>
-                <a sec:authorize="!isAuthenticated()" th:href="@{/registro}" class="btn primary">Registrarse</a>
-                <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
-                    <button type="submit" class="btn secondary">Cerrar sesión</button>
+            <nav class="nav-buttons" role="navigation" aria-label="Acceso de usuario">
+                <a sec:authorize="!isAuthenticated()" 
+                   th:href="@{/login}" 
+                   class="btn secondary"
+                   aria-label="Iniciar sesión">Ingresar</a>
+                <a sec:authorize="!isAuthenticated()" 
+                   th:href="@{/registro}" 
+                   class="btn primary"
+                   aria-label="Registrarse">Registrarse</a>
+                <form sec:authorize="isAuthenticated()" 
+                      th:action="@{/logout}" 
+                      method="post" 
+                      style="display: inline;">
+                    <button type="submit" 
+                            class="btn secondary"
+                            aria-label="Cerrar sesión">Cerrar sesión</button>
                 </form>
             </nav>
         </header>
 
-        <div th:replace=":: contenido"></div>
+        <main id="main-content" role="main">
+          <div th:replace=":: contenido"></div>
+        </main>
     </body>
 </html>

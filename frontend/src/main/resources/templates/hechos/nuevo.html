@@ -7,24 +7,46 @@
 
   <section class="block" style="padding: 2rem; max-width: 800px; margin: 0 auto;">
     <div class="container">
-      <h2 style="text-align: center;">Nuevo Hecho</h2>
+      <h2 style="text-align: center; color: var(--primary);">Nuevo Hecho</h2>
       
       <form id="hechoForm" enctype="multipart/form-data">
         <div class="form-group">
           <label for="titulo">
-            Título <span class="required-indicator">*</span>
+            Título <span class="required-indicator" aria-label="Campo obligatorio">*</span>
+            <span class="tooltip-container">
+              <span class="tooltip-trigger" aria-label="Ayuda sobre el título">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </span>
+              <span class="tooltip" role="tooltip">Describe brevemente el hecho que quieres reportar</span>
+            </span>
           </label>
           <input type="text" 
                  class="form-control" 
                  id="titulo" 
                  name="titulo" 
                  placeholder="Ej: Inundación en Av. Corrientes" 
-                 required>
+                 required
+                 aria-required="true"
+                 aria-describedby="titulo-help">
         </div>
 
         <div class="form-group">
           <label>
-            Ubicación <span class="required-indicator">*</span>
+            Ubicación <span class="required-indicator" aria-label="Campo obligatorio">*</span>
+            <span class="tooltip-container">
+              <span class="tooltip-trigger" aria-label="Ayuda sobre ubicación">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle;">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </span>
+              <span class="tooltip" role="tooltip">Ingresa las coordenadas geográficas o usa tu ubicación actual</span>
+            </span>
           </label>
           <div style="display: flex; gap: 1rem; align-items: stretch;">
             <div style="flex: 1; display: flex; gap: 1rem;">
@@ -37,7 +59,9 @@
                        placeholder="Latitud" 
                        required
                        min="-90"
-                       max="90">
+                       max="90"
+                       aria-required="true"
+                       aria-label="Latitud (entre -90 y 90)">
               </div>
               <div style="flex: 1;">
                 <input type="number" 
@@ -48,17 +72,20 @@
                        placeholder="Longitud" 
                        required
                        min="-180"
-                       max="180">
+                       max="180"
+                       aria-required="true"
+                       aria-label="Longitud (entre -180 y 180)">
               </div>
             </div>
             <button type="button" 
                     onclick="obtenerUbicacion()" 
                     class="btn secondary" 
-                    style="white-space: nowrap; margin-top: 0;">
+                    style="white-space: nowrap; margin-top: 0; min-width: 48px; min-height: 48px;"
+                    aria-label="Usar mi ubicación actual">
               Usar mi ubicación
             </button>
           </div>
-          <div id="location-status" class="form-text">
+          <div id="location-status" class="form-text" role="status" aria-live="polite">
             Ingresa coordenadas o usa el botón.
           </div>
         </div>
@@ -106,17 +133,17 @@
                  name="contenidoMultimedia" 
                  multiple 
                  accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,audio/mpeg,audio/wav,audio/ogg" 
-                 onchange="previewMedia()"
+                 onchange="validarCantidadArchivos(this, 5); previewMedia();"
                  style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit;">
           <div id="preview-container" style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;"></div>
           <small style="color: #666; font-size: 0.85rem;">
-            Formatos permitidos: Imágenes (jpg, jpeg, png, gif, webp) | Videos (mp4, webm) | Audio (mp3, wav, ogg)
+            Formatos permitidos: Imágenes (jpg, jpeg, png, gif, webp) | Videos (mp4, webm) | Audio (mp3, wav, ogg). Máximo 5 archivos.
           </small>
         </div>
 
         <div class="form-group" style="margin-bottom: 1.5rem;">
           <label for="descripcion" style="display: block; margin-bottom: 0.5rem; color: var(--text); font-weight: 500;">
-            Descripción Detallada <span style="color: #dc3545;">*</span>
+            Descripción <span style="color: #dc3545;">*</span>
           </label>
           <textarea class="form-control" 
                     id="descripcion" 
@@ -182,6 +209,18 @@
           status.style.color = '#dc3545';
         }
       );
+    }
+
+    function validarCantidadArchivos(input, maxArchivos) {
+      if (input.files.length > maxArchivos) {
+        showToast(`Solo se pueden seleccionar hasta ${maxArchivos} archivos. Se mantendrán solo los primeros ${maxArchivos}.`, 'error');
+        // Crear un nuevo DataTransfer para limitar los archivos
+        const dataTransfer = new DataTransfer();
+        for (let i = 0; i < maxArchivos; i++) {
+          dataTransfer.items.add(input.files[i]);
+        }
+        input.files = dataTransfer.files;
+      }
     }
 
     // Función para previsualizar multimedia (imágenes, videos, audios)
@@ -322,9 +361,20 @@
             return;
           }
 
-          // Deshabilitar botón durante el envío
+          // Validar cantidad de archivos multimedia
+          const fileInput = document.getElementById('fotos');
+          if (fileInput && fileInput.files.length > 5) {
+            showToast('Solo se pueden cargar hasta 5 archivos. Por favor, selecciona menos archivos.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Solicitar publicación';
+            submitBtn.removeAttribute('aria-busy');
+            return;
+          }
+
+          // Deshabilitar botón durante el envío y mostrar spinner
           submitBtn.disabled = true;
-          submitBtn.textContent = 'Enviando...';
+          submitBtn.innerHTML = '<span class="spinner"></span> Enviando...';
+          submitBtn.setAttribute('aria-busy', 'true');
 
           // Obtener valores directamente de los inputs
           const latInput = document.getElementById('latitud');
@@ -339,14 +389,16 @@
           if (!latitudValue || latitudValue.trim() === '') {
             showToast('La latitud es obligatoria.', 'error');
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Publicar Hecho';
+            submitBtn.innerHTML = 'Solicitar publicación';
+            submitBtn.removeAttribute('aria-busy');
             return;
           }
           
           if (!longitudValue || longitudValue.trim() === '') {
             showToast('La longitud es obligatoria.', 'error');
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Publicar Hecho';
+            submitBtn.innerHTML = 'Solicitar publicación';
+            submitBtn.removeAttribute('aria-busy');
             return;
           }
           
@@ -356,39 +408,47 @@
           if (isNaN(lat) || lat < -90 || lat > 90) {
             showToast('La latitud debe estar entre -90 y 90.', 'error');
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Publicar Hecho';
+            submitBtn.innerHTML = 'Solicitar publicación';
+            submitBtn.removeAttribute('aria-busy');
             return;
           }
           
           if (isNaN(lng) || lng < -180 || lng > 180) {
             showToast('La longitud debe estar entre -180 y 180.', 'error');
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Publicar Hecho';
+            submitBtn.innerHTML = 'Solicitar publicación';
+            submitBtn.removeAttribute('aria-busy');
             return;
           }
           
           formData.set('latitud', lat.toString());
           formData.set('longitud', lng.toString());
           
-          // La fecha datetime-local ya viene en formato correcto para Spring
-          // No necesitamos convertirla, Spring la parsea automáticamente
+          // Convertir fecha de zona local del navegador a UTC antes de enviar
+          const fechaAcontecimientoInput = document.getElementById('fechaAcontecimiento');
+          if (fechaAcontecimientoInput && fechaAcontecimientoInput.value) {
+            const fechaLocal = fechaAcontecimientoInput.value; // Formato: yyyy-MM-ddTHH:mm (zona local)
+            const fechaUTC = convertLocalToUTC(fechaLocal); // Convertir a UTC
+            formData.set('fechaAcontecimiento', fechaUTC);
+          }
 
           try {
-            const response = await fetch('/hechos/crear', {
+            const response = await safeFetch('/hechos/crear', {
               method: 'POST',
               headers: {
                 'X-Requested-With': 'XMLHttpRequest'
               },
               body: formData
-            });
+            }, true); // skipErrorRedirect = true para manejar errores de validación localmente
 
             // Resetear botón
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Publicar Hecho';
+            submitBtn.innerHTML = 'Solicitar publicación';
+            submitBtn.removeAttribute('aria-busy');
 
             if (response.ok) {
               showToast('Solicitud de publicación de hecho creado exitosamente. Será revisado por los administradores.', 'success').then(() => {
-                window.history.back();
+                window.location.href = '/hechos/mis-hechos';
               });
             } else {
               const errorText = await response.text();
@@ -397,13 +457,16 @@
                 const mensaje = errorText || 'El archivo es demasiado grande. El tamaño máximo permitido es de 50 MB. Por favor, reduzca el tamaño del archivo e intente nuevamente.';
                 showToast(mensaje, 'error');
               } else {
-                showToast(errorText || 'Error al crear el hecho. Por favor, intente nuevamente.', 'error');
+                // Para otros errores, redirigir a la página de error correspondiente
+                redirectToErrorPage(response.status);
               }
             }
           } catch (error) {
             submitBtn.disabled = false;
-            submitBtn.textContent = 'Publicar Hecho';
-            showToast('Error de conexión: ' + error.message, 'error');
+            submitBtn.innerHTML = 'Solicitar publicación';
+            submitBtn.removeAttribute('aria-busy');
+            // Si es un error de red, redirigir a error 500
+            redirectToErrorPage(500);
           }
         });
       }

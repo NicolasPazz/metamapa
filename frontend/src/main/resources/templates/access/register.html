@@ -4,14 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMapa - Registrarse</title>
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
-  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
   <link rel="stylesheet" th:href="@{/css/landing.css}">
   <script th:src="@{/js/common.js}"></script>
 </head>
 <body>
-  <!-- Header -->
   <header class="navbar">
     <a th:href="@{/}" class="logo">
       <img th:src="@{/images/metamapa-header.svg}" alt="MetaMapa" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
@@ -37,20 +35,69 @@
       </div>
       
       <form id="registerForm" th:action="@{/registro}" method="post">
-        <label for="username">Usuario <span class="required-indicator">*</span></label>
-        <input type="text" id="username" name="username" placeholder="Nombre de usuario" required class="form-control">
+        <div class="form-group">
+          <label for="username">
+            Usuario <span class="required-indicator" aria-label="Campo obligatorio">*</span>
+          </label>
+          <input type="text" 
+                 id="username" 
+                 name="username" 
+                 placeholder="Nombre de usuario" 
+                 required 
+                 class="form-control"
+                 aria-required="true"
+                 aria-describedby="username-help">
+          <div class="field-error" id="username-error" role="alert" aria-live="polite"></div>
+        </div>
 
-        <label for="nombre">Nombre <span class="required-indicator">*</span></label>
-        <input type="text" id="nombre" name="nombre" placeholder="Tu nombre" required class="form-control">
+        <div class="form-group">
+          <label for="nombre">
+            Nombre <span class="required-indicator" aria-label="Campo obligatorio">*</span>
+          </label>
+          <input type="text" 
+                 id="nombre" 
+                 name="nombre" 
+                 placeholder="Tu nombre" 
+                 required 
+                 class="form-control"
+                 aria-required="true"
+                 aria-describedby="nombre-help">
+          <div class="field-error" id="nombre-error" role="alert" aria-live="polite"></div>
+        </div>
 
-        <label for="password">Contraseña <span class="required-indicator">*</span></label>
-        <input type="password" id="password" name="password" placeholder="••••••••" required class="form-control">
+        <div class="form-group">
+          <label for="password">
+            Contraseña <span class="required-indicator" aria-label="Campo obligatorio">*</span>
+          </label>
+          <input type="password" 
+                 id="password" 
+                 name="password" 
+                 placeholder="••••••••" 
+                 required 
+                 class="form-control"
+                 aria-required="true"
+                 aria-describedby="password-help">
+          <div class="field-error" id="password-error" role="alert" aria-live="polite"></div>
+        </div>
 
-        <label for="apellido">Apellido</label>
-        <input type="text" id="apellido" name="apellido" placeholder="Tu apellido" class="form-control">
+        <div class="form-group">
+          <label for="apellido">Apellido <span class="optional-indicator"></span></label>
+          <input type="text" 
+                 id="apellido" 
+                 name="apellido" 
+                 placeholder="Tu apellido" 
+                 class="form-control"
+                 aria-describedby="apellido-help">
+        </div>
 
-        <label for="fecha">Fecha de nacimiento</label>
-        <input type="date" id="fecha" class="form-control">
+        <div class="form-group">
+          <label for="fecha">Fecha de nacimiento <span class="optional-indicator"></span></label>
+          <input type="date" 
+                 id="fecha" 
+                 name="fecha"
+                 class="form-control"
+                 aria-describedby="fecha-help">
+        </div>
 
         <button type="submit" class="btn primary" id="submitBtn">Crear cuenta</button>
       </form>
@@ -68,61 +115,156 @@
       const registerForm = document.getElementById('registerForm');
       const submitBtn = document.getElementById('submitBtn');
       
+      function validateField(fieldId, errorId, helpId) {
+        const field = document.getElementById(fieldId);
+        const errorDiv = document.getElementById(errorId);
+        const helpText = document.getElementById(helpId);
+        
+        field.addEventListener('blur', function() {
+          if (field.hasAttribute('required') && !field.value.trim()) {
+            field.classList.add('field-invalid');
+            errorDiv.textContent = 'Este campo es obligatorio';
+            errorDiv.style.display = 'block';
+            helpText.style.display = 'none';
+          } else {
+            field.classList.remove('field-invalid');
+            errorDiv.style.display = 'none';
+            helpText.style.display = 'block';
+          }
+        });
+        
+        field.addEventListener('input', function() {
+          if (field.value.trim()) {
+            field.classList.remove('field-invalid');
+            field.classList.add('field-valid');
+            errorDiv.style.display = 'none';
+            helpText.style.display = 'block';
+          } else if (field.hasAttribute('required')) {
+            field.classList.remove('field-valid');
+          }
+        });
+      }
+      
+      validateField('username', 'username-error', 'username-help');
+      validateField('nombre', 'nombre-error', 'nombre-help');
+      validateField('password', 'password-error', 'password-help');
+      
       registerForm.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        // Deshabilitar botón durante el envío
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Registrando...';
+        const username = document.getElementById('username');
+        const nombre = document.getElementById('nombre');
+        const password = document.getElementById('password');
         
-        // Obtener datos del formulario
+        let hasErrors = false;
+        
+        if (!username.value.trim()) {
+          username.classList.add('field-invalid');
+          document.getElementById('username-error').textContent = 'Este campo es obligatorio';
+          document.getElementById('username-error').style.display = 'block';
+          hasErrors = true;
+        }
+        
+        if (!nombre.value.trim()) {
+          nombre.classList.add('field-invalid');
+          document.getElementById('nombre-error').textContent = 'Este campo es obligatorio';
+          document.getElementById('nombre-error').style.display = 'block';
+          hasErrors = true;
+        }
+        
+        if (!password.value.trim()) {
+          password.classList.add('field-invalid');
+          document.getElementById('password-error').textContent = 'Este campo es obligatorio';
+          document.getElementById('password-error').style.display = 'block';
+          hasErrors = true;
+        }
+        
+        if (hasErrors) {
+          showToast('Por favor, completa todos los campos obligatorios.', 'error');
+          // Enfocar el primer campo con error
+          if (!username.value.trim()) {
+            username.focus();
+          } else if (!nombre.value.trim()) {
+            nombre.focus();
+          } else if (!password.value.trim()) {
+            password.focus();
+          }
+          return;
+        }
+        
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<span class="spinner"></span> Registrando...';
+        
         const formData = new FormData(registerForm);
         
         try {
-          const response = await fetch('/registro', {
+          const response = await safeFetch('/registro', {
             method: 'POST',
             headers: {
               'X-Requested-With': 'XMLHttpRequest'
             },
             body: formData
-          });
+          }, true); // skipErrorRedirect = true para manejar errores de validación localmente
           
-          // Resetear botón
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Crear cuenta';
+          submitBtn.innerHTML = 'Crear cuenta';
           
-          // Intentar parsear como JSON primero
-          const contentType = response.headers.get('content-type');
-          if (contentType && contentType.includes('application/json')) {
-            const data = await response.json();
-            
-            if (data.success === "true" || data.success === true) {
-              // Registro exitoso - mostrar toast durante 1.5 segundos y luego redirigir
-              showToast('Registro exitoso', 'success', 1500).then(() => {
-                window.location.href = '/login';
-              });
+          if (response.ok) {
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+              const data = await response.json();
+              
+              if (data.success === "true" || data.success === true) {
+                showToast('Registro exitoso. Redirigiendo...', 'success', 1500).then(() => {
+                  window.location.href = '/login';
+                });
+              } else {
+                const errorMessage = data.error || 'Error al registrar usuario. Por favor, intente nuevamente.';
+                showToast(errorMessage, 'error');
+              }
             } else {
-              // Error - mostrar mensaje de error
-              const errorMessage = data.error || 'Error al registrar usuario. Por favor, intente nuevamente.';
-              showToast(errorMessage, 'error');
+              const htmlText = await response.text();
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(htmlText, 'text/html');
+              
+              const isLoginPage = doc.querySelector('h2') && doc.querySelector('h2').textContent.includes('Ingresar');
+              const isRegisterPage = doc.querySelector('h2') && doc.querySelector('h2').textContent.includes('Registrarse');
+              
+              if (isLoginPage) {
+                showToast('Registro exitoso. Redirigiendo...', 'success', 1500).then(() => {
+                  window.location.href = '/login';
+                });
+              } else if (isRegisterPage) {
+                let errorMessage = 'Error al registrar usuario. Por favor, intente nuevamente.';
+                
+                const errorDiv = doc.querySelector('div[style*="color: red"]') || 
+                               doc.querySelector('.error');
+                
+                if (errorDiv) {
+                  const errorSpan = errorDiv.querySelector('span');
+                  if (errorSpan) {
+                    errorMessage = errorSpan.textContent.trim();
+                  } else {
+                    errorMessage = errorDiv.textContent.trim();
+                  }
+                }
+                
+                showToast(errorMessage, 'error');
+              } else {
+                showToast('Registro exitoso. Redirigiendo...', 'success', 1500).then(() => {
+                  window.location.href = '/login';
+                });
+              }
             }
           } else {
-            // Si no es JSON, manejar como HTML (fallback)
-            const htmlText = await response.text();
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(htmlText, 'text/html');
-            
-            // Verificar si la página es de login (éxito) o de registro (error)
-            const isLoginPage = doc.querySelector('h2') && doc.querySelector('h2').textContent.includes('Ingresar');
-            const isRegisterPage = doc.querySelector('h2') && doc.querySelector('h2').textContent.includes('Registrarse');
-            
-            if (isLoginPage) {
-              // Registro exitoso - mostrar toast durante 1.5 segundos y luego redirigir
-              showToast('Registro exitoso', 'success', 1500).then(() => {
-                window.location.href = '/login';
-              });
-            } else if (isRegisterPage) {
-              // Error - obtener mensaje de error
+            // Para errores que no son de validación (400), redirigir a página de error
+            if (response.status !== 400) {
+              redirectToErrorPage(response.status);
+            } else {
+              const htmlText = await response.text();
+              const parser = new DOMParser();
+              const doc = parser.parseFromString(htmlText, 'text/html');
+              
               let errorMessage = 'Error al registrar usuario. Por favor, intente nuevamente.';
               
               const errorDiv = doc.querySelector('div[style*="color: red"]') || 
@@ -138,22 +280,13 @@
               }
               
               showToast(errorMessage, 'error');
-            } else {
-              // No se pudo determinar - asumir éxito si la respuesta es OK
-              if (response.ok) {
-                showToast('Registro exitoso', 'success', 1500).then(() => {
-                  window.location.href = '/login';
-                });
-              } else {
-                showToast('Error al registrar usuario. Por favor, intente nuevamente.', 'error');
-              }
             }
           }
         } catch (error) {
-          // Error de conexión
           submitBtn.disabled = false;
-          submitBtn.textContent = 'Crear cuenta';
-          showToast('Error de conexión: ' + error.message, 'error');
+          submitBtn.innerHTML = 'Crear cuenta';
+          // Si es un error de red, redirigir a error 500
+          redirectToErrorPage(500);
         }
       });
     });

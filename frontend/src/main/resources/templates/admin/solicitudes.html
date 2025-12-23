@@ -29,7 +29,7 @@
                     <tbody>
                     <tr th:each="sol : ${solicitudes}">
                         <td th:text="${sol.id}">1</td>
-                        <td th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td><span class="date-display" th:attr="data-utc-date=${sol.fechaDeCargaSolicitud != null ? sol.fechaDeCargaSolicitud.toString() : ''}" th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}"></span></td>
 
                         <td th:text="${sol.tipo}">TIPO</td>
 
@@ -41,15 +41,6 @@
                         <td th:text="${sol.contribuyenteId != null ? sol.contribuyenteId : 'Anónimo'}">User</td>
 
                         <td th:text="${sol.estado}">ESTADO</td>
-<!--
-
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-info text-white"
-                                    th:onclick="verDetalle([[${sol}]])">
-                                Ver info
-                            </button>
-                        </td>
--->
                     </tr>
 
                     <tr th:if="${#lists.isEmpty(solicitudes)}">

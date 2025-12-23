@@ -8,7 +8,6 @@
     #map {
       height: calc(100vh - 80px);
       width: 100%;
-      margin-top: 20px;
     }
     /* Sobrescribir estilos por defecto de Leaflet para el popup */
     .leaflet-popup-content-wrapper {
@@ -178,10 +177,19 @@
     .popup-content .carousel-next {
       right: 10px;
     }
+    /* Estilos para reducir el tamaño de los marcadores */
+    .leaflet-marker-icon {
+      width: 20px !important;
+      height: 30px !important;
+      margin-left: -10px !important;
+      margin-top: -30px !important;
+      min-height: auto !important;
+      min-width: auto !important;
+    }
   </style>
 
   <div class="floating-back-button">
-    <a href="javascript:history.back()" class="btn secondary">Volver</a>
+    <a href="javascript:history.back()" class="btn primary">Volver</a>
   </div>
 
   <div id="map"></div>
@@ -218,16 +226,16 @@
     if (centrarEnHecho && hechosConCoordenadas.length > 0) {
       // Centrar en un hecho específico
       const hecho = hechosConCoordenadas[0];
-      map = L.map('map').setView([hecho.latitud, hecho.longitud], 13);
+      map = L.map('map', { zoomControl: false }).setView([hecho.latitud, hecho.longitud], 13);
     } else if (hechosConCoordenadas.length > 0) {
       // Calcular el centro de todos los hechos
       const bounds = L.latLngBounds(
         hechosConCoordenadas.map(h => [h.latitud, h.longitud])
       );
-      map = L.map('map').fitBounds(bounds);
+      map = L.map('map', { zoomControl: false }).fitBounds(bounds);
     } else {
       // Vista por defecto (Argentina)
-      map = L.map('map').setView([-34.6, -58.4], 5);
+      map = L.map('map', { zoomControl: false }).setView([-34.6, -58.4], 5);
     }
 
     // Agregar capa de OpenStreetMap
@@ -262,9 +270,17 @@
       return popupContent;
     }
 
+    // Crear icono personalizado más pequeño
+    const smallIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconSize: [20, 30],
+      iconAnchor: [10, 30],
+      popupAnchor: [0, -30]
+    });
+
     // Agregar marcadores al cluster group
     hechosConCoordenadas.forEach(hecho => {
-      const marker = L.marker([hecho.latitud, hecho.longitud]);
+      const marker = L.marker([hecho.latitud, hecho.longitud], { icon: smallIcon });
       const popupContent = construirPopupContent(hecho);
       marker.bindPopup(popupContent);
       markersCluster.addLayer(marker);

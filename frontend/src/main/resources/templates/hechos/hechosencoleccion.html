@@ -138,7 +138,10 @@
   <div id="hechoDetailPanel" class="side-panel">
     <div class="panel-header">
       <h3>Detalles del Hecho</h3>
-      <button class="close-btn" onclick="closeHechoDetailPanel()">&times;</button>
+      <button class="close-btn" 
+              onclick="closeHechoDetailPanel()" 
+              aria-label="Cerrar panel de detalles"
+              title="Cerrar (Escape)">&times;</button>
     </div>
     <div class="panel-content" id="hechoDetailContent">
     </div>
@@ -146,13 +149,15 @@
 
   <div id="overlay" class="overlay" onclick="closeHechoDetailPanel()"></div>
 
-  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
   <div id="solicitudEdicionModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
       <div class="modal-header">
         <h3>Solicitar Edición de Hecho</h3>
-        <button class="close-btn" onclick="closeSolicitudEdicionModal()">&times;</button>
+        <button class="close-btn" 
+                onclick="closeSolicitudEdicionModal()" 
+                aria-label="Cerrar modal de edición"
+                title="Cerrar (Escape)">&times;</button>
       </div>
       <div class="modal-body">
         <form id="solicitudEdicionForm">
@@ -196,8 +201,8 @@
 
           <div class="form-group" style="margin-top: 10px;">
             <label for="edit_multimedia">Agregar nueva evidencia (Fotos/Videos)</label>
-            <input type="file" id="edit_multimedia" multiple accept="image/*,video/*" class="form-control" style="width: 100%;">
-            <small style="color: #666;">Nota: Los archivos seleccionados se agregarán a los existentes.</small>
+            <input type="file" id="edit_multimedia" multiple accept="image/*,video/*" class="form-control" style="width: 100%;" onchange="validarCantidadArchivos(this, 5)">
+            <small style="color: #666;">Nota: Los archivos seleccionados se agregarán a los existentes. Máximo 5 archivos.</small>
           </div>
 
           <div class="modal-actions" style="margin-top: 20px;">
@@ -213,18 +218,21 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Solicitar Eliminación de Hecho</h3>
-        <button class="close-btn" onclick="closeSolicitudEliminacionModal()">&times;</button>
+        <button class="close-btn" 
+                onclick="closeSolicitudEliminacionModal()" 
+                aria-label="Cerrar modal de solicitud de eliminación"
+                title="Cerrar (Escape)">&times;</button>
       </div>
       <div class="modal-body">
         <form id="solicitudEliminacionForm">
           <input type="hidden" id="solicitud_hecho_id" name="hecho_id">
           <input type="hidden" id="solicitud_fuente_id" name="fuente_id">
           <input type="hidden" id="solicitud_id_origen" name="id_origen">
+          <input type="hidden" id="solicitud_contribuyente_id" name="contribuyente_id" th:value="${contribuyenteId != null ? contribuyenteId : ''}">
           
           <div class="form-group">
             <label for="texto_fundamentos">
-              Justificación <span style="color: #dc3545;">*</span>
-              <small>(Mínimo 500 caracteres)</small>
+              Justificación <span style="color: #dc3545;" aria-label="Campo obligatorio">*</span>
             </label>
             <textarea 
               id="texto_fundamentos" 
@@ -232,10 +240,10 @@
               rows="8" 
               required
               minlength="500"
-              placeholder="Por favor, proporcione una justificación detallada de al menos 500 caracteres explicando por qué solicita la eliminación de este hecho..."
+              aria-required="true"
               style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
             <div class="char-counter">
-              <span id="char_count">0</span> / 500 caracteres mínimos
+              <span id="char_count" style="color: rgb(220, 53, 69);">0</span> / 500 caracteres mínimos
             </div>
             <div id="texto_error" class="error-message" style="display: none;"></div>
           </div>
@@ -313,8 +321,16 @@
     }
 
     function closeHechoDetailPanel() {
-      // Usar función reutilizable
-      window.closeHechoDetailPanel('hechoDetailPanel', 'overlay');
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+      
+      if (panel) {
+        panel.classList.remove('active');
+      }
+      if (overlay) {
+        overlay.classList.remove('active');
+      }
+      document.body.style.overflow = '';
       
       const baseUrl = window.location.pathname + window.location.search;
       history.pushState(null, '', baseUrl);
@@ -436,10 +452,12 @@
           const hechoId = document.getElementById('solicitud_hecho_id').value;
           const fuenteId = document.getElementById('solicitud_fuente_id').value;
           const idOrigen = document.getElementById('solicitud_id_origen').value;
+          const contribuyenteIdElement = document.getElementById('solicitud_contribuyente_id');
+          const contribuyenteId = contribuyenteIdElement && contribuyenteIdElement.value ? parseInt(contribuyenteIdElement.value) : null;
           
           const solicitudData = {
             texto_fundamentos: texto,
-            contribuyente_id: null // Siempre anónimo por ahora
+            contribuyente_id: contribuyenteId
           };
           
           // Agregar identificadores según corresponda
@@ -451,10 +469,49 @@
           }
           
           try {
-            const response = await apiFetch('/solicitudes', {
-              method: 'POST',
-              body: JSON.stringify(solicitudData)
-            });
+            // Usar apiFetch si está disponible (que ya maneja la conversión de hostnames de Docker a localhost)
+            let response;
+            if (typeof window.apiFetch === 'function') {
+              response = await window.apiFetch('/solicitudes', {
+                method: 'POST',
+                body: JSON.stringify(solicitudData)
+              });
+            } else if (typeof apiFetch === 'function') {
+              response = await apiFetch('/solicitudes', {
+                method: 'POST',
+                body: JSON.stringify(solicitudData)
+              });
+            } else {
+              // Fallback: usar fetch directo con URL convertida a localhost
+              let apiBaseUrl;
+              if (typeof window.getApiBaseUrl === 'function') {
+                apiBaseUrl = window.getApiBaseUrl();
+              } else if (typeof getApiBaseUrl === 'function') {
+                apiBaseUrl = getApiBaseUrl();
+              } else {
+                const metaTag = document.querySelector('meta[name="api-base-url"]');
+                if (metaTag) {
+                  apiBaseUrl = metaTag.getAttribute('content');
+                  // Convertir hostnames de Docker a localhost
+                  apiBaseUrl = apiBaseUrl.replace(/https?:\/\/[^\/:]+(:\d+)?/, function(match) {
+                    const protocol = match.startsWith('https') ? 'https' : 'http';
+                    const portMatch = match.match(/:(\d+)/);
+                    const port = portMatch ? portMatch[1] : '8084';
+                    return protocol + '://localhost:' + port;
+                  });
+                } else {
+                  apiBaseUrl = window.location.origin.replace(':8080', ':8084') + '/api';
+                }
+              }
+              const url = apiBaseUrl + '/solicitudes';
+              response = await safeFetch(url, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(solicitudData)
+              }, true); // skipErrorRedirect = true para manejar errores de validación localmente
+            }
             
             const responseData = await response.text();
             
@@ -476,15 +533,18 @@
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = errorMessage;
               }
+              
+              // Para errores que no son de validación (400), redirigir a página de error
+              if (response.status !== 400) {
+                redirectToErrorPage(response.status);
+              }
             }
           } catch (error) {
             // Error de conexión - resetear botón, mostrar toast y mantener modal abierto
             submitBtn.disabled = false;
             submitBtn.textContent = 'Enviar Solicitud';
-            const errorMessage = 'Error de conexión: ' + error.message;
-            showToast(errorMessage, 'error');
-            errorDiv.style.display = 'block';
-            errorDiv.textContent = errorMessage;
+            // Si es un error de red, redirigir a error 500
+            redirectToErrorPage(500);
           }
         });
       }
@@ -565,8 +625,10 @@
       if (hecho.categoria) selectCategoria.value = hecho.categoria;
 
       if (hecho.fecha_acontecimiento) {
+        // Convertir fecha UTC a zona local del navegador para mostrar en el input
         let fechaIso = hecho.fecha_acontecimiento.substring(0, 16);
-        document.getElementById('edit_fecha').value = fechaIso;
+        const fechaLocal = convertUTCToLocal(fechaIso);
+        document.getElementById('edit_fecha').value = fechaLocal;
       }
 
       document.getElementById('edit_multimedia').value = '';
@@ -589,6 +651,13 @@
 
           try {
             const fileInput = document.getElementById('edit_multimedia');
+            // Validar cantidad de archivos antes de procesar
+            if (fileInput.files.length > 5) {
+              showToast('Solo se pueden cargar hasta 5 archivos. Por favor, selecciona menos archivos.', 'error');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Guardar Cambios';
+              return;
+            }
             const multimediaDTOs = await procesarArchivos(fileInput.files);
 
             const solicitudData = {
@@ -598,7 +667,7 @@
               categoria: document.getElementById('edit_categoria').value,
               latitud: parseFloat(document.getElementById('edit_latitud').value),
               longitud: parseFloat(document.getElementById('edit_longitud').value),
-              fecha_acontecimiento: document.getElementById('edit_fecha').value,
+              fecha_acontecimiento: convertLocalToUTC(document.getElementById('edit_fecha').value),
               multimedia: multimediaDTOs
             };
 
@@ -622,7 +691,6 @@
             }
 
           } catch (error) {
-            console.error(error);
             showToast('Error: ' + error.message, 'error');
           } finally {
             submitBtn.disabled = false;
@@ -632,6 +700,18 @@
       }
     });
 
+
+    function validarCantidadArchivos(input, maxArchivos) {
+      if (input.files.length > maxArchivos) {
+        showToast(`Solo se pueden seleccionar hasta ${maxArchivos} archivos. Se mantendrán solo los primeros ${maxArchivos}.`, 'error');
+        // Crear un nuevo DataTransfer para limitar los archivos
+        const dataTransfer = new DataTransfer();
+        for (let i = 0; i < maxArchivos; i++) {
+          dataTransfer.items.add(input.files[i]);
+        }
+        input.files = dataTransfer.files;
+      }
+    }
 
     function procesarArchivos(files) {
       return Promise.all(Array.from(files).map(file => {

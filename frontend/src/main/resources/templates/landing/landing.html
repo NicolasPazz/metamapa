@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MetaMapa</title>
-  <!-- Favicon -->
-  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
-  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon-32x32.ico}">
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
   <link rel="stylesheet" th:href="@{/css/landing.css}">
 </head>
 <body>
-  <!-- Header -->
   <header class="navbar">
     <a th:href="@{/}" class="logo">
       <img th:src="@{/images/metamapa-header.svg}" alt="MetaMapa" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
@@ -25,7 +23,6 @@
     </nav>
   </header>
 
-  <!-- Block 1: Intro -->
   <section class="block intro">
     <div class="container">
       <h1>MetaMapa</h1>
@@ -42,12 +39,10 @@
     </div>
   </section>
 
-  <!-- Block 2: Hechos y Colecciones -->
   <section class="block collections">
     <div class="container">
       <h2>Hechos y Colecciones</h2>
       <div class="grid-two">
-        <!-- Un solo hecho -->
         <div class="card clickable-card" th:if="${!#lists.isEmpty(hechos)}"
              th:data-hecho-id="${hechos[0].id}"
              onclick="if(event.target.tagName !== 'A') { openHechoPanel(this.dataset.hechoId); }"
@@ -57,7 +52,6 @@
           <a th:href="@{/hechos}" class="btn primary btn-landing" onclick="event.stopPropagation();">Más Hechos</a>
         </div>
 
-        <!-- Una sola colección -->
         <div class="card clickable-card" th:if="${!#lists.isEmpty(colecciones)}"
              th:data-coleccion-handle="${colecciones[0].handle}"
              onclick="if(event.target.tagName !== 'A') { openColeccionPanel(this.dataset.coleccionHandle); }"
@@ -68,7 +62,6 @@
         </div>
       </div>
 
-      <!-- Mensaje si no hay datos -->
       <div th:if="${#lists.isEmpty(hechos) && #lists.isEmpty(colecciones)}" class="no-data">
         <p>No hay hechos ni colecciones disponibles en este momento.</p>
         <a th:href="@{/hechos/nuevo}" class="btn primary">Reportar un hecho</a>
@@ -76,11 +69,13 @@
     </div>
   </section>
 
-  <!-- Panel lateral para Hecho -->
   <div id="hechoPanel" class="side-panel" th:if="${!#lists.isEmpty(hechos)}">
       <div class="panel-header">
           <h3>Detalles del Hecho</h3>
-          <button class="close-btn" onclick="closeHechoPanel()">&times;</button>
+          <button class="close-btn" 
+                  onclick="closeHechoPanel()" 
+                  aria-label="Cerrar panel de hecho"
+                  title="Cerrar (Escape)">&times;</button>
       </div>
 
       <div class="panel-content">
@@ -98,7 +93,7 @@
 
           <p th:if="${hechos[0].fechaDeAcontecimiento != null}">
               <strong>Fecha de acontecimiento:</strong>
-              <span th:text="${#temporals.format(
+              <span class="date-display" th:attr="data-utc-date=${hechos[0].fechaDeAcontecimiento != null ? hechos[0].fechaDeAcontecimiento.toString() : ''}" th:text="${#temporals.format(
             hechos[0].fechaDeAcontecimiento,
             'dd/MM/yyyy, HH:mm:ss'
           )}">Fecha</span>
@@ -106,7 +101,7 @@
 
           <p th:if="${hechos[0].fechaDeCarga != null}">
               <strong>Fecha de carga:</strong>
-              <span th:text="${#temporals.format(
+              <span class="date-display" th:attr="data-utc-date=${hechos[0].fechaDeCarga.toString()}" th:text="${#temporals.format(
             hechos[0].fechaDeCarga,
             'dd/MM/yyyy, HH:mm:ss'
           )}">Fecha</span>
@@ -124,7 +119,6 @@
       </span>
           </p>
 
-          <!-- 🏷️ Fuente -->
           <p th:if="${hechos[0].nombreFuente != null}">
               <strong>Fuente:</strong>
               <span th:text="${hechos[0].nombreFuente != null && hechos[0].nombreFuente.startsWith('Fuente ') ? hechos[0].nombreFuente.substring(7) : hechos[0].nombreFuente}">Fuente</span>
@@ -134,7 +128,6 @@
               <span th:text="${hechos[0].origen}">Origen</span>
           </p>
 
-          <!-- 🎞️ Multimedia -->
           <p th:if="${hechos[0].contenidoMultimedia != null
                && !#lists.isEmpty(hechos[0].contenidoMultimedia)}">
               <strong>Multimedia:</strong>
@@ -143,7 +136,6 @@
       </span> archivo(s)
           </p>
 
-          <!-- 🏷️ Etiquetas -->
           <div th:if="${hechos[0].etiquetas != null
                  && !#lists.isEmpty(hechos[0].etiquetas)}">
               <strong>Etiquetas:</strong>
@@ -156,10 +148,8 @@
               </div>
           </div>
 
-          <!-- Botón Ver en mapa (solo si tiene coordenadas válidas) -->
           <div th:if="${hechos[0].latitud != null && hechos[0].longitud != null}" 
                style="margin-top: 20px; text-align: center;">
-              <!-- Si tiene id, usar hechoId; si no, usar fuenteId e idOrigen -->
               <a th:if="${hechos[0].id != null}"
                  th:href="@{/hechos/mapa(hechoId=${hechos[0].id})}" 
                  class="btn primary">
@@ -172,7 +162,6 @@
               </a>
           </div>
 
-          <!-- Botón para solicitar eliminación -->
           <div style="margin-top: 20px; text-align: center;">
               <button id="btnSolicitarEliminacionLanding"
                   th:data-hecho-id="${hechos[0].id}"
@@ -187,18 +176,20 @@
   </div>
 
 
-  <!-- Panel lateral para Colección -->
   <div id="coleccionPanel" class="side-panel" th:if="${!#lists.isEmpty(colecciones)}">
     <div class="panel-header">
       <h3>Detalles de la Colección</h3>
-      <button class="close-btn" onclick="closeColeccionPanel()">&times;</button>
+      <button class="close-btn" 
+              onclick="closeColeccionPanel()" 
+              aria-label="Cerrar panel de colección"
+              title="Cerrar (Escape)">&times;</button>
     </div>
     <div class="panel-content">
       <h2 th:text="${colecciones[0].titulo}">Título de la colección</h2>
       <p><strong>Descripción:</strong> <span th:text="${colecciones[0].descripcion != null ? colecciones[0].descripcion : 'Sin descripción'}">Descripción</span></p>
       <p><strong>Hechos:</strong> <span th:text="${#lists.size(colecciones[0].hechos)}">0</span></p>
       <p th:if="${colecciones[0].fechaDeCarga != null}">
-        <strong>Fecha de creación:</strong> <span th:text="${#temporals.format(colecciones[0].fechaDeCarga, 'dd/MM/yyyy, HH:mm:ss')}">Fecha</span>
+        <strong>Fecha de creación:</strong> <span class="date-display" th:attr="data-utc-date=${colecciones[0].fechaDeCarga != null ? colecciones[0].fechaDeCarga.toString() : ''}" th:text="${#temporals.format(colecciones[0].fechaDeCarga, 'dd/MM/yyyy, HH:mm:ss')}">Fecha</span>
       </p>
       <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px;">
       <a th:href="@{/colecciones/{handle}/hechos(handle=${colecciones[0].handle})}" class="btn primary">Ver todos los hechos</a>
@@ -207,18 +198,18 @@
     </div>
   </div>
 
-  <!-- Overlay para cerrar paneles -->
   <div id="overlay" class="overlay" onclick="closePanels()"></div>
 
-  <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <!-- Modal de solicitud de eliminación -->
   <div id="solicitudEliminacionModal" class="modal-overlay" style="display: none;">
     <div class="modal-content">
       <div class="modal-header">
         <h3>Solicitar Eliminación de Hecho</h3>
-        <button class="close-btn" onclick="closeSolicitudEliminacionModal()">&times;</button>
+        <button class="close-btn" 
+                onclick="closeSolicitudEliminacionModal()" 
+                aria-label="Cerrar modal de solicitud de eliminación"
+                title="Cerrar (Escape)">&times;</button>
       </div>
       <div class="modal-body">
         <form id="solicitudEliminacionForm">
@@ -265,7 +256,6 @@
     </div>
   </div>
 
-  <!-- Footer -->
   <section class="block legal">
     <div class="container">
       <h2>Información Legal y Privacidad</h2>
@@ -289,7 +279,6 @@
         panel.classList.add('active');
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
-        // Actualizar la URL sin recargar la página
         history.pushState(null, '', '#hecho' + hechoId);
       }
     }
@@ -313,7 +302,6 @@
         panel.classList.add('active');
         overlay.classList.add('active');
         document.body.style.overflow = 'hidden';
-        // Actualizar la URL sin recargar la página
         history.pushState(null, '', '#coleccion' + handle);
       }
     }
@@ -335,19 +323,16 @@
       closeColeccionPanel();
     }
 
-    // Manejar el botón "atrás" del navegador
     window.addEventListener('popstate', function() {
       closePanels();
     });
 
-    // Cerrar paneles con la tecla Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         closePanels();
       }
     });
 
-    // Abrir paneles si hay hash en la URL al cargar la página
     window.addEventListener('load', function() {
       const hash = window.location.hash;
       if (hash.startsWith('#hecho')) {
@@ -359,7 +344,6 @@
       }
     });
 
-    // Funciones para el modal de solicitud de eliminación (usa apiFetch de common.js)
     function openSolicitudEliminacionModal(hechoId, fuenteId, idOrigen) {
       const modal = document.getElementById('solicitudEliminacionModal');
       const form = document.getElementById('solicitudEliminacionForm');
@@ -368,29 +352,23 @@
       const errorDiv = document.getElementById('texto_error');
       const submitBtn = document.getElementById('submit_solicitud');
       
-      // Resetear completamente el formulario y estado
       form.reset();
       errorDiv.style.display = 'none';
       errorDiv.textContent = '';
       
-      // Resetear botón a estado inicial
       submitBtn.disabled = false;
       submitBtn.textContent = 'Enviar Solicitud';
       
-      // Establecer valores ocultos
       document.getElementById('solicitud_hecho_id').value = hechoId !== 'null' ? hechoId : '';
       document.getElementById('solicitud_fuente_id').value = fuenteId !== 'null' ? fuenteId : '';
       document.getElementById('solicitud_id_origen').value = idOrigen !== 'null' ? idOrigen : '';
       
-      // Actualizar contador de caracteres
       charCount.textContent = '0';
       charCount.style.color = '#dc3545';
       
-      // Mostrar modal
       modal.style.display = 'flex';
       document.body.style.overflow = 'hidden';
       
-      // Focus en textarea
       setTimeout(() => textoFundamentos.focus(), 100);
     }
 
@@ -400,7 +378,6 @@
       const submitBtn = document.getElementById('submit_solicitud');
       const errorDiv = document.getElementById('texto_error');
       
-      // Resetear estado antes de cerrar
       form.reset();
       submitBtn.disabled = false;
       submitBtn.textContent = 'Enviar Solicitud';
@@ -411,9 +388,7 @@
       document.body.style.overflow = '';
     }
 
-    // Inicializar formulario y toasts
     document.addEventListener('DOMContentLoaded', function() {
-      // Botón de solicitar eliminación en landing
       const btnSolicitarEliminacion = document.getElementById('btnSolicitarEliminacionLanding');
       if (btnSolicitarEliminacion) {
         btnSolicitarEliminacion.addEventListener('click', function() {
@@ -424,7 +399,6 @@
         });
       }
 
-      // Contador de caracteres
       const textoFundamentos = document.getElementById('texto_fundamentos');
       const charCount = document.getElementById('char_count');
       
@@ -433,7 +407,6 @@
           const length = this.value.trim().length;
           charCount.textContent = length;
           
-          // Cambiar color según si cumple el mínimo
           if (length < 500) {
             charCount.style.color = '#dc3545';
           } else {
@@ -442,7 +415,6 @@
         });
       }
 
-      // Manejar envío del formulario
       const form = document.getElementById('solicitudEliminacionForm');
       if (form) {
         form.addEventListener('submit', async function(e) {
@@ -453,29 +425,25 @@
           const textoFundamentos = document.getElementById('texto_fundamentos');
           const texto = textoFundamentos.value.trim();
           
-          // Validar longitud mínima
           if (texto.length < 500) {
             errorDiv.style.display = 'block';
             errorDiv.textContent = 'La justificación debe tener al menos 500 caracteres. Actualmente tiene ' + texto.length + ' caracteres.';
             return;
           }
           
-          // Deshabilitar botón durante el envío
           submitBtn.disabled = true;
           submitBtn.textContent = 'Enviando...';
           errorDiv.style.display = 'none';
           
-          // Preparar datos
           const hechoId = document.getElementById('solicitud_hecho_id').value;
           const fuenteId = document.getElementById('solicitud_fuente_id').value;
           const idOrigen = document.getElementById('solicitud_id_origen').value;
           
           const solicitudData = {
             texto_fundamentos: texto,
-            contribuyente_id: null // Siempre anónimo por ahora
+            contribuyente_id: null
           };
           
-          // Agregar identificadores según corresponda
           if (hechoId) {
             solicitudData.hecho_id = parseInt(hechoId);
           } else if (fuenteId && idOrigen) {
@@ -491,27 +459,22 @@
             
             const responseData = await response.text();
             
-            // Resetear botón siempre (tanto en éxito como en error)
             submitBtn.disabled = false;
             submitBtn.textContent = 'Enviar Solicitud';
             
             if (response.ok) {
-              // Éxito - mostrar toast y cerrar modal
               showToast('Solicitud de eliminación enviada exitosamente. Será revisada por los administradores.', 'success');
               closeSolicitudEliminacionModal();
             } else {
-              // Error - mostrar toast y mantener modal abierto
               const errorMessage = responseData || 'Error al enviar la solicitud. Por favor, intente nuevamente.';
               showToast(errorMessage, 'error');
               
-              // Solo mostrar error en el formulario si NO es spam (el toast ya lo muestra)
               if (!errorMessage.includes('Spam detectado')) {
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = errorMessage;
               }
             }
           } catch (error) {
-            // Error de conexión - resetear botón, mostrar toast y mantener modal abierto
             submitBtn.disabled = false;
             submitBtn.textContent = 'Enviar Solicitud';
             const errorMessage = 'Error de conexión: ' + error.message;
@@ -522,7 +485,6 @@
         });
       }
 
-      // Cerrar modal al hacer click fuera
       const modal = document.getElementById('solicitudEliminacionModal');
       if (modal) {
         modal.addEventListener('click', function(e) {
@@ -533,7 +495,6 @@
       }
     });
 
-    // Cerrar modal con Escape
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         const modal = document.getElementById('solicitudEliminacionModal');
