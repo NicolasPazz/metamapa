@@ -8,8 +8,9 @@ import java.security.Key;
 import java.util.Date;
 
 public class JwtUtil {
+    // Clave compartida con agregador y dinamica - debe ser la misma en todos los servicios
     @Getter
-    private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
+    private static final Key key = Keys.hmacShaKeyFor("metamapa-secret-key-for-jwt-token-generation-should-be-long-enough".getBytes());
 
     private static final long ACCESS_TOKEN_VALIDITY = 15 * 60 * 1000; // 15 min
     private static final long REFRESH_TOKEN_VALIDITY = 7 * 24 * 60 * 60 * 1000; // 7 días

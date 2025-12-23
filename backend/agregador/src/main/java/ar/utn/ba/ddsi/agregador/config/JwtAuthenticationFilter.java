@@ -22,9 +22,8 @@ import java.util.Collections;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    // Clave compartida con el servicio users (debería estar en configuración)
-    // Por ahora usamos una clave temporal - en producción debe ser la misma que users
-    // NOTA: Esta clave debe coincidir con la del servicio users
+    // Clave compartida con el servicio users - debe ser la misma en todos los servicios
+    // Esta clave coincide con la de JwtUtil en el servicio users
     private static final SecretKey key = Keys.hmacShaKeyFor("metamapa-secret-key-for-jwt-token-generation-should-be-long-enough".getBytes());
     
     public JwtAuthenticationFilter() {

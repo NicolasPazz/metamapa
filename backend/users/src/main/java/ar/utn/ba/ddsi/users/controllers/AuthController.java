@@ -30,9 +30,8 @@ public class AuthController {
     public ResponseEntity<AuthResponseDTO> loginApi(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
-        log.info("POST /api/auth - username: {}, password: [PROTEGIDO]", username);
+        log.info("[AuthController] - POST - /api/auth - username: {}, password: [PROTEGIDO]", username);
         try {
-            
             if (username == null || username.trim().isEmpty() || 
                 password == null || password.trim().isEmpty()) {
                 return ResponseEntity.badRequest().build();
@@ -47,22 +46,18 @@ public class AuthController {
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
                     .build();
-
-            log.info("El username {} está logueado. El token generado es {}", username, accessToken);
             
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            log.error("Error en login: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
-            log.error("Error inesperado en login", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenResponse> refresh(@RequestBody RefreshRequest request) {
-        log.info("POST /api/auth/refresh - refreshToken: [PROTEGIDO]");
+        log.info("[AuthController] - POST - /api/auth/refresh - refreshToken: [PROTEGIDO]");
         try {
             String username = JwtUtil.validarToken(request.getRefreshToken());
 
@@ -81,7 +76,6 @@ public class AuthController {
             
             return ResponseEntity.ok(response);
         } catch (Exception e) {
-            log.error("Error al refrescar token", e);
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
@@ -92,9 +86,8 @@ public class AuthController {
         String password = userData.get("password");
         String nombre = userData.get("nombre");
         String apellido = userData.get("apellido");
-        log.info("POST /api/auth/register - username: {}, password: [PROTEGIDO], nombre: {}, apellido: {}", username, nombre, apellido);
+        log.info("[AuthController] - POST - /api/auth/register - username: {}, password: [PROTEGIDO], nombre: {}, apellido: {}", username, nombre, apellido);
         try {
-            
             if (username == null || username.trim().isEmpty() || 
                 password == null || password.trim().isEmpty() ||
                 nombre == null || nombre.trim().isEmpty()) {
@@ -104,11 +97,9 @@ public class AuthController {
             
             loginService.registrarUsuario(username, password, nombre, apellido);
             
-            log.info("Usuario registrado exitosamente: {}", username);
             return ResponseEntity.ok(Map.of("message", "Usuario registrado exitosamente"));
             
         } catch (RuntimeException e) {
-            log.error("Error al registrar usuario: {}", e.getMessage());
             String errorMessage = e.getMessage();
             if (errorMessage.contains("ya está en uso")) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
@@ -117,7 +108,6 @@ public class AuthController {
             return ResponseEntity.badRequest()
                 .body(Map.of("error", errorMessage));
         } catch (Exception e) {
-            log.error("Error inesperado al registrar usuario", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", "Error interno del servidor"));
         }
@@ -125,16 +115,14 @@ public class AuthController {
 
     @GetMapping("/user/roles-permisos")
     public ResponseEntity<UserRolesPermissionsDTO> getUserRolesAndPermissions(Authentication authentication) {
-        log.info("GET /api/auth/user/roles-permisos - Username: {}", authentication != null ? authentication.getName() : "null");
+        log.info("[AuthController] - GET - /api/auth/user/roles-permisos - Username: {}", authentication != null ? authentication.getName() : "null");
         try {
             String username = authentication.getName();
             UserRolesPermissionsDTO response = loginService.obtenerRolesYPermisosUsuario(username);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
-            log.error("Username no encontrado", e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         } catch (Exception e) {
-            log.error("Error al obtener roles y permisos del username", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }

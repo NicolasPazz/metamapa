@@ -21,22 +21,18 @@ public class SecurityConfig {
             .addFilterBefore(originFilter, UsernamePasswordAuthenticationFilter.class)
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(auth -> {
-                // Actuator para health checks
                 auth.requestMatchers("/actuator/**").permitAll();
                 
-                // Endpoints públicos
-                auth.requestMatchers("/api/hechos").permitAll(); // GET /api/hechos es público
+                auth.requestMatchers("/api/hechos").permitAll();
                 auth.requestMatchers("/api/colecciones/**").permitAll();
                 auth.requestMatchers("/api/fuentes/**").permitAll();
                 auth.requestMatchers("/api/front/**").permitAll();
                 auth.requestMatchers("/api/multimedia/**").permitAll();
-                auth.requestMatchers("/api/solicitudes").permitAll(); // POST para crear solicitudes es público
+                auth.requestMatchers("/api/solicitudes").permitAll();
                 
-                // Endpoints admin - requieren autenticación (deben ir después de los públicos)
                 auth.requestMatchers("/api/admin/**").authenticated();
-                auth.requestMatchers("/api/hechos/*/ocultar").authenticated(); // PATCH /api/hechos/{id}/ocultar requiere autenticación
+                auth.requestMatchers("/api/hechos/*/ocultar").authenticated();
                 
-                // Cualquier otra petición es pública por defecto (para mantener compatibilidad)
                 auth.anyRequest().permitAll();
             });
 
