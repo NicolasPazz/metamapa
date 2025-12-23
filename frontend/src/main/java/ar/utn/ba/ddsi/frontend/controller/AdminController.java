@@ -183,10 +183,10 @@ public class AdminController {
 
     @PostMapping("/admin/actualizar-estadisticas")
     public String actualizarEstadisticas(RedirectAttributes redirectAttributes) {
-        log.info("POST /admin/actualizar-estadisticas - Actualizando estadísticas (mockeado)");
+        log.info("POST /admin/actualizar-estadisticas - Actualizando estadísticas ");
         try {
             adminService.actualizarEstadisticas();
-            log.info("Estadísticas actualizadas (mockeado)");
+            log.info("Estadísticas actualizadas ");
             redirectAttributes.addFlashAttribute("success", "Estadísticas actualizadas correctamente!");
         } catch (Exception e) {
             log.error("Error al actualizar estadísticas", e);

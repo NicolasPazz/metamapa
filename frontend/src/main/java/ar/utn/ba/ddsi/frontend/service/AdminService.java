@@ -18,13 +18,17 @@ public class AdminService {
     private final WebClient webClientAgregador;
     private final WebClient webClientEstatica;
     private final WebClient webClientAgregadorBase;
+    private final WebClient webClientEstadistica;
 
     public AdminService(WebClient.Builder builder,
                        @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
-                       @Value("${app.api.estatica.base-url:http://localhost:8082/api}") String estaticaBaseUrl) {
+                       @Value("${app.api.estatica.base-url:http://localhost:8082/api}") String estaticaBaseUrl,
+                        @Value("${app.api.estadistica.base-url:http://localhost:8085/api/estadisticas}") String estadisticaBaseUrl
+                        ) {
         this.webClientAgregador = builder.baseUrl(agregadorBaseUrl + "/admin").build();
         this.webClientAgregadorBase = builder.baseUrl(agregadorBaseUrl).build();
         this.webClientEstatica = builder.baseUrl(estaticaBaseUrl).build();
+        this.webClientEstadistica = builder.baseUrl(estadisticaBaseUrl).build();
     }
 
     public List<SolicitudDTO> getAllSolicitudes() {
@@ -104,10 +108,14 @@ public class AdminService {
     }
 
     public void actualizarEstadisticas() {
-        // TODO: Hacer endpoint en estadisticas por ahora solo tira un log
-        // Cuando esté definido, debería hacer un POST a /estadisticas/actualizar o similar
-
-        log.info("Actualización de estadísticas solicitada (endpoint aún no implementado)");
+        webClientEstadistica.post()
+                .uri("/recalcular")
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
+ // /api/estadisticas
+        log.info("Actualización de estadísticas solicitada");
 
     }
+
 }
