@@ -8,6 +8,9 @@
     <a href="#colecciones">Colecciones</a>
     <a href="#hechos">Moderación de Hechos</a>
     <a href="#solicitudes">Solicitudes de Eliminación</a>
+    <a th:href="@{/solicitudes}" style="display: flex; align-items: center; gap: 8px;">
+      <i class="bi bi-file-earmark-text"></i> Solicitudes de Hechos
+    </a>
     <a href="#carga">Carga Masiva</a>
     <a th:href="@{/estadisticas}">Estadísticas</a>
   </nav>
@@ -28,8 +31,15 @@
         <strong>✗ Error:</strong> <span th:text="${error}"></span>
       </div>
       
-      <!-- Botones de Actualización -->
-      <div style="margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap;">
+      <!-- Botones de Acceso Rápido -->
+      <div style="margin-bottom: 30px; display: flex; gap: 15px; flex-wrap: wrap; align-items: center;">
+        <a th:href="@{/solicitudes}" 
+           style="padding: 12px 24px; background-color: #6f42c1; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background-color 0.3s; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;"
+           onmouseover="this.style.backgroundColor='#5a32a3'"
+           onmouseout="this.style.backgroundColor='#6f42c1'">
+          <i class="bi bi-file-earmark-text"></i> Ver Solicitudes
+        </a>
+        
         <form method="post" th:action="@{/admin/actualizar-agregador}" style="display: inline;">
           <button type="submit" 
                   style="padding: 12px 24px; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background-color 0.3s;"

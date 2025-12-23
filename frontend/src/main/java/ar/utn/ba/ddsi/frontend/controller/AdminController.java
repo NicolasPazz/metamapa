@@ -135,20 +135,9 @@ public class AdminController {
 
         return "redirect:/admin"; // Volvemos a la vista admin.html
     }
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("solicitudes/{id}/aceptar")
-    public String aceptarSolicitud(@PathVariable Long id) {
-        solicitudService.cambiarEstado(id, "ACEPTADO");
-        return "redirect:/admin/solicitudes";
-
-    }
-
-    @PreAuthorize("hasRole('ADMIN')")
-    @PostMapping("solicitudes/{id}/rechazar")
-    public String rechazarSolicitud(@PathVariable Long id) {
-        solicitudService.cambiarEstado(id, "RECHAZADO");
-
-        return "redirect:/admin/solicitudes";
+    @GetMapping("/admin/solicitudes")
+    public String redirigirASolicitudes() {
+        return "redirect:/solicitudes";
     }
 
     @PostMapping("/admin/agregar-etiquetas")
@@ -183,7 +172,7 @@ public class AdminController {
 
     @PostMapping("/admin/actualizar-estadisticas")
     public String actualizarEstadisticas(RedirectAttributes redirectAttributes) {
-        log.info("POST /admin/actualizar-estadisticas - Actualizando estadísticas ");
+        log.info("POST /admin/actualizar-estadisticas - Actualizando estadísticas");
         try {
             adminService.actualizarEstadisticas();
             log.info("Estadísticas actualizadas ");

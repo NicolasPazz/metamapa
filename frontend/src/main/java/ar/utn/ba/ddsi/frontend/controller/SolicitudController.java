@@ -89,7 +89,7 @@ public class SolicitudController {
             return ResponseEntity.status(500).body("Error al actualizar la solicitud: " + e.getMessage());
         }
     }
-    @GetMapping()
+    @GetMapping("")
     public String verPanelSolicitudes(Model model) {
         // Verificar si el usuario es admin
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -124,26 +124,63 @@ public class SolicitudController {
 
             if (solicitud == null) {
                 log.warn("La solicitud ID {} retornó NULL desde el servicio.", id);
-                return "redirect:/admin/solicitudes?error=NoEncontrado";
+                return "redirect:/solicitudes?error=NoEncontrado";
             }
 
-            log.info("Solicitud encontrada: {}", solicitud); // Asegúrate que tu DTO tenga toString()
+            log.info("Solicitud encontrada: {}", solicitud);
             model.addAttribute("solicitud", solicitud);
             return "admin/editar_solicitud";
 
         } catch (Exception e) {
             log.error("Error grave al intentar buscar la solicitud ID: " + id, e);
-            return "redirect:/admin/solicitudes?error=ErrorInterno";
+            return "redirect:/solicitudes?error=ErrorInterno";
         }
     }
 
 
     @PostMapping("/{id}/editar/")
-    public String procesarEdicion(@PathVariable Long id, @ModelAttribute SolicitudEdicionFormDTO solicitudEditada) {
-        solicitudService.procesarSolicitudEdicionConMultipart(id, solicitudEditada);
+    public String procesarEdicion(@PathVariable Long id, 
+                                  @ModelAttribute SolicitudEdicionFormDTO solicitudEditada,
+                                  RedirectAttributes redirectAttributes) {
+        try {
+            solicitudService.procesarSolicitudEdicionConMultipart(id, solicitudEditada);
+            log.info("Solicitud {} editada correctamente", id);
+            redirectAttributes.addFlashAttribute("success", "Solicitud editada correctamente!");
+        } catch (Exception e) {
+            log.error("Error al editar solicitud {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error al editar la solicitud: " + e.getMessage());
+        }
+        return "redirect:/solicitudes";
+    }
 
-        // Redirigimos al listado principal
-        return "redirect:/admin/solicitudes";
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{id}/aceptar")
+    public String aceptarSolicitud(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        log.info("POST /solicitudes/{}/aceptar", id);
+        try {
+            solicitudService.cambiarEstado(id, "ACEPTADO");
+            log.info("Solicitud {} aceptada correctamente", id);
+            redirectAttributes.addFlashAttribute("success", "Solicitud aceptada correctamente!");
+        } catch (Exception e) {
+            log.error("Error al aceptar solicitud {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error al aceptar la solicitud: " + e.getMessage());
+        }
+        return "redirect:/solicitudes";
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{id}/rechazar")
+    public String rechazarSolicitud(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        log.info("POST /solicitudes/{}/rechazar", id);
+        try {
+            solicitudService.cambiarEstado(id, "RECHAZADO");
+            log.info("Solicitud {} rechazada correctamente", id);
+            redirectAttributes.addFlashAttribute("success", "Solicitud rechazada correctamente!");
+        } catch (Exception e) {
+            log.error("Error al rechazar solicitud {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error al rechazar la solicitud: " + e.getMessage());
+        }
+        return "redirect:/solicitudes";
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -155,7 +192,7 @@ public class SolicitudController {
 
             if (solicitud == null) {
                 log.warn("La solicitud ID {} retornó NULL desde el servicio.", id);
-                return "redirect:/admin/solicitudes?error=NoEncontrado";
+                return "redirect:/solicitudes?error=NoEncontrado";
             }
 
             log.info("Solicitud encontrada para aceptar con modificaciones: {}", solicitud);
@@ -164,7 +201,7 @@ public class SolicitudController {
             return "admin/editar_solicitud";
         } catch (Exception e) {
             log.error("Error grave al intentar buscar la solicitud ID: " + id, e);
-            return "redirect:/admin/solicitudes?error=ErrorInterno";
+            return "redirect:/solicitudes?error=ErrorInterno";
         }
     }
 

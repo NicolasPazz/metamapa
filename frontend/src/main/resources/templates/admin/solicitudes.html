@@ -159,6 +159,16 @@
     </style>
 
     <div class="container mt-5">
+        <!-- Mensajes Flash -->
+        <div th:if="${success}" 
+             style="padding: 12px 20px; margin-bottom: 20px; background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; border-radius: 6px;">
+            <strong>✓ Éxito:</strong> <span th:text="${success}"></span>
+        </div>
+        <div th:if="${error}" 
+             style="padding: 12px 20px; margin-bottom: 20px; background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; border-radius: 6px;">
+            <strong>✗ Error:</strong> <span th:text="${error}"></span>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h2 class="fw-bold mb-0">Panel de Solicitudes</h2>
