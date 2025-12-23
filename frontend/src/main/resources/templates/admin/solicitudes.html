@@ -232,7 +232,7 @@
                          class="multimedia-preview">
                         <div th:each="media : ${sol.contenidoMultimedia}" class="multimedia-badge">
                             <i class="bi bi-paperclip"></i>
-                            <span th:text="${media.nombreArchivo != null ? media.nombreArchivo : 'Archivo'}">Archivo</span>
+                            <span th:text="${media.pathArchivo != null ? media.pathArchivo : 'Archivo'}"></span>
                         </div>
                     </div>
                 </div>
