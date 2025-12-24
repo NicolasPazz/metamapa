@@ -14,6 +14,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -30,6 +32,7 @@ public class CategoriasService {
     this.fuentesService = fuentesService;
   }
 
+  @CacheEvict(value = "categorias", allEntries = true)
   public void persistirCategoriasDesdeHechos(List<Hecho> hechos) {
     if (hechos == null || hechos.isEmpty()) {
       return;
@@ -141,8 +144,9 @@ public class CategoriasService {
     }
   }
 
+  @Cacheable(value = "categorias", unless = "#result == null || #result.getBody().isEmpty()")
   public ResponseEntity<List<String>> getAllCategoriasNombres() {
-    log.info("[CategoriasService] Obteniendo todas las categorías");
+    log.info("[CategoriasService] Obteniendo todas las categorías (sin cache)");
 
     // Obtener categorías de la BD local
     Set<String> categoriasSet = new HashSet<>(

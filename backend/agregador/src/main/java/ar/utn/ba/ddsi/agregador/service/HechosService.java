@@ -4,6 +4,7 @@ import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
 import ar.utn.ba.ddsi.agregador.domain.fuente.config.FuentesProperties;
 import ar.utn.ba.ddsi.agregador.domain.fuente.config.FuenteConfig;
 import ar.utn.ba.ddsi.agregador.domain.fuente.factory.TipoFuente;
+import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Etiqueta;
 import ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
@@ -16,8 +17,17 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -34,6 +44,9 @@ public class HechosService {
     private final CategoriasService categoriasService;
     private final ProvinciaService provinciaService;
     private final FuentesProperties fuentesProperties;
+    
+    // Executor para llamadas asíncronas a fuentes externas
+    private final ExecutorService executorService = Executors.newFixedThreadPool(10);
     public ResponseEntity<List<HechoDTO>> getAll(
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
@@ -75,6 +88,7 @@ public class HechosService {
     }
 
     @Transactional
+    @CacheEvict(value = "hechosPrimeraPagina", allEntries = true)
     public ResponseEntity<?> crearHecho(HechoDTO hechoInputDTO) {
         if (hechoInputDTO == null) {
             log.warn("[HechosService] Intento de crear hecho con DTO null");
@@ -116,6 +130,7 @@ public class HechosService {
     }
 
     @Transactional
+    @CacheEvict(value = "hechosPrimeraPagina", allEntries = true)
     public ResponseEntity<?> actualizarEtiquetas(Long idHecho, List<String> etiquetas) {
         if (idHecho == null) {
             log.warn("[HechosService] Intento de actualizar etiquetas sin ID de hecho");
@@ -157,6 +172,7 @@ public class HechosService {
     }
 
     @Transactional
+    @CacheEvict(value = "hechosPrimeraPagina", allEntries = true)
     public ResponseEntity<?> ocultarHecho(Long idHecho) {
         log.info("[HechosService] Ocultando hecho con ID: {}", idHecho);
         
@@ -181,6 +197,7 @@ public class HechosService {
         }
     }
 
+    @Cacheable(value = "provincias", unless = "#result == null || #result.getBody().isEmpty()")
     public ResponseEntity<List<String>> getProvinciasConHechos() {
         return provinciaService.getProvinciasConHechos();
     }
@@ -333,6 +350,9 @@ public class HechosService {
         return ResponseEntity.ok(externos);
     }
 
+    @Cacheable(value = "hechosPrimeraPagina", 
+               condition = "#page == 0 && #categoria == null && #fecha_reporte_desde == null && #fecha_reporte_hasta == null && #fecha_acontecimiento_desde == null && #fecha_acontecimiento_hasta == null && #ubicacion == null && #fuente == null",
+               unless = "#result == null || #result.getContent().isEmpty()")
     public PageResponse<HechoDTO> getPaginatedHechos(
             String categoria,
             LocalDate fecha_reporte_desde,
@@ -343,6 +363,8 @@ public class HechosService {
             String fuente,
             int page,
             int size) {
+        
+        long startTime = System.currentTimeMillis();
         
         if (page < 0) {
             log.warn("[HechosService] Página inválida: {}, usando 0", page);
@@ -357,47 +379,84 @@ public class HechosService {
             size = 200;
         }
 
-        List<HechoDTO> resultado = new ArrayList<>();
-        int start = page * size;
-        int needed = size;
-        long totalLocales;
-        long totalExternos = 0;
-
-        ResponseEntity<List<HechoDTO>> localesResp = getAllLocal(
+        // Calcular total de hechos locales (sin cargar todos los datos)
+        long totalLocales = hechosRepository.countByFiltersConUbicacion(
                 categoria, fecha_reporte_desde, fecha_reporte_hasta,
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
+        
+        long queryTime = System.currentTimeMillis();
+        log.debug("[HechosService] Tiempo de count locales: {}ms", queryTime - startTime);
 
-        List<HechoDTO> hechosLocales = Optional.ofNullable(localesResp.getBody()).orElse(new ArrayList<>());
-        totalLocales = hechosLocales.size();
+        List<HechoDTO> resultado = new ArrayList<>();
+        int start = page * size;
+        long totalExternos = 0;
+        boolean hasNextExternos = false;
+        long localTime = queryTime; // Inicializar para logging
 
-        if (start < hechosLocales.size()) {
-            int endLocal = Math.min(start + size, hechosLocales.size());
-            resultado.addAll(hechosLocales.subList(start, endLocal));
-            needed = size - resultado.size();
+        // Determinar si necesitamos hechos locales, externos, o ambos
+        boolean necesitaLocales = start < totalLocales;
+        int offsetExterno = 0;
+        int needed = size;
+
+        if (necesitaLocales) {
+            // Obtener hechos locales paginados
+            int endLocal = (int) Math.min(start + size, totalLocales);
+            int pageLocal = start / size;
+            int sizeLocal = endLocal - start;
+            
+            Pageable pageable = PageRequest.of(pageLocal, sizeLocal);
+            Page<Hecho> hechosPage = hechosRepository.findByFiltersConUbicacionPaginated(
+                    categoria, fecha_reporte_desde, fecha_reporte_hasta,
+                    fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente, pageable);
+            
+            List<HechoDTO> hechosLocales = hechoMapper.toDTO(hechosPage.getContent());
+            
+            // Ajustar si hay más registros de los necesarios (porque la página puede tener más)
+            int fromIndex = start % size;
+            int toIndex = Math.min(fromIndex + needed, hechosLocales.size());
+            if (fromIndex < hechosLocales.size()) {
+                resultado.addAll(hechosLocales.subList(fromIndex, toIndex));
+                needed = size - resultado.size();
+            }
+            
+            localTime = System.currentTimeMillis();
+            log.debug("[HechosService] Tiempo de obtener locales: {}ms", localTime - queryTime);
         } else {
-            start = start - (int)totalLocales;
+            // La página está más allá de los hechos locales
+            offsetExterno = (int) (start - totalLocales);
         }
 
-        if (needed > 0 || start >= 0) {
+        if (needed > 0) {
             try {
-                ResponseEntity<List<HechoDTO>> externosResp = getAllExternal(
+                long externalStartTime = System.currentTimeMillis();
+                // Intentar usar método paginado si está disponible
+                PageResponse<HechoDTO> externosPaginated = getAllExternalPaginated(
                         categoria, fecha_reporte_desde, fecha_reporte_hasta,
-                        fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
-                List<HechoDTO> hechosExternos = Optional.ofNullable(externosResp.getBody()).orElse(new ArrayList<>());
-                totalExternos = hechosExternos.size();
+                        fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente,
+                        offsetExterno, needed);
                 
-                if (needed > 0 && !hechosExternos.isEmpty() && start >= 0 && start < hechosExternos.size()) {
-                    int endExterno = Math.min(start + needed, hechosExternos.size());
-                    resultado.addAll(hechosExternos.subList(start, endExterno));
+                if (externosPaginated != null) {
+                    resultado.addAll(externosPaginated.getContent());
+                    totalExternos = externosPaginated.getTotalElements();
+                    hasNextExternos = externosPaginated.isHasNext();
                 }
+                
+                long externalTime = System.currentTimeMillis();
+                log.debug("[HechosService] Tiempo de obtener externos: {}ms", externalTime - externalStartTime);
             } catch (Exception e) {
                 log.warn("[HechosService] Error al obtener hechos externos: {}", e.getMessage());
             }
         }
 
+        // Calcular hasNext: si hay más locales después de esta página O si hay más externos
+        boolean hasNextLocales = necesitaLocales && (start + size < totalLocales);
+        boolean hasNext = hasNextLocales || hasNextExternos || 
+                         (!necesitaLocales && resultado.size() == size && hasNextExternos);
         long totalDisponibles = totalLocales + totalExternos;
-        boolean hasNext = ((long)(page + 1)) * size < totalDisponibles;
 
+        long totalTime = System.currentTimeMillis();
+        log.info("[HechosService] Tiempo total getPaginatedHechos: {}ms (locales: {}, externos: {})", 
+                totalTime - startTime, totalLocales, totalExternos);
 
         return new PageResponse<>(
                 resultado,
@@ -407,5 +466,129 @@ public class HechosService {
                 page > 0,
                 totalDisponibles
         );
+    }
+    
+    private PageResponse<HechoDTO> getAllExternalPaginated(
+            String categoria,
+            LocalDate fecha_reporte_desde,
+            LocalDate fecha_reporte_hasta,
+            LocalDateTime fecha_acontecimiento_desde,
+            LocalDateTime fecha_acontecimiento_hasta,
+            String ubicacion,
+            String fuente,
+            int offset,
+            int size) {
+        
+        try {
+            List<PageResponse<HechoDTO>> respuestasPaginadas = new ArrayList<>();
+            List<AFuente> fuentes = fuentesService.getFuentes();
+            
+            for (AFuente fuenteObj : fuentes) {
+                // Si hay un filtro de fuente, solo procesar la fuente que coincide
+                if (fuente != null && !fuente.trim().isEmpty()) {
+                    String fuenteFiltroNormalizada = fuente.trim();
+                    String nombreFuenteObj = fuenteObj.getNombre() != null ? fuenteObj.getNombre().trim() : null;
+                    if (!fuenteFiltroNormalizada.equals(nombreFuenteObj)) {
+                        continue; // Saltar fuentes que no coinciden con el filtro
+                    }
+                }
+                if (fuenteObj instanceof FuenteTiempoReal) {
+                    try {
+                        int pageExterno = size > 0 ? offset / size : 0;
+                        ResponseEntity<PageResponse<HechoDTO>> respuesta = fuenteObj.getAllHechosVisiblesPaginated(
+                                categoria, fecha_reporte_desde, fecha_reporte_hasta,
+                                fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
+                                ubicacion, pageExterno, size);
+                        
+                        if (respuesta != null && respuesta.getBody() != null) {
+                            PageResponse<HechoDTO> pageResp = respuesta.getBody();
+                            
+                            // Normalizar hechos para establecer nombreFuente antes de filtrar
+                            Long idFuente = fuenteObj.getId();
+                            String nombreFuenteEsperado = fuenteObj.getNombre() != null ? fuenteObj.getNombre().trim() : null;
+                            List<HechoDTO> hechosNormalizados = new ArrayList<>();
+                            for (HechoDTO h : pageResp.getContent()) {
+                                try {
+                                    // Normalizar el hecho para establecer nombreFuente
+                                    if (h.getId() == null) {
+                                        log.warn("[HechosService] Hecho sin id recibido desde fuente {}", idFuente);
+                                    } else {
+                                        h.setIdOrigen(h.getId());
+                                        h.setId(null);
+                                    }
+                                    h.setFuenteId(idFuente);
+                                    // Asegurar que nombreFuente se establece correctamente (normalizado)
+                                    if (nombreFuenteEsperado != null) {
+                                        h.setNombreFuente(nombreFuenteEsperado);
+                                    } else {
+                                        // Si nombreFuenteEsperado es null, usar el nombre de la fuente directamente
+                                        String nombreFuenteFallback = fuenteObj.getNombre() != null ? fuenteObj.getNombre().trim() : null;
+                                        h.setNombreFuente(nombreFuenteFallback);
+                                    }
+                                    
+                                    // Normalizar provincia si es necesario
+                                    if (h.getProvincia() == null && h.getLatitud() != null && h.getLongitud() != null) {
+                                        Provincia provincia = provinciaService.obtenerProvinciaPorCoordenadas(
+                                            h.getLatitud(), h.getLongitud());
+                                        if (provincia != null) {
+                                            h.setProvincia(provincia.getNombre());
+                                        }
+                                    }
+                                    
+                                    hechosNormalizados.add(h);
+                                } catch (Exception e) {
+                                    log.error("[HechosService] Error normalizando hecho: {}", e.getMessage(), e);
+                                    throw e; // Re-lanzar para que se capture en el catch externo
+                                }
+                            }
+                            
+                            // Filtrar por fuente si se especificó
+                            if (fuente != null && !fuente.trim().isEmpty()) {
+                                String fuenteFiltroNormalizada = fuente.trim();
+                                hechosNormalizados = hechosNormalizados.stream()
+                                    .filter(h -> {
+                                        String nombreFuenteHecho = h.getNombreFuente() != null ? h.getNombreFuente().trim() : null;
+                                        return nombreFuenteHecho != null && nombreFuenteHecho.equals(fuenteFiltroNormalizada);
+                                    })
+                                    .toList();
+                            }
+                            
+                            // Actualizar totalElements después del filtro
+                            long totalElementsDespuesFiltro = hechosNormalizados.size();
+                            pageResp = new PageResponse<>(
+                                hechosNormalizados, pageResp.getCurrentPage(), pageResp.getPageSize(),
+                                pageResp.isHasNext(), pageResp.isHasPrevious(), totalElementsDespuesFiltro);
+                            
+                            respuestasPaginadas.add(pageResp);
+                        }
+                    } catch (Exception e) {
+                        log.debug("[HechosService] Fuente {} no soporta paginación o error: {}", 
+                            fuenteObj.getNombre(), e.getMessage());
+                    }
+                }
+            }
+            
+            if (!respuestasPaginadas.isEmpty()) {
+                List<HechoDTO> todos = new ArrayList<>();
+                long total = 0;
+                boolean hasNext = false;
+                
+                for (PageResponse<HechoDTO> resp : respuestasPaginadas) {
+                    todos.addAll(resp.getContent());
+                    total += resp.getTotalElements();
+                    hasNext = hasNext || resp.isHasNext();
+                }
+                
+                int pageExterno = size > 0 ? offset / size : 0;
+                return new PageResponse<>(
+                    todos, pageExterno, size,
+                    hasNext || todos.size() >= size, offset > 0, total);
+            }
+            
+            return null;
+        } catch (Exception e) {
+            log.warn("[HechosService] Error al obtener hechos externos paginados: {}", e.getMessage());
+            return null;
+        }
     }
 }

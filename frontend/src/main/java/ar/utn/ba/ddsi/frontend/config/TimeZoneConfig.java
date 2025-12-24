@@ -6,9 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import java.time.ZoneId;
 import java.util.TimeZone;
 
-/**
- * Configuración para asegurar que todas las fechas se manejen en UTC
- */
 @Configuration
 public class TimeZoneConfig {
 

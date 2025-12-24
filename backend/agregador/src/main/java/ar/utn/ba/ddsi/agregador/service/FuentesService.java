@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +69,51 @@ public class FuentesService {
 
     log.info("[FuentesService] {} hechos visibles combinados desde todas las fuentes.",
         resultados.size());
+
+    return ResponseEntity.ok(filtrarBlacklist(resultados));
+  }
+
+  public ResponseEntity<List<HechoDTO>> getAllHechosVisiblesAsync(
+      String categoria,
+      LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
+      LocalDateTime fechaAcontecimientoDesde, LocalDateTime fechaAcontecimientoHasta,
+      String ubicacion) {
+
+    long startTime = System.currentTimeMillis();
+
+    // Ejecutar llamadas en paralelo usando CompletableFuture con el pool común de ForkJoinPool
+    List<CompletableFuture<List<HechoDTO>>> futures = fuentes.stream()
+        .map(fuente -> CompletableFuture.supplyAsync(() -> {
+          try {
+            Long idFuente = fuente.getId();
+            List<HechoDTO> hechos = Optional.ofNullable(
+                fuente.getAllHechosVisibles(
+                    categoria,
+                    fechaReporteDesde, fechaReporteHasta,
+                    fechaAcontecimientoDesde, fechaAcontecimientoHasta,
+                    ubicacion
+                ).getBody()
+            ).orElse(List.of());
+
+            hechos.forEach(h -> normalizarHecho(h, idFuente));
+            return hechos;
+          } catch (Exception e) {
+            log.warn("[FuentesService] Error obteniendo hechos de fuente {}: {}", 
+                fuente.getNombre(), e.getMessage());
+            return new ArrayList<HechoDTO>();
+          }
+        }))
+        .collect(Collectors.toList());
+
+    // Esperar todas las respuestas y combinar resultados
+    List<HechoDTO> resultados = futures.stream()
+        .map(CompletableFuture::join)
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+
+    long totalTime = System.currentTimeMillis();
+    log.info("[FuentesService] {} hechos visibles combinados desde {} fuentes en {}ms (paralelo).",
+        resultados.size(), fuentes.size(), totalTime - startTime);
 
     return ResponseEntity.ok(filtrarBlacklist(resultados));
   }
@@ -201,6 +247,10 @@ public class FuentesService {
         .filter(fuente -> fuente instanceof FuenteTiempoReal)
         .map(AFuente::getNombre)
         .collect(Collectors.toList());
+  }
+
+  public List<AFuente> getFuentes() {
+    return new ArrayList<>(fuentes); // Retornar copia para evitar modificaciones externas
   }
 
 

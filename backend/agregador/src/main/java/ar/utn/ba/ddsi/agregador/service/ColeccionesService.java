@@ -7,6 +7,8 @@ import ar.utn.ba.ddsi.agregador.domain.coleccion.algoritmosConsenso.impl.Absolut
 import ar.utn.ba.ddsi.agregador.domain.coleccion.algoritmosConsenso.impl.MayoriaSimple;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.algoritmosConsenso.impl.MultiplesMenciones;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.Coleccion;
+import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
+import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
 import ar.utn.ba.ddsi.agregador.domain.coleccion.criterios.Criterio;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioDTO;
@@ -30,6 +32,9 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -74,37 +79,28 @@ public class ColeccionesService {
         return ResponseEntity.notFound().build();
     }
 
-    public ResponseEntity<List<ColeccionDTO>> getAllColeccionesPaginated(int page, int size) {
 
-        List<ColeccionDTO> coleccionesLocales = Optional.ofNullable(
-            getAllColeccionesLocales().getBody()
-        ).orElse(new ArrayList<>());
-
-        List<ColeccionDTO> coleccionesFuentes = new ArrayList<>();
-        try {
-            coleccionesFuentes = Optional.ofNullable(
-                fuentesService.getAllColecciones().getBody()
-            ).orElse(List.of());
-        } catch (Exception e) {
-            log.warn("[ColeccionesService] Error al obtener colecciones externas en getPaginatedColecciones: {}", e.getMessage());
-        }
-
-        List<ColeccionDTO> todasLasColecciones = new ArrayList<>();
-        todasLasColecciones.addAll(coleccionesLocales);
-        todasLasColecciones.addAll(coleccionesFuentes);
-
-        int start = page * size;
-        int end = Math.min(start + size, todasLasColecciones.size());
-
-        if (start >= todasLasColecciones.size()) {
-            return ResponseEntity.ok(new ArrayList<>());
-        }
-
-        List<ColeccionDTO> paginadas = todasLasColecciones.subList(start, end);
-
-        return ResponseEntity.ok(paginadas);
-    }
-
+    /**
+     * Obtiene hechos de una colección paginados.
+     * 
+     * NOTA DE PERFORMANCE: Este método actualmente carga TODOS los hechos que cumplen los criterios
+     * de la colección y luego los pagina en memoria. Esto es necesario porque los criterios de 
+     * pertenencia deben aplicarse a todos los hechos disponibles. Para optimizar esto en el futuro,
+     * se necesitaría refactorizar la lógica de criterios para que puedan evaluarse en la base de datos.
+     * 
+     * @param handle Identificador de la colección
+     * @param ubicacion Filtro de ubicación
+     * @param fechaReporteDesde Filtro de fecha de reporte desde
+     * @param fechaReporteHasta Filtro de fecha de reporte hasta
+     * @param fechaAcontecimientoDesde Filtro de fecha de acontecimiento desde
+     * @param fechaAcontecimientoHasta Filtro de fecha de acontecimiento hasta
+     * @param categoria Filtro de categoría
+     * @param fuente Filtro de fuente
+     * @param modoStr Modo de navegación (IRRESTRICTA o CURADA)
+     * @param page Número de página (0-indexed)
+     * @param size Tamaño de página
+     * @return PageResponse con los hechos paginados
+     */
     public ResponseEntity<PageResponse<HechoDTO>> getHechosColeccionPaginated(
             String handle,
             String ubicacion,
@@ -118,7 +114,6 @@ public class ColeccionesService {
             int page,
             int size) {
         
-        // Validar parámetros de paginación
         if (page < 0) {
             log.warn("[ColeccionesService] Página inválida: {}, usando 0", page);
             page = 0;
@@ -131,7 +126,6 @@ public class ColeccionesService {
             log.warn("[ColeccionesService] Tamaño muy grande: {}, limitando a 200", size);
             size = 200;
         }
-
 
         ModoNavegacion modo = null;
         if (modoStr != null && !modoStr.trim().isEmpty()) {
@@ -178,7 +172,6 @@ public class ColeccionesService {
         }
 
         List<HechoDTO> paginados = todosLosHechos.subList(start, end);
-
         boolean hasNext = end < todosLosHechos.size();
 
         PageResponse<HechoDTO> response = new PageResponse<>(
@@ -189,7 +182,6 @@ public class ColeccionesService {
                 page > 0,
                 total
         );
-
 
         return ResponseEntity.ok(response);
     }
@@ -711,6 +703,8 @@ public class ColeccionesService {
     }
 
     public PageResponse<ColeccionDTO> getPaginatedColecciones(int page, int size) {
+        long startTime = System.currentTimeMillis();
+        
         if (page < 0) {
             log.warn("[ColeccionesService] Página inválida: {}, usando 0", page);
             page = 0;
@@ -725,33 +719,68 @@ public class ColeccionesService {
         }
         log.info("[ColeccionesService] Obteniendo colecciones paginadas - page: {}, size: {}", page, size);
 
+        // Contar colecciones locales sin cargar todas
+        long totalLocales = coleccionesRepository.count();
+        
         List<ColeccionDTO> resultado = new ArrayList<>();
         int start = page * size;
+        long totalExternas = 0;
+        boolean hasNextExternas = false;
         int needed = size;
 
-        ResponseEntity<List<ColeccionDTO>> localesResp = getAllColeccionesLocales();
-        List<ColeccionDTO> coleccionesLocales = Optional.ofNullable(localesResp.getBody()).orElse(new ArrayList<>());
+        // Determinar si necesitamos colecciones locales, externas, o ambas
+        boolean necesitaLocales = start < totalLocales;
+        int offsetExterno = 0;
 
-        if (start < coleccionesLocales.size()) {
-            int endLocal = Math.min(start + size, coleccionesLocales.size());
-            resultado.addAll(coleccionesLocales.subList(start, endLocal));
-            needed = size - resultado.size();
+        if (necesitaLocales) {
+            // Obtener colecciones locales paginadas
+            int endLocal = (int) Math.min(start + size, totalLocales);
+            int pageLocal = start / size;
+            int sizeLocal = endLocal - start;
+            
+            Pageable pageable = PageRequest.of(pageLocal, sizeLocal);
+            Page<Coleccion> coleccionesPage = coleccionesRepository.findAll(pageable);
+            
+            List<ColeccionDTO> coleccionesLocales = coleccionesPage.getContent().stream()
+                .map(coleccionMapper::toDTO)
+                .toList();
+            
+            // Ajustar si hay más registros de los necesarios
+            int fromIndex = start % size;
+            int toIndex = Math.min(fromIndex + needed, coleccionesLocales.size());
+            if (fromIndex < coleccionesLocales.size()) {
+                resultado.addAll(coleccionesLocales.subList(fromIndex, toIndex));
+                needed = size - resultado.size();
+            }
         } else {
-            start = start - coleccionesLocales.size();
+            // La página está más allá de las colecciones locales
+            offsetExterno = (int) (start - totalLocales);
         }
 
-        ResponseEntity<List<ColeccionDTO>> externasResp = getAllColeccionesExternas();
-        List<ColeccionDTO> coleccionesExternas = Optional.ofNullable(externasResp.getBody()).orElse(new ArrayList<>());
-
-        if (needed > 0 && !coleccionesExternas.isEmpty() && start < coleccionesExternas.size()) {
-            int endExterno = Math.min(start + needed, coleccionesExternas.size());
-            resultado.addAll(coleccionesExternas.subList(start, endExterno));
+        // Si aún necesitamos más colecciones, obtener de fuentes externas usando paginación
+        if (needed > 0) {
+            try {
+                PageResponse<ColeccionDTO> externasPaginated = getAllColeccionesExternasPaginated(offsetExterno, needed);
+                
+                if (externasPaginated != null) {
+                    resultado.addAll(externasPaginated.getContent());
+                    totalExternas = externasPaginated.getTotalElements();
+                    hasNextExternas = externasPaginated.isHasNext();
+                }
+            } catch (Exception e) {
+                log.warn("[ColeccionesService] Error al obtener colecciones externas: {}", e.getMessage());
+            }
         }
 
-        int totalDisponibles = coleccionesLocales.size() + coleccionesExternas.size();
-        boolean hasNext = (page + 1) * size < totalDisponibles;
+        // Calcular hasNext: si hay más locales después de esta página O si hay más externas
+        boolean hasNextLocales = necesitaLocales && (start + size < totalLocales);
+        boolean hasNext = hasNextLocales || hasNextExternas || 
+                         (!necesitaLocales && resultado.size() == size && hasNextExternas);
+        long totalDisponibles = totalLocales + totalExternas;
 
-        log.info("[ColeccionesService] Devolviendo {} colecciones para página {}, hasNext: {}", resultado.size(), page, hasNext);
+        long totalTime = System.currentTimeMillis();
+        log.info("[ColeccionesService] Devolviendo {} colecciones para página {} en {}ms, hasNext: {}", 
+            resultado.size(), page, totalTime - startTime, hasNext);
 
         return new PageResponse<>(
                 resultado,
@@ -761,6 +790,54 @@ public class ColeccionesService {
                 page > 0,
                 totalDisponibles
         );
+    }
+    
+    /**
+     * Obtiene colecciones externas usando paginación cuando está disponible
+     * Retorna null si no hay fuentes que soporten paginación
+     */
+    private PageResponse<ColeccionDTO> getAllColeccionesExternasPaginated(int offset, int size) {
+        try {
+            List<PageResponse<ColeccionDTO>> respuestasPaginadas = new ArrayList<>();
+            
+            for (AFuente fuente : fuentesService.getFuentes()) {
+                if (fuente instanceof FuenteTiempoReal) {
+                    try {
+                        int pageExterno = size > 0 ? offset / size : 0;
+                        ResponseEntity<PageResponse<ColeccionDTO>> respuesta = fuente.getAllColeccionesPaginated(pageExterno, size);
+                        
+                        if (respuesta != null && respuesta.getBody() != null) {
+                            respuestasPaginadas.add(respuesta.getBody());
+                        }
+                    } catch (Exception e) {
+                        log.debug("[ColeccionesService] Fuente {} no soporta paginación o error: {}", 
+                            fuente.getNombre(), e.getMessage());
+                    }
+                }
+            }
+            
+            if (!respuestasPaginadas.isEmpty()) {
+                List<ColeccionDTO> todas = new ArrayList<>();
+                long total = 0;
+                boolean hasNext = false;
+                
+                for (PageResponse<ColeccionDTO> resp : respuestasPaginadas) {
+                    todas.addAll(resp.getContent());
+                    total += resp.getTotalElements();
+                    hasNext = hasNext || resp.isHasNext();
+                }
+                
+                int pageExterno = size > 0 ? offset / size : 0;
+                return new PageResponse<>(
+                    todas, pageExterno, size,
+                    hasNext || todas.size() >= size, offset > 0, total);
+            }
+            
+            return null;
+        } catch (Exception e) {
+            log.warn("[ColeccionesService] Error al obtener colecciones externas paginadas: {}", e.getMessage());
+            return null;
+        }
     }
 }
 

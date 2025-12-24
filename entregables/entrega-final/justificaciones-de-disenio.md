@@ -326,7 +326,7 @@ services:
 **Configuración de Producción:**
 
 El sistema implementa HTTPS mediante:
-- **Nginx como Reverse Proxy**: Recibe todas las peticiones en puertos 80 (HTTP) y 443 (HTTPS)
+- **Nginx como Reverse Proxy**: Recibe todas las peticiones en puertos 80 (HTTP) y 443 (HTTPS). Nginx es un proxy reverso porque actúa como intermediario entre los clientes (navegadores) y los servidores backend (aplicaciones Spring Boot). A diferencia de un proxy forward que protege a los clientes, un proxy reverso protege y gestiona los servidores backend, enrutando las peticiones según reglas de configuración y ocultando la arquitectura interna del sistema.
 - **Certbot (Let's Encrypt)**: Renovación automática de certificados SSL/TLS
 - **Redirección HTTP → HTTPS**: Todas las peticiones HTTP se redirigen a HTTPS
 - **Dominio configurable**: Variable de entorno `CERTBOT_DOMAIN` (ej: `metamapa-dds.ddns.net`)
@@ -1497,9 +1497,132 @@ Los archivos CSV se almacenan en `CSV_STORAGE_PATH` configurado por variable de 
 
 ---
 
-## 14. Despliegue en EC2 con RDS
+## 14. Optimizaciones de Performance
 
-### 14.1. Arquitectura de Producción ✅
+### 14.1. Paginación en Base de Datos ✅
+
+**Decisión de Diseño:**
+Implementación de paginación real a nivel de base de datos utilizando `Pageable` de Spring Data JPA, en lugar de cargar todos los registros y paginar en memoria.
+
+**Justificación (SOLID y Cualidades):**
+- **Eficiencia**: Solo se transfieren y procesan los registros necesarios para la página solicitada, reduciendo significativamente el uso de memoria y ancho de banda
+- **Escalabilidad**: El sistema puede manejar grandes volúmenes de datos sin degradación de performance, ya que la paginación se realiza en la base de datos
+- **Separación de Concerns**: La lógica de paginación está delegada a Spring Data JPA, manteniendo el código de negocio más limpio
+
+**Implementación:**
+```java
+@Query("SELECT h FROM Hecho h " +
+    "LEFT JOIN h.provincia " +
+    "WHERE h.estado = 'VISIBLE' AND ...")
+Page<Hecho> findByFiltersPaginated(..., Pageable pageable);
+```
+
+**Beneficios:**
+- Reducción de carga de datos: de potencialmente miles de registros a solo los necesarios (ej: 100 por página)
+- Mejor uso de recursos: menos memoria, menos transferencia de red, menos procesamiento
+- Experiencia de usuario mejorada: tiempos de respuesta más rápidos y predecibles
+
+### 14.2. Procesamiento Asíncrono de Fuentes Externas ✅
+
+**Decisión de Diseño:**
+Uso de `CompletableFuture` para ejecutar llamadas HTTP a múltiples fuentes externas en paralelo, en lugar de ejecutarlas secuencialmente.
+
+**Justificación (SOLID y Cualidades):**
+- **Eficiencia**: Aprovecha mejor los recursos del servidor ejecutando múltiples operaciones I/O en paralelo
+- **Performance**: Reduce el tiempo total de respuesta al ejecutar llamadas concurrentes en lugar de sumar tiempos secuenciales
+- **Resiliencia**: Si una fuente externa falla o es lenta, las demás pueden completarse independientemente
+- **Escalabilidad**: Permite manejar múltiples fuentes sin impacto lineal en el tiempo de respuesta
+
+**Implementación:**
+```java
+List<CompletableFuture<List<HechoDTO>>> futures = fuentes.stream()
+    .map(fuente -> CompletableFuture.supplyAsync(() -> {
+        // Llamada a fuente externa
+    }))
+    .collect(Collectors.toList());
+```
+
+**Beneficios:**
+- Reducción de latencia: el tiempo total es aproximadamente el de la fuente más lenta, no la suma de todas
+- Mejor utilización de recursos: el servidor puede procesar múltiples requests HTTP simultáneamente
+- Tolerancia a fallos: errores en una fuente no bloquean las demás
+
+### 14.3. Cache en Memoria para Optimización de Performance ✅
+
+**Decisión de Diseño:**
+Implementación de cache en memoria usando Caffeine para optimizar las consultas más frecuentes y costosas del sistema, incluyendo datos de referencia (categorías, provincias) y la primera página de hechos sin filtros.
+
+**Tipo de Cache:**
+Cache en memoria usando Caffeine, una biblioteca de cache de alto rendimiento para Java. Los datos se almacenan en la memoria RAM del servidor de aplicación, no en base de datos ni en sistemas externos. Esto proporciona acceso extremadamente rápido pero requiere que los datos cacheados se reconstruyan si el servidor se reinicia.
+
+**Duración del Cache:**
+El cache tiene un tiempo de expiración de 5 minutos (`expireAfterWrite`). Después de este tiempo, los datos cacheados se invalidan automáticamente y se reconstruyen en la siguiente consulta. Además, el cache se invalida inmediatamente mediante `@CacheEvict` cuando se realizan operaciones de escritura (crear, modificar, eliminar).
+
+**Justificación (SOLID y Cualidades):**
+- **Eficiencia**: Evita ejecutar queries repetidas para datos que raramente cambian o consultas costosas frecuentes
+- **Performance**: Respuestas casi instantáneas (<10ms) para datos cacheados vs queries de base de datos y fuentes externas (500ms-3000ms+)
+- **Reducción de Carga**: Menos queries a la base de datos y menos llamadas a fuentes externas para información frecuentemente consultada
+- **Principio de Responsabilidad Única**: El cache está encapsulado en la configuración y anotaciones, sin afectar la lógica de negocio
+- **Escalabilidad**: Permite manejar mejor picos de tráfico sin sobrecargar el sistema
+
+**Implementación:**
+
+Cache para datos de referencia (categorías, provincias):
+```java
+@Cacheable(value = "categorias", unless = "#result == null || #result.getBody().isEmpty()")
+public ResponseEntity<List<String>> getAllCategoriasNombres() { ... }
+
+@CacheEvict(value = "categorias", allEntries = true)
+public void persistirCategoriasDesdeHechos(List<Hecho> hechos) { ... }
+```
+
+**Invalidación de caché de categorías:**
+La caché de categorías se invalida automáticamente mediante `@CacheEvict` en el método `persistirCategoriasDesdeHechos`, que se ejecuta en los siguientes casos:
+- **Al crear un hecho manualmente**: Cuando un usuario crea un nuevo hecho (`HechosService.crearHecho`), si el hecho tiene una categoría nueva, se persiste y se invalida la caché.
+- **Al actualizar hechos desde fuentes externas**: Cuando el scheduler actualiza hechos desde fuentes externas (`AgregadorService.actualizarHechos`), si se detectan categorías nuevas en los hechos recibidos, se persisten y se invalida la caché.
+- **Al actualizar hechos según consenso**: Cuando se actualizan hechos de colecciones según consenso (`ColeccionesService`), si hay categorías nuevas, se invalida la caché.
+
+Esto garantiza que la lista de categorías disponibles siempre esté actualizada cuando se agregan nuevas categorías al sistema, ya sea manualmente o desde fuentes externas.
+
+Cache para primera página de hechos sin filtros:
+```java
+@Cacheable(value = "hechosPrimeraPagina", 
+           condition = "#page == 0 && #categoria == null && #fecha_reporte_desde == null && #fecha_reporte_hasta == null && #fecha_acontecimiento_desde == null && #fecha_acontecimiento_hasta == null && #ubicacion == null && #fuente == null",
+           unless = "#result == null || #result.getContent().isEmpty()")
+public PageResponse<HechoDTO> getPaginatedHechos(...) { ... }
+
+@CacheEvict(value = "hechosPrimeraPagina", allEntries = true)
+public ResponseEntity<?> crearHecho(HechoDTO hechoInputDTO) { ... }
+
+@CacheEvict(value = "hechosPrimeraPagina", allEntries = true)
+public ResponseEntity<?> ocultarHecho(Long idHecho) { ... }
+
+// Invalidación manual cuando se actualizan hechos desde fuentes externas
+public void actualizarHechos() {
+  // ... guardar hechos nuevos desde fuentes externas ...
+  if (cacheManager != null) {
+    var cache = cacheManager.getCache("hechosPrimeraPagina");
+    if (cache != null) {
+      cache.clear(); // Solo se invalida cuando realmente se guardaron hechos nuevos
+    }
+  }
+}
+```
+
+**Beneficios:**
+- Respuestas más rápidas para datos y consultas frecuentemente accedidos
+- Reducción significativa de carga en base de datos y fuentes externas
+- Invalidación automática cuando los datos cambian mediante `@CacheEvict`
+- Cache condicional para hechos asegura que solo se cachee cuando no hay filtros, manteniendo coherencia de datos filtrados
+- Mejor experiencia de usuario con tiempos de respuesta reducidos
+- **No se cachean respuestas vacías**: La condición `unless = "#result == null || #result.getContent().isEmpty()"` evita cachear cuando no hay hechos disponibles. Esto previene el problema donde, si un usuario accede a "/hechos" cuando aún no hay hechos, se cachea una respuesta vacía que luego persiste incluso después de crear hechos nuevos. Al no cachear respuestas vacías, se garantiza que la próxima consulta mostrará los hechos recién creados correctamente.
+- **Invalidación al actualizar desde fuentes externas**: Cuando el scheduler actualiza hechos desde fuentes externas (proxy ONG, proxy MetaMapa, etc.), la caché se invalida manualmente solo cuando realmente se guardaron hechos nuevos. Esto evita el problema donde, al arrancar el sistema, se cachea la primera página con solo algunos hechos (por ejemplo, solo de proxy MetaMapa), y luego cuando se cargan más hechos desde otras fuentes (como proxy ONG), la caché no se actualiza y sigue mostrando la versión parcial. Con esta invalidación, cada vez que se agregan hechos desde fuentes externas, la caché se limpia y la próxima consulta mostrará todos los hechos disponibles.
+
+---
+
+## 15. Despliegue en EC2 con RDS
+
+### 15.1. Arquitectura de Producción ✅
 
 **Implementación:**
 

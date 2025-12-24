@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.proxy_metamapa.client.impl;
 import ar.utn.ba.ddsi.proxy_metamapa.client.MetaMapaClient;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.HechoDTO;
+import ar.utn.ba.ddsi.proxy_metamapa.domain.dto.PageResponse;
 import ar.utn.ba.ddsi.proxy_metamapa.service.FuenteService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -51,5 +52,36 @@ public class WebClientMetaMapaClient implements MetaMapaClient {
         fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
         ubicacion
     );
+  }
+
+  @Override
+  public ResponseEntity<PageResponse<HechoDTO>> getAllHechosVisiblesPaginated(
+      String categoria,
+      LocalDate fechaReporteDesde,
+      LocalDate fechaReporteHasta,
+      LocalDateTime fechaAcontecimientoDesde,
+      LocalDateTime fechaAcontecimientoHasta,
+      String ubicacion,
+      int page,
+      int size
+  ) {
+    return fuenteService.getAllHechosVisiblesPaginated(
+        categoria,
+        fechaReporteDesde,
+        fechaReporteHasta,
+        fechaAcontecimientoDesde,
+        fechaAcontecimientoHasta,
+        ubicacion,
+        page,
+        size
+    );
+  }
+
+  @Override
+  public ResponseEntity<PageResponse<ColeccionDTO>> getAllColeccionesPaginated(
+      int page,
+      int size
+  ) {
+    return fuenteService.getAllColeccionesPaginated(page, size);
   }
 }

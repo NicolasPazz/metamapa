@@ -92,7 +92,10 @@ public class OngApiAdapter implements IApiExternaAdapter {
   }
 
   private List<HechoProxyDTO> obtenerHechosDesdeApi() {
+    long startTime = System.currentTimeMillis();
+    long timeBeforeFirstPage = System.currentTimeMillis();
     HechoProxyResponseDTO firstPage = obtenerPagina(1);
+    long firstPageTime = System.currentTimeMillis() - timeBeforeFirstPage;
 
     if (firstPage == null || firstPage.getData() == null) {
       return List.of();
@@ -110,11 +113,17 @@ public class OngApiAdapter implements IApiExternaAdapter {
     }
 
     for (int page = 2; page <= maxPageToFetch; page++) {
+      long pageStart = System.currentTimeMillis();
       HechoProxyResponseDTO pageResult = obtenerPagina(page);
+      long pageTime = System.currentTimeMillis() - pageStart;
       if (pageResult != null && pageResult.getData() != null) {
         todos.addAll(pageResult.getData());
       }
+      if (page % 10 == 0 || page == maxPageToFetch) {
+        // Log de progreso cada 10 páginas
+      }
     }
+    long totalTime = System.currentTimeMillis() - startTime;
 
     log.info("Se obtuvieron {} hechos de la API externa ({} página(s) procesada(s))", 
         todos.size(), maxPageToFetch);

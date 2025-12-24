@@ -208,9 +208,6 @@ public class SolicitudService {
         }
     }
 
-    /**
-     * Envía modificación como JSON
-     */
     private void enviarModificacionJSON(Long idSolicitud, SolicitudModificacionDTO dto, String uriBase) {
         try {
             log.debug("Enviando PATCH a {}{} (JSON)", uriBase, idSolicitud);
@@ -235,9 +232,6 @@ public class SolicitudService {
         }
     }
 
-    /**
-     * Envía modificación al endpoint de administración (solo JSON)
-     */
     private void enviarModificacionAdminSolicitud(Long idSolicitud, java.util.Map<String, Object> adminDTO) {
         try {
             log.info("Enviando PATCH a /admin/solicitudes/{} para aceptar con modificaciones", idSolicitud);
@@ -263,9 +257,6 @@ public class SolicitudService {
         }
     }
 
-      /**
-       * Construye un Map para el endpoint de administración con el estado especificado
-       */
       private Map<String, Object> construirMapAdminDTO(SolicitudEdicionFormDTO formDTO, EstadoSolicitud estado) {
         Map<String, Object> adminDTO = new HashMap<>();
         adminDTO.put("estado", estado.name());
@@ -292,9 +283,6 @@ public class SolicitudService {
         return adminDTO;
       }
 
-      /**
-       * Envía la modificación de solicitud al backend (soporta multipart y JSON)
-       */
       private void enviarModificacionSolicitud(Long idSolicitud, SolicitudModificacionDTO dto,
           List<MultipartFile> archivos, String uriBase) {
         if (archivos != null && !archivos.isEmpty()) {
@@ -304,9 +292,6 @@ public class SolicitudService {
         }
       }
 
-      /**
-       * Envía modificación con archivos multipart
-       */
       private void enviarModificacionMultipart(Long idSolicitud, SolicitudModificacionDTO dto,
           List<MultipartFile> archivos, String uriBase) {
         try {

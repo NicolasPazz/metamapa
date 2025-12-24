@@ -4,9 +4,13 @@ import ar.utn.ba.ddsi.agregador.domain.fuente.config.FuenteConfig;
 import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteCron;
 import ar.utn.ba.ddsi.agregador.domain.fuente.impl.FuenteTiempoReal;
+import io.netty.channel.ChannelOption;
+import java.time.Duration;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.netty.http.client.HttpClient;
 
 @Slf4j
 @Component
@@ -85,16 +89,22 @@ public class FuenteFactory {
       throw new IllegalArgumentException("URL de fuente inválida: " + url, e);
     }
     
-    // Construir WebClient
+    // Construir WebClient con timeout configurado
     try {
       log.debug("Construyendo WebClient para fuente {} con URL: {} (host: {})", 
           config.getNombre(), url, host);
       
+      int responseTimeoutSeconds = 120;
+      HttpClient httpClient = HttpClient.create()
+          .responseTimeout(Duration.ofSeconds(responseTimeoutSeconds))  // Timeout de respuesta: 60 segundos
+          .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000);  // Timeout de conexión: 3 segundos
+      
       WebClient webClient = WebClient.builder()
           .baseUrl(url)
+          .clientConnector(new ReactorClientHttpConnector(httpClient))
           .build();
       
-      log.debug("WebClient construido exitosamente para fuente: {}", config.getNombre());
+      log.debug("WebClient construido exitosamente para fuente: {} (con timeout de {}s)", config.getNombre(), responseTimeoutSeconds);
       return createFuenteWithWebClient(config, webClient, url);
     } catch (Exception e) {
       log.error("Error construyendo WebClient para fuente {} con URL {}: {}", 

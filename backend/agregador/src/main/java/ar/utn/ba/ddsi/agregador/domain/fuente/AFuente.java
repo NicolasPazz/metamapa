@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.agregador.domain.fuente;
 
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.dto.PageResponse;
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 import lombok.Getter;
@@ -56,4 +57,20 @@ public abstract class AFuente {
       LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion,
       String modo);
+
+  @Transient
+  public abstract ResponseEntity<PageResponse<HechoDTO>> getAllHechosVisiblesPaginated(
+      String categoria,
+      LocalDate fecha_reporte_desde,
+      LocalDate fecha_reporte_hasta,
+      LocalDateTime fecha_acontecimiento_desde,
+      LocalDateTime fecha_acontecimiento_hasta,
+      String ubicacion,
+      int page,
+      int size);
+
+  @Transient
+  public abstract ResponseEntity<PageResponse<ColeccionDTO>> getAllColeccionesPaginated(
+      int page,
+      int size);
 }

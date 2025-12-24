@@ -97,10 +97,6 @@ function getDinamicaApiBaseUrl() {
   return dinamicaUrl;
 }
 
-/**
- * Redirige a la página de error correspondiente según el código de estado HTTP
- * @param {number} status - Código de estado HTTP
- */
 function redirectToErrorPage(status) {
   // No redirigir si ya estamos en una página de error
   if (window.location.pathname.startsWith('/error') || 
@@ -123,13 +119,6 @@ function redirectToErrorPage(status) {
   window.location.href = errorPage;
 }
 
-/**
- * Wrapper para fetch que maneja errores y redirige a páginas de error
- * @param {string} url - URL a la que hacer la petición
- * @param {object} options - Opciones para fetch
- * @param {boolean} skipErrorRedirect - Si es true, no redirige automáticamente en errores (útil para validaciones)
- * @returns {Promise<Response>} - Respuesta de fetch
- */
 async function safeFetch(url, options = {}, skipErrorRedirect = false) {
   try {
     const response = await fetch(url, options);
@@ -202,11 +191,6 @@ async function apiFetch(endpoint, options = {}) {
   }
 }
 
-/**
- * Convierte una fecha en formato datetime-local (zona local del navegador) a UTC
- * @param {string} datetimeLocalString - Fecha en formato "yyyy-MM-ddTHH:mm" (zona local)
- * @returns {string} - Fecha en formato "yyyy-MM-ddTHH:mm" ajustada a UTC
- */
 function convertLocalToUTC(datetimeLocalString) {
   if (!datetimeLocalString) return null;
   
@@ -223,11 +207,6 @@ function convertLocalToUTC(datetimeLocalString) {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-/**
- * Convierte una fecha UTC a formato datetime-local en la zona horaria del navegador
- * @param {string} utcDateTimeString - Fecha en formato "yyyy-MM-ddTHH:mm" (UTC) o ISO string
- * @returns {string} - Fecha en formato "yyyy-MM-ddTHH:mm" en zona local del navegador
- */
 function convertUTCToLocal(utcDateTimeString) {
   if (!utcDateTimeString) return null;
   
@@ -251,12 +230,6 @@ function convertUTCToLocal(utcDateTimeString) {
   return `${year}-${month}-${day}T${hours}:${minutes}`;
 }
 
-/**
- * Formatea una fecha UTC mostrándola en la zona horaria local del navegador
- * @param {string} utcDateTimeString - Fecha en formato ISO o "yyyy-MM-ddTHH:mm" (UTC)
- * @param {string} format - Formato deseado ('short', 'medium', 'long', o patrón personalizado)
- * @returns {string} - Fecha formateada en zona local
- */
 function formatDateInLocalTimezone(utcDateTimeString, format = 'short') {
   if (!utcDateTimeString) return '';
   
