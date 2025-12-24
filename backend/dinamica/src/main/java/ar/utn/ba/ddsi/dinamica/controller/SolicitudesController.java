@@ -16,11 +16,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import java.io.IOException;
 import java.util.List;
-
-import static ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud.ACEPTADO;
-import static ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud.RECHAZADO;
 
 @RestController
 @RequestMapping("/api/solicitudes")
@@ -149,7 +147,7 @@ public class SolicitudesController {
   public ResponseEntity<SolicitudOutputDTO> aceptarSolicitud(@PathVariable Long id) {
     log.info("[SolicitudesController] - POST - /api/solicitudes/{}/aceptar - id: {}", id, id);
     SolicitudModificarAdminInputDTO solicitudCambio = new SolicitudModificarAdminInputDTO();
-    solicitudCambio.setNuevoEstadoSolicitud(ACEPTADO);
+    solicitudCambio.setNuevoEstadoSolicitud(EstadoSolicitud.ACEPTADO);
     SolicitudOutputDTO resultado = solicitudesService.revisionSolicitud(id, solicitudCambio);
     return ResponseEntity.ok(resultado);
   }
@@ -158,7 +156,7 @@ public class SolicitudesController {
   public ResponseEntity<SolicitudOutputDTO> rechazarSolicitud(@PathVariable Long id) {
     log.info("[SolicitudesController] - POST - /api/solicitudes/{}/rechazar - id: {}", id, id);
     SolicitudModificarAdminInputDTO solicitudCambio = new SolicitudModificarAdminInputDTO();
-    solicitudCambio.setNuevoEstadoSolicitud(RECHAZADO);
+    solicitudCambio.setNuevoEstadoSolicitud(EstadoSolicitud.RECHAZADO);
     SolicitudOutputDTO resultado = solicitudesService.revisionSolicitud(id, solicitudCambio);
     return ResponseEntity.ok(resultado);
   }
