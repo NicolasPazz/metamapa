@@ -4,6 +4,7 @@ import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudEdicionFormDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudModificacionDTO;
 import ar.utn.ba.ddsi.frontend.service.SolicitudService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -22,20 +23,19 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Slf4j
 public class SolicitudController {
     private final SolicitudService solicitudService;
-    public String crearSolicitud(@ModelAttribute("solicitud") SolicitudDTO solicitudDTO,
-                                 BindingResult bindingResult,
-                                 Model model,
-                                 RedirectAttributes redirectAttributes) {
+    
+    @PostMapping
+    public String crearSolicitud(@ModelAttribute("solicitud") SolicitudDTO solicitudDTO) {
         try {
             //solicitudService.crearSolicitud(solicitudDTO);
-            return "redirect:/hechos";
+          return "redirect:/hechos";
         } catch (Exception e) {
-            return "redirect:/hechos";
+          return "redirect:/hechos";
         }
     }
 
-    @PostMapping("/modificar/{idSolicitud}")
-    public ResponseEntity<?> solicitarModificacion(
+  @PostMapping("/modificar/{idSolicitud}")
+  public ResponseEntity<?> solicitarModificacion(
             @PathVariable Long idSolicitud  ,
             @RequestBody @Valid SolicitudModificacionDTO dto) {
         log.info("[SolicitudController] - POST - /solicitudes/modificar/{} - idSolicitud: {}, idContribuyente: {}, nuevoTitulo: {}, nuevoDescripcion: {}, nuevoNombreCategoria: {}, nuevoLatitud: {}, nuevoLongitud: {}, nuevoFechaDeAcontecimiento: {}, nuevoContenidoMultimedia: {}",

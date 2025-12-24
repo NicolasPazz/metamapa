@@ -232,7 +232,6 @@ public class HechosService {
         return ResponseEntity.ok(hechoDTO);
     }
 
-    @SuppressWarnings("unused")
     public ResponseEntity<List<HechoDTO>> getAllPaginated(
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,

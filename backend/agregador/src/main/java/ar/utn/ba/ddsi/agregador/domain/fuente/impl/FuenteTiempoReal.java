@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -45,7 +47,7 @@ public class FuenteTiempoReal extends AFuente {
     StringBuilder queryBuilder = new StringBuilder("/api/hechos");
     boolean firstParam = true;
     if (categoria != null) {
-      queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(java.net.URLEncoder.encode(categoria, java.nio.charset.StandardCharsets.UTF_8));
+      queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(URLEncoder.encode(categoria, StandardCharsets.UTF_8));
       firstParam = false;
     }
     if (fecha_reporte_desde != null) {
@@ -65,7 +67,8 @@ public class FuenteTiempoReal extends AFuente {
       firstParam = false;
     }
     if (ubicacion != null) {
-      queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(java.net.URLEncoder.encode(ubicacion, java.nio.charset.StandardCharsets.UTF_8));
+      queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(URLEncoder.encode(ubicacion, StandardCharsets.UTF_8));
+      firstParam = false;
     }
     
     List<HechoDTO> hechos = webClient.get()
@@ -121,7 +124,7 @@ public class FuenteTiempoReal extends AFuente {
     StringBuilder queryBuilder = new StringBuilder(String.format("/colecciones/%s/hechos", handle));
     boolean firstParam = true;
     if (categoria != null) {
-      queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(java.net.URLEncoder.encode(categoria, java.nio.charset.StandardCharsets.UTF_8));
+      queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(URLEncoder.encode(categoria, StandardCharsets.UTF_8));
       firstParam = false;
     }
     if (fecha_reporte_desde != null) {
@@ -141,11 +144,11 @@ public class FuenteTiempoReal extends AFuente {
       firstParam = false;
     }
     if (ubicacion != null) {
-      queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(java.net.URLEncoder.encode(ubicacion, java.nio.charset.StandardCharsets.UTF_8));
+      queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(URLEncoder.encode(ubicacion, StandardCharsets.UTF_8));
       firstParam = false;
     }
     if (modo != null) {
-      queryBuilder.append(firstParam ? "?" : "&").append("modo=").append(java.net.URLEncoder.encode(modo, java.nio.charset.StandardCharsets.UTF_8));
+      queryBuilder.append(firstParam ? "?" : "&").append("modo=").append(URLEncoder.encode(modo, StandardCharsets.UTF_8));
     }
     
     List<HechoDTO> hechos = webClient.get()

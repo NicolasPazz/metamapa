@@ -59,11 +59,11 @@ public class FuenteFactory {
         host = authority;
       }
       
-      if (host == null || host.isEmpty()) {
+      if (host.isEmpty()) {
         throw new IllegalArgumentException("URL de fuente no tiene host válido: " + url);
       }
       
-      // Extraer path
+      // Extraer path (no se usa en la construcción de baseUrl, solo para logging)
       path = pathStart < url.length() ? url.substring(pathStart) : "";
       // Normalizar path: remover barra final si existe (excepto si es solo "/")
       if (path.endsWith("/") && path.length() > 1) {

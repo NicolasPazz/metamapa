@@ -11,6 +11,7 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import java.util.List;
 
 @Service
 public class WebApiCallerService {
@@ -38,7 +39,7 @@ public class WebApiCallerService {
                 try {
                     AuthResponseDTO newTokens = refreshToken(refreshToken);
                     
-                    if (newTokens == null || newTokens.getAccessToken() == null) {
+                    if (newTokens.getAccessToken() == null) {
                         throw new RuntimeException("Error al refrescar token: respuesta inválida");
                     }
                     
@@ -68,7 +69,7 @@ public class WebApiCallerService {
         );
     }
 
-    public <T> java.util.List<T> getList(String url, Class<T> responseType) {
+    public <T> List<T> getList(String url, Class<T> responseType) {
         return executeWithTokenRetry(accessToken -> 
             webClient
                 .get()
@@ -148,6 +149,9 @@ public class WebApiCallerService {
                     .bodyToMono(AuthResponseDTO.class)
                     .block();
 
+            if (response == null) {
+                throw new RuntimeException("Error al refrescar token: respuesta nula");
+            }
             updateTokensInSession(response.getAccessToken(), response.getRefreshToken());
             return response;
         } catch (Exception e) {

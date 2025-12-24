@@ -1,14 +1,17 @@
 package ar.utn.ba.ddsi.agregador.dto.mapper;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Categoria;
+import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia;
 import ar.utn.ba.ddsi.agregador.domain.ubicacion.Provincia;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
-import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.service.ProvinciaService;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Component;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -17,7 +20,6 @@ public class HechoMapper {
 
     private final ContenidoMultimediaMapper contenidoMultimediaMapper;
     private final TransicionEstadoHechoMapper transicionEstadoHechoMapper;
-    //private final ContribuyenteMapper contribuyenteMapper;
     private final EtiquetaMapper etiquetaMapper;
     private final ProvinciaService provinciaService;
 
@@ -45,7 +47,6 @@ public class HechoMapper {
       dto.setTransiciones(hecho.getTransiciones() != null
           ? transicionEstadoHechoMapper.toDTO(hecho.getTransiciones())
           : List.of());
-      dto.setCategoria(hecho.getCategoria() != null ? hecho.getCategoria().getNombre() : null);
       dto.setCategoria(hecho.getCategoria() != null ? hecho.getCategoria().getNombre() : null);
       dto.setProvincia(hecho.getProvincia() != null ? hecho.getProvincia().getNombre() : null);
       dto.setFuenteId(hecho.getFuenteId());
@@ -85,14 +86,14 @@ public class HechoMapper {
     }
 
     // Mapear multimedia
-    List<ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia> multimedia = null;
+    List<ContenidoMultimedia> multimedia = null;
     if (dto.getMultimedia() != null && !dto.getMultimedia().isEmpty()) {
       multimedia = dto.getMultimedia().stream()
-          .map(m -> ar.utn.ba.ddsi.agregador.domain.hecho.multimedia.ContenidoMultimedia.builder()
+          .map(m -> ContenidoMultimedia.builder()
               .pathArchivo(m.getPathArchivo())
               .tipoContenido(m.getTipoContenido())
               .build())
-          .collect(java.util.stream.Collectors.toList());
+          .collect(Collectors.toList());
     }
 
     return Hecho.builder()
@@ -110,7 +111,7 @@ public class HechoMapper {
         .fuenteId(dto.getFuenteId())
         .idOrigen(dto.getIdOrigen())
         .nombreFuente(dto.getNombreFuente())
-        .multimedia(multimedia != null ? multimedia : new java.util.ArrayList<>())
+        .multimedia(multimedia != null ? multimedia : new ArrayList<>())
         .build();
   }
 

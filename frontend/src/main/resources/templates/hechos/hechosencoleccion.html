@@ -202,8 +202,14 @@
           <div class="form-group" style="margin-top: 10px;">
             <label>Ubicación</label>
             <div style="display: flex; gap: 10px;">
-              <input type="number" step="any" id="edit_latitud" placeholder="Latitud" class="form-control" style="flex: 1; padding: 8px;">
-              <input type="number" step="any" id="edit_longitud" placeholder="Longitud" class="form-control" style="flex: 1; padding: 8px;">
+              <div style="flex: 1;">
+                <label for="edit_latitud" class="sr-only">Latitud</label>
+                <input type="number" step="any" id="edit_latitud" placeholder="Latitud" class="form-control" style="padding: 8px;">
+              </div>
+              <div style="flex: 1;">
+                <label for="edit_longitud" class="sr-only">Longitud</label>
+                <input type="number" step="any" id="edit_longitud" placeholder="Longitud" class="form-control" style="padding: 8px;">
+              </div>
             </div>
           </div>
 
@@ -363,7 +369,11 @@
       const hash = window.location.hash;
       if (hash.startsWith('#hecho')) {
         const hechoId = hash.replace('#hecho', '');
-        openHechoDetailPanel(hechoId);
+        // Buscar el elemento del hecho en el DOM
+        const hechoElement = document.querySelector(`[data-hecho-id="${hechoId}"]`);
+        if (hechoElement) {
+          openHechoDetailPanel(hechoElement);
+        }
       }
     });
 
@@ -640,8 +650,7 @@
       if (hecho.fecha_acontecimiento) {
         // Convertir fecha UTC a zona local del navegador para mostrar en el input
         let fechaIso = hecho.fecha_acontecimiento.substring(0, 16);
-        const fechaLocal = convertUTCToLocal(fechaIso);
-        document.getElementById('edit_fecha').value = fechaLocal;
+        document.getElementById('edit_fecha').value = convertUTCToLocal(fechaIso);
       }
 
       document.getElementById('edit_multimedia').value = '';
@@ -747,57 +756,6 @@
       }));
     }
 
-    // Manejo del envío del formulario de edición
-    document.addEventListener('DOMContentLoaded', function() {
-      const formEdicion = document.getElementById('solicitudEdicionForm');
-
-      if (formEdicion) {
-        formEdicion.addEventListener('submit', async function(e) {
-          e.preventDefault();
-
-          const submitBtn = document.getElementById('submit_edicion');
-          submitBtn.disabled = true;
-          submitBtn.textContent = 'Enviando...';
-
-          // Recopilar datos
-          const solicitudData = {
-            tipo_solicitud: 'EDICION', // Importante para que el backend sepa qué es
-            hecho_id: document.getElementById('edit_hecho_id').value || null,
-            fuente_id: document.getElementById('edit_fuente_id').value || null,
-            id_origen: document.getElementById('edit_id_origen').value || null,
-            nuevos_datos: {
-              titulo: document.getElementById('edit_titulo').value,
-              categoria: document.getElementById('edit_categoria').value,
-              descripcion: document.getElementById('edit_descripcion').value,
-              latitud: document.getElementById('edit_latitud').value,
-              longitud: document.getElementById('edit_longitud').value
-            }
-          };
-
-          try {
-            const response = await apiFetch('/solicitudes', {
-              method: 'PUT',
-              body: JSON.stringify(solicitudData)
-            });
-
-            if (response.ok) {
-              showToast('Solicitud de edición enviada correctamente.', 'success');
-              closeSolicitudEdicionModal();
-
-              closeHechoDetailPanel();
-            } else {
-              const text = await response.text();
-              showToast('Error al enviar solicitud: ' + text, 'error');
-            }
-          } catch (error) {
-            showToast('Error de conexión: ' + error.message, 'error');
-          } finally {
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Enviar Cambios';
-          }
-        });
-      }
-    });
     function closeSolicitudEdicionModal() {
       const modal = document.getElementById('solicitudEdicionModal');
       const form = document.getElementById('solicitudEdicionForm');

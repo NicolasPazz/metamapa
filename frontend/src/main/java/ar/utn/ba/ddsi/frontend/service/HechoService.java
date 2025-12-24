@@ -19,11 +19,11 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
-import java.util.Map;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -47,11 +47,8 @@ public class HechoService {
             HttpServletRequest request = attributes.getRequest();
             Object userIdObj = request.getSession().getAttribute("userId");
             if (userIdObj != null) {
-                Long userId = userIdObj instanceof Long ? (Long) userIdObj : Long.valueOf(userIdObj.toString());
-                log.debug("HechoService.obtenerContribuyenteIdDeSesion - Usuario autenticado con ID: {}", userId);
-                return userId;
+                return userIdObj instanceof Long ? (Long) userIdObj : Long.valueOf(userIdObj.toString());
             }
-            log.debug("HechoService.obtenerContribuyenteIdDeSesion - Usuario no autenticado (solicitud anónima)");
             return null;
         } catch (Exception e) {
             log.warn("No se pudo obtener contribuyente_id de la sesión: {}", e.getMessage());
@@ -77,11 +74,7 @@ public class HechoService {
         hechoOutput.setLatitud(hechoInput.getLatitud());
         hechoOutput.setLongitud(hechoInput.getLongitud());
         hechoOutput.setTitulo(hechoInput.getTitulo());
-        hechoOutput.setIdContribuyente(obtenerContribuyenteIdDeSesion()); // null para anónimo
-
-        log.info("HechoService.crearHecho - DTO creado - Título: {}, Latitud: {}, Longitud: {}, Contribuyente: {}",
-                hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(),
-                hechoOutput.getIdContribuyente());
+        hechoOutput.setIdContribuyente(obtenerContribuyenteIdDeSesion());
         
         if (hechoInput.getFechaAcontecimiento() != null) {
             hechoOutput.setFechaDeAcontecimiento(hechoInput.getFechaAcontecimiento());
@@ -92,7 +85,6 @@ public class HechoService {
         hechoOutput.setCategoria(hechoInput.getCategoria());
         
         if (hechoInput.getContenidoMultimedia() != null && !hechoInput.getContenidoMultimedia().isEmpty()) {
-            // Validar cantidad máxima de archivos
             long archivosNoVacios = hechoInput.getContenidoMultimedia().stream()
                     .filter(archivo -> archivo != null && !archivo.isEmpty())
                     .count();
@@ -102,35 +94,22 @@ public class HechoService {
             
             MultipartBodyBuilder builder = new MultipartBodyBuilder();
             
-            log.info("HechoService.crearHecho - Enviando solicitud MULTIPART con {} archivos",
-                    hechoInput.getContenidoMultimedia().size());
-            log.info("HechoService.crearHecho - Datos: Título={}, Latitud={}, Longitud={}, Categoría={}, Fecha={}",
-                    hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(),
-                    hechoOutput.getCategoria(), hechoOutput.getFechaDeAcontecimiento());
-            
             try {
-                String solicitudJson = objectMapper.writeValueAsString(hechoOutput); // Backend espera String
-                log.debug("HechoService.crearHecho - JSON serializado: {}", solicitudJson);
-
+                String solicitudJson = objectMapper.writeValueAsString(hechoOutput);
                 builder.part("solicitud", solicitudJson);
 
                 for (MultipartFile archivo : hechoInput.getContenidoMultimedia()) {
                     if (!archivo.isEmpty()) {
-                        log.debug("HechoService.crearHecho - Agregando archivo: {} ({} bytes)",
-                                archivo.getOriginalFilename(), archivo.getSize());
                         builder.part("archivos", archivo.getResource());
                     }
                 }
 
-                log.info("HechoService.crearHecho - Enviando POST a /api/solicitudes (MULTIPART)");
-                String response = webClient2.post().uri("/solicitudes")
+                webClient2.post().uri("/solicitudes")
                         .contentType(MediaType.MULTIPART_FORM_DATA)
                         .body(BodyInserters.fromMultipartData(builder.build()))
                         .retrieve()
                         .bodyToMono(String.class)
                         .block();
-
-                log.info("HechoService.crearHecho - Respuesta recibida del backend: {}", response);
             } catch (WebClientResponseException e) {
                 log.error("HechoService.crearHecho - Error del backend (status {}): {}",
                         e.getStatusCode(), e.getResponseBodyAsString());
@@ -141,21 +120,13 @@ public class HechoService {
                 throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
             }
         } else {
-            log.info("HechoService.crearHecho - Enviando solicitud JSON (sin archivos)");
-            log.info("HechoService.crearHecho - Datos: Título={}, Latitud={}, Longitud={}, Categoría={}, Fecha={}",
-                    hechoOutput.getTitulo(), hechoOutput.getLatitud(), hechoOutput.getLongitud(),
-                    hechoOutput.getCategoria(), hechoOutput.getFechaDeAcontecimiento());
-
             try {
-                log.info("HechoService.crearHecho - Enviando POST a /api/solicitudes (JSON)");
-                String response = webClient2.post().uri("/solicitudes")
+                webClient2.post().uri("/solicitudes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .bodyValue(hechoOutput)
                         .retrieve()
                         .bodyToMono(String.class)
                         .block();
-
-                log.info("HechoService.crearHecho - Respuesta recibida del backend: {}", response);
             } catch (WebClientResponseException e) {
                 log.error("HechoService.crearHecho - Error del backend (status {}): {}",
                         e.getStatusCode(), e.getResponseBodyAsString());
@@ -166,36 +137,6 @@ public class HechoService {
                 throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
             }
         }
-    }
-
-    @SuppressWarnings("unused")
-    public List<HechoDTO> getAllHechosFilter(String ubicacion, LocalDate fecha_hasta, LocalDate fecha_desde, String categoria ) {
-        LocalDateTime fechaDesdeDateTime = fecha_desde != null ? fecha_desde.atStartOfDay() : null;
-        LocalDateTime fechaHastaDateTime = fecha_hasta != null ? fecha_hasta.atTime(23, 59, 59) : null;
-
-        List<HechoDTO> hechos = webClient.get()
-                .uri(uriBuilder -> {
-                    uriBuilder.path("/hechos");
-                    if (categoria != null && !categoria.isEmpty()) {
-                        uriBuilder.queryParam("categoria", categoria);
-                    }
-                    if (ubicacion != null && !ubicacion.isEmpty()) {
-                        uriBuilder.queryParam("ubicacion", ubicacion);
-                    }
-                    if (fechaDesdeDateTime != null) {
-                        uriBuilder.queryParam("fecha_acontecimiento_desde", fechaDesdeDateTime.toString());
-                    }
-                    if (fechaHastaDateTime != null) {
-                        uriBuilder.queryParam("fecha_acontecimiento_hasta", fechaHastaDateTime.toString());
-                    }
-                    return uriBuilder.build();
-                })
-                .retrieve()
-                .bodyToFlux(HechoDTO.class)
-                .collectList()
-                .block();
-
-        return hechos != null ? hechos : List.of();
     }
 
     public List<String> obtenerCategoriasUnicas(){
@@ -236,7 +177,7 @@ public class HechoService {
             if (!file.isEmpty()) {
                 ContenidoMultimediaDTO dto = new ContenidoMultimediaDTO();
                 String mimeType = file.getContentType();
-                String tipoContenido = convertirMimeTypeATipoContenido(mimeType); // Convierte MIME a enum TipoContenido
+                String tipoContenido = convertirMimeTypeATipoContenido(mimeType);
                 dto.setTipoContenido(tipoContenido);
                 dto.setPathArchivo(file.getOriginalFilename());
                 MultimediaLista.add(dto);
@@ -258,7 +199,7 @@ public class HechoService {
         } else if (mimeType.startsWith("audio/")) {
             return "AUDIO";
         } else {
-            return "IMAGEN"; // Default si no se reconoce
+            return "IMAGEN";
         }
     }
 
@@ -270,7 +211,7 @@ public class HechoService {
                     .bodyToMono(HechoDTO.class)
                     .block();
         } catch (Exception e) {
-            return null; // Landing mostrará mensaje de "no hay hechos"
+            return null;
         }
     }
 

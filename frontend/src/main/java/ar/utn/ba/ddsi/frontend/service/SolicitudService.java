@@ -20,8 +20,9 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -49,8 +50,7 @@ public class SolicitudService {
             HttpServletRequest request = attributes.getRequest();
             Object userIdObj = request.getSession().getAttribute("userId");
             if (userIdObj != null) {
-                Long userId = userIdObj instanceof Long ? (Long) userIdObj : Long.valueOf(userIdObj.toString());
-                return userId;
+                return userIdObj instanceof Long ? (Long) userIdObj : Long.valueOf(userIdObj.toString());
             }
             return null;
         } catch (Exception e) {
@@ -102,7 +102,7 @@ public class SolicitudService {
                     .retrieve()
                     .onStatus(
                             status -> status.is4xxClientError() || status.is5xxServerError(),
-                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
                     )
                     .toBodilessEntity()
                     .block();
@@ -169,36 +169,42 @@ public class SolicitudService {
                 String solicitudJson = objectMapper.writeValueAsString(dto); // Backend espera String
                 log.debug("SolicitudService.procesarSolicitudEdicionConMultipart - JSON serializado: {}", solicitudJson);
 
-            MultipartBodyBuilder builder = new MultipartBodyBuilder();
-            builder.part("solicitud", solicitudJson);
+                MultipartBodyBuilder builder = new MultipartBodyBuilder();
+                builder.part("solicitud", solicitudJson);
 
-            for (MultipartFile archivo : archivos) {
-                if (archivo != null && !archivo.isEmpty()) {
-                    log.debug("Agregando archivo: {} ({} bytes)", archivo.getOriginalFilename(), archivo.getSize());
-                    builder.part("archivos", archivo.getResource());
+                for (MultipartFile archivo : formDTO.getArchivos()) {
+                    if (archivo != null && !archivo.isEmpty()) {
+                        log.debug("Agregando archivo: {} ({} bytes)", archivo.getOriginalFilename(), archivo.getSize());
+                        builder.part("archivos", archivo.getResource());
+                    }
                 }
-            }
 
-            log.info("Enviando PATCH a {}{} (MULTIPART)", uriBase, idSolicitud);
-            webClient2.patch()
-                    .uri(uriBase + idSolicitud)
-                    .contentType(MediaType.MULTIPART_FORM_DATA)
-                    .body(BodyInserters.fromMultipartData(builder.build()))
-                    .retrieve()
-                    .onStatus(
-                            status -> status.is4xxClientError() || status.is5xxServerError(),
-                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
-                    )
-                    .toBodilessEntity()
-                    .block();
-            log.debug("PATCH multipart exitoso para solicitud ID: {}", idSolicitud);
-        } catch (WebClientResponseException e) {
-            log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}",
-                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
-            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
-        } catch (Exception e) {
-            log.error("Error al enviar solicitud multipart para ID: {}", idSolicitud, e);
-            throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
+                String uriBase = "/solicitudes/";
+                log.info("Enviando PATCH a {}{} (MULTIPART)", uriBase, idSolicitud);
+                webClient2.patch()
+                        .uri(uriBase + idSolicitud)
+                        .contentType(MediaType.MULTIPART_FORM_DATA)
+                        .body(BodyInserters.fromMultipartData(builder.build()))
+                        .retrieve()
+                        .onStatus(
+                                status -> status.is4xxClientError() || status.is5xxServerError(),
+                                response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                        )
+                        .toBodilessEntity()
+                        .block();
+                log.debug("PATCH multipart exitoso para solicitud ID: {}", idSolicitud);
+            } catch (WebClientResponseException e) {
+                log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}",
+                        idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
+                throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+            } catch (Exception e) {
+                log.error("Error al enviar solicitud multipart para ID: {}", idSolicitud, e);
+                throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
+            }
+        } else {
+            // Si no hay archivos, enviar como JSON
+            String uriBase = "/solicitudes/";
+            enviarModificacionJSON(idSolicitud, dto, uriBase);
         }
     }
 
@@ -214,7 +220,7 @@ public class SolicitudService {
                     .retrieve()
                     .onStatus(
                             status -> status.is4xxClientError() || status.is5xxServerError(),
-                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
                     )
                     .toBodilessEntity()
                     .block();
@@ -242,7 +248,7 @@ public class SolicitudService {
                     .retrieve()
                     .onStatus(
                             status -> status.is4xxClientError() || status.is5xxServerError(),
-                            response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
                     )
                     .toBodilessEntity()
                     .block();
@@ -260,8 +266,8 @@ public class SolicitudService {
       /**
        * Construye un Map para el endpoint de administración con el estado especificado
        */
-      private java.util.Map<String, Object> construirMapAdminDTO(SolicitudEdicionFormDTO formDTO, EstadoSolicitud estado) {
-        java.util.Map<String, Object> adminDTO = new java.util.HashMap<>();
+      private Map<String, Object> construirMapAdminDTO(SolicitudEdicionFormDTO formDTO, EstadoSolicitud estado) {
+        Map<String, Object> adminDTO = new HashMap<>();
         adminDTO.put("estado", estado.name());
 
         if (formDTO.getTitulo() != null && !formDTO.getTitulo().trim().isEmpty()) {
@@ -325,7 +331,7 @@ public class SolicitudService {
               .retrieve()
               .onStatus(
                   status -> status.is4xxClientError() || status.is5xxServerError(),
-                  response -> response.bodyToMono(String.class).map(body -> new RuntimeException(body))
+                  response -> response.bodyToMono(String.class).map(RuntimeException::new)
               )
               .toBodilessEntity()
               .block();

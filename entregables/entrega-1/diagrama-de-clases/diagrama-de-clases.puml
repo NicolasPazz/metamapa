@@ -1,0 +1,218 @@
+@startuml
+' IMPORTANTE: actualizar la url en la previsualización si se modifica el .puml
+
+' ==== INTERFACES ====
+
+interface Criterio {
+    + cumple(hecho: Hecho): Boolean
+}
+
+interface Validacion {
+    + cumple(solicitud: SolicitudDeEliminacion): Boolean
+}
+
+' ==== CLASES ====
+
+class Categoria {
+    - categoria: String
+}
+
+class Coleccion {
+    - criterioDePertenencia: Criterio
+    - descripcion: String
+    - fuente: Fuente
+    - titulo: String
+
+    + importarHechosVisibles(): List<Hecho>
+    + obtenerHechos(): List<Hecho>
+}
+
+Coleccion --> Criterio
+Coleccion --> Fuente
+
+class ContenidoMultimedia {
+    - pathArchivo: String
+    - tipoContenido: TipoContenido
+}
+
+ContenidoMultimedia --> TipoContenido
+
+class Contribuyente {
+    - apellido: String
+    - fechaDeNacimiento: LocalDate
+    - nombre: String
+
+    + edad(): Int
+    + esAnonimo(): Boolean
+    + solicitarEliminacion(hecho: Hecho, fundamentos: String): SolicitudDeEliminacion
+    + subir(hecho: Hecho): Void
+}
+
+Contribuyente ..> Hecho
+
+class CriterioCombinado implements Criterio {
+    - criterios: List<Criterio>
+
+    + agregarCriterio(criterio: Criterio): Void
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioCombinado --> " * " Criterio
+
+class CriterioFechas implements Criterio {
+    - fechaFinal: LocalDate
+    - fechaInicial: LocalDate
+    - tipoFecha: TipoFecha
+
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioFechas --> TipoFecha
+
+class CriterioIgualdad implements Criterio {
+    - cadenaAComparar: String
+    - tipoDeDato: TipoDato
+
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioIgualdad --> TipoDato
+
+class CriterioLugar implements Criterio {
+    - lat: Double
+    - lng: Double
+
+    + cumple(hecho: Hecho): Boolean
+}
+
+class CriterioOrigen implements Criterio {
+    - origen: OrigenHecho
+
+    + cumple(hecho: Hecho): Boolean
+}
+
+CriterioOrigen --> OrigenHecho
+
+class DataHecho {
+    - categoria: Categoria
+    - descripcion: String
+    - fechaDeAcontecimiento: LocalDate
+    - fechaDeCarga: LocalDate
+    - latitud: Double
+    - longitud: Double
+    - titulo: String
+}
+
+DataHecho --> Categoria
+
+class Etiqueta {
+    - nombre: String
+}
+
+class Fuente {
+    - pathArchivo: String
+
+    + importarHechos(): List<Hecho>
+}
+
+class Hecho {
+    - contenidoMultimedia: List<ContenidoMultimedia>
+    - contribuyente: Contribuyente
+    - data: DataHecho
+    - etiquetas: Set<Etiqueta>
+    - estado: EstadoHecho
+    - origen: OrigenHecho
+    - transicionesDeEstado: List<TransicionEstadoHecho>
+
+    + agregarEtiqueta(unaEtiqueta: Etiqueta): Void
+    + contieneEtiqueta(unaEtiqueta: Etiqueta): Boolean
+    + esDuplicadoDe(otroHecho: Hecho): Boolean
+    + esVisible(): Boolean
+    + ocultar(): Void
+}
+
+Hecho --> Contribuyente
+Hecho *-- DataHecho
+Hecho --> EstadoHecho
+Hecho --> OrigenHecho
+Hecho --> " * " ContenidoMultimedia
+Hecho --> " * " Etiqueta
+Hecho --> " * " TransicionEstadoHecho
+
+class SolicitudDeEliminacion {
+    - contribuyente: Contribuyente
+    - hecho: Hecho
+    - estado: EstadoSolicitud
+    - fecha: LocalDate
+    - textoFundamentos: String
+    - transicionesDeEstado: List<TransicionEstadoSolicitud>
+    - validaciones: Set<Validacion>
+
+    + aceptar(): Void
+    + rechazar(): Void
+}
+
+SolicitudDeEliminacion --> Contribuyente
+SolicitudDeEliminacion --> EstadoSolicitud
+SolicitudDeEliminacion --> Hecho
+SolicitudDeEliminacion --> " * " TransicionEstadoSolicitud
+SolicitudDeEliminacion --> " * " Validacion
+
+class TransicionEstadoHecho {
+    - estadoFinal: EstadoHecho
+    - fecha: LocalDate
+}
+
+TransicionEstadoHecho --> EstadoHecho
+
+class TransicionEstadoSolicitud {
+    - estadoFinal: EstadoSolicitud
+    - fecha: LocalDate
+}
+
+TransicionEstadoSolicitud --> EstadoSolicitud
+
+class ValidacionLongitud implements Validacion {
+    - longitud: Int
+
+    + cumple(solicitud: SolicitudDeEliminacion): Boolean
+}
+
+' ==== ENUMS ====
+
+enum EstadoHecho {
+    OCULTO
+    VISIBLE
+}
+
+enum EstadoSolicitud {
+    ACEPTADA
+    PENDIENTE
+    RECHAZADA
+}
+
+enum OrigenHecho {
+    CONTRIBUYENTE
+    DATASET
+    MANUAL
+}
+
+enum TipoContenido {
+    AUDIO
+    IMAGEN
+    VIDEO
+}
+
+enum TipoDato {
+    CATEGORIA
+    DESCRIPCION
+    ETIQUETA
+    TITULO
+}
+
+enum TipoFecha {
+    ACONTECIMIENTO
+    CARGA
+}
+
+@enduml

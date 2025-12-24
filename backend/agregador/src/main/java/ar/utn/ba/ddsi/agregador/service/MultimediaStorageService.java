@@ -7,8 +7,10 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -25,7 +27,7 @@ public class MultimediaStorageService {
         
         log.debug("Intentando cargar archivo: {} desde directorio: {}", nombreArchivo, directorio);
         log.debug("Path completo del archivo: {}", archivo.toAbsolutePath());
-        log.debug("Archivo existe: {}", java.nio.file.Files.exists(archivo));
+        log.debug("Archivo existe: {}", Files.exists(archivo));
         
         Path directorioBase = directorio.toAbsolutePath().normalize();
         Path archivoNormalizado = archivo.toAbsolutePath().normalize();
@@ -41,9 +43,11 @@ public class MultimediaStorageService {
         } else {
             log.error("No se pudo leer el archivo: {} desde: {}", nombreArchivo, archivo.toAbsolutePath());
             try {
-                if (java.nio.file.Files.exists(directorio)) {
-                    log.debug("Archivos en directorio {}: {}", directorio, 
-                        java.nio.file.Files.list(directorio).map(Path::getFileName).map(Path::toString).collect(java.util.stream.Collectors.joining(", ")));
+                if (Files.exists(directorio)) {
+                    try (var stream = Files.list(directorio)) {
+                        log.debug("Archivos en directorio {}: {}", directorio, 
+                            stream.map(Path::getFileName).map(Path::toString).collect(Collectors.joining(", ")));
+                    }
                 } else {
                     log.error("El directorio no existe: {}", directorio.toAbsolutePath());
                 }
@@ -75,18 +79,18 @@ public class MultimediaStorageService {
             Path currentDir = Paths.get(userDir);
             log.debug("Directorio de trabajo actual: {}", currentDir);
             
-            Path projectRoot = currentDir;
+            Path projectRoot;
             int maxDepth = 10;
             int depth = 0;
             
             Path backendDir = currentDir.resolve("backend");
-            if (java.nio.file.Files.exists(backendDir) && java.nio.file.Files.isDirectory(backendDir)) {
+            if (Files.exists(backendDir) && Files.isDirectory(backendDir)) {
                 projectRoot = currentDir;
                 log.debug("Encontrado 'backend' como subdirectorio de: {}", currentDir);
             } else {
                 while (depth < maxDepth && projectRoot != null && projectRoot.getParent() != null) {
                     backendDir = projectRoot.resolve("backend");
-                    if (java.nio.file.Files.exists(backendDir) && java.nio.file.Files.isDirectory(backendDir)) {
+                    if (Files.exists(backendDir) && Files.isDirectory(backendDir)) {
                         log.debug("Encontrado 'backend' como subdirectorio de: {}", projectRoot);
                         break;
                     }

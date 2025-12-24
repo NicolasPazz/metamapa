@@ -154,8 +154,6 @@ public class AdminService {
                 .retrieve()
                 .bodyToMono(Void.class)
                 .block();
- // /api/estadisticas
-        log.info("Actualización de estadísticas solicitada");
 
     }
 

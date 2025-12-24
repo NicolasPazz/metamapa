@@ -12,6 +12,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.Base64;
 import java.util.UUID;
 
 @Service
@@ -52,7 +53,7 @@ public class MultimediaStorageService {
         Files.createDirectories(directorio);
         log.debug("Guardando archivo en directorio: {}", directorio.toAbsolutePath());
 
-        String nombreArchivo = UUID.randomUUID().toString() + "." + extension;
+        String nombreArchivo = UUID.randomUUID() + "." + extension;
         Path destino = directorio.resolve(nombreArchivo);
         Files.copy(archivo.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
         log.info("Archivo guardado exitosamente: {} en {}", nombreArchivo, destino.toAbsolutePath());
@@ -74,17 +75,12 @@ public class MultimediaStorageService {
             log.debug("Extensión inferida desde nombreOriginal: {}", extension);
         } else {
             if (tipoContenido != null) {
-                switch (tipoContenido.toUpperCase()) {
-                    case "IMAGEN":
-                        extension = "jpg";
-                        break;
-                    case "VIDEO":
-                        extension = "mp4";
-                        break;
-                    case "AUDIO":
-                        extension = "mp3";
-                        break;
-                }
+                extension = switch (tipoContenido.toUpperCase()) {
+                    case "IMAGEN" -> "jpg";
+                    case "VIDEO" -> "mp4";
+                    case "AUDIO" -> "mp3";
+                    default -> extension;
+                };
                 log.debug("Extensión inferida desde tipoContenido: {}", extension);
             }
         }
@@ -108,12 +104,12 @@ public class MultimediaStorageService {
         Files.createDirectories(directorio);
         log.debug("Directorio creado/verificado: {}", directorio.toAbsolutePath());
 
-        String nombreArchivo = UUID.randomUUID().toString() + "." + extension;
+        String nombreArchivo = UUID.randomUUID() + "." + extension;
         Path destino = directorio.resolve(nombreArchivo);
         log.info("Guardando archivo desde base64 - nombre: {}, destino: {}", nombreArchivo, destino.toAbsolutePath());
         
         try {
-            byte[] bytes = java.util.Base64.getDecoder().decode(contenidoBase64);
+            byte[] bytes = Base64.getDecoder().decode(contenidoBase64);
             log.debug("Base64 decodificado, tamaño bytes: {}", bytes.length);
             
             Files.write(destino, bytes);
@@ -151,9 +147,10 @@ public class MultimediaStorageService {
     public Resource cargarArchivo(String nombreArchivo) throws IOException {
         validarNombreArchivo(nombreArchivo);
         
-        Path archivo = obtenerDirectorio().resolve(nombreArchivo);
+        Path directorio = obtenerDirectorio();
+        Path archivo = directorio.resolve(nombreArchivo);
         
-        Path directorioBase = obtenerDirectorio().toAbsolutePath().normalize();
+        Path directorioBase = directorio.toAbsolutePath().normalize();
         Path archivoNormalizado = archivo.toAbsolutePath().normalize();
         if (!archivoNormalizado.startsWith(directorioBase)) {
             throw new SecurityException("Intento de acceso a archivo fuera del directorio permitido: " + nombreArchivo);
@@ -189,18 +186,18 @@ public class MultimediaStorageService {
             Path currentDir = Paths.get(userDir);
             log.debug("Directorio de trabajo actual: {}", currentDir);
             
-            Path projectRoot = currentDir;
+            Path projectRoot;
             int maxDepth = 10;
             int depth = 0;
             
             Path backendDir = currentDir.resolve("backend");
-            if (java.nio.file.Files.exists(backendDir) && java.nio.file.Files.isDirectory(backendDir)) {
+            if (Files.exists(backendDir) && Files.isDirectory(backendDir)) {
                 projectRoot = currentDir;
                 log.debug("Encontrado 'backend' como subdirectorio de: {}", currentDir);
             } else {
                 while (depth < maxDepth && projectRoot != null && projectRoot.getParent() != null) {
                     backendDir = projectRoot.resolve("backend");
-                    if (java.nio.file.Files.exists(backendDir) && java.nio.file.Files.isDirectory(backendDir)) {
+                    if (Files.exists(backendDir) && Files.isDirectory(backendDir)) {
                         log.debug("Encontrado 'backend' como subdirectorio de: {}", projectRoot);
                         break;
                     }

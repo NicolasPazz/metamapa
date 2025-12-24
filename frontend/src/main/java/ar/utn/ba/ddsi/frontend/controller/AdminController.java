@@ -13,6 +13,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -47,7 +48,7 @@ public class AdminController {
             int endIndex = Math.min(5, hechos.size());
             model.addAttribute("hechosLimit", hechos.subList(3, endIndex));
         } else {
-            model.addAttribute("hechosLimit", java.util.Collections.emptyList());
+            model.addAttribute("hechosLimit", Collections.emptyList());
         }
         model.addAttribute("colecciones", colecciones);
         model.addAttribute("hechos", hechos);
@@ -130,10 +131,9 @@ public class AdminController {
     public String agregarEtiquetas(@RequestParam("hechoId") Long hechoId,
                                    @RequestParam("etiquetas") List<String> etiquetas,
                                    RedirectAttributes redirectAttributes) {
-        log.info("POST /admin/agregar-etiquetas - hechoId: {}, etiquetas: {}", hechoId, etiquetas);
+        log.info("[AdminController] - POST - /admin/agregar-etiquetas - hechoId: {}, etiquetas: {}", hechoId, etiquetas);
         try {
             adminService.agregarEtiquetasAHecho(hechoId, etiquetas);
-            log.info("Etiquetas agregadas correctamente al hecho {}", hechoId);
             redirectAttributes.addFlashAttribute("success", "Etiquetas agregadas correctamente!");
         } catch (Exception e) {
             log.error("Error al agregar etiquetas al hecho {}", hechoId, e);
@@ -148,15 +148,14 @@ public class AdminController {
 
         model.addAttribute("solicitudes", solicitudes);
 
-        return "admin/solicitudesv2";
+        return "admin/solicitudes";
     }
 
     @PostMapping("/admin/actualizar-agregador")
     public String actualizarAgregador(RedirectAttributes redirectAttributes) {
-      log.info("POST /admin/actualizar-agregador - Ejecutando scheduler del agregador");
+      log.info("[AdminController] - POST - /admin/actualizar-agregador");
       try {
         adminService.ejecutarSchedulerAgregador();
-        log.info("Scheduler del agregador ejecutado correctamente");
         redirectAttributes.addFlashAttribute("success", "Agregador actualizado correctamente!");
       } catch (Exception e) {
         log.error("Error al ejecutar scheduler del agregador", e);
@@ -167,10 +166,9 @@ public class AdminController {
 
     @PostMapping("/admin/actualizar-estadisticas")
     public String actualizarEstadisticas(RedirectAttributes redirectAttributes) {
-      log.info("POST /admin/actualizar-estadisticas - Actualizando estadísticas");
+      log.info("[AdminController] - POST - /admin/actualizar-estadisticas");
       try {
         adminService.actualizarEstadisticas();
-        log.info("Estadísticas actualizadas ");
         redirectAttributes.addFlashAttribute("success", "Estadísticas actualizadas correctamente!");
       } catch (Exception e) {
         log.error("Error al actualizar estadísticas", e);

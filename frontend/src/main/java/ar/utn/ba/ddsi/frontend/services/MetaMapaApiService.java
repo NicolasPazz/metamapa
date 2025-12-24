@@ -2,7 +2,6 @@ package ar.utn.ba.ddsi.frontend.services;
 
 import ar.utn.ba.ddsi.frontend.dto.AuthResponseDTO;
 import ar.utn.ba.ddsi.frontend.dto.RolesPermisosDTO;
-import ar.utn.ba.ddsi.frontend.exceptions.NotFoundException;
 import ar.utn.ba.ddsi.frontend.services.internal.WebApiCallerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +33,7 @@ public class MetaMapaApiService {
 
     public AuthResponseDTO login(String username, String password) {
         try {
-            AuthResponseDTO response = webClient
+            return webClient
                     .post()
                     .uri(authServiceUrl + "/auth")
                     .bodyValue(Map.of(
@@ -44,7 +43,6 @@ public class MetaMapaApiService {
                     .retrieve()
                     .bodyToMono(AuthResponseDTO.class)
                     .block();
-            return response;
         } catch (WebClientResponseException e) {
             log.error(e.getMessage());
             if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
@@ -78,7 +76,7 @@ public class MetaMapaApiService {
             } else {
                 try {
                     String responseBody = e.getResponseBodyAsString();
-                    if (responseBody != null && !responseBody.isEmpty()) {
+                    if (!responseBody.isEmpty()) {
                         if (responseBody.contains("\"error\"")) {
                             int errorStart = responseBody.indexOf("\"error\"");
                             int valueStart = responseBody.indexOf(":", errorStart) + 1;
@@ -104,12 +102,11 @@ public class MetaMapaApiService {
 
     public RolesPermisosDTO getRolesPermisos(String accessToken) {
         try {
-            RolesPermisosDTO response = webApiCallerService.getWithAuth(
+            return webApiCallerService.getWithAuth(
                 authServiceUrl + "/auth/user/roles-permisos",
                 accessToken,
                 RolesPermisosDTO.class
             );
-            return response;
         } catch (Exception e) {
             log.error(e.getMessage());
             throw new RuntimeException("Error al obtener roles y permisos: " + e.getMessage(), e);

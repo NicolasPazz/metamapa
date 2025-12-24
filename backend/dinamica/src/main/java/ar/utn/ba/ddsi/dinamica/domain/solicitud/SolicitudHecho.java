@@ -103,7 +103,7 @@ public class SolicitudHecho {
       throw new IllegalStateException("Las solicitudes anónimas no pueden ser modificadas");
     }
 
-    if (idContribuyenteQueModifica == null || !this.idContribuyente.equals(idContribuyenteQueModifica)) {
+    if (idContribuyenteQueModifica == null || !idContribuyente.equals(idContribuyenteQueModifica)) {
       throw new IllegalArgumentException("No está autorizado para modificar esta solicitud");
     }
 
@@ -140,7 +140,7 @@ public class SolicitudHecho {
     dto.setLatitud(this.getLatitud());
     dto.setLongitud(this.getLongitud());
     dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento());
-    if (this.getMultimedia() != null && !this.getMultimedia().isEmpty()) {
+    if (!this.getMultimedia().isEmpty()) {
       dto.setContenidoMultimedia(this.getMultimedia().stream()
           .map(ContenidoMultimedia::toOutputDTO)
           .toList());

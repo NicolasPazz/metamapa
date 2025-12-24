@@ -6,7 +6,6 @@ import ar.utn.ba.ddsi.users.repositories.IUsuariosRepository;
 import jakarta.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
@@ -20,16 +19,19 @@ public class AdminInitializer {
 
     private static final Logger log = LoggerFactory.getLogger(AdminInitializer.class);
 
-    @Autowired
-    private IUsuariosRepository usuariosRepository;
-
-    @Value("${admin.username:}")
-    private String adminUsername;
-
-    @Value("${admin.password:}")
-    private String adminPassword;
-
+    private final IUsuariosRepository usuariosRepository;
+    private final String adminUsername;
+    private final String adminPassword;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+
+    public AdminInitializer(
+            IUsuariosRepository usuariosRepository,
+            @Value("${admin.username:}") String adminUsername,
+            @Value("${admin.password:}") String adminPassword) {
+        this.usuariosRepository = usuariosRepository;
+        this.adminUsername = adminUsername;
+        this.adminPassword = adminPassword;
+    }
 
     @PostConstruct
     public void init() {

@@ -74,7 +74,6 @@ public class ColeccionesService {
         return ResponseEntity.notFound().build();
     }
 
-    @SuppressWarnings("unused")
     public ResponseEntity<List<ColeccionDTO>> getAllColeccionesPaginated(int page, int size) {
 
         List<ColeccionDTO> coleccionesLocales = Optional.ofNullable(

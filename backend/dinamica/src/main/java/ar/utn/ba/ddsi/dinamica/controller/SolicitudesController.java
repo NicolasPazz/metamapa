@@ -147,21 +147,20 @@ public class SolicitudesController {
   }
   @PostMapping("/{id}/aceptar")
   public ResponseEntity<SolicitudOutputDTO> aceptarSolicitud(@PathVariable Long id) {
+    log.info("[SolicitudesController] - POST - /api/solicitudes/{}/aceptar - id: {}", id, id);
     SolicitudModificarAdminInputDTO solicitudCambio = new SolicitudModificarAdminInputDTO();
     solicitudCambio.setNuevoEstadoSolicitud(ACEPTADO);
-
     SolicitudOutputDTO resultado = solicitudesService.revisionSolicitud(id, solicitudCambio);
     return ResponseEntity.ok(resultado);
   }
 
   @PostMapping("/{id}/rechazar")
   public ResponseEntity<SolicitudOutputDTO> rechazarSolicitud(@PathVariable Long id) {
+    log.info("[SolicitudesController] - POST - /api/solicitudes/{}/rechazar - id: {}", id, id);
     SolicitudModificarAdminInputDTO solicitudCambio = new SolicitudModificarAdminInputDTO();
     solicitudCambio.setNuevoEstadoSolicitud(RECHAZADO);
-
     SolicitudOutputDTO resultado = solicitudesService.revisionSolicitud(id, solicitudCambio);
     return ResponseEntity.ok(resultado);
-
   }
 
 }
