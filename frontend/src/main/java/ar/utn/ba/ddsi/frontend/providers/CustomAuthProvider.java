@@ -2,7 +2,7 @@ package ar.utn.ba.ddsi.frontend.providers;
 
 import ar.utn.ba.ddsi.frontend.dto.AuthResponseDTO;
 import ar.utn.ba.ddsi.frontend.dto.RolesPermisosDTO;
-import ar.utn.ba.ddsi.frontend.services.MetaMapaApiService;
+import ar.utn.ba.ddsi.frontend.service.MetaMapaApiService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

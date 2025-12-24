@@ -79,7 +79,7 @@ public class MultimediaStorageService {
             Path currentDir = Paths.get(userDir);
             log.debug("Directorio de trabajo actual: {}", currentDir);
             
-            Path projectRoot;
+            Path projectRoot = currentDir;
             int maxDepth = 10;
             int depth = 0;
             

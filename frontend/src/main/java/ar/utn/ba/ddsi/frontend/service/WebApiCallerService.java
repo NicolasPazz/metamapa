@@ -1,4 +1,4 @@
-package ar.utn.ba.ddsi.frontend.services.internal;
+package ar.utn.ba.ddsi.frontend.service;
 
 import ar.utn.ba.ddsi.frontend.dto.AuthResponseDTO;
 import ar.utn.ba.ddsi.frontend.dto.RefreshTokenDTO;

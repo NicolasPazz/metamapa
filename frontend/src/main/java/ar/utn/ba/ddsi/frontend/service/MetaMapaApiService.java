@@ -1,8 +1,7 @@
-package ar.utn.ba.ddsi.frontend.services;
+package ar.utn.ba.ddsi.frontend.service;
 
 import ar.utn.ba.ddsi.frontend.dto.AuthResponseDTO;
 import ar.utn.ba.ddsi.frontend.dto.RolesPermisosDTO;
-import ar.utn.ba.ddsi.frontend.services.internal.WebApiCallerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
