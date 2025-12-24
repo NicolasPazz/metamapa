@@ -1,50 +1,82 @@
+# =============================================================================
+# 1. ARCHIVOS DE COMPILACIÓN Y BUILD
+# =============================================================================
+
 # Directorios de compilación Maven
 target/
 **/target/
 !.mvn/wrapper/maven-wrapper.jar
 !.mvn/wrapper/maven-wrapper.properties
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# Archivos compilados Java
+**/*.class
 
-### IntelliJ IDEA ###
-.idea
+# Directorios de build genéricos
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# =============================================================================
+# 2. ARCHIVOS DE IDEs Y EDITORES
+# =============================================================================
+
+# IntelliJ IDEA
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# Eclipse / STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# VS Code
 .vscode/
 
-# Ignorar todos los Markdown en todas las jerarquías
+# =============================================================================
+# 3. ARCHIVOS DE CONFIGURACIÓN Y ENTORNO
+# =============================================================================
+
+.env
+.env.local
+.env.prod
+.env.*.local
+!.env*.example
+
+# =============================================================================
+# 4. ARCHIVOS DE DATOS Y CONTENIDO GENERADO POR USUARIOS
+# =============================================================================
+
+backend/data/csv/**
+backend/data/multimedia/**
+!backend/data/
+!backend/data/csv/
+!backend/data/multimedia/
+
+# =============================================================================
+# 5. ARCHIVOS DE DOCUMENTACIÓN
+# =============================================================================
+
 **/*.md
-*.md
-
-# Excepciones para archivos Markdown específicos
 !README.md
-!justificaciones-de-disenio.md
 
-# Archivos CSV en todas las jerarquías
+# =============================================================================
+# 6. ARCHIVOS CSV Y MULTIMEDIA
+# =============================================================================
+
 **/*.csv
-*.csv
-
-# Archivos multimedia (imágenes, audio, video) en todas las jerarquías
 **/*.jpg
 **/*.jpeg
 **/*.png
@@ -67,58 +99,48 @@ build/
 **/*.flv
 **/*.wmv
 
-# Mantener carpetas vacías backend/data con subcarpetas csv y multimedia
-# Las carpetas se mantienen pero su contenido (archivos) se ignora
-!backend/data/
-!backend/data/csv/
-!backend/data/multimedia/
-# Ignorar todo el contenido dentro de estas carpetas
-backend/data/csv/**
-backend/data/multimedia/**
+# =============================================================================
+# 8. ARCHIVOS TEMPORALES Y LOGS
+# =============================================================================
 
-# Archivos de log
 **/*.log
-*.log
+**/*.tmp
+**/*.temp
+*.swp
+*.swo
+*~
 
-# Archivos de entorno y configuración local
-# Ignorar archivos .env reales (con datos sensibles)
-.env
-.env.local
-.env.prod
-.env.*.local
-# PERMITIR archivos .example (sin datos sensibles)
-!.env*.example
+# =============================================================================
+# 9. ARCHIVOS DEL SISTEMA OPERATIVO
+# =============================================================================
 
-# Archivos del sistema operativo
+# macOS
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
+
+# Windows
 ehthumbs.db
 Thumbs.db
 desktop.ini
 
-# Archivos compilados Java
-**/*.class
-*.class
+# =============================================================================
+# 10. DEPENDENCIAS Y MÓDULOS EXTERNOS
+# =============================================================================
 
-# Node modules (si hay proyectos frontend con npm)
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Archivos temporales
-**/*.tmp
-**/*.temp
-*.tmp
-*.temp
-*.swp
-*.swo
-*~
+# =============================================================================
+# 11. EXCLUSIONES DE LAS REGLAS ANTERIORES
+# =============================================================================
 
-# Archivos de Maven
-.mvn/wrapper/maven-wrapper.jar
-**/.mvn/wrapper/maven-wrapper.jar
-!.mvn/wrapper/maven-wrapper.properties
+!entregables/**
+!**/resources/**
+!**/.gitkeep
+!**/*.config
+!**/*.properties
