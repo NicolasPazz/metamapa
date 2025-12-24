@@ -61,7 +61,7 @@ services:
       retries: 5
       start_period: 180s
 
-  # Servicio Estática
+  # Servicio Estatica
   estatica:
     build:
       context: .
@@ -98,7 +98,7 @@ services:
       retries: 3
       start_period: 150s
 
-  # Servicio Dinámica
+  # Servicio Dinamica
   dinamica:
     build:
       context: .
@@ -254,7 +254,7 @@ services:
       retries: 3
       start_period: 150s
 
-  # Servicio Estadística
+  # Servicio Estadistica
   estadistica:
     build:
       context: .

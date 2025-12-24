@@ -12,11 +12,33 @@ configure_nginx() {
     cp /etc/nginx/nginx.conf.template /etc/nginx/nginx.conf
     
     if [ -f "$CERT_PATH" ]; then
+        # Descomentar bloque HTTPS: remover # de líneas comentadas en el bloque server HTTPS
+        # Busca desde "# Servidor HTTPS" hasta el cierre del bloque "}"
+        sed -i '/^[[:space:]]*# Servidor HTTPS/,/^[[:space:]]*}[[:space:]]*$/{
+            s/^\([[:space:]]*\)# \(.*\)/\1\2/
+        }' /etc/nginx/nginx.conf
+        
         sed -i "s|# REDIRECT_TO_HTTPS|return 301 https://\$server_name\$request_uri;|" /etc/nginx/nginx.conf
         sed -i "s|metamapa-dds.ddns.net|${DOMAIN}|g" /etc/nginx/nginx.conf
         echo "✓ Certificados SSL detectados para ${DOMAIN}: redirección HTTP->HTTPS habilitada"
         return 0
     else
+        # Comentar bloque HTTPS completo
+        # Buscar desde "# Servidor HTTPS" hasta el cierre del bloque server (4 espacios + })
+        # El cierre del bloque server tiene exactamente 4 espacios de indentación
+        sed -i '/^[[:space:]]*# Servidor HTTPS/,/^    }[[:space:]]*$/{
+            /^[[:space:]]*# Servidor HTTPS/!{
+                /^    }[[:space:]]*$/{
+                    s/^\([[:space:]]*\)\(.*\)/\1# \2/
+                }
+                /^    }[[:space:]]*$/!{
+                    /^[[:space:]]*#/!{
+                        s/^\([[:space:]]*\)\(.*\)/\1# \2/
+                    }
+                }
+            }
+        }' /etc/nginx/nginx.conf
+        
         echo "⚠ Certificados SSL no detectados para ${DOMAIN}: sirviendo HTTP (certbot los obtendrá automáticamente)"
         return 1
     fi

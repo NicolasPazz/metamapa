@@ -1,4 +1,4 @@
-# Docker Compose para Producción en EC2 con RDS
+# Docker Compose para Produccion en EC2 con RDS
 # Usa .env.prod para variables de entorno
 
 services:
@@ -35,7 +35,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # Servicio Estática
+  # Servicio Estatica
   estatica:
     build:
       context: .
@@ -69,7 +69,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # Servicio Dinámica
+  # Servicio Dinamica
   dinamica:
     build:
       context: .
@@ -215,7 +215,7 @@ services:
       retries: 3
       start_period: 40s
 
-  # Servicio Estadística
+  # Servicio Estadistica
   estadistica:
     build:
       context: .
@@ -268,7 +268,7 @@ services:
       USERS_SERVICE_URL: http://users:8087
       PAGINATION_PAGE_SIZE: ${PAGINATION_PAGE_SIZE}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-    # No exponer puerto directamente - nginx será el punto de entrada
+    # No exponer puerto directamente - nginx sera el punto de entrada
     expose:
       - "8080"
     depends_on:

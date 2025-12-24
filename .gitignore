@@ -1,8 +1,8 @@
 # =============================================================================
-# 1. ARCHIVOS DE COMPILACIÓN Y BUILD
+# 1. ARCHIVOS DE COMPILACIoN Y BUILD
 # =============================================================================
 
-# Directorios de compilación Maven
+# Directorios de compilacion Maven
 target/
 **/target/
 !.mvn/wrapper/maven-wrapper.jar
@@ -11,7 +11,7 @@ target/
 # Archivos compilados Java
 **/*.class
 
-# Directorios de build genéricos
+# Directorios de build genericos
 build/
 !**/src/main/**/build/
 !**/src/test/**/build/
@@ -46,7 +46,7 @@ build/
 .vscode/
 
 # =============================================================================
-# 3. ARCHIVOS DE CONFIGURACIÓN Y ENTORNO
+# 3. ARCHIVOS DE CONFIGURACIoN Y ENTORNO
 # =============================================================================
 
 .env
@@ -66,7 +66,7 @@ backend/data/multimedia/**
 !backend/data/multimedia/
 
 # =============================================================================
-# 5. ARCHIVOS DE DOCUMENTACIÓN
+# 5. ARCHIVOS DE DOCUMENTACIoN
 # =============================================================================
 
 **/*.md
@@ -127,7 +127,7 @@ Thumbs.db
 desktop.ini
 
 # =============================================================================
-# 10. DEPENDENCIAS Y MÓDULOS EXTERNOS
+# 10. DEPENDENCIAS Y MoDULOS EXTERNOS
 # =============================================================================
 
 node_modules/

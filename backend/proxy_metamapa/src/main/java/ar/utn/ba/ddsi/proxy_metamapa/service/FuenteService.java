@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Optional;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Profile;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -17,7 +16,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 @Slf4j
 @Service
 @Profile("prod-metamapa-external")
-@ConditionalOnProperty(name = "metamapa.external.url")
 public class FuenteService {
   private final WebClient webClient;
 

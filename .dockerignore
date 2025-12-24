@@ -31,7 +31,7 @@ Dockerfile
 docker-compose.yml
 .dockerignore
 
-# Documentación
+# Documentacion
 README*.md
 *.md
 !README-DOCKER.md
@@ -39,7 +39,7 @@ README*.md
 # Entregables
 entregables/
 
-# Data (se montan como volúmenes)
+# Data
 backend/data/csv/*
 backend/data/multimedia/*
 !backend/data/csv/.gitkeep
