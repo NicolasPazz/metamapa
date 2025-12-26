@@ -1555,6 +1555,42 @@ Implementación de cache en memoria usando Caffeine para optimizar las consultas
 **Tipo de Cache:**
 Cache en memoria usando Caffeine, una biblioteca de cache de alto rendimiento para Java. Los datos se almacenan en la memoria RAM del servidor de aplicación, no en base de datos ni en sistemas externos. Esto proporciona acceso extremadamente rápido pero requiere que los datos cacheados se reconstruyan si el servidor se reinicia.
 
+**Ubicación del Cache:**
+El cache se almacena **exclusivamente en el servidor** (backend), específicamente en la memoria RAM del servicio `agregador`. **No se utiliza caché del lado del cliente** (navegador), como localStorage, sessionStorage o caché HTTP del navegador. Esto significa que:
+
+- **Ventajas del cache en servidor:**
+  - Los datos cacheados son compartidos entre todos los usuarios, maximizando la eficiencia
+  - El servidor tiene control total sobre la invalidación y actualización de la caché
+  - No depende de la configuración del navegador del usuario
+  - Los datos sensibles no se exponen al cliente
+
+- **Consideraciones:**
+  - Si el servidor se reinicia, la caché se pierde y se reconstruye en las siguientes consultas
+  - En un entorno con múltiples instancias del servidor, cada instancia mantiene su propia caché (no hay sincronización entre instancias)
+  - La caché consume memoria RAM del servidor, pero está limitada a un máximo de 500 entradas por caché
+
+**Configuración del Cache:**
+```java
+@Configuration
+@EnableCaching
+public class CacheConfig {
+  @Bean
+  public CacheManager cacheManager() {
+    CaffeineCacheManager cacheManager = new CaffeineCacheManager();
+    cacheManager.setCaffeine(caffeineCacheBuilder());
+    return cacheManager;
+  }
+
+  private Caffeine<Object, Object> caffeineCacheBuilder() {
+    return Caffeine.newBuilder()
+        .initialCapacity(100)
+        .maximumSize(500)
+        .expireAfterWrite(5, TimeUnit.MINUTES)
+        .recordStats();
+  }
+}
+```
+
 **Duración del Cache:**
 El cache tiene un tiempo de expiración de 5 minutos (`expireAfterWrite`). Después de este tiempo, los datos cacheados se invalidan automáticamente y se reconstruyen en la siguiente consulta. Además, el cache se invalida inmediatamente mediante `@CacheEvict` cuando se realizan operaciones de escritura (crear, modificar, eliminar).
 

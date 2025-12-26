@@ -40,6 +40,8 @@ public class AdminController {
         List<HechoDTO> hechos = hechoService.getAllHechos();
         List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();
         List<FuenteDTO> fuentes = fuenteService.getAllFuentes();
+        List<String> provincias = coleccionService.getProvinciasConHechos();
+        List<String> nombresFuentes = coleccionService.getFuentesConHechos();
         Map<Long, String> mapFuentes = fuentes.stream()
                 .collect(Collectors.toMap(FuenteDTO::getId, FuenteDTO::getNombre));
 
@@ -54,6 +56,8 @@ public class AdminController {
         model.addAttribute("hechos", hechos);
         model.addAttribute("solicitudes", solicitudes);
         model.addAttribute("fuentes", fuentes);
+        model.addAttribute("provincias", provincias);
+        model.addAttribute("nombresFuentes", nombresFuentes);
         model.addAttribute("mapFuentes", mapFuentes);
         model.addAttribute("objectMapper", objectMapper);
         return "admin/admin";
@@ -88,11 +92,17 @@ public class AdminController {
     }
 
     @PostMapping("/admin/crear-coleccion")
-    public String crearColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, Model model) {
-        log.info("[AdminController] - POST - /admin/crear-coleccion - titulo: {}, descripcion: {}, criterios: {}, algoritmoConsenso: {}, fuenteId: {}",
+    public String crearColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, Model model, HttpServletRequest request) {
+        if (coleccionDTO.getCriterios() == null) {
+            coleccionDTO.setCriterios(new java.util.ArrayList<>());
+        }
+        
+        log.info("[AdminController] - POST - /admin/crear-coleccion - titulo: {}, descripcion: {}, criterios: {} (size: {}), algoritmoConsenso: {}, fuenteId: {}",
                 coleccionDTO.getTitulo(), coleccionDTO.getDescripcion(), coleccionDTO.getCriterios(),
-                coleccionDTO.getAlgoritmoConsenso(), coleccionDTO.getFuenteId());
+                coleccionDTO.getCriterios().size(), coleccionDTO.getAlgoritmoConsenso(), coleccionDTO.getFuenteId());
+        
         if(!coleccionDTO.isValid()) {
+            log.warn("[AdminController] - Validación fallida: criterios es null o vacío");
             model.addAttribute("mensaje", "Error: faltan datos para la colección");
             return "redirect:/admin";
         }
@@ -100,6 +110,7 @@ public class AdminController {
             adminService.crearColeccion(coleccionDTO);
             model.addAttribute("mensaje", "Colección creada correctamente.");
         } catch (Exception e) {
+            log.error("[AdminController] ERROR - Error al crear colección: {}", e.getMessage(), e);
             model.addAttribute("mensaje", "Error: " + e.getMessage());
         }
         return "redirect:/admin";

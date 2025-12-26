@@ -9,9 +9,7 @@
     <a href="#colecciones">Colecciones</a>
     <a href="#hechos">Moderación de Hechos</a>
     <a href="#solicitudes">Solicitudes de Eliminación</a>
-    <a th:href="@{/solicitudes}" style="display: flex; align-items: center; gap: 8px;">
-      <i class="bi bi-file-earmark-text"></i> Solicitudes de Hechos
-    </a>
+    <a th:href="@{/solicitudes}">Solicitudes de Hechos</a>
     <a href="#carga">Carga Masiva</a>
     <a th:href="@{/estadisticas}">Estadísticas</a>
   </nav>
@@ -248,24 +246,48 @@
 
         <div id="opcion-fecha" class="conditional-section" style="display:none;">
           <label>Tipo de Fecha:</label>
-          <select id="input-tipo-fecha">
+          <select id="input-tipo-fecha" class="form-control" style="width:100%; margin-bottom:10px;">
             <option value="CARGA">Carga</option>
             <option value="ACONTECIMIENTO">Acontecimiento</option>
           </select>
 
-          <label>Desde: <span class="required-indicator">*</span></label>
-          <input type="datetime-local" id="input-fecha-inicio" required class="form-control">
+          <label>Desde:</label>
+          <input type="datetime-local" id="input-fecha-inicio" data-was-required="false" class="form-control" style="width:100%; margin-bottom:10px;">
 
-          <label>Hasta: <span class="required-indicator">*</span></label>
-          <input type="datetime-local" id="input-fecha-fin" required class="form-control">
+          <label>Hasta:</label>
+          <input type="datetime-local" id="input-fecha-fin" data-was-required="false" class="form-control" style="width:100%;">
+          <small style="color: #666; display: block; margin-top: 5px; font-size: 0.9em;">Al menos una fecha debe estar definida</small>
         </div>
 
         <div id="opcion-lugar" class="conditional-section" style="display:none;">
-          <label>Latitud: <span class="required-indicator">*</span></label>
-          <input type="number" step="any" id="input-lat" placeholder="-34.6037" required min="-90" max="90" class="form-control">
+          <label>Tipo de Búsqueda:</label>
+          <select id="input-tipo-lugar" onchange="mostrarTipoLugar()" class="form-control" style="width:100%; margin-bottom:10px;">
+            <option value="">-- Seleccione --</option>
+            <option value="provincia">Por Provincia</option>
+            <option value="coordenadas">Por Coordenadas + Radio</option>
+          </select>
 
-          <label>Longitud: <span class="required-indicator">*</span></label>
-          <input type="number" step="any" id="input-lng" placeholder="-58.3816" required min="-180" max="180" class="form-control">
+          <div id="lugar-provincia" style="display:none;">
+            <label>Provincia: <span class="required-indicator">*</span></label>
+            <select id="input-provincia" data-was-required="true" class="form-control" style="width:100%;">
+              <option value="">-- Seleccione una Provincia --</option>
+              <th:block th:each="prov : ${provincias}">
+                <option th:value="${prov}" th:text="${prov}"></option>
+              </th:block>
+            </select>
+          </div>
+
+          <div id="lugar-coordenadas" style="display:none;">
+            <label>Latitud: <span class="required-indicator">*</span></label>
+            <input type="number" step="any" id="input-lat" placeholder="-34.6037" data-was-required="true" min="-90" max="90" class="form-control" style="width:100%; margin-bottom:10px;">
+
+            <label>Longitud: <span class="required-indicator">*</span></label>
+            <input type="number" step="any" id="input-lng" placeholder="-58.3816" data-was-required="true" min="-180" max="180" class="form-control" style="width:100%; margin-bottom:10px;">
+
+            <label>Radio (km): <span class="required-indicator">*</span></label>
+            <input type="number" step="0.1" id="input-radio" placeholder="Ej: 5.0" data-was-required="true" min="0.1" class="form-control" style="width:100%;">
+            <small style="color: #666; display: block; margin-top: 5px; font-size: 0.9em;">Distancia máxima en kilómetros desde las coordenadas</small>
+          </div>
         </div>
 
         <div id="opcion-igualdad" class="conditional-section" style="display:none;">
@@ -293,12 +315,16 @@
         </div>
 
         <div id="opcion-fuente" class="conditional-section" style="display:none;">
-          <label>Seleccione Fuentes (Ctrl+Click para varias):</label>
-          <select id="input-fuente-ids" multiple class="form-control" style="height: 120px; width: 100%;">
+          <label>Seleccione fuentes:</label>
+          <div id="fuentes-checkbox-container" style="max-height: 200px; overflow-y: auto; overflow-x: hidden; border: 1px solid #ddd; padding: 10px; border-radius: 4px; background-color: #fff; width: 100%; box-sizing: border-box;">
             <th:block th:each="f : ${fuentes}">
-              <option th:value="${f.id}" th:text="${f.nombre}"></option>
+              <label style="display: flex; align-items: center; margin-bottom: 8px; margin-top: 0; cursor: pointer; padding: 5px; border-radius: 3px; transition: background-color 0.2s; background-color: transparent; width: 100%; box-sizing: border-box;" onmouseover="this.style.backgroundColor='#f0f0f0'" onmouseout="this.style.backgroundColor='transparent'">
+                <input type="checkbox" class="fuente-checkbox" th:data-id="${f.id}" th:value="${f.nombre}" style="margin-right: 8px; cursor: pointer; width: 18px; height: 18px; flex-shrink: 0; flex-grow: 0;">
+                <span style="flex: 1; min-width: 0; word-wrap: break-word; overflow-wrap: break-word;" th:text="${f.nombre}"></span>
+              </label>
             </th:block>
-          </select>
+            <p th:if="${#lists.isEmpty(fuentes)}" style="color: #999; margin: 0; font-style: italic;">No hay fuentes disponibles</p>
+          </div>
         </div>
 
         <button type="button" onclick="agregarCriterioALista()"
@@ -324,20 +350,107 @@
       <button type="submit" style="width:100%; padding:10px; font-size:16px;">Guardar Colección</button>
     </form>
     <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.conditional-section').forEach(div => {
+          if (div.style.display === 'none' || window.getComputedStyle(div).display === 'none') {
+            div.querySelectorAll('[required]').forEach(field => {
+              field.removeAttribute('required');
+              field.setAttribute('data-was-required', 'true');
+            });
+          }
+        });
+        
+        const form = document.getElementById('main-form');
+        if (form) {
+          form.addEventListener('submit', function(e) {
+            document.querySelectorAll('.conditional-section').forEach(div => {
+              const isVisible = div.style.display !== 'none' && window.getComputedStyle(div).display !== 'none';
+              if (!isVisible) {
+                div.querySelectorAll('[required]').forEach(field => {
+                  field.removeAttribute('required');
+                  field.setAttribute('data-was-required', 'true');
+                });
+              }
+            });
+          });
+        }
+      });
+    </script>
+    <script>
       let contadorCriterios = 0;
+
+      function mostrarTipoLugar() {
+        const tipoLugar = document.getElementById("input-tipo-lugar");
+        if (!tipoLugar) return;
+        
+        const tipoLugarValue = tipoLugar.value;
+        const provinciaDiv = document.getElementById("lugar-provincia");
+        const coordenadasDiv = document.getElementById("lugar-coordenadas");
+
+        if (!provinciaDiv || !coordenadasDiv) return;
+
+        provinciaDiv.style.display = 'none';
+        coordenadasDiv.style.display = 'none';
+
+        provinciaDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+          field.removeAttribute('required');
+        });
+        coordenadasDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+          field.removeAttribute('required');
+        });
+
+        if (tipoLugarValue === 'provincia') {
+          provinciaDiv.style.display = 'block';
+          provinciaDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+            field.setAttribute('required', '');
+          });
+        } else if (tipoLugarValue === 'coordenadas') {
+          coordenadasDiv.style.display = 'block';
+          coordenadasDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+            field.setAttribute('required', '');
+          });
+        }
+      }
 
       function mostrarOpciones() {
         const criterio = document.getElementById("selector-criterio").value;
 
-        // 1. Hide all sections
-        document.querySelectorAll('.conditional-section').forEach(div => div.style.display = 'none');
+        document.querySelectorAll('.conditional-section').forEach(div => {
+          div.style.display = 'none';
+          div.querySelectorAll('[required]').forEach(field => {
+            field.removeAttribute('required');
+            if (!field.hasAttribute('data-was-required')) {
+              field.setAttribute('data-was-required', 'true');
+            }
+          });
+        });
 
-        // 2. Show the selected one
-        if (criterio === 'fecha') document.getElementById('opcion-fecha').style.display = 'block';
-        if (criterio === 'lugar') document.getElementById('opcion-lugar').style.display = 'block';
-        if (criterio === 'igualdad') document.getElementById('opcion-igualdad').style.display = 'block';
-        if (criterio === 'origen') document.getElementById('opcion-origen').style.display = 'block';
-        if (criterio === 'fuente') document.getElementById('opcion-fuente').style.display = 'block';
+        if (criterio === 'fecha') {
+          const section = document.getElementById('opcion-fecha');
+          section.style.display = 'block';
+        }
+        if (criterio === 'lugar') {
+          const section = document.getElementById('opcion-lugar');
+          section.style.display = 'block';
+          const tipoLugarSelect = document.getElementById('input-tipo-lugar');
+          if (tipoLugarSelect) {
+            tipoLugarSelect.value = '';
+            mostrarTipoLugar();
+          }
+        }
+        if (criterio === 'igualdad') {
+          const section = document.getElementById('opcion-igualdad');
+          section.style.display = 'block';
+          section.querySelectorAll('[data-was-required="true"]').forEach(field => {
+            field.setAttribute('required', '');
+          });
+        }
+        if (criterio === 'origen') {
+          document.getElementById('opcion-origen').style.display = 'block';
+        }
+        if (criterio === 'fuente') {
+          document.getElementById('opcion-fuente').style.display = 'block';
+        }
       }
 
       function agregarCriterioALista() {
@@ -352,64 +465,103 @@
         const visualList = document.getElementById("visual-list");
         let descripcion = "";
 
-        // --- CASE 1: FECHA ---
         if (tipo === "fecha") {
           const tipoFecha = document.getElementById("input-tipo-fecha").value;
           const ini = document.getElementById("input-fecha-inicio");
           const fin = document.getElementById("input-fecha-fin");
 
-          if (!ini.value || !fin.value) {
-            showToast("Complete las fechas de inicio y fin.", "error");
-            if (!ini.value) ini.focus();
-            else if (!fin.value) fin.focus();
+          if (!ini.value && !fin.value) {
+            showToast("Debe completar al menos una fecha (desde o hasta).", "error");
+            ini.focus();
             return;
           }
 
-          // Bind to DTO: tipo, tipoFecha, fechaInicial, fechaFinal
           createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "fecha");
           createHiddenInput(container, `criterios[${contadorCriterios}].tipoFecha`, tipoFecha);
-          createHiddenInput(container, `criterios[${contadorCriterios}].fechaInicial`, ini.value);
-          createHiddenInput(container, `criterios[${contadorCriterios}].fechaFinal`, fin.value);
+          
+          if (ini.value) {
+            createHiddenInput(container, `criterios[${contadorCriterios}].fechaInicial`, ini.value);
+          }
+          if (fin.value) {
+            createHiddenInput(container, `criterios[${contadorCriterios}].fechaFinal`, fin.value);
+          }
 
-          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> <b>Fecha</b> (${tipoFecha}): ${ini.value} al ${fin.value}`;
+          let fechaDesc = "";
+          if (ini.value && fin.value) {
+            fechaDesc = `${ini.value} al ${fin.value}`;
+          } else if (ini.value) {
+            fechaDesc = `desde ${ini.value}`;
+          } else {
+            fechaDesc = `hasta ${fin.value}`;
+          }
+          
+          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> <b>Fecha</b> (${tipoFecha}): ${fechaDesc}`;
         }
 
-        // --- CASE 2: LUGAR ---
         else if (tipo === "lugar") {
-          const lat = document.getElementById("input-lat");
-          const lng = document.getElementById("input-lng");
+          const tipoLugar = document.getElementById("input-tipo-lugar").value;
 
-          if (!lat.value || !lng.value) {
-            showToast("Complete latitud y longitud.", "error");
-            if (!lat.value) lat.focus();
-            else if (!lng.value) lng.focus();
-            return;
-          }
-          
-          const latNum = parseFloat(lat.value);
-          const lngNum = parseFloat(lng.value);
-          
-          if (isNaN(latNum) || latNum < -90 || latNum > 90) {
-            showToast("La latitud debe estar entre -90 y 90.", "error");
-            lat.focus();
-            return;
-          }
-          
-          if (isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
-            showToast("La longitud debe estar entre -180 y 180.", "error");
-            lng.focus();
+          if (!tipoLugar || tipoLugar === "") {
+            showToast("Seleccione un tipo de búsqueda (Provincia o Coordenadas).", "error");
+            document.getElementById("input-tipo-lugar").focus();
             return;
           }
 
-          // Bind to DTO: tipo, lat, lng
           createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "lugar");
-          createHiddenInput(container, `criterios[${contadorCriterios}].lat`, lat.value);
-          createHiddenInput(container, `criterios[${contadorCriterios}].lng`, lng.value);
 
-          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${lat.value}, ${lng.value}`;
+          if (tipoLugar === "provincia") {
+            const provinciaSelect = document.getElementById("input-provincia");
+            if (!provinciaSelect.value || provinciaSelect.value === "") {
+              showToast("Seleccione una provincia.", "error");
+              provinciaSelect.focus();
+              return;
+            }
+            createHiddenInput(container, `criterios[${contadorCriterios}].provincia`, provinciaSelect.value);
+            const provinciaNombre = provinciaSelect.options[provinciaSelect.selectedIndex].text;
+            descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${provinciaNombre}`;
+          } else if (tipoLugar === "coordenadas") {
+            const lat = document.getElementById("input-lat");
+            const lng = document.getElementById("input-lng");
+            const radio = document.getElementById("input-radio");
+
+            if (!lat.value || !lng.value || !radio.value) {
+              showToast("Complete latitud, longitud y radio.", "error");
+              if (!lat.value) lat.focus();
+              else if (!lng.value) lng.focus();
+              else if (!radio.value) radio.focus();
+              return;
+            }
+
+            const latNum = parseFloat(lat.value);
+            const lngNum = parseFloat(lng.value);
+            const radioNum = parseFloat(radio.value);
+
+            if (isNaN(latNum) || latNum < -90 || latNum > 90) {
+              showToast("La latitud debe estar entre -90 y 90.", "error");
+              lat.focus();
+              return;
+            }
+
+            if (isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+              showToast("La longitud debe estar entre -180 y 180.", "error");
+              lng.focus();
+              return;
+            }
+
+            if (isNaN(radioNum) || radioNum <= 0) {
+              showToast("El radio debe ser mayor a 0.", "error");
+              radio.focus();
+              return;
+            }
+
+            createHiddenInput(container, `criterios[${contadorCriterios}].lat`, lat.value);
+            createHiddenInput(container, `criterios[${contadorCriterios}].lng`, lng.value);
+            createHiddenInput(container, `criterios[${contadorCriterios}].radio`, radio.value);
+
+            descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${lat.value}, ${lng.value} (radio: ${radio.value} km)`;
+          }
         }
 
-        // --- CASE 3: IGUALDAD ---
         else if (tipo === "igualdad") {
           const campo = document.getElementById("input-igualdad-campo").value;
           const valor = document.getElementById("input-igualdad-valor");
@@ -420,7 +572,6 @@
             return;
           }
 
-          // Bind to DTO: tipo, tipoDeDato, cadenaAComparar
           createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "igualdad");
           createHiddenInput(container, `criterios[${contadorCriterios}].tipoDeDato`, campo);
           createHiddenInput(container, `criterios[${contadorCriterios}].cadenaAComparar`, valor.value.trim());
@@ -428,63 +579,62 @@
           descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><line x1="5" y1="12" x2="19" y2="12"></line></svg> <b>Igualdad</b>: ${campo} = "${valor.value.trim()}"`;
         }
 
-        // --- CASE 4: ORIGEN ---
         else if (tipo === "origen") {
           const origen = document.getElementById("input-origen-valor").value;
 
-          // Bind to DTO: tipo, origen
           createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "origen");
           createHiddenInput(container, `criterios[${contadorCriterios}].origen`, origen);
 
           descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> <b>Origen</b>: ${origen}`;
         }
 
-        // --- CASE 5: FUENTE ---
         else if (tipo === "fuente") {
-          const select = document.getElementById("input-fuente-ids");
-          // Get all selected options
-          const selectedOptions = Array.from(select.selectedOptions);
-
-          if (selectedOptions.length === 0) {
+          const checkboxes = document.querySelectorAll('.fuente-checkbox:checked');
+          
+          if (checkboxes.length === 0) {
             showToast("Seleccione al menos una fuente.", "error");
-            select.focus();
+            document.getElementById("fuentes-checkbox-container").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             return;
           }
 
-          // 1. Set the Type
           createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "fuente");
 
-          // 2. Loop to create List<Long> inputs: criterios[0].fuenteIds[0], criterios[0].fuenteIds[1]...
-          selectedOptions.forEach((option, index) => {
-            createHiddenInput(container, `criterios[${contadorCriterios}].fuentes`, option.value);
+          const nombresFuentes = [];
+          Array.from(checkboxes).forEach((checkbox) => {
+            const fuenteId = checkbox.getAttribute('data-id');
+            const fuenteNombre = checkbox.value;
+            if (fuenteId) {
+              createHiddenInput(container, `criterios[${contadorCriterios}].fuentes`, fuenteId);
+              nombresFuentes.push(fuenteNombre);
+            }
           });
 
-          // 3. Create visual description using the text of the options
-          const names = selectedOptions.map(o => o.text).join(", ");
-          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> <b>Fuentes</b>: ${names}`;
+          const nombresTexto = nombresFuentes.join(", ");
+          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> <b>Fuentes</b>: ${nombresTexto}`;
         }
 
-        // --- VISUAL FEEDBACK ---
         const li = document.createElement("li");
         li.innerHTML = descripcion;
         li.style.borderBottom = "1px solid #ccc";
         li.style.padding = "5px 0";
         visualList.appendChild(li);
 
-        // --- RESET ---
-        contadorCriterios++; // Move to next index for Spring
+        contadorCriterios++;
 
-        // Optional: Reset inputs to clean state
-        document.querySelectorAll('#input-igualdad-valor, #input-lat, #input-lng').forEach(i => i.value = '');
-        document.getElementById("selector-criterio").value = "";
-        mostrarOpciones(); // Hides everything again
-
-        if(document.getElementById("input-fuente-ids")) {
-          document.getElementById("input-fuente-ids").selectedIndex = -1;
+        document.querySelectorAll('#input-igualdad-valor, #input-lat, #input-lng, #input-radio, #input-fecha-inicio, #input-fecha-fin').forEach(i => i.value = '');
+        if(document.getElementById("input-provincia")) {
+          document.getElementById("input-provincia").value = "";
         }
+        if(document.getElementById("input-tipo-lugar")) {
+          document.getElementById("input-tipo-lugar").value = "";
+          mostrarTipoLugar();
+        }
+        document.getElementById("selector-criterio").value = "";
+        mostrarOpciones();
+
+        document.querySelectorAll('.fuente-checkbox').forEach(cb => cb.checked = false);
       }
 
-      // Helper to create the <input type="hidden">
       function createHiddenInput(parent, name, value) {
         const input = document.createElement("input");
         input.type = "hidden";
@@ -606,7 +756,6 @@
   <script>
     let contadorCriteriosEdit = 0;
 
-    // 1. Helper to show/hide sections in the Edit Panel
     function mostrarOpcionesEdit() {
       const criterio = document.getElementById("edit-selector-criterio").value;
       document.querySelectorAll('.conditional-section-edit').forEach(div => div.style.display = 'none');
@@ -618,44 +767,40 @@
       if (criterio === 'fuente') document.getElementById('edit-opcion-fuente').style.display = 'block';
     }
 
-    // 2. Main function called when clicking "Editar"
     function cargarDatosEdicion(btn) {
-      // A. Basic Fields
       document.getElementById('edit-handle').value = btn.dataset.handle;
       document.getElementById('edit-nombre').value = btn.dataset.titulo;
       document.getElementById('edit-descripcion').value = btn.dataset.descripcion;
       document.getElementById('edit-consenso').value = btn.dataset.consenso;
 
-      // B. Clear Lists
       const container = document.getElementById("edit-hidden-inputs-container");
       const visualList = document.getElementById("edit-visual-list");
       container.innerHTML = "";
       visualList.innerHTML = "";
       contadorCriteriosEdit = 0;
 
-      // C. Parse and Load Criterios
       try {
-        const criterios = JSON.parse(btn.dataset.criterios);
-
-        criterios.forEach(c => {
-          // We reuse the logic to create inputs for existing items
-          restaurarCriterio(c, container, visualList);
-        });
+        const criteriosJson = btn.dataset.criterios;
+        if (criteriosJson && criteriosJson !== "null" && criteriosJson.trim() !== "") {
+          const criterios = JSON.parse(criteriosJson);
+          if (criterios && Array.isArray(criterios)) {
+            criterios.forEach(c => {
+              restaurarCriterio(c, container, visualList);
+            });
+          }
+        }
       } catch (e) {
         console.error("Error parsing criterios JSON", e);
       }
 
-      // Open Panel (Use your existing logic here)
       document.getElementById("editar-coleccion").style.right = "0";
     }
 
-    // 3. Logic to Add NEW Criterio (From inputs)
     function agregarCriterioEdit() {
       const tipo = document.getElementById("edit-selector-criterio").value;
       const container = document.getElementById("edit-hidden-inputs-container");
       const visualList = document.getElementById("edit-visual-list");
 
-      // Construct a temporary object to reuse the 'restaurar' logic
       let tempObj = { tipo: tipo };
 
       if (tipo === "fecha") {
@@ -675,36 +820,29 @@
         const selectedOpts = Array.from(select.selectedOptions);
         if(selectedOpts.length === 0) return;
 
-        // Store as an array of IDs for 'restaurarCriterio' to use
         tempObj.fuentes = selectedOpts.map(o => o.value);
       }
 
       restaurarCriterio(tempObj, container, visualList);
 
-      // Reset UI
       document.getElementById("edit-selector-criterio").value = "";
       mostrarOpcionesEdit();
     }
 
-    // 4. Shared Logic: Creates Hidden Inputs & Visual Item
     function restaurarCriterio(c, container, list) {
       const i = contadorCriteriosEdit;
       let desc = "";
-
-      // 1. Normalize keys (Handle JSON snake_case vs JS camelCase)
-      // We try to read the JSON key first (e.g. fecha_inicial), fallback to JS key
       let tipo = c.tipo;
       const fechaIni = c.fecha_inicial || c.fechaInicial;
       const fechaFin = c.fecha_final || c.fechaFinal;
       const tipoFecha = c.tipo_fecha || c.tipoFecha;
 
-      // Note: DTO uses "latitud"/"longitud", JS logic used "lat"/"lng"
       const lat = c.latitud || c.lat;
       const lng = c.longitud || c.lng;
 
       const tipoDato = c.tipo_dato || c.tipoDeDato;
       const cadena = c.cadena_a_comparar || c.cadenaAComparar;
-      const origen = c.origen; // Same name
+      const origen = c.origen;
 
       const fuenteIds = c.fuentes;
 
@@ -751,7 +889,6 @@
         let names = [];
 
         idsArray.forEach((id) => {
-          // CHANGE HERE: Removed [${index}]
           createHiddenInput(container, `criterios[${i}].fuentes`, id);
 
           if(lookupSelect) {
@@ -764,7 +901,6 @@
         desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Fuentes: ${names.join(", ")}`;
       }
 
-      // Visual Item
       const li = document.createElement("li");
       li.innerHTML = desc;
       list.appendChild(li);
@@ -772,7 +908,6 @@
       contadorCriteriosEdit++;
     }
 
-    // Helper
     function createHiddenInput(parent, name, value) {
       if(value === undefined || value === null) return;
       const input = document.createElement("input");
@@ -783,7 +918,6 @@
     }
   </script>
 
-  <!-- Panel de Etiquetas -->
   <div id="panel-etiquetas" class="panel" style="display: none; width: 400px; max-width: 90vw;">
     <h3>Agregar Etiquetas</h3>
     <p id="etiquetas-hecho-titulo" style="color: #666; font-size: 0.9em; margin-bottom: 15px;"></p>
@@ -792,7 +926,6 @@
       <input type="hidden" name="hechoId" id="etiquetas-hecho-id">
       
       <div id="etiquetas-container" style="margin-bottom: 15px;">
-        <!-- Las etiquetas se agregarán aquí dinámicamente -->
       </div>
       
       <div style="display: flex; gap: 10px; margin-bottom: 15px;">
@@ -837,13 +970,11 @@
       document.getElementById('etiquetas-hecho-id').value = hechoId;
       document.getElementById('etiquetas-hecho-titulo').textContent = 'Hecho: ' + hechoTitulo;
       
-      // Limpiar el panel
       contadorEtiquetas = 0;
       etiquetasAgregadas.length = 0;
       document.getElementById('etiquetas-lista').innerHTML = '<p style="color: #999; font-size: 0.9em; margin: 0;">No hay etiquetas agregadas</p>';
       document.getElementById('nueva-etiqueta-input').value = '';
       
-      // Mostrar el panel
       const panel = document.getElementById('panel-etiquetas');
       panel.style.display = 'block';
       panel.style.right = '0';
@@ -875,10 +1006,8 @@
         return;
       }
       
-      // Agregar a la lista
       etiquetasAgregadas.push(etiqueta);
       
-      // Crear input hidden para el formulario
       const container = document.getElementById('etiquetas-container');
       const hiddenInput = document.createElement('input');
       hiddenInput.type = 'hidden';
@@ -886,7 +1015,6 @@
       hiddenInput.value = etiqueta;
       container.appendChild(hiddenInput);
       
-      // Agregar visualmente a la lista
       const lista = document.getElementById('etiquetas-lista');
       if (lista.querySelector('p') && lista.querySelector('p').textContent === 'No hay etiquetas agregadas') {
         lista.innerHTML = '';
@@ -909,13 +1037,11 @@
     }
 
     function eliminarEtiqueta(etiqueta, index) {
-      // Remover de la lista
       const indexEnArray = etiquetasAgregadas.indexOf(etiqueta);
       if (indexEnArray > -1) {
         etiquetasAgregadas.splice(indexEnArray, 1);
       }
       
-      // Remover el input hidden
       const container = document.getElementById('etiquetas-container');
       const inputs = container.querySelectorAll('input[type="hidden"]');
       inputs.forEach(input => {
@@ -924,7 +1050,6 @@
         }
       });
       
-      // Remover visualmente
       const lista = document.getElementById('etiquetas-lista');
       const divs = lista.querySelectorAll('div');
       divs.forEach(div => {
@@ -933,7 +1058,6 @@
         }
       });
       
-      // Si no hay más etiquetas, mostrar mensaje
       if (lista.children.length === 0) {
         lista.innerHTML = '<p style="color: #999; font-size: 0.9em; margin: 0;">No hay etiquetas agregadas</p>';
       }

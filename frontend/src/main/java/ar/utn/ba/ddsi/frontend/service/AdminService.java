@@ -8,8 +8,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import reactor.core.publisher.Mono;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
@@ -96,17 +98,38 @@ public class AdminService {
     public void crearColeccion(CrearColeccionDTO dto) {
         String accessToken = getAccessTokenFromSession();
         if (accessToken == null) {
+            log.error("[AdminService] ERROR - No hay token de acceso disponible");
             throw new RuntimeException("No hay token de acceso disponible");
         }
         
-        webClientAgregador
-                .post()
-                .uri("/colecciones")
-                .header("Authorization", "Bearer " + accessToken)
-                .bodyValue(dto)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .block();
+        try {
+            webClientAgregador
+                    .post()
+                    .uri("/colecciones")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .bodyValue(dto)
+                    .retrieve()
+                    .onStatus(status -> status.isError(), response -> {
+                        log.error("[AdminService] ERROR - Respuesta del backend con error: {}", response.statusCode());
+                        return response.bodyToMono(String.class)
+                                .doOnNext(body -> log.error("[AdminService] ERROR - Cuerpo de respuesta: {}", body))
+                                .flatMap(body -> Mono.error(new RuntimeException("Error del backend: " + response.statusCode() + " - " + body)));
+                    })
+                    .bodyToMono(Void.class)
+                    .doOnSuccess(v -> log.info("[AdminService] Colección creada exitosamente"))
+                    .doOnError(e -> {
+                        if (e instanceof WebClientResponseException) {
+                            WebClientResponseException ex = (WebClientResponseException) e;
+                            log.error("[AdminService] ERROR - Error HTTP {}: {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+                        } else {
+                            log.error("[AdminService] ERROR - Error al crear colección: {}", e.getMessage(), e);
+                        }
+                    })
+                    .block();
+        } catch (Exception e) {
+            log.error("[AdminService] ERROR - Excepción al crear colección: {}", e.getMessage(), e);
+            throw e;
+        }
     }
 
     public void actualizarColeccion(CrearColeccionDTO dto, String handle) {

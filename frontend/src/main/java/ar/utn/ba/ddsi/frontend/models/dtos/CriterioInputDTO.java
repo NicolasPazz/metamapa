@@ -50,6 +50,8 @@ public class CriterioInputDTO {
     private Double lat;
     @JsonProperty("longitud")
     private Double lng;
+    private Double radio;
+    private String provincia;
 
     //CriterioOrigen
     private String origen;

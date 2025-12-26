@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -21,7 +22,7 @@ public class CrearColeccionDTO {
     private String descripcion;
 
     @JsonProperty("criterios")
-    private List<CriterioInputDTO> criterios;
+    private List<CriterioInputDTO> criterios = new ArrayList<>();
 
     @JsonProperty("algoritmo_consenso")
     private String algoritmoConsenso;
@@ -31,22 +32,26 @@ public class CrearColeccionDTO {
 
     @JsonIgnore
     public boolean isValid() {
-        if (criterios == null || criterios.isEmpty()) return false;
-
-        // Validate EVERY criterion in the list
-        for (CriterioInputDTO c : criterios) {
-            if (!isCriterioValid(c)) return false;
+        if (criterios != null && !criterios.isEmpty()) {
+            for (CriterioInputDTO c : criterios) {
+                if (!isCriterioValid(c)) return false;
+            }
         }
         return true;
     }
 
     private boolean isCriterioValid(CriterioInputDTO c) {
         String tipo = c.getTipo();
-        if ("fecha".equals(tipo)) return c.getFechaInicial() != null;
-        if ("lugar".equals(tipo)) return c.getLat() != null && c.getLng() != null;
+        if ("fecha".equals(tipo)) {
+            return (c.getFechaInicial() != null) || (c.getFechaFinal() != null);
+        }
+        if ("lugar".equals(tipo)) {
+            return (c.getProvincia() != null && !c.getProvincia().isEmpty()) ||
+                   (c.getLat() != null && c.getLng() != null);
+        }
         if ("igualdad".equals(tipo)) return c.getCadenaAComparar() != null && c.getTipoDeDato() != null;
         if ("origen".equals(tipo)) return c.getOrigen() != null;
-        if ("fuente".equals(tipo)) return c.getFuentes() != null;
+        if ("fuente".equals(tipo)) return c.getFuentes() != null && !c.getFuentes().isEmpty();
         return true;
     }
 }

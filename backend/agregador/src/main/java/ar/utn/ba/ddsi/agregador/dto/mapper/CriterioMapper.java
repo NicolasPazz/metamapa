@@ -12,8 +12,10 @@ import ar.utn.ba.ddsi.agregador.dto.CriterioFuenteDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioIgualdadDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioLugarDTO;
 import ar.utn.ba.ddsi.agregador.dto.CriterioOrigenDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 public class CriterioMapper {
 
@@ -38,6 +40,8 @@ public class CriterioMapper {
     CriterioLugarDTO dto = new CriterioLugarDTO();
     dto.setLatitud(c.getLat());
     dto.setLongitud(c.getLon());
+    dto.setRadio(c.getRadio());
+    dto.setProvincia(c.getProvincia());
     return dto;
   }
 
@@ -80,7 +84,17 @@ public class CriterioMapper {
   }
 
   private CriterioLugar fromLugarDTO(CriterioLugarDTO dto) {
-    return new CriterioLugar(dto.getLatitud(), dto.getLongitud());
+    if (dto.getProvincia() != null && !dto.getProvincia().isEmpty()) {
+      return new CriterioLugar(dto.getProvincia());
+    } else if (dto.getLatitud() != null && dto.getLongitud() != null) {
+      if (dto.getRadio() != null && dto.getRadio() > 0) {
+        CriterioLugar criterio = new CriterioLugar(dto.getLatitud(), dto.getLongitud(), dto.getRadio());
+        return criterio;
+      } else {
+        return new CriterioLugar(dto.getLatitud(), dto.getLongitud());
+      }
+    }
+    throw new IllegalArgumentException("CriterioLugarDTO debe tener provincia o coordenadas");
   }
 
   private CriterioFuente fromFuenteDTO(CriterioFuenteDTO dto) {
