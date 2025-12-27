@@ -6,8 +6,19 @@
     <div class="content">
 
         <div class="intro" style="text-align: left; background: transparent; padding: 0 0 2rem 0;">
-            <h1>Panel de Estadísticas</h1>
-            <p>Visualización de métricas de colecciones, categorías y solicitudes.</p>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <h1>Panel de Estadísticas</h1>
+                    <p>Visualización de métricas de colecciones, categorías y solicitudes.</p>
+                </div>
+                <button type="button" 
+                        onclick="exportarEstadisticasCSV(this)"
+                        style="padding: 12px 24px; background-color: #17a2b8; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: background-color 0.3s; height: fit-content;"
+                        onmouseover="this.style.backgroundColor='#138496'"
+                        onmouseout="this.style.backgroundColor='#17a2b8'">
+                    <i class="bi bi-download"></i> Exportar CSV
+                </button>
+            </div>
             <h2 th:href="@{/admin}">Volver al panel de control</h2>
         </div>
 
@@ -102,5 +113,41 @@
         </div>
 
     </div> </div>
+
+    <script>
+        function exportarEstadisticasCSV(button) {
+            const originalText = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="bi bi-hourglass-split"></i> Exportando...';
+            
+            fetch('/estadisticas/exportar-csv')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Error al exportar estadísticas');
+                    }
+                    return response.blob();
+                })
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'estadisticas-metamapa.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                    document.body.removeChild(a);
+                    
+                    showToast('Estadísticas exportadas correctamente', 'success');
+                })
+                .catch(error => {
+                    console.error('Error al exportar estadísticas:', error);
+                    showToast('Error al exportar estadísticas: ' + error.message, 'error');
+                })
+                .finally(() => {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                });
+        }
+    </script>
 </div>
 </html>

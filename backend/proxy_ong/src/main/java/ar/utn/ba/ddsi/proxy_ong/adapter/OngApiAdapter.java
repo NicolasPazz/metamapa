@@ -43,14 +43,24 @@ public class OngApiAdapter implements IApiExternaAdapter {
   @PostConstruct
   private void inicializar() {
     try {
+      if (email == null || email.isBlank() || password == null || password.isBlank()) {
+        log.warn("Proxy ONG: credenciales no configuradas (PROXY_ONG_EMAIL/PROXY_ONG_PASSWORD). Se omite autenticación y el servicio iniciará en modo degradado.");
+        return;
+      }
       autenticar();
     } catch (Exception e) {
-      throw new ApiLoginException("No se pudo autenticar con el servicio externo", e);
+      // No bloquear el arranque del stack local si la API externa no está disponible.
+      // El servicio podrá iniciar (actuator/health) y el agregador no quedará esperando.
+      log.error("Proxy ONG: no se pudo autenticar con el servicio externo. Se iniciará en modo degradado.", e);
     }
   }
 
   @Override
   public List<Hecho> obtenerTodosLosHechos() {
+    if (this.accessToken == null || this.tokenType == null) {
+      log.warn("Proxy ONG: sin token de autenticación; devolviendo lista vacía de hechos.");
+      return List.of();
+    }
     List<HechoProxyDTO> dtos = obtenerHechosDesdeApi();
     return convertirDtosADominio(dtos);
   }

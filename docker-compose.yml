@@ -7,8 +7,10 @@ services:
     image: mysql:8.0
     container_name: metamapa-mysql
     init: true
+    env_file:
+      - .env.local
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-metamapa}
       MYSQL_DATABASE: metamapa
       TZ: America/Argentina/Buenos_Aires
     ports:
@@ -35,17 +37,21 @@ services:
         MODULE_NAME: users
     container_name: metamapa-users
     init: true
+    env_file:
+      - .env.local
     environment:
       PORT: 8087
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: users
       DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
       DB_USE_SSL: "false"
       DDL_AUTO: ${DDL_AUTO:-update}
-      ADMIN_USERNAME: ${ADMIN_USERNAME}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-nicolas}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-paz}
+      SEED_CONTRIB_USERNAME: ${SEED_CONTRIB_USERNAME:-lauri33}
+      SEED_CONTRIB_PASSWORD: ${SEED_CONTRIB_PASSWORD:-asd}
       SECURITY_ORIGIN_FILTER_ENABLED: "false"
     ports:
       - "8087:8087"
@@ -71,13 +77,15 @@ services:
         MODULE_NAME: estatica
     container_name: metamapa-estatica
     init: true
+    env_file:
+      - .env.local
     environment:
       PORT: 8082
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: estatica
       DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
       DB_USE_SSL: "false"
       DDL_AUTO: ${DDL_AUTO:-update}
       CSV_STORAGE_PATH: /app/data/csv
@@ -108,13 +116,15 @@ services:
         MODULE_NAME: dinamica
     container_name: metamapa-dinamica
     init: true
+    env_file:
+      - .env.local
     environment:
       PORT: 8081
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: dinamica
       DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
       DB_USE_SSL: "false"
       DDL_AUTO: ${DDL_AUTO:-update}
       MULTIMEDIA_STORAGE_PATH: /app/data/multimedia
@@ -147,18 +157,20 @@ services:
         MODULE_NAME: proxy_ong
     container_name: metamapa-proxy-ong
     init: true
+    env_file:
+      - .env.local
     environment:
       PORT: 8083
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: proxy_ong
       DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
       DB_USE_SSL: "false"
       DDL_AUTO: ${DDL_AUTO:-update}
-      PROXY_ONG_EMAIL: ${PROXY_ONG_EMAIL}
-      PROXY_ONG_PASSWORD: ${PROXY_ONG_PASSWORD}
-      PROXY_ONG_API_URL: ${PROXY_ONG_API_URL}
+      PROXY_ONG_EMAIL: ${PROXY_ONG_EMAIL:-}
+      PROXY_ONG_PASSWORD: ${PROXY_ONG_PASSWORD:-}
+      PROXY_ONG_API_URL: ${PROXY_ONG_API_URL:-http://localhost:9999/api}
       SECURITY_ORIGIN_FILTER_ENABLED: "false"
     ports:
       - "8083:8083"
@@ -184,6 +196,8 @@ services:
         MODULE_NAME: proxy_metamapa
     container_name: metamapa-proxy-metamapa
     init: true
+    env_file:
+      - .env.local
     environment:
       PORT: 8086
       SPRING_PROFILES_ACTIVE: dev
@@ -212,13 +226,15 @@ services:
         MODULE_NAME: agregador
     container_name: metamapa-agregador
     init: true
+    env_file:
+      - .env.local
     environment:
       PORT: 8084
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: agregador
       DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
       DB_USE_SSL: "false"
       DDL_AUTO: ${DDL_AUTO:-update}
       MULTIMEDIA_STORAGE_PATH: /app/data/multimedia
@@ -264,13 +280,15 @@ services:
         MODULE_NAME: estadistica
     container_name: metamapa-estadistica
     init: true
+    env_file:
+      - .env.local
     environment:
       PORT: 8085
       DB_HOST: mysql
       DB_PORT: 3306
       DB_NAME: estadisticas
       DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD}
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
       DB_USE_SSL: "false"
       DDL_AUTO: ${DDL_AUTO:-update}
       AGREGADOR_URL: http://agregador:8084
@@ -301,6 +319,8 @@ services:
         MODULE_NAME: frontend
     container_name: metamapa-frontend
     init: true
+    env_file:
+      - .env.local
     environment:
       PORT: 8080
       AGREGADOR_URL: http://agregador:8084

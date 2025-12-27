@@ -22,49 +22,69 @@ public class AdminInitializer {
     private final IUsuariosRepository usuariosRepository;
     private final String adminUsername;
     private final String adminPassword;
+    private final String contribUsername;
+    private final String contribPassword;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public AdminInitializer(
             IUsuariosRepository usuariosRepository,
             @Value("${admin.username:}") String adminUsername,
-            @Value("${admin.password:}") String adminPassword) {
+            @Value("${admin.password:}") String adminPassword,
+            @Value("${seed.contrib.username:}") String contribUsername,
+            @Value("${seed.contrib.password:}") String contribPassword) {
         this.usuariosRepository = usuariosRepository;
         this.adminUsername = adminUsername;
         this.adminPassword = adminPassword;
+        this.contribUsername = contribUsername;
+        this.contribPassword = contribPassword;
     }
 
     @PostConstruct
     public void init() {
         try {
-            // Solo crear admin si las credenciales están configuradas
-            if (adminUsername == null || adminUsername.isEmpty() || 
+            // Admin
+            if (adminUsername == null || adminUsername.isEmpty() ||
                 adminPassword == null || adminPassword.isEmpty()) {
                 log.warn("admin.username y/o admin.password no configuradas. Saltando inicialización de admin.");
-                return;
-            }
-            
-            Optional<Usuario> adminOpt = usuariosRepository.findByUsername(adminUsername);
-            
-            if (adminOpt.isEmpty()) {
-                log.info("No se encontró usuario admin. Creando usuario admin con username: {}", adminUsername);
-                
-                Usuario admin = new Usuario();
-                admin.setNombre("Admin");
-                admin.setApellido(null);
-                admin.setUsername(adminUsername);
-                admin.setPassword(passwordEncoder.encode(adminPassword));
-                
-                List<Rol> roles = new ArrayList<>();
-                roles.add(Rol.ADMIN);
-                admin.setRoles(roles);
-                
-                usuariosRepository.save(admin);
-                log.info("Usuario admin creado exitosamente con username: {}", adminUsername);
             } else {
-                log.info("Usuario admin ya existe con username: {}", adminUsername);
+                upsertUsuario(adminUsername, adminPassword, "Nicolas", Rol.ADMIN);
+            }
+
+            // Contribuyente
+            if (contribUsername == null || contribUsername.isEmpty() ||
+                contribPassword == null || contribPassword.isEmpty()) {
+                log.warn("seed.contrib.username y/o seed.contrib.password no configuradas. Saltando inicialización de contribuyente.");
+            } else {
+                upsertUsuario(contribUsername, contribPassword, "Lauri", Rol.CONTRIBUYENTE);
             }
         } catch (Exception e) {
             log.error("Error al inicializar usuario admin", e);
+        }
+    }
+
+    private void upsertUsuario(String username, String rawPassword, String nombre, Rol rol) {
+        Optional<Usuario> usuarioOpt = usuariosRepository.findByUsername(username);
+
+        Usuario usuario = usuarioOpt.orElseGet(Usuario::new);
+        boolean isNew = usuarioOpt.isEmpty();
+
+        usuario.setUsername(username);
+        usuario.setNombre(nombre);
+        usuario.setApellido(null);
+
+        List<Rol> roles = new ArrayList<>();
+        roles.add(rol);
+        usuario.setRoles(roles);
+
+        // En dev: asegurar credenciales conocidas. No loguear contraseñas.
+        usuario.setPassword(passwordEncoder.encode(rawPassword));
+
+        usuariosRepository.save(usuario);
+
+        if (isNew) {
+            log.info("Usuario seed creado: username={}, rol={}", username, rol);
+        } else {
+            log.info("Usuario seed actualizado: username={}, rol={}", username, rol);
         }
     }
 }

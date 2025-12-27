@@ -155,8 +155,15 @@ public class AdminService {
             throw new IllegalArgumentException("Debe proporcionar al menos una etiqueta");
         }
 
+        String accessToken = getAccessTokenFromSession();
+        if (accessToken == null) {
+            log.error("[AdminService] ERROR - No hay token de acceso disponible para agregar etiquetas");
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+
         webClientAgregador.patch()
                 .uri("/hechos/"+ hechoId + "/etiquetas")
+                .header("Authorization", "Bearer " + accessToken)
                 .bodyValue(etiquetas)
                 .retrieve()
                 .bodyToMono(Void.class)
@@ -178,6 +185,15 @@ public class AdminService {
                 .bodyToMono(Void.class)
                 .block();
 
+    }
+
+    public String exportarEstadisticasCSV() {
+        log.info("[AdminService] - Exportando estadísticas a CSV");
+        return webClientEstadistica.get()
+                .uri("/export/csv")
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
     }
 
 }
