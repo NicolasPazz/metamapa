@@ -327,6 +327,7 @@ services:
       DINAMICA_URL: http://dinamica:8081
       ESTATICA_URL: http://estatica:8082
       USERS_SERVICE_URL: http://users:8087
+      ESTADISTICA_URL: http://estadistica:8085
       PAGINATION_PAGE_SIZE: ${PAGINATION_PAGE_SIZE:-18}
     ports:
       - "8080:8080"
