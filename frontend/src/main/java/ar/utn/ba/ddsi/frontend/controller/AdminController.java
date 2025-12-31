@@ -43,7 +43,7 @@ public class AdminController {
         
         // Cargar solo los datos esenciales para renderizar la página base
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
-        List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();
+        List<SolicitudDTO> solicitudes = adminService.getAllSolicitudesPendientes();
         List<SolicitudInputDTO> solicitudesCarga = solicitudService.buscarTodasLasSolicitudes();
         List<FuenteDTO> fuentes = fuenteService.getAllFuentes();
         List<String> provincias = coleccionService.getProvinciasConHechos();
@@ -177,9 +177,14 @@ public class AdminController {
         log.info("[AdminController] - GET - /solicitudes");
         try {
             List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
-            model.addAttribute("solicitudes", solicitudes);
+            List<SolicitudInputDTO> solicitudesFiltradas = solicitudes.stream()
+                .filter(s -> s.getEstado() == EstadoSolicitud.PENDIENTE)
+                .collect(Collectors.toList());
+
+            model.addAttribute("solicitudes", solicitudesFiltradas);
             model.addAttribute("isAdmin", true); // Marcar como admin para mostrar botones de acción
-            log.info("[AdminController] - Se encontraron {} solicitudes", solicitudes != null ? solicitudes.size() : 0);
+            log.info("[AdminController] - Se encontraron {} solicitudes pendientes (de {} totales)", 
+                solicitudesFiltradas.size(), solicitudes.size());
         } catch (Exception e) {
             log.error("[AdminController] - Error al obtener solicitudes: {}", e.getMessage(), e);
             redirectAttributes.addFlashAttribute("error", "Error al cargar las solicitudes: " + e.getMessage());

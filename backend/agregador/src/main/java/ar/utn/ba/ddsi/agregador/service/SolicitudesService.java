@@ -111,17 +111,14 @@ public class SolicitudesService {
         return ResponseEntity.badRequest().body("Debe proporcionar un ID de hecho o una combinación de fuente_id e id_origen");
       }
 
-      // Si es spam, no persistir y responder con error
-      if (solicitudEliminacion.esSpam()) {
-        log.warn("[SolicitudesService] Solicitud spam detectada - No se persiste");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body("Spam detectado: El contenido de la solicitud parece ser spam y ha sido rechazado automáticamente");
-      }
-
-      // Persistir la solicitud solo si no es spam
       SolicitudEliminacion solicitud = solicitudesRepository.save(solicitudEliminacion);
 
-      // Responder con éxito
+      if (solicitud.esSpam()) {
+        log.warn("[SolicitudesService] Solicitud spam detectada y persistida con ID: {} - Estado: RECHAZADA", solicitud.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(solicitudMapper.toDTO(solicitud));
+      }
+
+      // Responder con éxito para solicitudes normales
       log.info("[SolicitudesService] Solicitud creada exitosamente con ID: {}", solicitud.getId());
       return ResponseEntity.status(HttpStatus.CREATED).body(solicitudMapper.toDTO(solicitud));
 
@@ -273,9 +270,9 @@ public class SolicitudesService {
   }
 
   public ResponseEntity<List<SolicitudEliminacionDTO>> getAll() {
-    // Solo devolver solicitudes pendientes para el panel de admin
-    List<SolicitudEliminacion> solicitudes = solicitudesRepository.findByEstado(EstadoSolicitud.PENDIENTE);
-    log.info("[SolicitudesService] Encontradas {} solicitudes pendientes", solicitudes.size());
+    // Devolver TODAS las solicitudes (necesario para estadísticas de spam)
+    List<SolicitudEliminacion> solicitudes = solicitudesRepository.findAll();
+    log.info("[SolicitudesService] Encontradas {} solicitudes", solicitudes.size());
     
     List<SolicitudEliminacionDTO> dtos = solicitudes.stream()
         .map(solicitudMapper::toDTO)
