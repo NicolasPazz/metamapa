@@ -671,6 +671,7 @@
 </div>
 
 <div th:fragment="solicitudesEliminacionPanel">
+    <th:block th:with="solicitudesPendientes=${solicitudes != null ? solicitudes.?[estado == 'PENDIENTE'] : {}}">
     <style>
         .badge-status {
             font-size: 0.75rem;
@@ -828,14 +829,14 @@
         }
     </style>
 
-    <div th:if="${#lists.isEmpty(solicitudes)}" class="empty-state">
+    <div th:if="${#lists.isEmpty(solicitudesPendientes)}" class="empty-state">
         <i class="bi bi-inbox"></i>
-        <h4 class="text-muted">No hay solicitudes de eliminación registradas.</h4>
-        <p class="text-muted mt-2">Las solicitudes aparecerán aquí cuando sean creadas.</p>
+        <h4 class="text-muted">No hay solicitudes de eliminación pendientes.</h4>
+        <p class="text-muted mt-2">Las solicitudes pendientes aparecerán aquí cuando sean creadas.</p>
     </div>
 
-    <div th:if="${!#lists.isEmpty(solicitudes)}" class="solicitud-grid">
-        <div th:each="sol : ${solicitudes}" class="solicitud-card shadow-sm">
+    <div th:if="${!#lists.isEmpty(solicitudesPendientes)}" class="solicitud-grid">
+        <div th:each="sol : ${solicitudesPendientes}" class="solicitud-card shadow-sm">
             <div class="solicitud-card-header">
                 <div>
                     <div class="solicitud-id">#<span th:text="${sol.id}">ID</span></div>
@@ -847,7 +848,16 @@
                         Hecho no identificado
                     </div>
                 </div>
-                <span class="badge-status bg-pendiente">PENDIENTE</span>
+                <span th:if="${sol.estado != null}"
+                      th:class="'badge-status ' +
+                      ( ${sol.estado == 'PENDIENTE'} ? 'bg-pendiente' :
+                      ( ${sol.estado == 'ACEPTADA'} ? 'bg-aprobada' : 'bg-rechazada' ) )"
+                      th:text="${(sol.spam != null and sol.spam) ? ('SPAM - ' + sol.estado) : sol.estado}">
+                </span>
+                <span th:if="${sol.estado == null}"
+                      class="badge-status bg-pendiente"
+                      th:text="${(sol.spam != null and sol.spam) ? 'SPAM' : 'PENDIENTE'}">
+                </span>
             </div>
 
             <div class="solicitud-card-body">
@@ -875,7 +885,8 @@
             </div>
 
             <div class="solicitud-card-footer">
-                <form th:action="@{/admin/actualizarSolicitud}" method="post" style="display:inline;">
+                <form th:if="${sol.estado == 'PENDIENTE'}"
+                      th:action="@{/admin/actualizarSolicitud}" method="post" style="display:inline;">
                     <input type="hidden" name="id" th:value="${sol.id}">
                     <button type="submit" name="estado" value="ACEPTADA"
                             class="btn btn-sm btn-danger btn-action"
@@ -885,7 +896,8 @@
                     </button>
                 </form>
 
-                <form th:action="@{/admin/actualizarSolicitud}" method="post" style="display:inline;">
+                <form th:if="${sol.estado == 'PENDIENTE'}"
+                      th:action="@{/admin/actualizarSolicitud}" method="post" style="display:inline;">
                     <input type="hidden" name="id" th:value="${sol.id}">
                     <button type="submit" name="estado" value="RECHAZADA"
                             class="btn btn-sm btn-outline-secondary btn-action"
@@ -893,7 +905,13 @@
                         <i class="bi bi-x-lg"></i> Rechazar Solicitud
                     </button>
                 </form>
+
+                <div th:if="${sol.estado != 'PENDIENTE'}" class="meta-item">
+                    <i class="bi bi-info-circle"></i>
+                    <span th:text="'Solicitud ' + ${sol.estado}"></span>
+                </div>
             </div>
         </div>
     </div>
+</th:block>
 </div>

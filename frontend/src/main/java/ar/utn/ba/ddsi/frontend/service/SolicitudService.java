@@ -24,6 +24,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -106,6 +108,8 @@ public class SolicitudService {
             throw new RuntimeException("Error al buscar solicitudes: " + e.getMessage(), e);
         }
     }
+  
+
 
     public SolicitudDTO crearSolicitud(SolicitudDTO solicitud) {
         return webClient.post()

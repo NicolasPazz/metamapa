@@ -41,9 +41,10 @@ public class AdminController {
             model.addAttribute("httpServletRequest", request);
         }
         
-        // Cargar solo los datos esenciales para renderizar la página base
+
+       
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
-        List<SolicitudDTO> solicitudes = adminService.getAllSolicitudesPendientes();
+        List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();
         List<SolicitudInputDTO> solicitudesCarga = solicitudService.buscarTodasLasSolicitudes();
         List<FuenteDTO> fuentes = fuenteService.getAllFuentes();
         List<String> provincias = coleccionService.getProvinciasConHechos();
