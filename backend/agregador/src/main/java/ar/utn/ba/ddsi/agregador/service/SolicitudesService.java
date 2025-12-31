@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -110,18 +111,17 @@ public class SolicitudesService {
         return ResponseEntity.badRequest().body("Debe proporcionar un ID de hecho o una combinación de fuente_id e id_origen");
       }
 
-      // Persistir la solicitud (incluso si es spam, para estadísticas)
-      SolicitudEliminacion solicitud = solicitudesRepository.save(solicitudEliminacion);
-
-      // Si es spam, persistir silenciosamente pero responder con error
-      if (solicitud.esSpam()) {
-        log.warn("[SolicitudesService] Solicitud spam detectada y persistida (ID: {}) - Respondiendo con error",
-            solicitud.getId());
+      // Si es spam, no persistir y responder con error
+      if (solicitudEliminacion.esSpam()) {
+        log.warn("[SolicitudesService] Solicitud spam detectada - No se persiste");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
             .body("Spam detectado: El contenido de la solicitud parece ser spam y ha sido rechazado automáticamente");
       }
 
-      // Si no es spam, responder con éxito
+      // Persistir la solicitud solo si no es spam
+      SolicitudEliminacion solicitud = solicitudesRepository.save(solicitudEliminacion);
+
+      // Responder con éxito
       log.info("[SolicitudesService] Solicitud creada exitosamente con ID: {}", solicitud.getId());
       return ResponseEntity.status(HttpStatus.CREATED).body(solicitudMapper.toDTO(solicitud));
 
@@ -159,6 +159,7 @@ public class SolicitudesService {
   }
 
   @Transactional
+  @CacheEvict(value = {"hechosPrimeraPagina", "provincias", "categorias"}, allEntries = true)
   public ResponseEntity<?> actualizarEstado(Long id, SolicitudEliminacionDTO dto) {
     if (id == null || dto == null) {
       return ResponseEntity.badRequest().body("Debe proporcionar un ID de solicitud y un DTO válido.");
@@ -170,13 +171,15 @@ public class SolicitudesService {
     EstadoSolicitud nuevoEstado = dto.getEstado();
 
     try {
-      // Verificar si la solicitud existe y validar que no sea spam
-      Optional<SolicitudEliminacion> solicitudOpt = solicitudesRepository.findById(id);
+      // Verificar si la solicitud existe (con JOIN FETCH para cargar el hecho asociado)
+      Optional<SolicitudEliminacion> solicitudOpt = solicitudesRepository.findByIdWithHecho(id);
       if (solicitudOpt.isEmpty()) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No se encontró la solicitud con ID " + id);
       }
 
       SolicitudEliminacion solicitud = solicitudOpt.get();
+      log.info("[SolicitudesService] Solicitud {} cargada. Hecho asociado: {}", 
+          id, solicitud.getHecho() != null ? solicitud.getHecho().getId() : "ninguno");
 
       // Solo se pueden procesar solicitudes en estado PENDIENTE
       if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
@@ -193,10 +196,12 @@ public class SolicitudesService {
       }
 
       if (nuevoEstado == EstadoSolicitud.ACEPTADA) {
-        this.aceptar(id);
+        this.aceptarInterno(solicitud);
+        log.info("[SolicitudesService] Solicitud {} aceptada. Caché invalidada.", id);
         return ResponseEntity.ok("Solicitud aceptada");
       } else if (nuevoEstado == EstadoSolicitud.RECHAZADA) {
-        this.rechazar(id);
+        this.rechazarInterno(solicitud);
+        log.info("[SolicitudesService] Solicitud {} rechazada.", id);
         return ResponseEntity.ok("Solicitud rechazada");
       } else {
         return ResponseEntity.badRequest().body("Estado no permitido para actualización. Solo se permite ACEPTADA o RECHAZADA.");
@@ -235,36 +240,42 @@ public class SolicitudesService {
     }
   }
 
-  @Transactional
-  public void aceptar(Long idSolicitud) {
-    Optional<SolicitudEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
-    if (solicitud.isEmpty()) {
-      throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
+  /**
+   * Método interno para aceptar una solicitud. 
+   * Debe ser llamado desde actualizarEstado para que @CacheEvict funcione correctamente.
+   */
+  private void aceptarInterno(SolicitudEliminacion solicitud) {
+    // Ocultar el hecho si existe en la BD
+    Hecho hecho = solicitud.getHecho();
+    if (hecho != null) {
+      hecho.ocultar();
+      hechosRepository.save(hecho);
+      log.info("[SolicitudesService] Hecho {} ocultado. Estado actual: {}", hecho.getId(), hecho.getEstado());
+    } else {
+      log.warn("[SolicitudesService] La solicitud {} no tiene un hecho asociado en la BD. " +
+          "Se agregará a la blacklist via fuenteId={}, idOrigen={}", 
+          solicitud.getId(), solicitud.getFuenteId(), solicitud.getIdOrigen());
     }
-    SolicitudEliminacion solicitudEncontrada = solicitud.get();
 
-    solicitudEncontrada.aceptar();
-    solicitudesRepository.save(solicitudEncontrada);
-
-    log.info("[SolicitudesService] Solicitud {} aceptada.", idSolicitud);
+    // Cambiar estado de la solicitud a ACEPTADA
+    solicitud.transicionarEstado(EstadoSolicitud.ACEPTADA);
+    solicitudesRepository.save(solicitud);
   }
 
-  @Transactional
-  public void rechazar(Long idSolicitud) {
-    Optional<SolicitudEliminacion> solicitud = solicitudesRepository.findById(idSolicitud);
-    if (solicitud.isEmpty()) {
-      throw new IllegalArgumentException("No se encontró la solicitud con ID " + idSolicitud);
-    }
-    SolicitudEliminacion solicitudEncontrada = solicitud.get();
-
-    solicitudEncontrada.rechazar();
-    solicitudesRepository.save(solicitudEncontrada);
-    log.info("[SolicitudesService] Solicitud {} rechazada.", idSolicitud);
+  /**
+   * Método interno para rechazar una solicitud.
+   * Debe ser llamado desde actualizarEstado.
+   */
+  private void rechazarInterno(SolicitudEliminacion solicitud) {
+    // Cambiar estado de la solicitud a RECHAZADA (el hecho permanece visible)
+    solicitud.transicionarEstado(EstadoSolicitud.RECHAZADA);
+    solicitudesRepository.save(solicitud);
   }
 
   public ResponseEntity<List<SolicitudEliminacionDTO>> getAll() {
-    List<SolicitudEliminacion> solicitudes = solicitudesRepository.findAll();
-    log.info("[SolicitudesService] Encontradas {} solicitudes en la base de datos", solicitudes.size());
+    // Solo devolver solicitudes pendientes para el panel de admin
+    List<SolicitudEliminacion> solicitudes = solicitudesRepository.findByEstado(EstadoSolicitud.PENDIENTE);
+    log.info("[SolicitudesService] Encontradas {} solicitudes pendientes", solicitudes.size());
     
     List<SolicitudEliminacionDTO> dtos = solicitudes.stream()
         .map(solicitudMapper::toDTO)

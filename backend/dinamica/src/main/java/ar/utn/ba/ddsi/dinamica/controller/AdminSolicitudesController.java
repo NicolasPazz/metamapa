@@ -29,7 +29,8 @@ public class AdminSolicitudesController {
   @GetMapping
   public ResponseEntity<List<SolicitudOutputDTO>> buscarTodasLasSolicitudes() {
     log.info("[AdminSolicitudesController] - GET - /api/admin/solicitudes");
-    List<SolicitudOutputDTO> solicitudes = solicitudesService.buscarTodas();
+    List<SolicitudOutputDTO> solicitudes = solicitudesService.buscarPendientes();
+    log.info("[AdminSolicitudesController] - Se encontraron {} solicitudes pendientes", solicitudes.size());
     return ResponseEntity.ok(solicitudes);
   }
 

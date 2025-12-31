@@ -16,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -72,19 +73,37 @@ public class SolicitudService {
         try {
             String accessToken = getAccessTokenFromSession();
             if (accessToken == null) {
-                log.warn("No hay token de acceso disponible para buscar solicitudes");
-                return Collections.emptyList();
+                log.error("No hay token de acceso disponible para buscar solicitudes");
+                throw new RuntimeException("No hay token de acceso disponible. Por favor, inicie sesión nuevamente.");
             }
-            return webClient2.get()
+            log.info("Buscando todas las solicitudes con token disponible");
+            List<SolicitudInputDTO> solicitudes = webClient2.get()
                     .uri("/admin/solicitudes")
                     .header("Authorization", "Bearer " + accessToken)
                     .retrieve()
+                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> {
+                        log.error("Error HTTP al buscar solicitudes: {} - {}", response.statusCode(), response.statusCode().value());
+                        return response.bodyToMono(String.class)
+                                .doOnNext(body -> log.error("Cuerpo de respuesta de error: {}", body))
+                                .flatMap(body -> Mono.<RuntimeException>error(new RuntimeException("Error del backend: " + response.statusCode() + " - " + body)));
+                    })
                     .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {})
                     .block();
+            
+            if (solicitudes == null) {
+                log.warn("El backend devolvió null para las solicitudes");
+                return Collections.emptyList();
+            }
+            
+            log.info("Se encontraron {} solicitudes", solicitudes.size());
+            return solicitudes;
 
+        } catch (WebClientResponseException e) {
+            log.error("Error del WebClient al buscar todas las solicitudes: {} - {}", e.getStatusCode(), e.getResponseBodyAsString());
+            throw new RuntimeException("Error al comunicarse con el backend: " + e.getMessage(), e);
         } catch (Exception e) {
-            log.error("Error al buscar todas las solicitudes: {}", e.getMessage(), e);
-            return Collections.emptyList();
+            log.error("Error inesperado al buscar todas las solicitudes: {}", e.getMessage(), e);
+            throw new RuntimeException("Error al buscar solicitudes: " + e.getMessage(), e);
         }
     }
 
@@ -258,6 +277,135 @@ public class SolicitudService {
             throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
         } catch (Exception e) {
             log.error("Error al conectar con el servicio de Dinámica para aceptar solicitud con modificaciones ID: {}", idSolicitud, e);
+            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
+        }
+    }
+
+    public void aceptarSolicitud(Long idSolicitud) {
+        String accessToken = getAccessTokenFromSession();
+        if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+        
+        Map<String, Object> adminDTO = new HashMap<>();
+        adminDTO.put("estado", EstadoSolicitud.ACEPTADO.name());
+        
+        try {
+            log.info("Aceptando solicitud ID: {}", idSolicitud);
+            webClient2.patch()
+                    .uri("/admin/solicitudes/" + idSolicitud)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(adminDTO)
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
+                    )
+                    .toBodilessEntity()
+                    .block();
+            log.info("Solicitud {} aceptada exitosamente", idSolicitud);
+        } catch (WebClientResponseException e) {
+            log.error("Error del backend al aceptar solicitud ID: {}, status: {}, body: {}",
+                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error al conectar con el servicio de Dinámica para aceptar solicitud ID: {}", idSolicitud, e);
+            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
+        }
+    }
+
+    public void rechazarSolicitud(Long idSolicitud) {
+        String accessToken = getAccessTokenFromSession();
+        if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+        
+        Map<String, Object> adminDTO = new HashMap<>();
+        adminDTO.put("estado", EstadoSolicitud.RECHAZADO.name());
+        
+        try {
+            log.info("Rechazando solicitud ID: {}", idSolicitud);
+            webClient2.patch()
+                    .uri("/admin/solicitudes/" + idSolicitud)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(adminDTO)
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
+                    )
+                    .toBodilessEntity()
+                    .block();
+            log.info("Solicitud {} rechazada exitosamente", idSolicitud);
+        } catch (WebClientResponseException e) {
+            log.error("Error del backend al rechazar solicitud ID: {}, status: {}, body: {}",
+                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error al conectar con el servicio de Dinámica para rechazar solicitud ID: {}", idSolicitud, e);
+            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
+        }
+    }
+
+    public void aceptarSolicitudConModificaciones(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
+        String accessToken = getAccessTokenFromSession();
+        if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+        
+        Map<String, Object> adminDTO = construirMapAdminDTO(formDTO, EstadoSolicitud.ACEPTADO_MODIFICADO);
+        
+        try {
+            log.info("Aceptando solicitud ID: {} con modificaciones", idSolicitud);
+            
+            // El backend AdminSolicitudesController solo acepta JSON
+            // Si hay archivos nuevos, necesitarían ser procesados primero
+            // Por ahora, enviamos solo JSON (los archivos existentes se mantienen)
+            webClient2.patch()
+                    .uri("/admin/solicitudes/" + idSolicitud)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(adminDTO)
+                    .retrieve()
+                    .onStatus(
+                            status -> status.is4xxClientError() || status.is5xxServerError(),
+                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
+                    )
+                    .toBodilessEntity()
+                    .block();
+            
+            log.info("Solicitud {} aceptada con modificaciones exitosamente", idSolicitud);
+        } catch (WebClientResponseException e) {
+            log.error("Error del backend al aceptar solicitud con modificaciones ID: {}, status: {}, body: {}",
+                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error al conectar con el servicio de Dinámica para aceptar solicitud con modificaciones ID: {}", idSolicitud, e);
+            throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
+        }
+    }
+
+    public SolicitudInputDTO obtenerSolicitudPorId(Long idSolicitud) {
+        try {
+            String accessToken = getAccessTokenFromSession();
+            if (accessToken == null) {
+                throw new RuntimeException("No hay token de acceso disponible");
+            }
+            
+            return webClient2.get()
+                    .uri("/solicitudes/" + idSolicitud)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .bodyToMono(SolicitudInputDTO.class)
+                    .block();
+        } catch (WebClientResponseException e) {
+            log.error("Error del backend al obtener solicitud ID: {}, status: {}, body: {}",
+                    idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
+            throw new RuntimeException("Error del Backend: " + e.getResponseBodyAsString());
+        } catch (Exception e) {
+            log.error("Error al conectar con el servicio de Dinámica para obtener solicitud ID: {}", idSolicitud, e);
             throw new RuntimeException("No se pudo conectar con el servicio de Dinámica", e);
         }
     }

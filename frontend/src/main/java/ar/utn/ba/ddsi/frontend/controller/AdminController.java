@@ -8,11 +8,14 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Collections;
 import java.util.List;
@@ -79,9 +82,17 @@ public class AdminController {
         log.info("[AdminController] - POST - /admin/actualizarSolicitud - id: {}, estado: {}", solicitudId, estado);
         try {
             adminService.actualizarSolicitud(solicitudId, estado);
-            redirectAttributes.addFlashAttribute("success", "Solicitud actualizada!");
+            String mensaje = estado.equals("ACEPTADA") 
+                ? "Solicitud de eliminación aprobada. El hecho ha sido ocultado." 
+                : "Solicitud de eliminación rechazada.";
+            redirectAttributes.addFlashAttribute("success", mensaje);
+        } catch (WebClientResponseException e) {
+            String errorMsg = e.getResponseBodyAsString();
+            log.error("[AdminController] - Error al actualizar solicitud: {} - {}", e.getStatusCode(), errorMsg, e);
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar: " + errorMsg);
         } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Error al actualizar.");
+            log.error("[AdminController] - Error al actualizar solicitud: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error al actualizar: " + e.getMessage());
         }
         return "redirect:/admin";
     }
@@ -162,13 +173,103 @@ public class AdminController {
         return "redirect:/admin";
     }
     @GetMapping("/solicitudes")
-    public String verPanelSolicitudes(Model model) {
+    public String verPanelSolicitudes(Model model, RedirectAttributes redirectAttributes) {
         log.info("[AdminController] - GET - /solicitudes");
-        List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
-
-        model.addAttribute("solicitudes", solicitudes);
+        try {
+            List<SolicitudInputDTO> solicitudes = solicitudService.buscarTodasLasSolicitudes();
+            model.addAttribute("solicitudes", solicitudes);
+            model.addAttribute("isAdmin", true); // Marcar como admin para mostrar botones de acción
+            log.info("[AdminController] - Se encontraron {} solicitudes", solicitudes != null ? solicitudes.size() : 0);
+        } catch (Exception e) {
+            log.error("[AdminController] - Error al obtener solicitudes: {}", e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error al cargar las solicitudes: " + e.getMessage());
+            model.addAttribute("solicitudes", Collections.emptyList());
+            model.addAttribute("isAdmin", true);
+        }
 
         return "admin/solicitudes";
+    }
+
+    @PatchMapping("/solicitudes/{id}/aceptar")
+    @ResponseBody
+    public ResponseEntity<?> aceptarSolicitud(@PathVariable Long id) {
+        log.info("[AdminController] - PATCH - /solicitudes/{}/aceptar", id);
+        try {
+            solicitudService.aceptarSolicitud(id);
+            return ResponseEntity.ok("Solicitud aceptada correctamente");
+        } catch (WebClientResponseException e) {
+            String mensajeErrorDelBackend = e.getResponseBodyAsString();
+            String mensaje = !mensajeErrorDelBackend.isEmpty()
+                            ? mensajeErrorDelBackend 
+                            : "Error al aceptar la solicitud. Por favor, intente nuevamente.";
+            return ResponseEntity.status(e.getStatusCode()).body(mensaje);
+        } catch (Exception e) {
+            log.error("[AdminController] - Error al aceptar solicitud {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al aceptar la solicitud: " + e.getMessage());
+        }
+    }
+
+    @PatchMapping("/solicitudes/{id}/rechazar")
+    @ResponseBody
+    public ResponseEntity<?> rechazarSolicitud(@PathVariable Long id) {
+        log.info("[AdminController] - PATCH - /solicitudes/{}/rechazar", id);
+        try {
+            solicitudService.rechazarSolicitud(id);
+            return ResponseEntity.ok("Solicitud rechazada correctamente");
+        } catch (WebClientResponseException e) {
+            String mensajeErrorDelBackend = e.getResponseBodyAsString();
+            String mensaje = !mensajeErrorDelBackend.isEmpty()
+                            ? mensajeErrorDelBackend 
+                            : "Error al rechazar la solicitud. Por favor, intente nuevamente.";
+            return ResponseEntity.status(e.getStatusCode()).body(mensaje);
+        } catch (Exception e) {
+            log.error("[AdminController] - Error al rechazar solicitud {}: {}", id, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al rechazar la solicitud: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/solicitudes/{id}/aceptar-con-modificaciones")
+    public String mostrarFormularioAceptarConModificaciones(@PathVariable Long id, Model model, RedirectAttributes redirectAttributes) {
+        log.info("[AdminController] - GET - /solicitudes/{}/aceptar-con-modificaciones", id);
+        try {
+            SolicitudInputDTO solicitud = solicitudService.obtenerSolicitudPorId(id);
+            if (solicitud == null) {
+                redirectAttributes.addFlashAttribute("error", "Solicitud no encontrada.");
+                return "redirect:/solicitudes";
+            }
+            model.addAttribute("solicitud", solicitud);
+            model.addAttribute("esAceptarConModificaciones", true);
+            return "admin/editar_solicitud";
+        } catch (Exception e) {
+            log.error("[AdminController] - Error al obtener solicitud {}: {}", id, e.getMessage(), e);
+            redirectAttributes.addFlashAttribute("error", "Error al cargar la solicitud: " + e.getMessage());
+            return "redirect:/solicitudes";
+        }
+    }
+
+    @PatchMapping(value = "/solicitudes/{id}/aceptar-con-modificaciones", consumes = "multipart/form-data")
+    @ResponseBody
+    public ResponseEntity<?> aceptarSolicitudConModificaciones(
+            @PathVariable Long id,
+            @ModelAttribute SolicitudEdicionFormDTO formDTO) {
+        log.info("[AdminController] - PATCH - /solicitudes/{}/aceptar-con-modificaciones - id: {}, titulo: {}, descripcion: {}, categoria: {}, latitud: {}, longitud: {}, fecha_acontecimiento: {}, archivos: {}",
+                id, id, formDTO.getTitulo(), formDTO.getDescripcion(),
+                formDTO.getCategoria(), formDTO.getLatitud(), formDTO.getLongitud(),
+                formDTO.getFecha_acontecimiento(), formDTO.getArchivos() != null ? formDTO.getArchivos().size() : 0);
+        try {
+            solicitudService.aceptarSolicitudConModificaciones(id, formDTO);
+            return ResponseEntity.ok("Solicitud aceptada con modificaciones correctamente");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (WebClientResponseException e) {
+            String mensajeErrorDelBackend = e.getResponseBodyAsString();
+            String mensaje = !mensajeErrorDelBackend.isEmpty()
+                            ? mensajeErrorDelBackend 
+                            : "Error al aceptar la solicitud con modificaciones. Por favor, intente nuevamente.";
+            return ResponseEntity.status(e.getStatusCode()).body(mensaje);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al aceptar la solicitud con modificaciones: " + e.getMessage());
+        }
     }
 
     @PostMapping("/admin/actualizar-agregador")

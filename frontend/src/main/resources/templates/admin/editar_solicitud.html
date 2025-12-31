@@ -224,6 +224,109 @@
             resize: vertical;
         }
 
+        /* Estilos para multimedia existente */
+        .existing-media-container {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 1.25rem;
+            border: 1px solid #e2e8f0;
+        }
+
+        .existing-media-card {
+            background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .existing-media-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .existing-media-card.marked-for-deletion {
+            border-color: #dc3545;
+            opacity: 0.6;
+        }
+
+        .existing-media-card.marked-for-deletion .media-preview {
+            filter: grayscale(100%);
+        }
+
+        .media-preview {
+            width: 100%;
+            height: 140px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .media-preview .img-preview {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .existing-media-card:hover .img-preview {
+            transform: scale(1.05);
+        }
+
+        .video-placeholder, .file-placeholder {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6c757d;
+        }
+
+        .video-placeholder i, .file-placeholder i {
+            font-size: 2.5rem;
+            color: #667eea;
+        }
+
+        .media-info {
+            padding: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            background: #fff;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .media-name {
+            font-size: 0.8rem;
+            color: #4a5568;
+            max-width: 120px;
+        }
+
+        .media-actions .btn-remove-media {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .media-actions .btn-remove-media.active {
+            background-color: #dc3545;
+            color: #fff;
+            border-color: #dc3545;
+        }
+
+        .deletion-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #dc3545;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+
         @media (max-width: 768px) {
             .form-body {
                 padding: 1.5rem;
@@ -302,25 +405,32 @@
                                         </label>
                                         <div class="row g-3">
                                             <div class="col-md-6">
+                                                <label for="latitud" class="form-label small text-muted mb-1">Latitud</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text">Lat</span>
-                                                    <input type="number" step="any" class="form-control"
+                                                    <input type="text" inputmode="decimal" class="form-control"
                                                            id="latitud" name="latitud"
-                                                           th:value="${solicitud.latitud}" 
-                                                           required min="-90" max="90"
+                                                           th:value="${solicitud.latitud != null ? #numbers.formatDecimal(solicitud.latitud, 1, 'NONE', 6, 'POINT') : ''}" 
+                                                           required
+                                                           pattern="-?[0-9]*\.?[0-9]+"
                                                            placeholder="-34.603722">
                                                 </div>
                                             </div>
                                             <div class="col-md-6">
+                                                <label for="longitud" class="form-label small text-muted mb-1">Longitud</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text">Lng</span>
-                                                    <input type="number" step="any" class="form-control"
+                                                    <input type="text" inputmode="decimal" class="form-control"
                                                            id="longitud" name="longitud"
-                                                           th:value="${solicitud.longitud}" 
-                                                           required min="-180" max="180"
+                                                           th:value="${solicitud.longitud != null ? #numbers.formatDecimal(solicitud.longitud, 1, 'NONE', 6, 'POINT') : ''}" 
+                                                           required
+                                                           pattern="-?[0-9]*\.?[0-9]+"
                                                            placeholder="-58.381592">
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="form-text mt-2">
+                                            <i class="bi bi-info-circle"></i> Latitud: -90 a 90 | Longitud: -180 a 180
                                         </div>
                                     </div>
                                 </div>
@@ -342,9 +452,75 @@
                                 </div>
 
                                 <div class="form-section">
+                                    <label for="descripcion" class="form-label">
+                                        <i class="bi bi-text-paragraph text-secondary"></i>
+                                        Descripción Detallada
+                                    </label>
+                                    <textarea class="form-control textarea-custom" id="descripcion" name="descripcion" rows="5"
+                                              placeholder="Describa los detalles del incidente, situación observada, y cualquier información relevante que considere importante..."
+                                              th:attr="data-descripcion-inicial=${solicitud.descripcion != null ? solicitud.descripcion : ''}"></textarea>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> Proporcione una descripción clara y detallada del hecho.
+                                    </div>
+                                </div>
+
+                                <!-- Multimedia existente -->
+                                <div class="form-section" th:if="${solicitud.contenidoMultimedia != null && !solicitud.contenidoMultimedia.isEmpty()}">
+                                    <label class="form-label">
+                                        <i class="bi bi-images text-primary"></i>
+                                        Contenido Multimedia Existente
+                                    </label>
+                                    <div class="existing-media-container">
+                                        <div class="row g-3">
+                                            <div th:each="media, iterStat : ${solicitud.contenidoMultimedia}" class="col-md-4 col-sm-6">
+                                                <div class="existing-media-card" th:id="'media-card-' + ${iterStat.index}">
+                                                    <div class="media-preview">
+                                                        <!-- Mostrar imagen si es tipo imagen -->
+                                                        <img th:if="${media.tipoContenido != null && media.tipoContenido.startsWith('image')}"
+                                                             th:src="@{'/api/multimedia/' + ${media.pathArchivo}}"
+                                                             alt="Imagen adjunta"
+                                                             class="img-preview"
+                                                             onerror="this.onerror=null; this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%22100%22><rect fill=%22%23f0f0f0%22 width=%22100%22 height=%22100%22/><text x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22 dy=%22.3em%22 fill=%22%23999%22>Sin vista previa</text></svg>';">
+                                                        <!-- Mostrar icono si es video -->
+                                                        <div th:if="${media.tipoContenido != null && media.tipoContenido.startsWith('video')}" class="video-placeholder">
+                                                            <i class="bi bi-camera-video-fill"></i>
+                                                            <span class="small">Video</span>
+                                                        </div>
+                                                        <!-- Mostrar icono genérico para otros tipos -->
+                                                        <div th:if="${media.tipoContenido == null || (!media.tipoContenido.startsWith('image') && !media.tipoContenido.startsWith('video'))}" class="file-placeholder">
+                                                            <i class="bi bi-file-earmark"></i>
+                                                            <span class="small">Archivo</span>
+                                                        </div>
+                                                    </div>
+                                                    <div class="media-info">
+                                                        <span class="media-name text-truncate" th:text="${media.pathArchivo != null ? media.pathArchivo : 'Archivo'}"></span>
+                                                        <div class="media-actions">
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-outline-danger btn-remove-media"
+                                                                    th:data-index="${iterStat.index}"
+                                                                    th:data-path="${media.pathArchivo}"
+                                                                    title="Marcar para eliminar">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" 
+                                                           th:name="'eliminar_multimedia[' + ${iterStat.index} + ']'" 
+                                                           th:id="'eliminar-' + ${iterStat.index}"
+                                                           value="false">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="form-text mt-2">
+                                            <i class="bi bi-info-circle"></i> Haga clic en el icono de papelera para marcar archivos a eliminar.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="form-section">
                                     <label for="fotos" class="form-label">
                                         <i class="bi bi-image text-warning"></i>
-                                        Agregar Evidencia Multimedia
+                                        Agregar Nueva Evidencia Multimedia
                                     </label>
                                     <div class="file-upload-area" id="fileUploadArea">
                                         <label for="fotos" class="file-input-label">
@@ -364,23 +540,10 @@
                                     </div>
                                 </div>
 
-                                <div class="form-section">
-                                    <label for="descripcion" class="form-label">
-                                        <i class="bi bi-text-paragraph text-secondary"></i>
-                                        Descripción Detallada
-                                    </label>
-                                    <textarea class="form-control textarea-custom" id="descripcion" name="descripcion" rows="5"
-                                              placeholder="Describa los detalles del incidente, situación observada, y cualquier información relevante que considere importante..."
-                                              th:text="${solicitud.descripcion}"></textarea>
-                                    <div class="form-text">
-                                        <i class="bi bi-info-circle"></i> Proporcione una descripción clara y detallada del hecho.
-                                    </div>
-                                </div>
-
                                 <hr class="my-5" style="border-color: #e2e8f0;">
 
                                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                                    <a th:href="@{/admin/solicitudes}" class="btn btn-cancel">
+                                    <a th:href="@{/solicitudes}" class="btn btn-cancel">
                                         <i class="bi bi-arrow-left me-2"></i>Cancelar
                                     </a>
                                     <button type="submit" class="btn btn-submit">
@@ -404,6 +567,15 @@
     <script>
         // Configurar fecha máxima para el campo de fecha (en zona local)
         document.addEventListener('DOMContentLoaded', function() {
+            // Inicializar textarea de descripción
+            const descripcionTextarea = document.getElementById('descripcion');
+            if (descripcionTextarea) {
+                const descripcionInicial = descripcionTextarea.getAttribute('data-descripcion-inicial');
+                if (descripcionInicial) {
+                    descripcionTextarea.value = descripcionInicial;
+                }
+            }
+            
             const fechaInput = document.getElementById('fechaAcontecimiento');
             if (fechaInput) {
                 // Establecer fecha máxima como ahora (en zona local)
@@ -417,7 +589,7 @@
                 
                 // Si hay un valor inicial (desde el servidor), convertirlo de UTC a zona local
                 const valorInicialUTC = fechaInput.getAttribute('data-utc-value');
-                if (valorInicialUTC && valorInicialUTC !== '') {
+                if (valorInicialUTC && valorInicialUTC !== '' && typeof convertUTCToLocal === 'function') {
                     // El valor viene en formato UTC desde el servidor (LocalDateTime.toString())
                     // Necesitamos convertirlo a zona local para mostrarlo en el input datetime-local
                     const fechaLocal = convertUTCToLocal(valorInicialUTC);
@@ -499,12 +671,18 @@
             
             // Convertir fecha de zona local del navegador a UTC antes de enviar
             const fechaAcontecimientoInput = document.getElementById('fechaAcontecimiento');
-            if (fechaAcontecimientoInput && fechaAcontecimientoInput.value) {
+            if (fechaAcontecimientoInput && fechaAcontecimientoInput.value && typeof convertLocalToUTC === 'function') {
                 const fechaLocal = fechaAcontecimientoInput.value; // Formato: yyyy-MM-ddTHH:mm (zona local)
                 const fechaUTC = convertLocalToUTC(fechaLocal); // Convertir a UTC
                 if (fechaUTC) {
                     formData.set('fecha_acontecimiento', fechaUTC);
+                } else {
+                    // Si la conversión falla, usar el valor original
+                    formData.set('fecha_acontecimiento', fechaLocal);
                 }
+            } else if (fechaAcontecimientoInput && fechaAcontecimientoInput.value) {
+                // Si la función no está disponible, usar el valor directamente
+                formData.set('fecha_acontecimiento', fechaAcontecimientoInput.value);
             }
             
             const submitButton = form.querySelector('button[type="submit"]');

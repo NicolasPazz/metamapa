@@ -248,17 +248,19 @@
 
                 <div class="solicitud-card-footer">
                     <div th:if="${isAdmin}">
-                        <form th:action="@{/solicitudes/{id}/aceptar(id=${sol.id})}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-success btn-action" title="Aceptar">
-                                <i class="bi bi-check-lg"></i> Aceptar
-                            </button>
-                        </form>
+                        <button type="button" 
+                                class="btn btn-sm btn-success btn-action btn-aceptar" 
+                                th:data-id="${sol.id}"
+                                title="Aceptar">
+                            <i class="bi bi-check-lg"></i> Aceptar
+                        </button>
 
-                        <form th:action="@{/solicitudes/{id}/rechazar(id=${sol.id})}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-sm btn-danger btn-action" title="Rechazar">
-                                <i class="bi bi-x-lg"></i> Rechazar
-                            </button>
-                        </form>
+                        <button type="button" 
+                                class="btn btn-sm btn-danger btn-action btn-rechazar" 
+                                th:data-id="${sol.id}"
+                                title="Rechazar">
+                            <i class="bi bi-x-lg"></i> Rechazar
+                        </button>
 
                         <a th:href="@{/solicitudes/{id}/aceptar-con-modificaciones(id=${sol.id})}"
                            class="btn btn-sm btn-info btn-action text-white"
@@ -266,12 +268,6 @@
                             <i class="bi bi-check-circle"></i> Aceptar con Modificaciones
                         </a>
                     </div>
-
-                    <a th:href="@{/solicitudes/{id}/editar(id=${sol.id})}"
-                       class="btn btn-sm btn-warning btn-action text-white"
-                       title="Editar">
-                        <i class="bi bi-pencil-square"></i> Editar
-                    </a>
                 </div>
             </div>
         </div>
@@ -289,6 +285,70 @@
                         element.textContent = localDate;
                     }
                 }
+            });
+
+            // Manejar botones de aceptar con PATCH
+            document.querySelectorAll('.btn-aceptar').forEach(function(btn) {
+                btn.addEventListener('click', async function() {
+                    const id = this.getAttribute('data-id');
+                    if (!confirm('¿Está seguro de aceptar esta solicitud?')) return;
+                    
+                    const originalContent = this.innerHTML;
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                    
+                    try {
+                        const response = await fetch('/solicitudes/' + id + '/aceptar', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            const errorText = await response.text();
+                            alert('Error al aceptar la solicitud: ' + errorText);
+                            this.disabled = false;
+                            this.innerHTML = originalContent;
+                        }
+                    } catch (error) {
+                        alert('Error de conexión al aceptar la solicitud');
+                        this.disabled = false;
+                        this.innerHTML = originalContent;
+                    }
+                });
+            });
+
+            // Manejar botones de rechazar con PATCH
+            document.querySelectorAll('.btn-rechazar').forEach(function(btn) {
+                btn.addEventListener('click', async function() {
+                    const id = this.getAttribute('data-id');
+                    if (!confirm('¿Está seguro de rechazar esta solicitud?')) return;
+                    
+                    const originalContent = this.innerHTML;
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                    
+                    try {
+                        const response = await fetch('/solicitudes/' + id + '/rechazar', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            const errorText = await response.text();
+                            alert('Error al rechazar la solicitud: ' + errorText);
+                            this.disabled = false;
+                            this.innerHTML = originalContent;
+                        }
+                    } catch (error) {
+                        alert('Error de conexión al rechazar la solicitud');
+                        this.disabled = false;
+                        this.innerHTML = originalContent;
+                    }
+                });
             });
         });
         /*]]>*/
@@ -516,32 +576,98 @@
             </div>
 
             <div class="solicitud-card-footer">
-                <form th:action="@{/solicitudes/{id}/aceptar(id=${sol.id})}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-success btn-action" title="Aceptar">
-                        <i class="bi bi-check-lg"></i> Aceptar
-                    </button>
-                </form>
+                <button type="button" 
+                        class="btn btn-sm btn-success btn-action btn-aceptar" 
+                        th:data-id="${sol.id}"
+                        title="Aceptar">
+                    <i class="bi bi-check-lg"></i> Aceptar
+                </button>
 
-                <form th:action="@{/solicitudes/{id}/rechazar(id=${sol.id})}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-sm btn-danger btn-action" title="Rechazar">
-                        <i class="bi bi-x-lg"></i> Rechazar
-                    </button>
-                </form>
+                <button type="button" 
+                        class="btn btn-sm btn-danger btn-action btn-rechazar" 
+                        th:data-id="${sol.id}"
+                        title="Rechazar">
+                    <i class="bi bi-x-lg"></i> Rechazar
+                </button>
 
                 <a th:href="@{/solicitudes/{id}/aceptar-con-modificaciones(id=${sol.id})}"
                    class="btn btn-sm btn-info btn-action text-white"
                    title="Aceptar con Modificaciones">
                     <i class="bi bi-check-circle"></i> Aceptar con Modificaciones
                 </a>
-
-                <a th:href="@{/solicitudes/{id}/editar(id=${sol.id})}"
-                   class="btn btn-sm btn-warning btn-action text-white"
-                   title="Editar">
-                    <i class="bi bi-pencil-square"></i> Editar
-                </a>
             </div>
         </div>
     </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejar botones de aceptar con PATCH
+            document.querySelectorAll('.btn-aceptar').forEach(function(btn) {
+                btn.addEventListener('click', async function() {
+                    const id = this.getAttribute('data-id');
+                    if (!confirm('¿Está seguro de aceptar esta solicitud?')) return;
+                    
+                    const originalContent = this.innerHTML;
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                    
+                    try {
+                        const response = await fetch('/solicitudes/' + id + '/aceptar', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            const errorText = await response.text();
+                            alert('Error al aceptar la solicitud: ' + errorText);
+                            this.disabled = false;
+                            this.innerHTML = originalContent;
+                        }
+                    } catch (error) {
+                        alert('Error de conexión al aceptar la solicitud');
+                        this.disabled = false;
+                        this.innerHTML = originalContent;
+                    }
+                });
+            });
+
+            // Manejar botones de rechazar con PATCH
+            document.querySelectorAll('.btn-rechazar').forEach(function(btn) {
+                btn.addEventListener('click', async function() {
+                    const id = this.getAttribute('data-id');
+                    if (!confirm('¿Está seguro de rechazar esta solicitud?')) return;
+                    
+                    const originalContent = this.innerHTML;
+                    this.disabled = true;
+                    this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                    
+                    try {
+                        const response = await fetch('/solicitudes/' + id + '/rechazar', {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' }
+                        });
+                        
+                        if (response.ok) {
+                            window.location.reload();
+                        } else {
+                            const errorText = await response.text();
+                            alert('Error al rechazar la solicitud: ' + errorText);
+                            this.disabled = false;
+                            this.innerHTML = originalContent;
+                        }
+                    } catch (error) {
+                        alert('Error de conexión al rechazar la solicitud');
+                        this.disabled = false;
+                        this.innerHTML = originalContent;
+                    }
+                });
+            });
+        });
+        /*]]>*/
+    </script>
 </div>
 
 <div th:fragment="solicitudesEliminacionPanel">
@@ -713,7 +839,13 @@
             <div class="solicitud-card-header">
                 <div>
                     <div class="solicitud-id">#<span th:text="${sol.id}">ID</span></div>
-                    <div class="card-title" th:text="'Hecho #' + ${sol.idHecho}">Hecho #ID</div>
+                    <div class="card-title" th:if="${sol.idHecho != null}" th:text="'Hecho #' + ${sol.idHecho}">Hecho #ID</div>
+                    <div class="card-title" th:if="${sol.idHecho == null and sol.fuenteId != null}">
+                        Hecho externo (Fuente #<span th:text="${sol.fuenteId}"></span>)
+                    </div>
+                    <div class="card-title" th:if="${sol.idHecho == null and sol.fuenteId == null}">
+                        Hecho no identificado
+                    </div>
                 </div>
                 <span class="badge-status bg-pendiente">PENDIENTE</span>
             </div>
