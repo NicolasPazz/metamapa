@@ -15,7 +15,6 @@ import reactor.core.publisher.Mono;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
-import java.util.Objects;
 
 @Slf4j
 @Service
@@ -66,18 +65,22 @@ public class AdminService {
             throw new RuntimeException("No hay token de acceso disponible");
         }
         
-        SolicitudOutputDTO dtoBack = new SolicitudOutputDTO();
+        // Enviar el estado como un Map con el valor correcto para el backend agregador
+        // El backend espera: ACEPTADA o RECHAZADA
+        java.util.Map<String, String> body = new java.util.HashMap<>();
+        body.put("estado", estado); // ACEPTADA o RECHAZADA desde el HTML
 
-        if(Objects.equals(estado, "RECHAZADO")) dtoBack.setEstado(EstadoSolicitud.RECHAZADO);
-        else dtoBack.setEstado(EstadoSolicitud.ACEPTADO);
-
-        webClientAgregador.patch()
+        log.info("[AdminService] - Actualizando solicitud {} con estado: {}", id, estado);
+        
+        String response = webClientAgregador.patch()
                 .uri("/solicitudes/" + id)
                 .header("Authorization", "Bearer " + accessToken)
-                .bodyValue(dtoBack)
+                .bodyValue(body)
                 .retrieve()
-                .bodyToMono(Void.class)
+                .bodyToMono(String.class)
                 .block();
+        
+        log.info("[AdminService] - Respuesta del backend: {}", response);
     }
 
     public void enviarArchivoAlBackend(MultipartFile archivo) {

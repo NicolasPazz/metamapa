@@ -44,6 +44,14 @@ public class SolicitudesService {
         .toList();
   }
 
+  public List<SolicitudOutputDTO> buscarPendientes() {
+    List<SolicitudHecho> solicitudes = solicitudesRepository.findAll();
+    return solicitudes.stream()
+        .filter(s -> s.getEstado() == EstadoSolicitud.PENDIENTE)
+        .map(s -> agregarIdHecho(s.toOutputDTO(), s.getId()))
+        .toList();
+  }
+
   public List<SolicitudOutputDTO> buscarPorContribuyente(Long idContribuyente) {
     List<SolicitudHecho> solicitudes = solicitudesRepository.findByIdContribuyente(idContribuyente);
     return solicitudes.stream()
