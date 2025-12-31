@@ -333,7 +333,9 @@
                                     <input type="datetime-local" class="form-control" id="fechaAcontecimiento"
                                            name="fecha_acontecimiento"
                                            th:attr="data-utc-value=${solicitud.fechaDeAcontecimiento != null ? solicitud.fechaDeAcontecimiento.toString() : ''}"
-                                           required>
+                                           required
+                                           min="1900-01-01T00:00"
+                                           max="9999-12-31T23:59">
                                     <div class="form-text">
                                         <i class="bi bi-info-circle"></i> Indique cuándo sucedió el hecho reportado.
                                     </div>
