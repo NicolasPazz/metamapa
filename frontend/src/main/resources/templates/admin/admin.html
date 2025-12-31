@@ -1,6 +1,9 @@
 <html th:replace="~{layout/base :: html}">
 <div th:fragment="contenido">
   <div id="toastContainer" class="toast-container"></div>
+  <div id="loadingOverlay" style="display: none; position: fixed; width: 100%; height: 100%; background-color: rgba(255,255,255,0.8); justify-content: center; align-items: center;">
+    <div class="spinner" style="background-color: rgba(55,55,255,0.3);"></div>
+  </div>
 
   <div class="admin-shell">
     <aside class="admin-sidebar">
@@ -21,10 +24,10 @@
 
       <div class="admin-quick-actions">
         <h4>Acciones rápidas</h4>
-        <form method="post" th:action="@{/admin/actualizar-agregador}">
+        <form method="post" th:action="@{/admin/actualizar-agregador}" onsubmit="showLoader()">
           <button type="submit" class="btn-block primary"><i class="bi bi-arrow-clockwise"></i> Actualizar agregador</button>
         </form>
-        <form method="post" th:action="@{/admin/actualizar-estadisticas}">
+        <form method="post" th:action="@{/admin/actualizar-estadisticas}" onsubmit="showLoader()">
           <button type="submit" class="btn-block secondary"><i class="bi bi-bar-chart-fill"></i> Actualizar estadísticas</button>
         </form>
       </div>
@@ -47,6 +50,7 @@
         <div th:if="${error}" class="admin-alert error">
           <strong>✗ Error:</strong> <span th:text="${error}"></span>
         </div>
+        <div th:if="${mensaje}" th:text="${mensaje}" class="admin-alert info mt-3"></div>
 
         <div class="admin-grid admin-summary">
           <div class="admin-card">
@@ -88,9 +92,11 @@
             <h3 th:text="${coleccion.titulo}"></h3>
             <p class="muted">
               <span th:text="${mapFuentes.get(coleccion.fuenteId)}">Nombre Fuente</span>
-              <span th:if="${mapFuentes.get(coleccion.fuenteId) == null}" class="pill pill-warn">Sin fuente</span>
+              <span th:if="${mapFuentes.get(coleccion.fuenteId) == null}" class="pill pill-warn">Sin fuente externa</span>
             </p>
-            <p th:text="${'Algoritmo de consenso: ' + coleccion.algoritmoConsenso}"></p>
+            <p th:if="${coleccion.algoritmoConsenso == 'MULTIPLES_MENCIONES'}" th:text="${'Algoritmo de consenso: Múltiples menciones'}"></p>
+            <p th:if="${coleccion.algoritmoConsenso == 'MAYORIA_SIMPLE'}" th:text="${'Algoritmo de consenso: Mayoría simple'}"></p>
+            <p th:if="${coleccion.algoritmoConsenso == 'ABSOLUTA'}" th:text="${'Algoritmo de consenso: Absoluta'}"></p>
             <button class="btn btn-edit"
                     th:data-handle="${coleccion.handle}"
                     th:data-titulo="${coleccion.titulo}"
@@ -188,7 +194,7 @@
 
   <div id="nueva-coleccion" class="panel">
     <h3>Crear Nueva Colección</h3>
-    <form method="post" th:action="@{/admin/crear-coleccion}" id="main-form">
+    <form method="post" th:action="@{/admin/crear-coleccion}" id="main-form" onsubmit="showLoader()">
 
       <label for="nombre">Nombre <span class="required-indicator">*</span></label>
       <input name="titulo" type="text" id="nombre" required>
@@ -606,6 +612,10 @@
         input.value = value;
         parent.appendChild(input);
       }
+
+      function showLoader() {
+        document.getElementById('loadingOverlay').style.display = "flex";
+      }
     </script>
     <a href="#" 
        class="close" 
@@ -615,7 +625,7 @@
 
   <div id="editar-coleccion" class="panel">
     <h3>Editar Colección</h3>
-    <form method="post" th:action="@{/admin/actualizar-coleccion}">
+    <form method="post" th:action="@{/admin/actualizar-coleccion}" onsubmit="showLoader()">
 
       <input type="hidden" name="handle" id="edit-handle">
 
@@ -709,11 +719,11 @@
 
       <div style="margin-top:20px;">
         <button type="submit">Actualizar</button>
-        <a href="#" 
-           class="close" 
-           style="margin-left:10px;"
+        <a href="#"
+           class="close"
            aria-label="Cancelar edición de colección"
-           title="Cancelar">Cancelar</a>
+           title="Cerrar"
+           onclick="cerrarPanelEdicion(event)">Cancelar</a>
       </div>
     </form>
   </div>
@@ -880,6 +890,11 @@
       input.name = name;
       input.value = value;
       parent.appendChild(input);
+    }
+
+    function cerrarPanelEdicion(event) {
+      if (event) event.preventDefault();
+      document.getElementById("editar-coleccion").style.right = "-100%";
     }
   </script>
 </div>
