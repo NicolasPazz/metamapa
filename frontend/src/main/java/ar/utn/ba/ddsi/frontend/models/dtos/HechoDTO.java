@@ -3,9 +3,7 @@ package ar.utn.ba.ddsi.frontend.models.dtos;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.Getter;
-
 import java.time.LocalDateTime;
-import java.time.temporal.Temporal;
 import java.util.List;
 
 @Getter
@@ -15,7 +13,7 @@ public class HechoDTO {
     private String origen;
     private String estado;
     @JsonProperty("contribuyente_id")
-    private Long contribuyente; //   private ContribuyenteDTO contribuyente;
+    private Long contribuyente;
     private List<String> etiquetas;
     private String titulo;
     private String descripcion;

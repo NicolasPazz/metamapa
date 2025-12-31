@@ -19,15 +19,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static org.hibernate.internal.util.collections.ArrayHelper.forEach;
-
 @Controller
 @RequiredArgsConstructor
 @Slf4j
 @PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
     private final ColeccionService coleccionService;
-    private final HechoService hechoService;
     private final SolicitudService solicitudService;
     private final AdminService adminService;
     private final ObjectMapper objectMapper;
@@ -40,8 +37,9 @@ public class AdminController {
         if (request != null) {
             model.addAttribute("httpServletRequest", request);
         }
+        
+        // Cargar solo los datos esenciales para renderizar la página base
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
-        List<HechoDTO> hechos = hechoService.getAllHechos();
         List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();
         List<SolicitudInputDTO> solicitudesCarga = solicitudService.buscarTodasLasSolicitudes();
         List<FuenteDTO> fuentes = fuenteService.getAllFuentes();
@@ -50,60 +48,20 @@ public class AdminController {
         Map<Long, String> mapFuentes = fuentes.stream()
                 .collect(Collectors.toMap(FuenteDTO::getId, FuenteDTO::getNombre));
 
-        try {
-            EstadisticasCompletasDTO estadisticas = estadisticasService.obtenerEstadisticas();
-            List<ColeccionProvinciaDTO> coleccionesProvincia = estadisticas.getDistribucionGeograficaColecciones();
-            List<CategoriaProvinciaDTO> categoriasProvincia = estadisticas.getConcentracionGeograficaCategorias();
-            List<CategoriaHoraDTO> categoriasHora = estadisticas.getDistribucionTemporalCategorias();
-            CategoriaDominanteDTO categoriaDominante = estadisticas.getCategoriaDominante();
-            SpamDTO spam = estadisticas.getEstadisticaSpam();
-
-            if (coleccionesProvincia != null) {
-                coleccionesProvincia.sort(Comparator.comparing(ColeccionProvinciaDTO::getColeccionHandle));
-            }
-            if (categoriasProvincia != null) {
-                categoriasProvincia.sort(Comparator.comparing(CategoriaProvinciaDTO::getProvinciaNombre));
-            }
-            if (categoriasHora != null) {
-                categoriasHora.sort(Comparator.comparing(CategoriaHoraDTO::getCategoriaNombre));
-            }
-
-            model.addAttribute("coleccionesProvincia", coleccionesProvincia != null ? coleccionesProvincia : Collections.emptyList());
-            model.addAttribute("categoriasProvincia", categoriasProvincia != null ? categoriasProvincia : Collections.emptyList());
-            model.addAttribute("categoriasHora", categoriasHora != null ? categoriasHora : Collections.emptyList());
-            model.addAttribute("categoriaDominante", categoriaDominante);
-            model.addAttribute("spam", spam);
-        } catch (Exception e) {
-            log.warn("Error al obtener estadísticas para el panel admin: {}", e.getMessage());
-            model.addAttribute("coleccionesProvincia", Collections.emptyList());
-            model.addAttribute("categoriasProvincia", Collections.emptyList());
-            model.addAttribute("categoriasHora", Collections.emptyList());
-            model.addAttribute("categoriaDominante", null);
-            model.addAttribute("spam", null);
-        }
+        // Las estadísticas se cargarán de forma asíncrona en el frontend
+        // para no bloquear la carga inicial de la página
+        model.addAttribute("coleccionesProvincia", Collections.emptyList());
+        model.addAttribute("categoriasProvincia", Collections.emptyList());
+        model.addAttribute("categoriasHora", Collections.emptyList());
+        model.addAttribute("categoriaDominante", null);
+        model.addAttribute("spam", null);
 
         model.addAttribute("titulo", "Panel De Control");
-        if (hechos != null && hechos.size() > 3) {
-            int endIndex = Math.min(5, hechos.size());
-            model.addAttribute("hechosLimit", hechos.subList(3, endIndex));
-        } else {
-            model.addAttribute("hechosLimit", Collections.emptyList());
-        }
-        if (colecciones != null && colecciones.size() > 3) {
-            int endIndex = Math.min(5, colecciones.size());
-            model.addAttribute("coleccionesLimit", colecciones.subList(3, endIndex));
-        } else {
-            model.addAttribute("coleccionesLimit", Collections.emptyList());
-        }
-        if (solicitudes != null && solicitudes.size() > 3) {
-            int endIndex = Math.min(5, solicitudes.size());
-            model.addAttribute("solicitudesLimit", solicitudes.subList(3, endIndex));
-        } else {
-            model.addAttribute("solicitudesLimit", Collections.emptyList());
-        }
+        model.addAttribute("hechosLimit", Collections.emptyList());
+        model.addAttribute("coleccionesLimit", Collections.emptyList());
+        model.addAttribute("solicitudesLimit", Collections.emptyList());
 
         model.addAttribute("colecciones", colecciones);
-        model.addAttribute("hechos", hechos);
         model.addAttribute("solicitudes", solicitudes);
         model.addAttribute("solicitudesCarga", solicitudesCarga);
         model.addAttribute("fuentes", fuentes);
@@ -237,6 +195,37 @@ public class AdminController {
         redirectAttributes.addFlashAttribute("error", "Error al actualizar estadísticas: " + e.getMessage());
       }
       return "redirect:/admin";
+    }
+
+    @GetMapping("/admin/api/estadisticas")
+    @ResponseBody
+    public EstadisticasCompletasDTO obtenerEstadisticasApi() {
+        log.info("[AdminController] - GET - /admin/api/estadisticas");
+        try {
+            EstadisticasCompletasDTO estadisticas = estadisticasService.obtenerEstadisticas();
+            if (estadisticas.getDistribucionGeograficaColecciones() != null) {
+                estadisticas.getDistribucionGeograficaColecciones()
+                    .sort(Comparator.comparing(ColeccionProvinciaDTO::getColeccionHandle));
+            }
+            if (estadisticas.getConcentracionGeograficaCategorias() != null) {
+                estadisticas.getConcentracionGeograficaCategorias()
+                    .sort(Comparator.comparing(CategoriaProvinciaDTO::getProvinciaNombre));
+            }
+            if (estadisticas.getDistribucionTemporalCategorias() != null) {
+                estadisticas.getDistribucionTemporalCategorias()
+                    .sort(Comparator.comparing(CategoriaHoraDTO::getCategoriaNombre));
+            }
+            return estadisticas;
+        } catch (Exception e) {
+            log.warn("Error al obtener estadísticas para el panel admin: {}", e.getMessage());
+            return EstadisticasCompletasDTO.builder()
+                .distribucionGeograficaColecciones(Collections.emptyList())
+                .concentracionGeograficaCategorias(Collections.emptyList())
+                .distribucionTemporalCategorias(Collections.emptyList())
+                .categoriaDominante(null)
+                .estadisticaSpam(null)
+                .build();
+        }
     }
 }
 

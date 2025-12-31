@@ -163,7 +163,7 @@ Las clases de alto nivel dependen de abstracciones, no de implementaciones concr
 - **`FuenteFactory`**: Crea instancias de `AFuente` según configuración (`CRON` o `TIEMPO_REAL`)
 - **`SolicitudEliminacionFactory`**: Crea instancias de `SolicitudEliminacion` con validaciones y detección de spam
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **SRP**: Encapsula la lógica de creación de objetos complejos
 - **OCP**: Permite agregar nuevos tipos de fuentes sin modificar el código que las usa
 - **DIP**: Los clientes dependen de `AFuente` (abstracción), no de implementaciones concretas
@@ -192,7 +192,7 @@ public class FuenteFactory {
 - **`Criterio`** (interfaz) con implementaciones: `CriterioFechas`, `CriterioLugar`, `CriterioFuente`, `CriterioIgualdad`, `CriterioOrigen`
 - **`AAlgoritmoConsenso`** (clase abstracta) con implementaciones: `MayoriaSimple`, `Absoluta`, `MultiplesMenciones`
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **OCP**: Permite agregar nuevos criterios o algoritmos sin modificar `Coleccion`
 - **DIP**: `Coleccion` depende de abstracciones (`Criterio`, `AAlgoritmoConsenso`), no de implementaciones
 - **LSP**: Cualquier implementación de `Criterio` puede reemplazar a otra sin afectar el comportamiento
@@ -223,7 +223,7 @@ public class Coleccion {
 - Interfaces como `IHechosRepository`, `IColeccionesRepository`, `ISolicitudesRepository`
 - Spring Data JPA proporciona implementaciones automáticas
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **SRP**: Separa la lógica de acceso a datos de la lógica de negocio
 - **DIP**: Services dependen de interfaces Repository, no de implementaciones JPA
 - **Testabilidad**: Fácil crear mocks de repositories para testing
@@ -250,7 +250,7 @@ public class HechosService {
 - **`OngApiAdapter`**: Adapta la API externa de ONG al formato interno del sistema
 - Implementa `IApiExternaAdapter` para unificar la interfaz
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **OCP**: Permite integrar nuevas APIs externas sin modificar el código que las consume
 - **DIP**: El sistema depende de `IApiExternaAdapter` (abstracción), no de adapters concretos
 - **Reusabilidad**: El mismo patrón puede aplicarse para otras APIs externas
@@ -264,7 +264,7 @@ public class HechosService {
 **Implementación:**
 - **`AAlgoritmoConsenso`**: Define métodos comunes (`contarApariciones`, `aparicionesMayorA`) y método abstracto (`esConsensuado`)
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **DRY (Don't Repeat Yourself)**: Evita duplicación de código común
 - **OCP**: Permite agregar nuevos algoritmos extendiendo la clase abstracta
 - **Mantenibilidad**: Lógica común centralizada, fácil de mantener
@@ -295,7 +295,7 @@ El sistema utiliza contenedorización y orquestación:
 - **Nginx**: Reverse proxy con HTTPS (solo producción)
 - **Certbot**: Gestión automática de certificados SSL (solo producción)
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **SRP**: Cada contenedor tiene una responsabilidad única (servicio específico)
 - **Desacoplamiento**: Servicios independientes que se comunican vía red Docker
 - **Escalabilidad**: Fácil escalar servicios individuales según demanda
@@ -331,7 +331,7 @@ El sistema implementa HTTPS mediante:
 - **Redirección HTTP → HTTPS**: Todas las peticiones HTTP se redirigen a HTTPS
 - **Dominio configurable**: Variable de entorno `CERTBOT_DOMAIN` (ej: `metamapa-dds.ddns.net`)
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **Seguridad**: Comunicación encriptada entre cliente y servidor
 - **OCP**: Configuración de dominio sin modificar código de aplicación
 - **Separación de responsabilidades**: Nginx maneja SSL, aplicaciones manejan lógica de negocio
@@ -912,7 +912,7 @@ El servicio `users` valida el refresh token y genera un nuevo access token:
     }
 ```
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **SRP**: `CustomAuthProvider` encapsula únicamente la lógica de autenticación del frontend
 - **SRP**: `JwtAuthenticationFilter` tiene la única responsabilidad de validar tokens JWT en backend
 - **DIP**: Frontend depende de `MetaMapaApiService` (abstracción), no de implementación concreta
@@ -944,7 +944,7 @@ El sistema expone una API REST completa para consulta de hechos y colecciones:
 5. **GET `/api/front/provincias`** - Lista de provincias con hechos
 6. **GET `/api/front/fuentes`** - Lista de fuentes disponibles
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **SRP**: Cada endpoint tiene una responsabilidad específica
 - **RESTful**: Sigue principios REST (GET para consultas, recursos identificables)
 - **Paginación**: Evita sobrecarga con grandes volúmenes de datos
@@ -988,7 +988,7 @@ public class PageResponse<T> {
 }
 ```
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **Reusabilidad**: Clase genérica reutilizable para cualquier tipo de entidad
 - **Eficiencia**: Solo transfiere datos necesarios por página
 - **UX**: Facilita implementación de paginación en frontend
@@ -1016,7 +1016,7 @@ El módulo `estatica` permite cargar archivos CSV que contienen hechos. El proce
 3. **Escalabilidad**: Permite procesar múltiples archivos en paralelo
 4. **Resiliencia**: Errores en procesamiento no afectan otras peticiones
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **SRP**: `AsyncProcessingService` encapsula lógica de ejecución asíncrona
 - **Desacoplamiento**: Controller no depende de detalles de implementación asíncrona
 - **Mantenibilidad**: Lógica de procesamiento separada de lógica de ejecución
@@ -1068,7 +1068,7 @@ public ResponseEntity<String> cargarCsv(@ModelAttribute CsvUploadRequestDTO requ
 3. **Resiliencia**: Errores en procesamiento no afectan otras operaciones
 4. **Escalabilidad**: Fácil escalar procesamiento independientemente
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **Mantenibilidad**: Separación clara entre recepción y procesamiento
 - **Testabilidad**: Fácil testear lógica de procesamiento de forma aislada
 - **Extensibilidad**: Fácil agregar más tipos de procesamiento asíncrono
@@ -1089,7 +1089,7 @@ public ResponseEntity<String> cargarCsv(@ModelAttribute CsvUploadRequestDTO requ
 4. **Consistencia**: Procesamiento asíncrono puede fallar sin que el usuario lo sepa
    - **Solución**: Logging exhaustivo y monitoreo de errores
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **Mantenibilidad**: Dificultades identificadas y documentadas facilitan mejoras futuras
 - **Extensibilidad**: Arquitectura permite agregar soluciones (notificaciones, estado) sin refactorizar
 
@@ -1124,7 +1124,7 @@ El sistema utiliza endpoints de monitoreo y observabilidad:
 - **`/actuator/info`**: Información de la aplicación
 - Health checks configurados en Docker Compose para autorestart
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **SRP**: La lógica de observabilidad está encapsulada en un componente dedicado, separando esta responsabilidad de la lógica de negocio
 - **OCP**: Permite agregar nuevos endpoints de monitoreo sin modificar código de aplicación, solo mediante configuración
@@ -1159,7 +1159,7 @@ healthcheck:
   start_period: 150s
 ```
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **Robustez**: Sistema detecta automáticamente servicios no saludables y puede reiniciarlos
 - **Fiabilidad**: Health checks periódicos garantizan que los servicios estén operativos antes de aceptar tráfico
@@ -1184,7 +1184,7 @@ El sistema implementa normalización de datos geográficos mediante `Geocodifica
 2. **Geocodificación por coordenadas**: Determina provincia a partir de latitud/longitud cuando el nombre no está disponible
 3. **Normalización de categorías**: `Categoria.normalizar()` convierte a lowercase y trim para unificar variantes
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **SRP**: `GeocodificacionService` encapsula únicamente la lógica de normalización geográfica, separándola de otras responsabilidades como persistencia o validación
 - **OCP**: Fácil agregar nuevas variantes de nombres de provincias sin modificar la lógica de normalización, solo agregando entradas al diccionario `NORMALIZACION_PROVINCIAS`
@@ -1230,7 +1230,7 @@ public static String normalizar(String nombre) {
 }
 ```
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **SRP**: La normalización está encapsulada en la clase `Categoria`, responsabilidad única de esta entidad de dominio
 - **LSP**: Cualquier string puede ser normalizado de la misma forma, garantizando comportamiento predecible
@@ -1256,7 +1256,7 @@ El sistema implementa `OriginFilter` que extiende `OncePerRequestFilter` de Spri
 - **Bloquea**: Todas las demás direcciones IP públicas
 - **Configurable**: Se puede desactivar en desarrollo mediante `SECURITY_ORIGIN_FILTER_ENABLED=false`
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **SRP**: `OriginFilter` tiene una única responsabilidad: validar origen de peticiones HTTP, separada de autenticación/autorización
 - **OCP**: Fácil agregar nuevas reglas de IP permitidas sin modificar la lógica del filtro, solo extendiendo `isAllowedAddress()`
@@ -1316,7 +1316,7 @@ Nginx implementa rate limiting en la capa de reverse proxy:
 - **APIs**: 5 requests/segundo por IP con burst de 10
 - **Almacenamiento**: Zonas en memoria (10MB pueden manejar ~160k IPs)
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **SRP**: Nginx maneja rate limiting como responsabilidad separada de la lógica de aplicación, siguiendo el principio de separación de concerns
 - **Facade Pattern**: Nginx actúa como fachada que oculta la complejidad de rate limiting a las aplicaciones backend
@@ -1364,7 +1364,7 @@ El sistema implementa `DetectorDeSpamTFIDF` que utiliza múltiples técnicas:
 3. **Detección de patrones**: URLs, repeticiones excesivas, textos muy cortos
 4. **Score combinado**: Combina múltiples factores con pesos configurables
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **SRP**: `DetectorDeSpamTFIDF` encapsula únicamente la lógica de detección de spam, separada de validación de longitud o formato
 - **Strategy Pattern**: Implementa la interfaz `DetectorDeSpam`, permitiendo intercambiar algoritmos (TF-IDF, machine learning, servicio externo) sin modificar código cliente
@@ -1424,7 +1424,7 @@ El sistema maneja archivos multimedia (imágenes, videos, audios) mediante `Mult
 - **Volumen**: Montado desde host EC2 para persistencia
 - **Backup**: Archivos en sistema de archivos del servidor
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **SRP**: `MultimediaStorageService` encapsula únicamente la lógica de almacenamiento y recuperación de archivos, separada de validación de formato o procesamiento de contenido
 - **Adapter Pattern**: El servicio adapta diferentes rutas de almacenamiento (desarrollo vs producción) a una interfaz unificada mediante variables de entorno
@@ -1484,7 +1484,7 @@ Los archivos CSV se almacenan en `CSV_STORAGE_PATH` configurado por variable de 
 - **Desarrollo**: `./backend/data/csv` (volumen montado)
 - **Producción**: `/app/data/csv` (dentro del contenedor, montado desde host)
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **SRP**: Separación de almacenamiento CSV y multimedia en servicios diferentes (`FilesService` vs `MultimediaStorageService`)
 - **Reusabilidad**: Mismo patrón de configuración por variables de entorno usado para multimedia
@@ -1504,7 +1504,7 @@ Los archivos CSV se almacenan en `CSV_STORAGE_PATH` configurado por variable de 
 **Decisión de Diseño:**
 Implementación de paginación real a nivel de base de datos utilizando `Pageable` de Spring Data JPA, en lugar de cargar todos los registros y paginar en memoria.
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **Eficiencia**: Solo se transfieren y procesan los registros necesarios para la página solicitada, reduciendo significativamente el uso de memoria y ancho de banda
 - **Escalabilidad**: El sistema puede manejar grandes volúmenes de datos sin degradación de performance, ya que la paginación se realiza en la base de datos
 - **Separación de Concerns**: La lógica de paginación está delegada a Spring Data JPA, manteniendo el código de negocio más limpio
@@ -1527,7 +1527,7 @@ Page<Hecho> findByFiltersPaginated(..., Pageable pageable);
 **Decisión de Diseño:**
 Uso de `CompletableFuture` para ejecutar llamadas HTTP a múltiples fuentes externas en paralelo, en lugar de ejecutarlas secuencialmente.
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **Eficiencia**: Aprovecha mejor los recursos del servidor ejecutando múltiples operaciones I/O en paralelo
 - **Performance**: Reduce el tiempo total de respuesta al ejecutar llamadas concurrentes en lugar de sumar tiempos secuenciales
 - **Resiliencia**: Si una fuente externa falla o es lenta, las demás pueden completarse independientemente
@@ -1594,7 +1594,7 @@ public class CacheConfig {
 **Duración del Cache:**
 El cache tiene un tiempo de expiración de 5 minutos (`expireAfterWrite`). Después de este tiempo, los datos cacheados se invalidan automáticamente y se reconstruyen en la siguiente consulta. Además, el cache se invalida inmediatamente mediante `@CacheEvict` cuando se realizan operaciones de escritura (crear, modificar, eliminar).
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 - **Eficiencia**: Evita ejecutar queries repetidas para datos que raramente cambian o consultas costosas frecuentes
 - **Performance**: Respuestas casi instantáneas (<10ms) para datos cacheados vs queries de base de datos y fuentes externas (500ms-3000ms+)
 - **Reducción de Carga**: Menos queries a la base de datos y menos llamadas a fuentes externas para información frecuentemente consultada
@@ -1654,6 +1654,63 @@ public void actualizarHechos() {
 - **No se cachean respuestas vacías**: La condición `unless = "#result == null || #result.getContent().isEmpty()"` evita cachear cuando no hay hechos disponibles. Esto previene el problema donde, si un usuario accede a "/hechos" cuando aún no hay hechos, se cachea una respuesta vacía que luego persiste incluso después de crear hechos nuevos. Al no cachear respuestas vacías, se garantiza que la próxima consulta mostrará los hechos recién creados correctamente.
 - **Invalidación al actualizar desde fuentes externas**: Cuando el scheduler actualiza hechos desde fuentes externas (proxy ONG, proxy MetaMapa, etc.), la caché se invalida manualmente solo cuando realmente se guardaron hechos nuevos. Esto evita el problema donde, al arrancar el sistema, se cachea la primera página con solo algunos hechos (por ejemplo, solo de proxy MetaMapa), y luego cuando se cargan más hechos desde otras fuentes (como proxy ONG), la caché no se actualiza y sigue mostrando la versión parcial. Con esta invalidación, cada vez que se agregan hechos desde fuentes externas, la caché se limpia y la próxima consulta mostrará todos los hechos disponibles.
 
+### 14.4. Carga Asíncrona de Estadísticas en Panel Admin ✅
+
+**Decisión de Diseño:**
+Implementación de carga asíncrona de estadísticas en el panel de administración mediante JavaScript, separando la carga de la página base de la obtención de datos estadísticos pesados.
+
+**Contexto:**
+El panel de administración (`/admin`) requiere cargar múltiples consultas costosas:
+- Lista completa de colecciones
+- Lista completa de solicitudes
+- Estadísticas completas (distribución geográfica, categorías por provincia, hechos por categoría y hora, análisis de spam)
+
+La carga inicial bloqueaba la respuesta durante ~9 segundos, afectando la experiencia de usuario.
+
+**Implementación:**
+
+**Backend - Endpoint REST para Estadísticas:**
+```java
+@GetMapping("/admin/api/estadisticas")
+@ResponseBody
+public EstadisticasCompletasDTO obtenerEstadisticasApi() {
+    EstadisticasCompletasDTO estadisticas = estadisticasService.obtenerEstadisticas();
+    // Ordenar listas antes de retornar
+    if (estadisticas.getDistribucionGeograficaColecciones() != null) {
+        estadisticas.getDistribucionGeograficaColecciones()
+            .sort(Comparator.comparing(ColeccionProvinciaDTO::getColeccionHandle));
+    }
+    // ... ordenar otras listas ...
+    return estadisticas;
+}
+```
+
+**Frontend - Carga Asíncrona:**
+```javascript
+async function cargarEstadisticas() {
+    const loadingDiv = document.getElementById('estadisticas-loading');
+    const dataDiv = document.getElementById('estadisticas-data');
+    
+    try {
+        const response = await fetch('/admin/api/estadisticas');
+        const estadisticas = await response.json();
+        renderizarEstadisticas(estadisticas);
+        loadingDiv.style.display = 'none';
+        dataDiv.style.display = 'block';
+    } catch (error) {
+        loadingDiv.innerHTML = '<p>Error al cargar las estadísticas</p>';
+    }
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    cargarEstadisticas(); // Cargar después de que la página base esté lista
+});
+```
+
+**Justificación:**
+- **Usabilidad**: Mejor experiencia de usuario con carga progresiva y feedback visual
+- **Escalabilidad**: Permite manejar grandes volúmenes de datos estadísticos sin bloquear la carga inicial
+
 ---
 
 ## 15. Despliegue en EC2 con RDS
@@ -1669,7 +1726,7 @@ El sistema se despliega en AWS EC2 con RDS MySQL:
 - **Nginx**: Reverse proxy con HTTPS (Let's Encrypt)
 - **Certbot**: Renovación automática de certificados SSL
 
-**Justificación (SOLID y Cualidades):**
+**Justificación:**
 
 - **Arquitectura basada en servicios**: Cada servicio es independiente y puede escalarse por separado
 - **Separación de Concerns**: Base de datos (RDS) separada de lógica de aplicación (EC2)

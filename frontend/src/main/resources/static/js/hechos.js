@@ -20,16 +20,16 @@ function renderHechoDetails(hecho, options = {}) {
 
   // Fecha de acontecimiento
   if (hecho.fecha_acontecimiento) {
-    const fecha = new Date(hecho.fecha_acontecimiento);
+    const fechaFormateada = formatDateInLocalTimezone(hecho.fecha_acontecimiento, 'dd/MM/yyyy HH:mm');
     html += '<p><strong>Fecha de acontecimiento:</strong> ' +
-      fecha.toLocaleString('es-AR') + '</p>';
+      (fechaFormateada || hecho.fecha_acontecimiento) + '</p>';
   }
 
   // Fecha de carga
   if (hecho.fecha_carga) {
-    const fechaCarga = new Date(hecho.fecha_carga);
+    const fechaCargaFormateada = formatDateInLocalTimezone(hecho.fecha_carga, 'dd/MM/yyyy HH:mm');
     html += '<p><strong>Fecha de carga:</strong> ' +
-      fechaCarga.toLocaleString('es-AR') + '</p>';
+      (fechaCargaFormateada || hecho.fecha_carga) + '</p>';
   }
 
   // Provincia

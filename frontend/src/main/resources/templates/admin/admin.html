@@ -1,8 +1,8 @@
 <html lang="es" th:replace="~{layout/base :: html}">
 <div th:fragment="contenido">
   <div id="toastContainer" class="toast-container"></div>
-  <div id="loadingOverlay" style="display: none; position: fixed; width: 100%; height: 100%; background-color: rgba(255,255,255,0.8); justify-content: center; align-items: center;">
-    <div class="spinner" style="background-color: rgba(55,55,255,0.3);"></div>
+  <div id="loadingOverlay" class="loading-overlay-admin" style="display: none;">
+    <div class="loading-spinner-admin"></div>
   </div>
 
   <div class="admin-shell">
@@ -20,10 +20,10 @@
       </nav>
 
       <div class="admin-quick-actions">
-        <form id="form-actualizar-colecciones" method="post" th:action="@{/admin/actualizar-agregador}" onsubmit="showLoader()">
+        <form id="form-actualizar-colecciones" method="post" th:action="@{/admin/actualizar-agregador}">
           <button type="submit" class="btn-block primary"><i class="bi bi-arrow-clockwise"></i> Actualizar colecciones</button>
         </form>
-        <form id="form-actualizar-estadisticas" method="post" th:action="@{/admin/actualizar-estadisticas}" onsubmit="showLoader()">
+        <form id="form-actualizar-estadisticas" method="post" th:action="@{/admin/actualizar-estadisticas}">
           <button type="submit" class="btn-block secondary"><i class="bi bi-bar-chart-fill"></i> Actualizar estadísticas</button>
         </form>
       </div>
@@ -44,12 +44,13 @@
             <h3 th:text="${coleccion.titulo}"></h3>
             <p class="muted">
               <span th:text="${mapFuentes.get(coleccion.fuenteId)}">Nombre Fuente</span>
-              <span th:if="${mapFuentes.get(coleccion.fuenteId) == null}" class="pill pill-warn">Sin fuente externa</span>
+              <span th:if="${mapFuentes.get(coleccion.fuenteId) == null}">Creada por Administrador</span>
             </p>
             <p th:if="${coleccion.algoritmoConsenso == 'MULTIPLES_MENCIONES'}" th:text="${'Algoritmo de consenso: Múltiples menciones'}"></p>
             <p th:if="${coleccion.algoritmoConsenso == 'MAYORIA_SIMPLE'}" th:text="${'Algoritmo de consenso: Mayoría simple'}"></p>
             <p th:if="${coleccion.algoritmoConsenso == 'ABSOLUTA'}" th:text="${'Algoritmo de consenso: Absoluta'}"></p>
-            <button class="btn btn-edit"
+            <button th:if="${coleccion.fuenteId == null}" 
+                    class="btn btn-edit"
                     th:data-handle="${coleccion.handle}"
                     th:data-titulo="${coleccion.titulo}"
                     th:data-descripcion="${coleccion.descripcion}"
@@ -94,23 +95,26 @@
             </div>
         </div>
 
-        <form class="stacked" method="post" th:action="@{/admin/subir-csv}" enctype="multipart/form-data">
+        <form id="form-subir-csv" class="stacked" method="post" th:action="@{/admin/subir-csv}" enctype="multipart/form-data">
           <label for="csv">Subir archivo <span class="required-indicator">*</span></label>
           <input type="file" id="csv" name="archivo" accept=".csv" required class="form-control">
           <button type="submit" class="btn primary">Procesar</button>
         </form>
-        <div th:if="${mensaje}" th:text="${mensaje}" class="admin-alert info mt-3"></div>
       </section>
 
       <section id="estadisticas" class="admin-section">
         <div class="section-header">
             <div>
                 <h2>Estadísticas</h2>
-                <p class="muted">Visualizá estadísticas generales y resúmenes de la información cargada en el sistema.</p>
+                <p class="muted">Visualizá estadísticas generales de la información cargada en el sistema.</p>
             </div>
         </div>
-        <div class="estadisticas-content">
-          <div th:replace="~{admin/estadisticas :: estadisticasPanel}"></div>
+        <div class="estadisticas-content" id="estadisticas-content">
+          <div id="estadisticas-loading" style="text-align: center; padding: 2rem;">
+            <div class="loading-spinner-admin" style="margin: 0 auto;"></div>
+            <p class="muted" style="margin-top: 1rem;">Cargando estadísticas...</p>
+          </div>
+          <div id="estadisticas-data" style="display: none;"></div>
         </div>
       </section>
     </div>
@@ -118,7 +122,7 @@
 
   <div id="nueva-coleccion" class="panel">
     <h3>Crear Nueva Colección</h3>
-    <form method="post" th:action="@{/admin/crear-coleccion}" id="main-form" onsubmit="showLoader()">
+    <form method="post" th:action="@{/admin/crear-coleccion}" id="main-form">
 
       <label for="nombre">Nombre <span class="required-indicator">*</span></label>
       <input name="titulo" type="text" id="nombre" required>
@@ -505,9 +509,25 @@
         }
 
         const li = document.createElement("li");
-        li.innerHTML = descripcion;
         li.style.borderBottom = "1px solid #ccc";
         li.style.padding = "5px 0";
+        li.style.display = "flex";
+        li.style.justifyContent = "space-between";
+        li.style.alignItems = "center";
+        li.dataset.criterioIndex = contadorCriterios;
+        
+        const descSpan = document.createElement("span");
+        descSpan.innerHTML = descripcion;
+        li.appendChild(descSpan);
+        
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.innerHTML = "✕";
+        deleteBtn.style.cssText = "background: transparent; color: black; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; margin-left: 10px; flex-shrink: 0;";
+        deleteBtn.title = "Eliminar criterio";
+        deleteBtn.onclick = function() { eliminarCriterio(contadorCriterios, li); };
+        li.appendChild(deleteBtn);
+        
         visualList.appendChild(li);
 
         contadorCriterios++;
@@ -526,7 +546,67 @@
         document.querySelectorAll('.fuente-checkbox').forEach(cb => cb.checked = false);
       }
 
+      function eliminarCriterio(index, liElement) {
+        const container = document.getElementById("hidden-inputs-container");
+        const visualList = document.getElementById("visual-list");
+        
+        // Eliminar todos los inputs ocultos relacionados con este criterio
+        const inputsToRemove = container.querySelectorAll(`input[name^="criterios[${index}]"]`);
+        inputsToRemove.forEach(input => input.remove());
+        
+        // Eliminar el elemento de la lista visual
+        liElement.remove();
+        
+        // Reorganizar los índices de los criterios restantes
+        reorganizarIndicesCriterios();
+      }
+
+      function reorganizarIndicesCriterios() {
+        const container = document.getElementById("hidden-inputs-container");
+        const visualList = document.getElementById("visual-list");
+        const allInputs = Array.from(container.querySelectorAll('input[name^="criterios["]'));
+        
+        // Agrupar inputs por índice original
+        const criteriosMap = new Map();
+        allInputs.forEach(input => {
+          const match = input.name.match(/criterios\[(\d+)\]/);
+          if (match) {
+            const oldIndex = parseInt(match[1]);
+            if (!criteriosMap.has(oldIndex)) {
+              criteriosMap.set(oldIndex, []);
+            }
+            criteriosMap.get(oldIndex).push(input);
+          }
+        });
+        
+        // Obtener índices ordenados
+        const indicesOrdenados = Array.from(criteriosMap.keys()).sort((a, b) => a - b);
+        
+        // Reasignar índices secuencialmente
+        indicesOrdenados.forEach((oldIndex, newIndex) => {
+          const inputs = criteriosMap.get(oldIndex);
+          inputs.forEach(input => {
+            input.name = input.name.replace(/criterios\[\d+\]/, `criterios[${newIndex}]`);
+          });
+          
+          // Actualizar el índice en el elemento visual
+          const li = visualList.querySelector(`li[data-criterio-index="${oldIndex}"]`);
+          if (li) {
+            li.dataset.criterioIndex = newIndex;
+            // Actualizar el onclick del botón de eliminar
+            const deleteBtn = li.querySelector('button');
+            if (deleteBtn) {
+              deleteBtn.onclick = function() { eliminarCriterio(newIndex, li); };
+            }
+          }
+        });
+        
+        // Actualizar el contador
+        contadorCriterios = indicesOrdenados.length;
+      }
+
       function createHiddenInput(parent, name, value) {
+        if(value === undefined || value === null) return;
         const input = document.createElement("input");
         input.type = "hidden";
         input.name = name;
@@ -537,30 +617,37 @@
       function showLoader() {
         document.getElementById('loadingOverlay').style.display = "flex";
       }
+
+      function hideLoader() {
+        document.getElementById('loadingOverlay').style.display = "none";
+      }
+
+      function cerrarPanelNuevaColeccion() {
+        // Remover el hash para cerrar el panel
+        if (window.location.hash === '#nueva-coleccion') {
+          history.replaceState(null, '', window.location.pathname + window.location.search);
+        }
+      }
     </script>
-    <a href="#" 
-       class="close" 
-       aria-label="Cerrar panel de nueva colección"
-       title="Cerrar">Cerrar</a>
   </div>
 
   <div id="editar-coleccion" class="panel">
     <h3>Editar Colección</h3>
-    <form method="post" th:action="@{/admin/actualizar-coleccion}" onsubmit="showLoader()">
+    <form id="form-actualizar-coleccion" method="post" th:action="@{/admin/actualizar-coleccion}">
 
       <input type="hidden" name="handle" id="edit-handle">
 
-      <label for="edit-nombre">Título:</label>
-      <input name="titulo" type="text" id="edit-nombre" required>
+      <label for="edit-nombre">Nombre <span class="required-indicator">*</span></label>
+      <input name="titulo" type="text" id="edit-nombre" required class="form-control">
 
-      <label for="edit-descripcion">Descripción:</label>
-      <textarea name="descripcion" id="edit-descripcion" required></textarea>
+      <label for="edit-descripcion">Descripción <span class="required-indicator">*</span></label>
+      <textarea name="descripcion" id="edit-descripcion" required class="form-control"></textarea>
 
       <div class="criterio-box admin-section" style="margin-bottom:15px;">
         <h4>Agregar criterios</h4>
 
         <label for="edit-selector-criterio">Criterio:</label>
-        <select id="edit-selector-criterio" onchange="mostrarOpcionesEdit()">
+        <select id="edit-selector-criterio" onchange="mostrarOpcionesEdit()" class="form-control">
           <option value="">-- Seleccionar --</option>
           <option value="fecha">Fecha</option>
           <option value="lugar">Lugar</option>
@@ -571,54 +658,83 @@
 
         <div id="edit-opcion-fecha" class="conditional-section-edit" style="display:none;">
           <label for="edit-input-tipo-fecha">Tipo de Fecha:</label>
-          <select id="edit-input-tipo-fecha">
+          <select id="edit-input-tipo-fecha" class="form-control">
             <option value="CARGA">Carga</option>
             <option value="ACONTECIMIENTO">Acontecimiento</option>
           </select>
-          <label for="edit-input-fecha-inicio">Fecha Inicio:</label>
-          <input type="datetime-local" step="1" id="edit-input-fecha-inicio">
 
-          <label for="edit-input-fecha-fin">Fecha Fin:</label>
-          <input type="datetime-local" step="1" id="edit-input-fecha-fin">
+          <label for="edit-input-fecha-inicio">Desde:</label>
+          <input type="datetime-local" id="edit-input-fecha-inicio" data-was-required="false" class="form-control">
+
+          <label for="edit-input-fecha-fin">Hasta:</label>
+          <input type="datetime-local" id="edit-input-fecha-fin" data-was-required="false" class="form-control">
+          <small class="muted small">Al menos una fecha debe estar definida</small>
         </div>
 
         <div id="edit-opcion-lugar" class="conditional-section-edit" style="display:none;">
-          <label for="edit-input-lat">Latitud:</label> <input type="number" step="any" id="edit-input-lat">
-          <label for="edit-input-lng">Longitud:</label> <input type="number" step="any" id="edit-input-lng">
+          <label for="edit-input-tipo-lugar">Tipo de Búsqueda:</label>
+          <select id="edit-input-tipo-lugar" onchange="mostrarTipoLugarEdit()" class="form-control">
+            <option value="">-- Seleccione --</option>
+            <option value="provincia">Por Provincia</option>
+            <option value="coordenadas">Por Coordenadas + Radio</option>
+          </select>
+
+          <div id="edit-lugar-provincia" style="display:none;">
+            <label for="edit-input-provincia">Provincia: <span class="required-indicator">*</span></label>
+            <select id="edit-input-provincia" data-was-required="true" class="form-control">
+              <option value="">-- Seleccione una Provincia --</option>
+              <option th:each="prov : ${provincias}" th:value="${prov}" th:text="${prov}"></option>
+            </select>
+          </div>
+
+          <div id="edit-lugar-coordenadas" style="display:none;">
+            <label for="edit-input-lat">Latitud: <span class="required-indicator">*</span></label>
+            <input type="number" step="any" id="edit-input-lat" placeholder="-34.6037" data-was-required="true" min="-90" max="90" class="form-control">
+
+            <label for="edit-input-lng">Longitud: <span class="required-indicator">*</span></label>
+            <input type="number" step="any" id="edit-input-lng" placeholder="-58.3816" data-was-required="true" min="-180" max="180" class="form-control">
+
+            <label for="edit-input-radio">Radio (km): <span class="required-indicator">*</span></label>
+            <input type="number" step="0.1" id="edit-input-radio" placeholder="Ej: 5.0" data-was-required="true" min="0.1" class="form-control">
+            <small class="muted small">Distancia máxima en kilómetros desde las coordenadas</small>
+          </div>
         </div>
 
         <div id="edit-opcion-igualdad" class="conditional-section-edit" style="display:none;">
-          <label for="edit-input-igualdad-campo">Campo Igualdad:</label>
-          <select id="edit-input-igualdad-campo">
-            <option value="categoria">Categoría</option>
-            <option value="titulo">Título</option>
+          <label for="edit-input-igualdad-campo">Campo a comparar:</label>
+          <select id="edit-input-igualdad-campo" class="form-control">
+            <option value="CATEGORIA">Categoría</option>
+            <option value="DESCRIPCION">Descripción</option>
+            <option value="ETIQUETA">Etiqueta</option>
+            <option value="TITULO">Título</option>
           </select>
-          <label for="edit-input-igualdad-valor">Valor:</label>
-          <input type="text" id="edit-input-igualdad-valor">
+
+          <label for="edit-input-igualdad-valor">Valor exacto: <span class="required-indicator">*</span></label>
+          <input type="text" id="edit-input-igualdad-valor" placeholder="Ej: Robo, Accidente..." data-was-required="true" class="form-control">
         </div>
 
         <div id="edit-opcion-origen" class="conditional-section-edit" style="display:none;">
-          <label for="edit-input-origen-valor">Origen:</label>
-          <select id="edit-input-origen-valor">
-              <option value="DATASET">Dataset</option>
-              <option value="ONG">ONG</option>
-              <option value="METAMAPA">MetaMapa</option>
-              <option value="CONTRIBUYENTE">Contribuyente</option>
-              <option value="ANONIMO">Anonimo</option>
+          <label for="edit-input-origen-valor">Fuente:</label>
+          <select id="edit-input-origen-valor" class="form-control">
+            <option value="DATASET">Dataset</option>
+            <option value="ONG">ONG</option>
+            <option value="METAMAPA">MetaMapa</option>
+            <option value="CONTRIBUYENTE">Contribuyente</option>
+            <option value="ANONIMO">Anonimo</option>
           </select>
         </div>
 
-        <label for="edit-fuente">Fuente <span class="required-indicator">*</span></label>
-        <select name="fuenteId" id="edit-fuente" required>
-          <option value="">-- Seleccione una Fuente --</option>
-          <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}"></option>
-        </select>
-
         <div id="edit-opcion-fuente" class="conditional-section-edit" style="display:none;">
-          <label for="edit-input-fuente-ids">Fuentes:</label>
-          <select id="edit-input-fuente-ids" multiple class="form-control" style="height: 120px; width: 100%;">
-            <option th:each="f : ${fuentes}" th:value="${f.id}" th:text="${f.nombre}"></option>
-          </select>
+          <label>Seleccione fuentes:</label>
+          <div id="edit-fuentes-checkbox-container" class="input-box">
+            <th:block th:each="f : ${fuentes}">
+              <label class="checkbox-row" style="margin-top: 0;" th:for="${'edit-fuente-' + f.id}">
+                <input type="checkbox" class="edit-fuente-checkbox fit-content" style="width: auto;" th:id="${'edit-fuente-' + f.id}" th:data-id="${f.id}" th:value="${f.nombre}">
+                <span th:text="${f.nombre}"></span>
+              </label>
+            </th:block>
+            <p th:if="${#lists.isEmpty(fuentes)}" class="muted">No hay fuentes disponibles</p>
+          </div>
         </div>
 
         <button type="button" onclick="agregarCriterioEdit()" class="btn-secondary" style="margin-top:10px;">
@@ -626,13 +742,15 @@
         </button>
       </div>
 
-      <h4>Criterios Actuales:</h4>
-      <ul id="edit-visual-list"></ul>
+      <div class="stacked">
+        <h4>Criterios Actuales:</h4>
+        <ul id="edit-visual-list" class="list-clean"></ul>
+      </div>
 
       <div id="edit-hidden-inputs-container"></div>
 
-      <label>Algoritmo de Consenso <span class="required-indicator">*</span></label>
-      <select name="algoritmoConsenso" id="edit-consenso" required>
+      <label for="edit-consenso">Algoritmo de Consenso <span class="required-indicator">*</span></label>
+      <select name="algoritmoConsenso" id="edit-consenso" required class="form-control">
         <option value="MAYORIA_SIMPLE">Mayoría Simple</option>
         <option value="MULTIPLES_MENCIONES">Múltiples Menciones</option>
         <option value="ABSOLUTA">Absoluta</option>
@@ -650,164 +768,124 @@
     </form>
   </div>
 
+  <style>
+    /* Loading Overlay para Admin - debe estar por encima de todo, incluyendo el header */
+    .loading-overlay-admin {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background-color: rgba(255, 255, 255, 0.9);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 100000;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Spinner grande con animación - específico para admin */
+    .loading-spinner-admin {
+      width: 60px;
+      height: 60px;
+      border: 6px solid rgba(55, 55, 255, 0.2);
+      border-top-color: rgba(55, 55, 255, 0.8);
+      border-radius: 50%;
+      animation: spin-admin 0.8s linear infinite !important;
+      display: block;
+    }
+
+    @keyframes spin-admin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    /* Asegurar que la animación funcione incluso con prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      .loading-spinner-admin {
+        animation: spin-admin 0.8s linear infinite !important;
+        animation-duration: 0.8s !important;
+        animation-iteration-count: infinite !important;
+      }
+    }
+  </style>
+
   <script>
     let contadorCriteriosEdit = 0;
-    let contadorCriterios = 0;
 
-    function mostrarOpciones() {
-      const criterio = document.getElementById("selector-criterio").value;
-      document.querySelectorAll('.conditional-section').forEach(div => {
-        div.style.display = 'none';
-        // Remove required from hidden inputs
-        div.querySelectorAll('input[required], select[required]').forEach(input => {
-          input.removeAttribute('required');
-          input.setAttribute('data-was-required', 'true');
-        });
+    function mostrarTipoLugarEdit() {
+      const tipoLugar = document.getElementById("edit-input-tipo-lugar");
+      if (!tipoLugar) return;
+      
+      const tipoLugarValue = tipoLugar.value;
+      const provinciaDiv = document.getElementById("edit-lugar-provincia");
+      const coordenadasDiv = document.getElementById("edit-lugar-coordenadas");
+
+      if (!provinciaDiv || !coordenadasDiv) return;
+
+      provinciaDiv.style.display = 'none';
+      coordenadasDiv.style.display = 'none';
+
+      provinciaDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+        field.removeAttribute('required');
+      });
+      coordenadasDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+        field.removeAttribute('required');
       });
 
-      if (criterio === 'fecha') {
-        const section = document.getElementById('opcion-fecha');
-        if (section) {
-          section.style.display = 'block';
-          // Restore required if needed
-          section.querySelectorAll('[data-was-required="true"]').forEach(input => {
-            input.setAttribute('required', 'required');
-          });
-        }
-      }
-      if (criterio === 'lugar') {
-        const section = document.getElementById('opcion-lugar');
-        if (section) {
-          section.style.display = 'block';
-          section.querySelectorAll('[data-was-required="true"]').forEach(input => {
-            input.setAttribute('required', 'required');
-          });
-        }
-      }
-      if (criterio === 'igualdad') {
-        const section = document.getElementById('opcion-igualdad');
-        if (section) {
-          section.style.display = 'block';
-          // Restore required for all inputs in this section that had it
-          section.querySelectorAll('[data-was-required="true"]').forEach(input => {
-            input.setAttribute('required', 'required');
-          });
-        }
-      }
-      if (criterio === 'origen') {
-        const section = document.getElementById('opcion-origen');
-        if (section) {
-          section.style.display = 'block';
-          section.querySelectorAll('[data-was-required="true"]').forEach(input => {
-            input.setAttribute('required', 'required');
-          });
-        }
-      }
-      if (criterio === 'fuente') {
-        const section = document.getElementById('opcion-fuente');
-        if (section) {
-          section.style.display = 'block';
-          section.querySelectorAll('[data-was-required="true"]').forEach(input => {
-            input.setAttribute('required', 'required');
-          });
-        }
-      }
-    }
-
-    function mostrarTipoLugar() {
-      const tipo = document.getElementById("input-tipo-lugar").value;
-      document.getElementById("lugar-provincia").style.display = tipo === "provincia" ? "block" : "none";
-      document.getElementById("lugar-coordenadas").style.display = tipo === "coordenadas" ? "block" : "none";
-    }
-
-    function agregarCriterioALista() {
-      const tipo = document.getElementById("selector-criterio").value;
-      const container = document.getElementById("hidden-inputs-container");
-      const visualList = document.getElementById("visual-list");
-
-      let tempObj = { tipo: tipo };
-
-      if (tipo === "fecha") {
-        tempObj.tipoFecha = document.getElementById("input-tipo-fecha").value;
-        tempObj.fechaInicial = document.getElementById("input-fecha-inicio").value;
-        tempObj.fechaFinal = document.getElementById("input-fecha-fin").value;
-      } else if (tipo === "lugar") {
-        const tipoLugar = document.getElementById("input-tipo-lugar").value;
-        if (tipoLugar === "provincia") {
-          tempObj.provincia = document.getElementById("input-provincia").value;
-        } else if (tipoLugar === "coordenadas") {
-          tempObj.lat = document.getElementById("input-lat").value;
-          tempObj.lng = document.getElementById("input-lng").value;
-          tempObj.radio = document.getElementById("input-radio").value;
-        }
-      } else if (tipo === "igualdad") {
-        tempObj.tipoDeDato = document.getElementById("input-igualdad-campo").value;
-        tempObj.cadenaAComparar = document.getElementById("input-igualdad-valor").value;
-      } else if (tipo === "origen") {
-        tempObj.origen = document.getElementById("input-origen-valor").value;
-      } else if (tipo === "fuente") {
-        const checkboxes = document.querySelectorAll('.fuente-checkbox:checked');
-        if (checkboxes.length === 0) return;
-        tempObj.fuentes = Array.from(checkboxes).map(cb => cb.dataset.id);
-      }
-
-      const i = contadorCriterios;
-      let desc = "";
-
-      if (tipo === "fecha") {
-        createHiddenInput(container, `criterios[${i}].tipo`, "fecha");
-        createHiddenInput(container, `criterios[${i}].tipoFecha`, tempObj.tipoFecha);
-        createHiddenInput(container, `criterios[${i}].fechaInicial`, tempObj.fechaInicial);
-        createHiddenInput(container, `criterios[${i}].fechaFinal`, tempObj.fechaFinal);
-        desc = `Fecha (${tempObj.tipoFecha}): ${tempObj.fechaInicial || 'N/A'} - ${tempObj.fechaFinal || 'N/A'}`;
-      } else if (tipo === "lugar") {
-        createHiddenInput(container, `criterios[${i}].tipo`, "lugar");
-        if (tempObj.provincia) {
-          createHiddenInput(container, `criterios[${i}].provincia`, tempObj.provincia);
-          desc = `Lugar: Provincia ${tempObj.provincia}`;
-        } else if (tempObj.lat && tempObj.lng) {
-          createHiddenInput(container, `criterios[${i}].lat`, tempObj.lat);
-          createHiddenInput(container, `criterios[${i}].lng`, tempObj.lng);
-          createHiddenInput(container, `criterios[${i}].radio`, tempObj.radio);
-          desc = `Lugar: ${tempObj.lat}, ${tempObj.lng} (radio: ${tempObj.radio}km)`;
-        }
-      } else if (tipo === "igualdad") {
-        createHiddenInput(container, `criterios[${i}].tipo`, "igualdad");
-        createHiddenInput(container, `criterios[${i}].tipoDeDato`, tempObj.tipoDeDato);
-        createHiddenInput(container, `criterios[${i}].cadenaAComparar`, tempObj.cadenaAComparar);
-        desc = `Igualdad: ${tempObj.tipoDeDato} = ${tempObj.cadenaAComparar}`;
-      } else if (tipo === "origen") {
-        createHiddenInput(container, `criterios[${i}].tipo`, "origen");
-        createHiddenInput(container, `criterios[${i}].origen`, tempObj.origen);
-        desc = `Origen: ${tempObj.origen}`;
-      } else if (tipo === "fuente") {
-        createHiddenInput(container, `criterios[${i}].tipo`, "fuente");
-        tempObj.fuentes.forEach(id => {
-          createHiddenInput(container, `criterios[${i}].fuentes`, id);
+      if (tipoLugarValue === 'provincia') {
+        provinciaDiv.style.display = 'block';
+        provinciaDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+          field.setAttribute('required', '');
         });
-        desc = `Fuentes: ${tempObj.fuentes.length} seleccionadas`;
+      } else if (tipoLugarValue === 'coordenadas') {
+        coordenadasDiv.style.display = 'block';
+        coordenadasDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+          field.setAttribute('required', '');
+        });
       }
-
-      const li = document.createElement("li");
-      li.textContent = desc;
-      visualList.appendChild(li);
-
-      // Clear form
-      document.getElementById("selector-criterio").value = "";
-      mostrarOpciones();
-
-      contadorCriterios++;
     }
 
     function mostrarOpcionesEdit() {
       const criterio = document.getElementById("edit-selector-criterio").value;
-      document.querySelectorAll('.conditional-section-edit').forEach(div => div.style.display = 'none');
 
-      if (criterio === 'fecha') document.getElementById('edit-opcion-fecha').style.display = 'block';
-      if (criterio === 'lugar') document.getElementById('edit-opcion-lugar').style.display = 'block';
-      if (criterio === 'igualdad') document.getElementById('edit-opcion-igualdad').style.display = 'block';
-      if (criterio === 'origen') document.getElementById('edit-opcion-origen').style.display = 'block';
-      if (criterio === 'fuente') document.getElementById('edit-opcion-fuente').style.display = 'block';
+      document.querySelectorAll('.conditional-section-edit').forEach(div => {
+        div.style.display = 'none';
+        div.querySelectorAll('[required]').forEach(field => {
+          field.removeAttribute('required');
+          if (!field.hasAttribute('data-was-required')) {
+            field.setAttribute('data-was-required', 'true');
+          }
+        });
+      });
+
+      if (criterio === 'fecha') {
+        const section = document.getElementById('edit-opcion-fecha');
+        section.style.display = 'block';
+      }
+      if (criterio === 'lugar') {
+        const section = document.getElementById('edit-opcion-lugar');
+        section.style.display = 'block';
+        const tipoLugarSelect = document.getElementById('edit-input-tipo-lugar');
+        if (tipoLugarSelect) {
+          tipoLugarSelect.value = '';
+          mostrarTipoLugarEdit();
+        }
+      }
+      if (criterio === 'igualdad') {
+        const section = document.getElementById('edit-opcion-igualdad');
+        section.style.display = 'block';
+        section.querySelectorAll('[data-was-required="true"]').forEach(field => {
+          field.setAttribute('required', '');
+        });
+      }
+      if (criterio === 'origen') {
+        document.getElementById('edit-opcion-origen').style.display = 'block';
+      }
+      if (criterio === 'fuente') {
+        document.getElementById('edit-opcion-fuente').style.display = 'block';
+      }
     }
 
     function cargarDatosEdicion(btn) {
@@ -841,35 +919,200 @@
 
     function agregarCriterioEdit() {
       const tipo = document.getElementById("edit-selector-criterio").value;
-      const container = document.getElementById("edit-hidden-inputs-container");
-      const visualList = document.getElementById("edit-visual-list");
-
-      let tempObj = { tipo: tipo };
-
-      if (tipo === "fecha") {
-        tempObj.tipoFecha = document.getElementById("edit-input-tipo-fecha").value;
-        tempObj.fechaInicial = document.getElementById("edit-input-fecha-inicio").value;
-        tempObj.fechaFinal = document.getElementById("edit-input-fecha-fin").value;
-      } else if (tipo === "lugar") {
-        tempObj.lat = document.getElementById("edit-input-lat").value;
-        tempObj.lng = document.getElementById("edit-input-lng").value;
-      } else if (tipo === "igualdad") {
-        tempObj.tipoDeDato = document.getElementById("edit-input-igualdad-campo").value;
-        tempObj.cadenaAComparar = document.getElementById("edit-input-igualdad-valor").value;
-      } else if (tipo === "origen") {
-        tempObj.origen = document.getElementById("edit-input-origen-valor").value;
-      } else if (tipo === "fuente") {
-        const select = document.getElementById("edit-input-fuente-ids");
-        const selectedOpts = Array.from(select.selectedOptions);
-        if(selectedOpts.length === 0) return;
-
-        tempObj.fuentes = selectedOpts.map(o => o.value);
+      if (!tipo) {
+        showToast("Seleccione un tipo de criterio.", "error");
+        document.getElementById("edit-selector-criterio").focus();
+        return;
       }
 
-      restaurarCriterio(tempObj, container, visualList);
+      const container = document.getElementById("edit-hidden-inputs-container");
+      const visualList = document.getElementById("edit-visual-list");
+      let descripcion = "";
 
+      if (tipo === "fecha") {
+        const tipoFecha = document.getElementById("edit-input-tipo-fecha").value;
+        const ini = document.getElementById("edit-input-fecha-inicio");
+        const fin = document.getElementById("edit-input-fecha-fin");
+
+        if (!ini.value && !fin.value) {
+          showToast("Debe completar al menos una fecha (desde o hasta).", "error");
+          ini.focus();
+          return;
+        }
+
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].tipo`, "fecha");
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].tipoFecha`, tipoFecha);
+        
+        if (ini.value) {
+          createHiddenInput(container, `criterios[${contadorCriteriosEdit}].fechaInicial`, ini.value);
+        }
+        if (fin.value) {
+          createHiddenInput(container, `criterios[${contadorCriteriosEdit}].fechaFinal`, fin.value);
+        }
+
+        let fechaDesc = "";
+        if (ini.value && fin.value) {
+          fechaDesc = `${ini.value} al ${fin.value}`;
+        } else if (ini.value) {
+          fechaDesc = `desde ${ini.value}`;
+        } else {
+          fechaDesc = `hasta ${fin.value}`;
+        }
+        
+        descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> <b>Fecha</b> (${tipoFecha}): ${fechaDesc}`;
+      }
+
+      else if (tipo === "lugar") {
+        const tipoLugar = document.getElementById("edit-input-tipo-lugar").value;
+
+        if (!tipoLugar || tipoLugar === "") {
+          showToast("Seleccione un tipo de búsqueda (Provincia o Coordenadas).", "error");
+          document.getElementById("edit-input-tipo-lugar").focus();
+          return;
+        }
+
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].tipo`, "lugar");
+
+        if (tipoLugar === "provincia") {
+          const provinciaSelect = document.getElementById("edit-input-provincia");
+          if (!provinciaSelect.value || provinciaSelect.value === "") {
+            showToast("Seleccione una provincia.", "error");
+            provinciaSelect.focus();
+            return;
+          }
+          createHiddenInput(container, `criterios[${contadorCriteriosEdit}].provincia`, provinciaSelect.value);
+          const provinciaNombre = provinciaSelect.options[provinciaSelect.selectedIndex].text;
+          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${provinciaNombre}`;
+        } else if (tipoLugar === "coordenadas") {
+          const lat = document.getElementById("edit-input-lat");
+          const lng = document.getElementById("edit-input-lng");
+          const radio = document.getElementById("edit-input-radio");
+
+          if (!lat.value || !lng.value || !radio.value) {
+            showToast("Complete latitud, longitud y radio.", "error");
+            if (!lat.value) lat.focus();
+            else if (!lng.value) lng.focus();
+            else if (!radio.value) radio.focus();
+            return;
+          }
+
+          const latNum = parseFloat(lat.value);
+          const lngNum = parseFloat(lng.value);
+          const radioNum = parseFloat(radio.value);
+
+          if (isNaN(latNum) || latNum < -90 || latNum > 90) {
+            showToast("La latitud debe estar entre -90 y 90.", "error");
+            lat.focus();
+            return;
+          }
+
+          if (isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+            showToast("La longitud debe estar entre -180 y 180.", "error");
+            lng.focus();
+            return;
+          }
+
+          if (isNaN(radioNum) || radioNum <= 0) {
+            showToast("El radio debe ser mayor a 0.", "error");
+            radio.focus();
+            return;
+          }
+
+          createHiddenInput(container, `criterios[${contadorCriteriosEdit}].lat`, lat.value);
+          createHiddenInput(container, `criterios[${contadorCriteriosEdit}].lng`, lng.value);
+          createHiddenInput(container, `criterios[${contadorCriteriosEdit}].radio`, radio.value);
+
+          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${lat.value}, ${lng.value} (radio: ${radio.value} km)`;
+        }
+      }
+
+      else if (tipo === "igualdad") {
+        const campo = document.getElementById("edit-input-igualdad-campo").value;
+        const valor = document.getElementById("edit-input-igualdad-valor");
+
+        if (!valor.value || valor.value.trim() === "") {
+          showToast("Escriba un valor para comparar.", "error");
+          valor.focus();
+          return;
+        }
+
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].tipo`, "igualdad");
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].tipoDeDato`, campo);
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].cadenaAComparar`, valor.value.trim());
+
+        descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><line x1="5" y1="12" x2="19" y2="12"></line></svg> <b>Igualdad</b>: ${campo} = "${valor.value.trim()}"`;
+      }
+
+      else if (tipo === "origen") {
+        const origen = document.getElementById("edit-input-origen-valor").value;
+
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].tipo`, "origen");
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].origen`, origen);
+
+        descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> <b>Origen</b>: ${origen}`;
+      }
+
+      else if (tipo === "fuente") {
+        const checkboxes = document.querySelectorAll('.edit-fuente-checkbox:checked');
+        
+        if (checkboxes.length === 0) {
+          showToast("Seleccione al menos una fuente.", "error");
+          document.getElementById("edit-fuentes-checkbox-container").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          return;
+        }
+
+        createHiddenInput(container, `criterios[${contadorCriteriosEdit}].tipo`, "fuente");
+
+        const nombresFuentes = [];
+        Array.from(checkboxes).forEach((checkbox) => {
+          const fuenteId = checkbox.getAttribute('data-id');
+          const fuenteNombre = checkbox.value;
+          if (fuenteId) {
+            createHiddenInput(container, `criterios[${contadorCriteriosEdit}].fuentes`, fuenteId);
+            nombresFuentes.push(fuenteNombre);
+          }
+        });
+
+        const nombresTexto = nombresFuentes.join(", ");
+        descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> <b>Fuentes</b>: ${nombresTexto}`;
+      }
+
+      const li = document.createElement("li");
+      li.style.borderBottom = "1px solid #ccc";
+      li.style.padding = "5px 0";
+      li.style.display = "flex";
+      li.style.justifyContent = "space-between";
+      li.style.alignItems = "center";
+      li.dataset.criterioIndex = contadorCriteriosEdit;
+      
+      const descSpan = document.createElement("span");
+      descSpan.innerHTML = descripcion;
+      li.appendChild(descSpan);
+      
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.innerHTML = "✕";
+      deleteBtn.style.cssText = "background: transparent; color: black; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; margin-left: 10px; flex-shrink: 0;";
+      deleteBtn.title = "Eliminar criterio";
+      deleteBtn.onclick = function() { eliminarCriterioEdit(contadorCriteriosEdit, li); };
+      li.appendChild(deleteBtn);
+      
+      visualList.appendChild(li);
+
+      contadorCriteriosEdit++;
+
+      document.querySelectorAll('#edit-input-igualdad-valor, #edit-input-lat, #edit-input-lng, #edit-input-radio, #edit-input-fecha-inicio, #edit-input-fecha-fin').forEach(i => i.value = '');
+      if(document.getElementById("edit-input-provincia")) {
+        document.getElementById("edit-input-provincia").value = "";
+      }
+      if(document.getElementById("edit-input-tipo-lugar")) {
+        document.getElementById("edit-input-tipo-lugar").value = "";
+        mostrarTipoLugarEdit();
+      }
       document.getElementById("edit-selector-criterio").value = "";
       mostrarOpcionesEdit();
+
+      document.querySelectorAll('.edit-fuente-checkbox').forEach(cb => cb.checked = false);
     }
 
     function restaurarCriterio(c, container, list) {
@@ -882,6 +1125,7 @@
 
       const lat = c.latitud || c.lat;
       const lng = c.longitud || c.lng;
+      const provincia = c.provincia;
 
       const tipoDato = c.tipo_dato || c.tipoDeDato;
       const cadena = c.cadena_a_comparar || c.cadenaAComparar;
@@ -890,9 +1134,9 @@
       const fuenteIds = c.fuentes;
 
       if (!tipo) {
-        if (fechaIni) {
+        if (fechaIni || fechaFin) {
           tipo = "fecha";
-        } else if (lat) {
+        } else if (provincia || lat || lng) {
           tipo = "lugar";
         } else if (cadena) {
           tipo = "igualdad";
@@ -910,54 +1154,164 @@
         createHiddenInput(container, `criterios[${i}].tipoFecha`, tipoFecha);
         createHiddenInput(container, `criterios[${i}].fechaInicial`, fechaIni);
         createHiddenInput(container, `criterios[${i}].fechaFinal`, fechaFin);
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Fecha (${tipoFecha}): ${fechaIni} - ${fechaFin}`;
+        let fechaDesc = "";
+        if (fechaIni && fechaFin) {
+          fechaDesc = `${fechaIni} al ${fechaFin}`;
+        } else if (fechaIni) {
+          fechaDesc = `desde ${fechaIni}`;
+        } else if (fechaFin) {
+          fechaDesc = `hasta ${fechaFin}`;
+        } else {
+          fechaDesc = `${fechaIni || 'N/A'} - ${fechaFin || 'N/A'}`;
+        }
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> <b>Fecha</b> (${tipoFecha}): ${fechaDesc}`;
       }
       else if (tipo === "lugar") {
-        createHiddenInput(container, `criterios[${i}].lat`, lat);
-        createHiddenInput(container, `criterios[${i}].lng`, lng);
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Lugar: ${lat}, ${lng}`;
+        const provincia = c.provincia;
+        if (provincia) {
+          createHiddenInput(container, `criterios[${i}].provincia`, provincia);
+          desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${provincia}`;
+        } else if (lat && lng) {
+          const radio = c.radio;
+          createHiddenInput(container, `criterios[${i}].lat`, lat);
+          createHiddenInput(container, `criterios[${i}].lng`, lng);
+          if (radio) {
+            createHiddenInput(container, `criterios[${i}].radio`, radio);
+            desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${lat}, ${lng} (radio: ${radio} km)`;
+          } else {
+            desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${lat}, ${lng}`;
+          }
+        }
       }
       else if (tipo === "igualdad") {
         createHiddenInput(container, `criterios[${i}].tipoDeDato`, tipoDato);
         createHiddenInput(container, `criterios[${i}].cadenaAComparar`, cadena);
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Igualdad: ${tipoDato} = ${cadena}`;
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><line x1="5" y1="12" x2="19" y2="12"></line></svg> <b>Igualdad</b>: ${tipoDato} = "${cadena}"`;
       }
       else if (tipo === "origen") {
         createHiddenInput(container, `criterios[${i}].origen`, origen);
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> Origen: ${origen}`;
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> <b>Origen</b>: ${origen}`;
       }
       else if (tipo === "fuente" && fuenteIds) {
         const idsArray = Array.isArray(fuenteIds) ? fuenteIds : [fuenteIds];
-        const lookupSelect = document.getElementById("edit-input-fuente-ids");
         let names = [];
 
         idsArray.forEach((id) => {
           createHiddenInput(container, `criterios[${i}].fuentes`, id);
 
-          if(lookupSelect) {
-            const opt = lookupSelect.querySelector(`option[value="${id}"]`);
-            if(opt) names.push(opt.text);
-            else names.push("ID " + id);
+          // Buscar el checkbox correspondiente para obtener el nombre
+          // Intentar buscar tanto con el ID como string como número
+          const idStr = String(id);
+          const idNum = Number(id);
+          let checkbox = document.querySelector(`.edit-fuente-checkbox[data-id="${idStr}"]`);
+          
+          if (!checkbox && !isNaN(idNum)) {
+            // Intentar buscar con el ID como número
+            const allCheckboxes = document.querySelectorAll('.edit-fuente-checkbox');
+            checkbox = Array.from(allCheckboxes).find(cb => {
+              const cbId = cb.getAttribute('data-id');
+              return cbId === idStr || Number(cbId) === idNum;
+            });
+          }
+          
+          if (checkbox) {
+            const nombre = checkbox.value || checkbox.nextElementSibling?.textContent?.trim();
+            if (nombre) {
+              names.push(nombre);
+            } else {
+              names.push(`ID ${id}`);
+            }
+          } else {
+            names.push(`ID ${id}`);
           }
         });
 
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Fuentes: ${names.join(", ")}`;
+        const nombresTexto = names.length > 0 ? names.join(", ") : "Sin nombres disponibles";
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> <b>Fuentes</b>: ${nombresTexto}`;
       }
 
       const li = document.createElement("li");
-      li.innerHTML = desc;
+      li.style.borderBottom = "1px solid #ccc";
+      li.style.padding = "5px 0";
+      li.style.display = "flex";
+      li.style.justifyContent = "space-between";
+      li.style.alignItems = "center";
+      li.dataset.criterioIndex = i;
+      
+      const descSpan = document.createElement("span");
+      descSpan.innerHTML = desc;
+      li.appendChild(descSpan);
+      
+      const deleteBtn = document.createElement("button");
+      deleteBtn.type = "button";
+      deleteBtn.innerHTML = "✕";
+      deleteBtn.style.cssText = "background: transparent; color: black; border: none; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; font-size: 14px; line-height: 1; padding: 0; margin-left: 10px; flex-shrink: 0;";
+      deleteBtn.title = "Eliminar criterio";
+      deleteBtn.onclick = function() { eliminarCriterioEdit(i, li); };
+      li.appendChild(deleteBtn);
+      
       list.appendChild(li);
 
       contadorCriteriosEdit++;
     }
 
-    function createHiddenInput(parent, name, value) {
-      if(value === undefined || value === null) return;
-      const input = document.createElement("input");
-      input.type = "hidden";
-      input.name = name;
-      input.value = value;
-      parent.appendChild(input);
+    function eliminarCriterioEdit(index, liElement) {
+      const container = document.getElementById("edit-hidden-inputs-container");
+      const visualList = document.getElementById("edit-visual-list");
+      
+      // Eliminar todos los inputs ocultos relacionados con este criterio
+      const inputsToRemove = container.querySelectorAll(`input[name^="criterios[${index}]"]`);
+      inputsToRemove.forEach(input => input.remove());
+      
+      // Eliminar el elemento de la lista visual
+      liElement.remove();
+      
+      // Reorganizar los índices de los criterios restantes
+      reorganizarIndicesCriterios();
+    }
+
+    function reorganizarIndicesCriterios() {
+      const container = document.getElementById("edit-hidden-inputs-container");
+      const visualList = document.getElementById("edit-visual-list");
+      const allInputs = Array.from(container.querySelectorAll('input[name^="criterios["]'));
+      
+      // Agrupar inputs por índice original
+      const criteriosMap = new Map();
+      allInputs.forEach(input => {
+        const match = input.name.match(/criterios\[(\d+)\]/);
+        if (match) {
+          const oldIndex = parseInt(match[1]);
+          if (!criteriosMap.has(oldIndex)) {
+            criteriosMap.set(oldIndex, []);
+          }
+          criteriosMap.get(oldIndex).push(input);
+        }
+      });
+      
+      // Obtener índices ordenados
+      const indicesOrdenados = Array.from(criteriosMap.keys()).sort((a, b) => a - b);
+      
+      // Reasignar índices secuencialmente
+      indicesOrdenados.forEach((oldIndex, newIndex) => {
+        const inputs = criteriosMap.get(oldIndex);
+        inputs.forEach(input => {
+          input.name = input.name.replace(/criterios\[\d+\]/, `criterios[${newIndex}]`);
+        });
+        
+        // Actualizar el índice en el elemento visual
+        const li = visualList.querySelector(`li[data-criterio-index="${oldIndex}"]`);
+        if (li) {
+          li.dataset.criterioIndex = newIndex;
+          // Actualizar el onclick del botón de eliminar
+          const deleteBtn = li.querySelector('button');
+          if (deleteBtn) {
+            deleteBtn.onclick = function() { eliminarCriterioEdit(newIndex, li); };
+          }
+        }
+      });
+      
+      // Actualizar el contador
+      contadorCriteriosEdit = indicesOrdenados.length;
     }
 
     function cerrarPanelEdicion(event) {
@@ -992,8 +1346,201 @@
         });
     }
 
+    // Función para cargar estadísticas de forma asíncrona
+    async function cargarEstadisticas() {
+        const loadingDiv = document.getElementById('estadisticas-loading');
+        const dataDiv = document.getElementById('estadisticas-data');
+        
+        if (!loadingDiv || !dataDiv) return;
+        
+        try {
+            const response = await fetch('/admin/api/estadisticas');
+            if (!response.ok) {
+                throw new Error('Error al cargar estadísticas');
+            }
+            const estadisticas = await response.json();
+            
+            // Renderizar las estadísticas
+            renderizarEstadisticas(estadisticas);
+            
+            // Ocultar loading y mostrar datos
+            loadingDiv.style.display = 'none';
+            dataDiv.style.display = 'block';
+        } catch (error) {
+            console.error('Error al cargar estadísticas:', error);
+            loadingDiv.innerHTML = '<p class="muted">Error al cargar las estadísticas. Por favor, recarga la página.</p>';
+        }
+    }
+    
+    // Función para renderizar las estadísticas en las tablas
+    function renderizarEstadisticas(estadisticas) {
+        const dataDiv = document.getElementById('estadisticas-data');
+        if (!dataDiv) return;
+        
+        let html = '';
+        
+        // Categoría Dominante - usar nombres del JSON según @JsonProperty
+        if (estadisticas.categoriaDominante) {
+            const cat = estadisticas.categoriaDominante;
+            html += `
+                <div class="dashboard-highlight">
+                    <div class="stat-highlight-card">
+                        <h3>Categoría Dominante</h3>
+                        <div class="stat-name">${cat.categoria || cat.categoriaNombre || 'N/A'}</div>
+                        <div class="stat-number">${cat.cantidad_hechos || cat.cantidadHechos || 0} hechos registrados</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Colección por Provincia - usar nombres del JSON según @JsonProperty
+        html += `
+            <div class="table-wrapper">
+                <h3>Colección por Provincia</h3>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Handle</th>
+                            <th>Título</th>
+                            <th>Provincia</th>
+                            <th>Cantidad de Hechos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        if (estadisticas.distribucionGeograficaColecciones && estadisticas.distribucionGeograficaColecciones.length > 0) {
+            estadisticas.distribucionGeograficaColecciones.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.handle || item.coleccionHandle || ''}</td>
+                        <td>${item.titulo || item.coleccionTitulo || ''}</td>
+                        <td>${item.provincia || item.provinciaNombre || ''}</td>
+                        <td>${item.cantidad_hechos || item.cantidadHechos || 0}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            html += '<tr><td colspan="4" class="text-center">No hay datos disponibles</td></tr>';
+        }
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        // Categoría por Provincia - usar nombres del JSON según @JsonProperty
+        html += `
+            <div class="table-wrapper">
+                <h3>Categoría por Provincia</h3>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Provincia</th>
+                            <th>Categoría</th>
+                            <th>Cantidad de hechos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        if (estadisticas.concentracionGeograficaCategorias && estadisticas.concentracionGeograficaCategorias.length > 0) {
+            estadisticas.concentracionGeograficaCategorias.forEach(item => {
+                html += `
+                    <tr>
+                        <td>${item.provincia || item.provinciaNombre || ''}</td>
+                        <td>${item.categoria || item.categoriaNombre || ''}</td>
+                        <td>${item.cantidad_hechos || item.cantidadHechos || 0}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            html += '<tr><td colspan="3" class="text-center">No hay datos disponibles</td></tr>';
+        }
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        // Hechos por Categoría y Hora - usar nombres del JSON según @JsonProperty
+        html += `
+            <div class="table-wrapper">
+                <h3>Hechos por Categoría y Hora</h3>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Hora</th>
+                            <th>Cantidad de Hechos</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        if (estadisticas.distribucionTemporalCategorias && estadisticas.distribucionTemporalCategorias.length > 0) {
+            estadisticas.distribucionTemporalCategorias.forEach(item => {
+                const hora = item.hora !== null && item.hora !== undefined ? item.hora : 'N/A';
+                html += `
+                    <tr>
+                        <td>${item.categoria || item.categoriaNombre || ''}</td>
+                        <td>${hora}</td>
+                        <td>${item.cantidad_hechos || item.cantidadHechos || 0}</td>
+                    </tr>
+                `;
+            });
+        } else {
+            html += '<tr><td colspan="3" class="text-center">No hay datos disponibles</td></tr>';
+        }
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        // Análisis de Solicitudes
+        html += `
+            <div class="table-wrapper">
+                <h3>Análisis de Solicitudes</h3>
+                <table class="stats-table">
+                    <thead>
+                        <tr>
+                            <th>Total Solicitudes</th>
+                            <th>Cantidad Spam</th>
+                            <th>Porcentaje Spam</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>${estadisticas.estadisticaSpam ? (estadisticas.estadisticaSpam.totalSolicitudes || estadisticas.estadisticaSpam.total_solicitudes || 0) : 0}</td>
+                            <td>${estadisticas.estadisticaSpam ? (estadisticas.estadisticaSpam.solicitudesSpam || estadisticas.estadisticaSpam.solicitudes_spam || 0) : 0}</td>
+                            <td><span class="badge-percentage">${estadisticas.estadisticaSpam ? ((estadisticas.estadisticaSpam.porcentajeSpam || estadisticas.estadisticaSpam.porcentaje_spam || 0).toFixed(1)) : '0.0'}</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        dataDiv.innerHTML = html;
+    }
+
     // Si hay hash al cargar, hacer scroll con offset
     window.addEventListener('DOMContentLoaded', function() {
+        // Cargar estadísticas de forma asíncrona
+        cargarEstadisticas();
+        
+        // Mostrar toasts para mensajes flash si existen
+        const successMessage = /*[[${success}]]*/ null;
+        const errorMessage = /*[[${error}]]*/ null;
+        const mensajeInfo = /*[[${mensaje}]]*/ null;
+        
+        if (successMessage) {
+            showToast(successMessage, 'success');
+        }
+        if (errorMessage) {
+            showToast(errorMessage, 'error');
+        }
+        if (mensajeInfo) {
+            showToast(mensajeInfo, 'info');
+        }
+
         // Initialize: remove required from all hidden conditional sections
         document.querySelectorAll('.conditional-section').forEach(section => {
             const isVisible = section.style.display !== 'none' &&
@@ -1012,10 +1559,57 @@
             setTimeout(() => scrollToSectionWithOffset(window.location.hash), 100);
         }
 
+        // Manejar formulario de subir CSV (procesamiento asíncrono en backend)
+        const formSubirCsv = document.getElementById('form-subir-csv');
+        if (formSubirCsv) {
+            formSubirCsv.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const button = this.querySelector('button[type="submit"]');
+                const originalText = button.innerHTML;
+
+                try {
+                    showLoader();
+                    button.disabled = true;
+                    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Subiendo...';
+
+                    const response = await safeFetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    }, true); // skipErrorRedirect = true para manejar errores manualmente
+
+                    if (response.ok) {
+                        const responseText = await response.text();
+                        // El backend devuelve "Archivo cargado correctamente" y procesa en background
+                        if (responseText.includes('cargado correctamente') || responseText.includes('Archivo cargado')) {
+                            showToast('Archivo recibido. El procesamiento continuará en segundo plano y puede demorar varios minutos.', 'success', 5000);
+                        } else {
+                            showToast('Archivo recibido correctamente. El procesamiento continuará en segundo plano.', 'success', 5000);
+                        }
+                        // Limpiar el formulario
+                        this.reset();
+                    } else {
+                        const errorText = await response.text();
+                        const errorMessage = errorText.includes('Error') ? errorText.match(/Error[^<]*/)?.[0] || 'Error al procesar el archivo' : errorText || 'Error al procesar el archivo';
+                        throw new Error(errorMessage);
+                    }
+                } catch (error) {
+                    console.error('Error al subir CSV:', error);
+                    showToast(error.message || 'Error al procesar el archivo CSV', 'error');
+                } finally {
+                    hideLoader();
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            });
+        }
+
         // Manejar formulario de crear colección
         const mainForm = document.getElementById('main-form');
         if (mainForm) {
-            mainForm.addEventListener('submit', function(e) {
+            mainForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
                 // Remove required from all hidden conditional sections before validation
                 document.querySelectorAll('.conditional-section').forEach(section => {
                     const isVisible = section.style.display !== 'none' &&
@@ -1030,6 +1624,45 @@
                         });
                     }
                 });
+
+                const formData = new FormData(this);
+                const button = this.querySelector('button[type="submit"]');
+                const originalText = button.innerHTML;
+
+                try {
+                    showLoader();
+                    button.disabled = true;
+                    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+
+                    const response = await safeFetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    }, true); // skipErrorRedirect = true para manejar errores manualmente
+
+                    if (response.ok) {
+                        // Cerrar panel primero
+                        cerrarPanelNuevaColeccion();
+                        // Mostrar toast después de cerrar el panel
+                        setTimeout(() => {
+                            showToast('Colección creada correctamente', 'success');
+                        }, 100);
+                        // Recargar después de un breve delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    } else {
+                        const errorText = await response.text();
+                        const errorMessage = errorText.includes('Error') ? errorText.match(/Error[^<]*/)?.[0] || 'Error al crear la colección' : 'Error al crear la colección';
+                        throw new Error(errorMessage);
+                    }
+                } catch (error) {
+                    console.error('Error al crear colección:', error);
+                    showToast(error.message || 'Error al crear la colección', 'error');
+                } finally {
+                    hideLoader();
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
             });
         }
 
@@ -1043,23 +1676,49 @@
                 const originalText = button.innerHTML;
 
                 try {
+                    showLoader();
                     button.disabled = true;
                     button.innerHTML = '<i class="bi bi-hourglass-split"></i> Actualizando...';
 
-                    const response = await safeFetch(this.action, {
-                        method: 'POST',
-                        body: formData
-                    }, true); // skipErrorRedirect = true para manejar errores manualmente
+                    // Timeout extendido para operaciones pesadas (120 segundos)
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 120000);
 
-                    if (response.ok) {
-                        showToast('Colecciones actualizadas correctamente', 'success');
-                    } else {
-                        throw new Error('Error al actualizar colecciones');
+                    try {
+                        const response = await fetch(this.action, {
+                            method: 'POST',
+                            body: formData,
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        if (response.ok) {
+                            try {
+                                const result = await response.json();
+                                const mensaje = result.mensaje || 'Colecciones actualizadas correctamente';
+                                const tiempoTotal = result.tiempoTotalMs ? ` (${Math.round(result.tiempoTotalMs / 1000)}s)` : '';
+                                showToast(mensaje + tiempoTotal, 'success', 5000);
+                            } catch (e) {
+                                // Si no es JSON, mostrar mensaje genérico
+                                showToast('Colecciones actualizadas correctamente.', 'success', 5000);
+                            }
+                        } else {
+                            const errorText = await response.text();
+                            throw new Error(errorText || 'Error al actualizar colecciones');
+                        }
+                    } catch (fetchError) {
+                        clearTimeout(timeoutId);
+                        if (fetchError.name === 'AbortError') {
+                            throw new Error('La operación está tomando más tiempo del esperado. Por favor, espere unos minutos y verifique el estado.');
+                        }
+                        throw fetchError;
                     }
                 } catch (error) {
                     console.error('Error al actualizar colecciones:', error);
-                    showToast('Error al actualizar colecciones', 'error');
+                    showToast(error.message || 'Error al actualizar colecciones.', 'error', 5000);
                 } finally {
+                    hideLoader();
                     button.disabled = false;
                     button.innerHTML = originalText;
                 }
@@ -1076,6 +1735,63 @@
                 const originalText = button.innerHTML;
 
                 try {
+                    showLoader();
+                    button.disabled = true;
+                    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Recalculando...';
+
+                    // Timeout extendido para operaciones pesadas (180 segundos - puede tomar mucho tiempo)
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 180000);
+
+                    try {
+                        const response = await fetch(this.action, {
+                            method: 'POST',
+                            body: formData,
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+
+                        if (response.ok) {
+                            const responseText = await response.text();
+                            showToast('Estadísticas recalculadas correctamente.', 'success', 5000);
+                            // Recargar la página después de un delay para mostrar estadísticas actualizadas
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+                        } else {
+                            const errorText = await response.text();
+                            throw new Error(errorText || 'Error al recalcular estadísticas');
+                        }
+                    } catch (fetchError) {
+                        clearTimeout(timeoutId);
+                        if (fetchError.name === 'AbortError') {
+                            throw new Error('La operación está tomando más tiempo del esperado (más de 3 minutos). Por favor, espere unos minutos y verifique el estado.');
+                        }
+                        throw fetchError;
+                    }
+                } catch (error) {
+                    console.error('Error al actualizar estadísticas:', error);
+                    showToast(error.message || 'Error al recalcular estadísticas.', 'error', 5000);
+                } finally {
+                    hideLoader();
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            });
+        }
+
+        // Manejar formulario de actualizar colección
+        const formActualizarColeccion = document.getElementById('form-actualizar-coleccion');
+        if (formActualizarColeccion) {
+            formActualizarColeccion.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const button = this.querySelector('button[type="submit"]');
+                const originalText = button.innerHTML;
+
+                try {
+                    showLoader();
                     button.disabled = true;
                     button.innerHTML = '<i class="bi bi-hourglass-split"></i> Actualizando...';
 
@@ -1085,14 +1801,26 @@
                     }, true); // skipErrorRedirect = true para manejar errores manualmente
 
                     if (response.ok) {
-                        showToast('Estadísticas actualizadas correctamente', 'success');
+                        // Cerrar panel primero
+                        cerrarPanelEdicion(null);
+                        // Mostrar toast después de cerrar el panel
+                        setTimeout(() => {
+                            showToast('Colección actualizada correctamente', 'success');
+                        }, 100);
+                        // Recargar después de un breve delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
                     } else {
-                        throw new Error('Error al actualizar estadísticas');
+                        const errorText = await response.text();
+                        const errorMessage = errorText.includes('Error') ? errorText.match(/Error[^<]*/)?.[0] || 'Error al actualizar la colección' : 'Error al actualizar la colección';
+                        throw new Error(errorMessage);
                     }
                 } catch (error) {
-                    console.error('Error al actualizar estadísticas:', error);
-                    showToast('Error al actualizar estadísticas', 'error');
+                    console.error('Error al actualizar colección:', error);
+                    showToast(error.message || 'Error al actualizar la colección', 'error');
                 } finally {
+                    hideLoader();
                     button.disabled = false;
                     button.innerHTML = originalText;
                 }

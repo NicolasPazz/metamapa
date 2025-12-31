@@ -217,11 +217,11 @@
                         </div>
                         <div class="meta-item" th:if="${sol.fechaDeCargaSolicitud != null}">
                             <i class="bi bi-calendar3"></i>
-                            <span th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                            <span class="date-display" th:attr="data-utc-date=${sol.fechaDeCargaSolicitud != null ? sol.fechaDeCargaSolicitud.toString() : ''}" th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}">Fecha</span>
                         </div>
                         <div class="meta-item" th:if="${sol.fechaDeAcontecimiento != null}">
                             <i class="bi bi-clock-history"></i>
-                            <span>Suceso: <span th:text="${#temporals.format(sol.fechaDeAcontecimiento, 'dd/MM/yyyy')}">Fecha</span></span>
+                            <span>Suceso: <span class="date-display" th:attr="data-utc-date=${sol.fechaDeAcontecimiento.toString()}" th:text="${#temporals.format(sol.fechaDeAcontecimiento, 'dd/MM/yyyy')}">Fecha</span></span>
                         </div>
                         <div class="meta-item" th:if="${sol.idContribuyente != null}">
                             <i class="bi bi-person-fill"></i>
@@ -277,6 +277,22 @@
         </div>
     </div>
 
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Convertir todas las fechas mostradas de UTC a zona local del navegador
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.date-display[data-utc-date]').forEach(function(element) {
+                const utcDate = element.getAttribute('data-utc-date');
+                if (utcDate) {
+                    const localDate = formatDateInLocalTimezone(utcDate, 'dd/MM/yyyy HH:mm');
+                    if (localDate) {
+                        element.textContent = localDate;
+                    }
+                }
+            });
+        });
+        /*]]>*/
+    </script>
 </div>
 
 <div th:fragment="solicitudesCargaPanel">
@@ -470,11 +486,11 @@
                     </div>
                     <div class="meta-item" th:if="${sol.fechaDeCargaSolicitud != null}">
                         <i class="bi bi-calendar3"></i>
-                        <span th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}">Fecha</span>
+                        <span class="date-display" th:attr="data-utc-date=${sol.fechaDeCargaSolicitud != null ? sol.fechaDeCargaSolicitud.toString() : ''}" th:text="${#temporals.format(sol.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}">Fecha</span>
                     </div>
                     <div class="meta-item" th:if="${sol.fechaDeAcontecimiento != null}">
                         <i class="bi bi-clock-history"></i>
-                        <span>Suceso: <span th:text="${#temporals.format(sol.fechaDeAcontecimiento, 'dd/MM/yyyy')}">Fecha</span></span>
+                        <span>Suceso: <span class="date-display" th:attr="data-utc-date=${sol.fechaDeAcontecimiento.toString()}" th:text="${#temporals.format(sol.fechaDeAcontecimiento, 'dd/MM/yyyy')}">Fecha</span></span>
                     </div>
                     <div class="meta-item" th:if="${sol.idContribuyente != null}">
                         <i class="bi bi-person-fill"></i>

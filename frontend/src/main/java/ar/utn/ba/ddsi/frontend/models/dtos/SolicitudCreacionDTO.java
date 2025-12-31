@@ -1,6 +1,5 @@
 package ar.utn.ba.ddsi.frontend.models.dtos;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
@@ -42,7 +41,6 @@ public class SolicitudCreacionDTO {
 
     @NotNull(message = "La fecha de acontecimiento es obligatoria")
     @JsonProperty("fecha_acontecimiento")
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime fechaDeAcontecimiento;
 
     @Valid

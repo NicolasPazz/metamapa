@@ -194,17 +194,53 @@ async function apiFetch(endpoint, options = {}) {
 function convertLocalToUTC(datetimeLocalString) {
   if (!datetimeLocalString) return null;
   
+  // Validar formato básico: yyyy-MM-ddTHH:mm
+  const dateTimeRegex = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})$/;
+  const match = datetimeLocalString.match(dateTimeRegex);
+  
+  if (!match) {
+    console.warn('Formato de fecha inválido en convertLocalToUTC:', datetimeLocalString);
+    return null;
+  }
+  
+  // Extraer componentes de la fecha local
+  const year = parseInt(match[1], 10);
+  const month = parseInt(match[2], 10) - 1; // Los meses en Date son 0-indexados
+  const day = parseInt(match[3], 10);
+  const hours = parseInt(match[4], 10);
+  const minutes = parseInt(match[5], 10);
+  
+  // Validar rangos básicos
+  if (year < 1900 || year > 2100 || month < 0 || month > 11 || 
+      day < 1 || day > 31 || hours < 0 || hours > 23 || minutes < 0 || minutes > 59) {
+    console.warn('Valores de fecha fuera de rango en convertLocalToUTC:', datetimeLocalString);
+    return null;
+  }
+  
   // Crear un Date object interpretando la fecha como hora local
-  const localDate = new Date(datetimeLocalString);
+  // Usamos el constructor que acepta componentes individuales para evitar ambigüedad
+  const localDate = new Date(year, month, day, hours, minutes);
+  
+  // Validar que la fecha sea válida
+  if (isNaN(localDate.getTime())) {
+    console.warn('Fecha inválida en convertLocalToUTC:', datetimeLocalString);
+    return null;
+  }
   
   // Obtener los componentes en UTC
-  const year = localDate.getUTCFullYear();
-  const month = String(localDate.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(localDate.getUTCDate()).padStart(2, '0');
-  const hours = String(localDate.getUTCHours()).padStart(2, '0');
-  const minutes = String(localDate.getUTCMinutes()).padStart(2, '0');
+  const utcYear = localDate.getUTCFullYear();
+  const utcMonth = String(localDate.getUTCMonth() + 1).padStart(2, '0');
+  const utcDay = String(localDate.getUTCDate()).padStart(2, '0');
+  const utcHours = String(localDate.getUTCHours()).padStart(2, '0');
+  const utcMinutes = String(localDate.getUTCMinutes()).padStart(2, '0');
   
-  return `${year}-${month}-${day}T${hours}:${minutes}`;
+  // Validar que el año UTC sea válido (no debería ser menor a 1900)
+  if (utcYear < 1900 || utcYear > 2100) {
+    console.error('Año UTC inválido después de conversión:', utcYear, 'de fecha local:', datetimeLocalString);
+    return null;
+  }
+  
+  return `${utcYear}-${utcMonth}-${utcDay}T${utcHours}:${utcMinutes}`;
 }
 
 function convertUTCToLocal(utcDateTimeString) {

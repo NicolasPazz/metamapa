@@ -332,7 +332,8 @@
                                     </label>
                                     <input type="datetime-local" class="form-control" id="fechaAcontecimiento"
                                            name="fecha_acontecimiento"
-                                           th:value="${solicitud.fechaDeAcontecimiento}" required>
+                                           th:attr="data-utc-value=${solicitud.fechaDeAcontecimiento != null ? solicitud.fechaDeAcontecimiento.toString() : ''}"
+                                           required>
                                     <div class="form-text">
                                         <i class="bi bi-info-circle"></i> Indique cuándo sucedió el hecho reportado.
                                     </div>
@@ -399,8 +400,31 @@
     </div>
 
     <script>
-        // Configurar fecha máxima para el campo de fecha
-        document.getElementById('fechaAcontecimiento').max = new Date().toISOString().slice(0, 16);
+        // Configurar fecha máxima para el campo de fecha (en zona local)
+        document.addEventListener('DOMContentLoaded', function() {
+            const fechaInput = document.getElementById('fechaAcontecimiento');
+            if (fechaInput) {
+                // Establecer fecha máxima como ahora (en zona local)
+                const ahora = new Date();
+                const year = ahora.getFullYear();
+                const month = String(ahora.getMonth() + 1).padStart(2, '0');
+                const day = String(ahora.getDate()).padStart(2, '0');
+                const hours = String(ahora.getHours()).padStart(2, '0');
+                const minutes = String(ahora.getMinutes()).padStart(2, '0');
+                fechaInput.max = `${year}-${month}-${day}T${hours}:${minutes}`;
+                
+                // Si hay un valor inicial (desde el servidor), convertirlo de UTC a zona local
+                const valorInicialUTC = fechaInput.getAttribute('data-utc-value');
+                if (valorInicialUTC && valorInicialUTC !== '') {
+                    // El valor viene en formato UTC desde el servidor (LocalDateTime.toString())
+                    // Necesitamos convertirlo a zona local para mostrarlo en el input datetime-local
+                    const fechaLocal = convertUTCToLocal(valorInicialUTC);
+                    if (fechaLocal) {
+                        fechaInput.value = fechaLocal;
+                    }
+                }
+            }
+        });
         
         // Manejo de archivos seleccionados
         const fileInput = document.getElementById('fotos');
@@ -470,6 +494,16 @@
             const solicitudId = form.getAttribute('data-id');
             const esAceptar = form.getAttribute('data-es-aceptar') === 'true';
             const url = esAceptar ? '/solicitudes/' + solicitudId + '/aceptar-con-modificaciones' : '/solicitudes/' + solicitudId;
+            
+            // Convertir fecha de zona local del navegador a UTC antes de enviar
+            const fechaAcontecimientoInput = document.getElementById('fechaAcontecimiento');
+            if (fechaAcontecimientoInput && fechaAcontecimientoInput.value) {
+                const fechaLocal = fechaAcontecimientoInput.value; // Formato: yyyy-MM-ddTHH:mm (zona local)
+                const fechaUTC = convertLocalToUTC(fechaLocal); // Convertir a UTC
+                if (fechaUTC) {
+                    formData.set('fecha_acontecimiento', fechaUTC);
+                }
+            }
             
             const submitButton = form.querySelector('button[type="submit"]');
             const originalText = submitButton.innerHTML;

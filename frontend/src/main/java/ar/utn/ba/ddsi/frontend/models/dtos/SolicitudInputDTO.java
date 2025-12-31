@@ -1,8 +1,5 @@
 package ar.utn.ba.ddsi.frontend.models.dtos;
 
-
-
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.LocalDateTime;
 import java.util.List;
