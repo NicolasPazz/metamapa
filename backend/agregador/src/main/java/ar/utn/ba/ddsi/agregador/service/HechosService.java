@@ -385,21 +385,17 @@ public class HechosService {
                 fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente);
         
         long queryTime = System.currentTimeMillis();
-        log.debug("[HechosService] Tiempo de count locales: {}ms", queryTime - startTime);
 
         List<HechoDTO> resultado = new ArrayList<>();
         int start = page * size;
         long totalExternos = 0;
         boolean hasNextExternos = false;
-        long localTime = queryTime; // Inicializar para logging
 
-        // Determinar si necesitamos hechos locales, externos, o ambos
         boolean necesitaLocales = start < totalLocales;
         int offsetExterno = 0;
         int needed = size;
 
         if (necesitaLocales) {
-            // Obtener hechos locales paginados
             int endLocal = (int) Math.min(start + size, totalLocales);
             int pageLocal = start / size;
             int sizeLocal = endLocal - start;
@@ -411,25 +407,18 @@ public class HechosService {
             
             List<HechoDTO> hechosLocales = hechoMapper.toDTO(hechosPage.getContent());
             
-            // Ajustar si hay más registros de los necesarios (porque la página puede tener más)
             int fromIndex = start % size;
             int toIndex = Math.min(fromIndex + needed, hechosLocales.size());
             if (fromIndex < hechosLocales.size()) {
                 resultado.addAll(hechosLocales.subList(fromIndex, toIndex));
                 needed = size - resultado.size();
             }
-            
-            localTime = System.currentTimeMillis();
-            log.debug("[HechosService] Tiempo de obtener locales: {}ms", localTime - queryTime);
         } else {
-            // La página está más allá de los hechos locales
             offsetExterno = (int) (start - totalLocales);
         }
 
         if (needed > 0) {
             try {
-                long externalStartTime = System.currentTimeMillis();
-                // Intentar usar método paginado si está disponible
                 PageResponse<HechoDTO> externosPaginated = getAllExternalPaginated(
                         categoria, fecha_reporte_desde, fecha_reporte_hasta,
                         fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente,
@@ -440,9 +429,6 @@ public class HechosService {
                     totalExternos = externosPaginated.getTotalElements();
                     hasNextExternos = externosPaginated.isHasNext();
                 }
-                
-                long externalTime = System.currentTimeMillis();
-                log.debug("[HechosService] Tiempo de obtener externos: {}ms", externalTime - externalStartTime);
             } catch (Exception e) {
                 log.warn("[HechosService] Error al obtener hechos externos: {}", e.getMessage());
             }

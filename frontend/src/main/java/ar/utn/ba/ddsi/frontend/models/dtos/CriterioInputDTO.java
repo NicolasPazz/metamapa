@@ -23,15 +23,11 @@ public class CriterioInputDTO {
 
     private String tipo;
 
-    //agregar campos segun el tipo
-
-    //CriterioFecha
     @PastOrPresent(message = "La fecha no puede ser futura")
     @JsonProperty("fecha_inicial")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime fechaInicial;
-    //@PastOrPresent(message = "La fecha no puede ser futura")
     @JsonProperty("fecha_final")
     @DateTimeFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
@@ -39,13 +35,11 @@ public class CriterioInputDTO {
     @JsonProperty("tipo_fecha")
     private String tipoFecha;
 
-    //CriterioIgualdad
     @JsonProperty("cadena_a_comparar")
     private String cadenaAComparar;
     @JsonProperty("tipo_dato")
     private String tipoDeDato;
 
-    //CriterioLugar
     @JsonProperty("latitud")
     private Double lat;
     @JsonProperty("longitud")
@@ -53,9 +47,7 @@ public class CriterioInputDTO {
     private Double radio;
     private String provincia;
 
-    //CriterioOrigen
     private String origen;
 
-    //CriterioFuentes
     private Set<Long> fuentes = new HashSet<>();
 }

@@ -41,7 +41,7 @@ public class Coleccion {
   @Column(name = "descripcion", columnDefinition = "TEXT", nullable = false)
   private String descripcion;
 
-  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinTable(
       name = "coleccion_hechos",
       joinColumns = @JoinColumn(name = "coleccion_handle", referencedColumnName = "handle"),
@@ -59,7 +59,7 @@ public class Coleccion {
   @Builder.Default
   private AAlgoritmoConsenso algoritmoConsenso = null;
 
-  @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+  @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
   @JoinTable(
       name = "coleccion_hechos_consensuados",
       joinColumns = @JoinColumn(name = "coleccion_handle", referencedColumnName = "handle"),

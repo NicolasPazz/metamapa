@@ -64,9 +64,12 @@
           html += '<p><strong>Descripción:</strong> ' + coleccion.descripcion + '</p>';
         }
 
-        if (coleccion.hechos) {
-          html += '<p><strong>Hechos:</strong> ' + coleccion.hechos.length + '</p>';
-        }
+        // Usar cantidad_hechos si está disponible (colecciones locales sin hechos cargados)
+        // o hechos.length si los hechos están cargados (colecciones externas)
+        const cantidadHechos = coleccion.cantidad_hechos !== undefined 
+          ? coleccion.cantidad_hechos 
+          : (coleccion.hechos ? coleccion.hechos.length : 0);
+        html += '<p><strong>Hechos:</strong> ' + cantidadHechos + '</p>';
 
         if (coleccion.fecha_carga) {
             const fecha = new Date(coleccion.fecha_carga);

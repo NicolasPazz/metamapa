@@ -190,7 +190,7 @@ public class HechoService {
 
     private String convertirMimeTypeATipoContenido(String mimeType) {
         if (mimeType == null) {
-            return "IMAGEN"; // Default
+            return "IMAGEN";
         }
         
         if (mimeType.startsWith("image/")) {

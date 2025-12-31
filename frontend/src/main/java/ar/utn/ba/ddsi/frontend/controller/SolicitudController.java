@@ -70,7 +70,7 @@ public class SolicitudController {
                             : "Error al editar la solicitud. Por favor, intente nuevamente.";
             return ResponseEntity.status(e.getStatusCode()).body(mensaje);
         } catch (Exception e) {
-            return ResponseEntity.status(500).body("Error al actualizar la solicitud: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al actualizar la solicitud: " + e.getMessage());
         }
     }
 }

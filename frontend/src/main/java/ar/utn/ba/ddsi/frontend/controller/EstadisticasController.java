@@ -6,6 +6,7 @@ import ar.utn.ba.ddsi.frontend.service.EstadisticasService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -66,7 +67,7 @@ public class EstadisticasController {
                     .body(csv);
         } catch (Exception e) {
             log.error("Error al exportar estadísticas a CSV", e);
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al generar CSV: " + e.getMessage());
         }
     }

@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.frontend.controller;
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
 import ar.utn.ba.ddsi.frontend.service.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Comparator;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ public class AdminController {
     private final AdminService adminService;
     private final ObjectMapper objectMapper;
     private final FuenteService fuenteService;
+    private final EstadisticasService estadisticasService;
 
     @GetMapping("/admin")
     public String mostrarMenu(Model model, HttpServletRequest request) {
@@ -39,11 +41,44 @@ public class AdminController {
         List<ColeccionDTO> colecciones = coleccionService.getAllColecciones();
         List<HechoDTO> hechos = hechoService.getAllHechos();
         List<SolicitudDTO> solicitudes = adminService.getAllSolicitudes();
+        List<SolicitudInputDTO> solicitudesCarga = solicitudService.buscarTodasLasSolicitudes();
         List<FuenteDTO> fuentes = fuenteService.getAllFuentes();
         List<String> provincias = coleccionService.getProvinciasConHechos();
         List<String> nombresFuentes = coleccionService.getFuentesConHechos();
         Map<Long, String> mapFuentes = fuentes.stream()
                 .collect(Collectors.toMap(FuenteDTO::getId, FuenteDTO::getNombre));
+
+        try {
+            EstadisticasCompletasDTO estadisticas = estadisticasService.obtenerEstadisticas();
+            List<ColeccionProvinciaDTO> coleccionesProvincia = estadisticas.getDistribucionGeograficaColecciones();
+            List<CategoriaProvinciaDTO> categoriasProvincia = estadisticas.getConcentracionGeograficaCategorias();
+            List<CategoriaHoraDTO> categoriasHora = estadisticas.getDistribucionTemporalCategorias();
+            CategoriaDominanteDTO categoriaDominante = estadisticas.getCategoriaDominante();
+            SpamDTO spam = estadisticas.getEstadisticaSpam();
+
+            if (coleccionesProvincia != null) {
+                coleccionesProvincia.sort(Comparator.comparing(ColeccionProvinciaDTO::getColeccionHandle));
+            }
+            if (categoriasProvincia != null) {
+                categoriasProvincia.sort(Comparator.comparing(CategoriaProvinciaDTO::getProvinciaNombre));
+            }
+            if (categoriasHora != null) {
+                categoriasHora.sort(Comparator.comparing(CategoriaHoraDTO::getCategoriaNombre));
+            }
+
+            model.addAttribute("coleccionesProvincia", coleccionesProvincia != null ? coleccionesProvincia : Collections.emptyList());
+            model.addAttribute("categoriasProvincia", categoriasProvincia != null ? categoriasProvincia : Collections.emptyList());
+            model.addAttribute("categoriasHora", categoriasHora != null ? categoriasHora : Collections.emptyList());
+            model.addAttribute("categoriaDominante", categoriaDominante);
+            model.addAttribute("spam", spam);
+        } catch (Exception e) {
+            log.warn("Error al obtener estadísticas para el panel admin: {}", e.getMessage());
+            model.addAttribute("coleccionesProvincia", Collections.emptyList());
+            model.addAttribute("categoriasProvincia", Collections.emptyList());
+            model.addAttribute("categoriasHora", Collections.emptyList());
+            model.addAttribute("categoriaDominante", null);
+            model.addAttribute("spam", null);
+        }
 
         model.addAttribute("titulo", "Panel De Control");
         if (hechos != null && hechos.size() > 3) {
@@ -55,6 +90,7 @@ public class AdminController {
         model.addAttribute("colecciones", colecciones);
         model.addAttribute("hechos", hechos);
         model.addAttribute("solicitudes", solicitudes);
+        model.addAttribute("solicitudesCarga", solicitudesCarga);
         model.addAttribute("fuentes", fuentes);
         model.addAttribute("provincias", provincias);
         model.addAttribute("nombresFuentes", nombresFuentes);

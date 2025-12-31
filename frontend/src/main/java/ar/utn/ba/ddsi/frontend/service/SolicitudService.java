@@ -58,10 +58,26 @@ public class SolicitudService {
         }
     }
 
+    private String getAccessTokenFromSession() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpServletRequest request = attributes.getRequest();
+            return (String) request.getSession().getAttribute("accessToken");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public List<SolicitudInputDTO> buscarTodasLasSolicitudes() {
         try {
+            String accessToken = getAccessTokenFromSession();
+            if (accessToken == null) {
+                log.warn("No hay token de acceso disponible para buscar solicitudes");
+                return Collections.emptyList();
+            }
             return webClient2.get()
                     .uri("/admin/solicitudes")
+                    .header("Authorization", "Bearer " + accessToken)
                     .retrieve()
                     .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {})
                     .block();
@@ -115,14 +131,11 @@ public class SolicitudService {
 
     @Transactional
     public void procesarSolicitudEdicionConMultipart(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
-        log.debug("Procesando edición de solicitud ID: {} con multipart", idSolicitud);
-        
         SolicitudInputDTO solicitud = webClient2.get()
                 .uri("/solicitudes/" + idSolicitud)
                 .retrieve()
                 .bodyToMono(SolicitudInputDTO.class)
                 .block();
-        log.debug("Solicitud obtenida para ID: {}, encontrada: {}", idSolicitud, solicitud != null);
 
         if (solicitud == null) {
             throw new IllegalArgumentException("No se encontró la solicitud con ID: " + idSolicitud);
@@ -157,7 +170,6 @@ public class SolicitudService {
         }
 
         if (formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) {
-            // Validar cantidad máxima de archivos
             long archivosNoVacios = formDTO.getArchivos().stream()
                     .filter(archivo -> archivo != null && !archivo.isEmpty())
                     .count();
@@ -166,15 +178,13 @@ public class SolicitudService {
             }
 
             try {
-                String solicitudJson = objectMapper.writeValueAsString(dto); // Backend espera String
-                log.debug("SolicitudService.procesarSolicitudEdicionConMultipart - JSON serializado: {}", solicitudJson);
+                String solicitudJson = objectMapper.writeValueAsString(dto);
 
                 MultipartBodyBuilder builder = new MultipartBodyBuilder();
                 builder.part("solicitud", solicitudJson);
 
                 for (MultipartFile archivo : formDTO.getArchivos()) {
                     if (archivo != null && !archivo.isEmpty()) {
-                        log.debug("Agregando archivo: {} ({} bytes)", archivo.getOriginalFilename(), archivo.getSize());
                         builder.part("archivos", archivo.getResource());
                     }
                 }
@@ -192,7 +202,6 @@ public class SolicitudService {
                         )
                         .toBodilessEntity()
                         .block();
-                log.debug("PATCH multipart exitoso para solicitud ID: {}", idSolicitud);
             } catch (WebClientResponseException e) {
                 log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}",
                         idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
@@ -202,7 +211,6 @@ public class SolicitudService {
                 throw new RuntimeException("Error al enviar solicitud: " + e.getMessage(), e);
             }
         } else {
-            // Si no hay archivos, enviar como JSON
             String uriBase = "/solicitudes/";
             enviarModificacionJSON(idSolicitud, dto, uriBase);
         }
@@ -210,7 +218,6 @@ public class SolicitudService {
 
     private void enviarModificacionJSON(Long idSolicitud, SolicitudModificacionDTO dto, String uriBase) {
         try {
-            log.debug("Enviando PATCH a {}{} (JSON)", uriBase, idSolicitud);
             webClient2.patch()
                     .uri(uriBase + idSolicitud)
                     .bodyValue(dto)
@@ -221,7 +228,6 @@ public class SolicitudService {
                     )
                     .toBodilessEntity()
                     .block();
-            log.debug("PATCH JSON exitoso para solicitud ID: {}", idSolicitud);
         } catch (WebClientResponseException e) {
             log.error("Error del backend al modificar solicitud ID: {}, status: {}, body: {}",
                     idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
@@ -232,7 +238,7 @@ public class SolicitudService {
         }
     }
 
-    private void enviarModificacionAdminSolicitud(Long idSolicitud, java.util.Map<String, Object> adminDTO) {
+    private void enviarModificacionAdminSolicitud(Long idSolicitud, Map<String, Object> adminDTO) {
         try {
             log.info("Enviando PATCH a /admin/solicitudes/{} para aceptar con modificaciones", idSolicitud);
             webClient2.patch()
@@ -246,7 +252,6 @@ public class SolicitudService {
                     )
                     .toBodilessEntity()
                     .block();
-            log.debug("PATCH exitoso para aceptar solicitud {} con modificaciones", idSolicitud);
         } catch (WebClientResponseException e) {
             log.error("Error del backend al aceptar solicitud con modificaciones ID: {}, status: {}, body: {}",
                     idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
@@ -296,14 +301,12 @@ public class SolicitudService {
           List<MultipartFile> archivos, String uriBase) {
         try {
           String solicitudJson = objectMapper.writeValueAsString(dto);
-          log.debug("JSON serializado para solicitud ID: {}", idSolicitud);
 
           MultipartBodyBuilder builder = new MultipartBodyBuilder();
           builder.part("solicitud", solicitudJson);
 
           for (MultipartFile archivo : archivos) {
             if (archivo != null && !archivo.isEmpty()) {
-              log.debug("Agregando archivo: {} ({} bytes)", archivo.getOriginalFilename(), archivo.getSize());
               builder.part("archivos", archivo.getResource());
             }
           }
@@ -320,7 +323,6 @@ public class SolicitudService {
               )
               .toBodilessEntity()
               .block();
-          log.debug("PATCH multipart exitoso para solicitud ID: {}", idSolicitud);
         } catch (WebClientResponseException e) {
           log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}",
               idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());

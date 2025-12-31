@@ -25,4 +25,7 @@ public class ColeccionDTO {
   private Long fuenteId;
   @JsonProperty("id_origen")
   private UUID idOrigen;
+  
+  @JsonProperty("cantidad_hechos")
+  public Integer cantidadHechos;
 }

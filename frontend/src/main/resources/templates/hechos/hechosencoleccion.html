@@ -102,7 +102,6 @@
         <h3 th:text="${hecho.titulo}"></h3>
         <p th:text="${hecho.descripcion}"></p>
         
-        <!-- Etiquetas -->
         <div th:if="${hecho.etiquetas != null and !#lists.isEmpty(hecho.etiquetas)}" 
              class="etiquetas-preview" 
              style="margin-top: 10px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px;"

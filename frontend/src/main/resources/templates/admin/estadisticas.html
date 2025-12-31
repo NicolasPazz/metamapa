@@ -93,7 +93,7 @@
         </div>
 
         <div class="table-wrapper">
-            <h3>Análisis de Solicitudes (Spam)</h3>
+            <h3>Análisis de Solicitudes</h3>
             <table class="stats-table">
                 <thead>
                 <tr>
@@ -151,3 +151,104 @@
     </script>
 </div>
 </html>
+
+<div th:fragment="estadisticasPanel">
+    <div class="dashboard-highlight">
+        <div class="stat-highlight-card">
+            <h3>Categoría Dominante</h3>
+            <div class="stat-name" th:text="${categoriaDominante != null ? categoriaDominante.categoriaNombre : 'N/A'}"></div>
+            <div class="stat-number" th:text="${categoriaDominante != null ? (categoriaDominante.cantidadHechos + ' hechos registrados') : 'Sin datos'}"></div>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <h3>Colección por Provincia</h3>
+        <table class="stats-table">
+            <thead>
+            <tr>
+                <th>Handle</th>
+                <th>Título</th>
+                <th>Provincia</th>
+                <th>Cantidad de Hechos</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="distribucion:${coleccionesProvincia}">
+                <td th:text="${distribucion.coleccionHandle}"></td>
+                <td th:text="${distribucion.coleccionTitulo}"></td>
+                <td th:text="${distribucion.provinciaNombre}"></td>
+                <td th:text="${distribucion.cantidadHechos}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(coleccionesProvincia)}">
+                <td colspan="4" class="text-center">No hay datos disponibles</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-wrapper">
+        <h3>Categoría por Provincia</h3>
+        <table class="stats-table">
+            <thead>
+            <tr>
+                <th>Provincia</th>
+                <th>Categoría</th>
+                <th>Cantidad de hechos</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="categoria:${categoriasProvincia}">
+                <td th:text="${categoria.provinciaNombre}"></td>
+                <td th:text="${categoria.categoriaNombre}"></td>
+                <td th:text="${categoria.cantidadHechos}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(categoriasProvincia)}">
+                <td colspan="3" class="text-center">No hay datos disponibles</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-wrapper">
+        <h3>Hechos por Categoría y Hora</h3>
+        <table class="stats-table">
+            <thead>
+            <tr>
+                <th>Categoría</th>
+                <th>Hora</th>
+                <th>Cantidad de Hechos</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="categoria:${categoriasHora}">
+                <td th:text="${categoria.categoriaNombre}"></td>
+                <td th:text="${categoria.hora}"></td>
+                <td th:text="${categoria.cantidadHechos}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(categoriasHora)}">
+                <td colspan="3" class="text-center">No hay datos disponibles</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="table-wrapper">
+        <h3>Análisis de Solicitudes</h3>
+        <table class="stats-table">
+            <thead>
+            <tr>
+                <th>Total Solicitudes</th>
+                <th>Cantidad Spam</th>
+                <th>Porcentaje Spam</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td th:text="${spam != null ? spam.totalSolicitudes : 'N/A'}"></td>
+                <td th:text="${spam != null ? spam.solicitudesSpam : 'N/A'}"></td>
+                <td><span class="badge-percentage" th:text="${spam != null ? spam.porcentajeSpam : 'N/A'}">N/A</span></td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

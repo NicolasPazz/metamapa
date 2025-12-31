@@ -2252,7 +2252,7 @@ button:disabled,
   display: flex;
   gap: 24px;
   align-items: flex-start;
-  margin: 1.5rem 0;
+  margin: 1.5rem;
 }
 
 .admin-sidebar {
@@ -2303,6 +2303,7 @@ button:disabled,
   text-decoration: none;
   border: 1px solid transparent;
   transition: all 0.2s ease;
+  justify-content: left;
 }
 
 .admin-nav a:hover,

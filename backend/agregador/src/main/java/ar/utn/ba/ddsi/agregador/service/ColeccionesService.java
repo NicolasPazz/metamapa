@@ -54,11 +54,15 @@ public class ColeccionesService {
     private final CategoriasService categoriasService;
     private final ObjectMapper objectMapper;
 
+    @Transactional(readOnly = true)
     public ResponseEntity<ColeccionDTO> getOneColeccion() {
         List<Coleccion> coleccionesLocales = coleccionesRepository.findAll();
 
         if (!coleccionesLocales.isEmpty()) {
-            ColeccionDTO coleccionDTO = coleccionMapper.toDTO(coleccionesLocales.get(0));
+            Coleccion coleccion = coleccionesLocales.get(0);
+            coleccion.getHechos().size();
+            coleccion.getHechosConsensuados().size();
+            ColeccionDTO coleccionDTO = coleccionMapper.toDTO(coleccion);
             return ResponseEntity.ok(coleccionDTO);
         }
 
@@ -79,28 +83,7 @@ public class ColeccionesService {
         return ResponseEntity.notFound().build();
     }
 
-
-    /**
-     * Obtiene hechos de una colección paginados.
-     * 
-     * NOTA DE PERFORMANCE: Este método actualmente carga TODOS los hechos que cumplen los criterios
-     * de la colección y luego los pagina en memoria. Esto es necesario porque los criterios de 
-     * pertenencia deben aplicarse a todos los hechos disponibles. Para optimizar esto en el futuro,
-     * se necesitaría refactorizar la lógica de criterios para que puedan evaluarse en la base de datos.
-     * 
-     * @param handle Identificador de la colección
-     * @param ubicacion Filtro de ubicación
-     * @param fechaReporteDesde Filtro de fecha de reporte desde
-     * @param fechaReporteHasta Filtro de fecha de reporte hasta
-     * @param fechaAcontecimientoDesde Filtro de fecha de acontecimiento desde
-     * @param fechaAcontecimientoHasta Filtro de fecha de acontecimiento hasta
-     * @param categoria Filtro de categoría
-     * @param fuente Filtro de fuente
-     * @param modoStr Modo de navegación (IRRESTRICTA o CURADA)
-     * @param page Número de página (0-indexed)
-     * @param size Tamaño de página
-     * @return PageResponse con los hechos paginados
-     */
+    @Transactional(readOnly = true)
     public ResponseEntity<PageResponse<HechoDTO>> getHechosColeccionPaginated(
             String handle,
             String ubicacion,
@@ -136,12 +119,89 @@ public class ColeccionesService {
                 modo = ModoNavegacion.IRRESTRICTA;
             }
         }
-      
-        ResponseEntity<List<HechoDTO>> respuesta = getHechosColeccionByHandle(
-            handle, categoria, fechaReporteDesde, fechaReporteHasta, 
-            fechaAcontecimientoDesde, fechaAcontecimientoHasta, ubicacion, fuente, modo);
 
-        if (respuesta.getStatusCode().isError() || respuesta.getBody() == null) {
+        try {
+            UUID uuid = UUID.fromString(handle);
+            Optional<Coleccion> coleccionOpt = coleccionesRepository.findById(uuid);
+
+            if (coleccionOpt.isPresent()) {
+                Coleccion coleccion = coleccionOpt.get();
+
+                if (coleccion.getCriteriosDePertenencia() == null || coleccion.getCriteriosDePertenencia().isEmpty()) {
+                    PageResponse<HechoDTO> emptyResponse = new PageResponse<>(
+                            new ArrayList<>(),
+                            page,
+                            size,
+                            false,
+                            page > 0,
+                            0
+                    );
+                    return ResponseEntity.ok(emptyResponse);
+                }
+
+                ModoNavegacion modoNav = modo != null ? modo : ModoNavegacion.IRRESTRICTA;
+                
+                List<Long> fuentesTiempoReal = fuentesService.getFuentesTiempoReal();
+                List<OrigenHecho> origenesTiempoReal = fuentesService.getOrigenesTiempoReal();
+                boolean tieneHechosExternos = coleccion.tieneHechosExternos(
+                    fuentesTiempoReal, origenesTiempoReal, fuentesService.getNombresFuentesTiempoReal());
+
+                if (!tieneHechosExternos) {
+                    return getHechosColeccionPaginatedFromDB(
+                        coleccion, modoNav, categoria, fechaReporteDesde, fechaReporteHasta,
+                        fechaAcontecimientoDesde, fechaAcontecimientoHasta, ubicacion, fuente, page, size);
+                }
+            }
+            ResponseEntity<List<HechoDTO>> respuesta = getHechosColeccionByHandle(
+                handle, categoria, fechaReporteDesde, fechaReporteHasta, 
+                fechaAcontecimientoDesde, fechaAcontecimientoHasta, ubicacion, fuente, modo);
+
+            if (respuesta.getStatusCode().isError() || respuesta.getBody() == null) {
+                PageResponse<HechoDTO> emptyResponse = new PageResponse<>(
+                        new ArrayList<>(),
+                        page,
+                        size,
+                        false,
+                        page > 0,
+                        0
+                );
+                return ResponseEntity.ok(emptyResponse);
+            }
+
+            List<HechoDTO> todosLosHechos = respuesta.getBody();
+            long total = todosLosHechos.size();
+
+            int start = page * size;
+            int end = Math.min(start + size, todosLosHechos.size());
+
+            if (start >= todosLosHechos.size()) {
+                PageResponse<HechoDTO> emptyResponse = new PageResponse<>(
+                        new ArrayList<>(),
+                        page,
+                        size,
+                        false,
+                        page > 0,
+                        total
+                );
+                return ResponseEntity.ok(emptyResponse);
+            }
+
+            List<HechoDTO> paginados = todosLosHechos.subList(start, end);
+            boolean hasNext = end < todosLosHechos.size();
+
+            PageResponse<HechoDTO> response = new PageResponse<>(
+                    paginados,
+                    page,
+                    size,
+                    hasNext,
+                    page > 0,
+                    total
+            );
+
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalArgumentException e) {
+            log.warn("[ColeccionesService] Handle inválido: {}", handle);
             PageResponse<HechoDTO> emptyResponse = new PageResponse<>(
                     new ArrayList<>(),
                     page,
@@ -152,14 +212,41 @@ public class ColeccionesService {
             );
             return ResponseEntity.ok(emptyResponse);
         }
+    }
 
-        List<HechoDTO> todosLosHechos = respuesta.getBody();
-        long total = todosLosHechos.size();
+    private ResponseEntity<PageResponse<HechoDTO>> getHechosColeccionPaginatedFromDB(
+            Coleccion coleccion,
+            ModoNavegacion modo,
+            String categoria,
+            LocalDate fechaReporteDesde,
+            LocalDate fechaReporteHasta,
+            LocalDateTime fechaAcontecimientoDesde,
+            LocalDateTime fechaAcontecimientoHasta,
+            String ubicacion,
+            String fuente,
+            int page,
+            int size) {
+        
+        List<Hecho> hechosBase;
+        if (modo == ModoNavegacion.CURADA) {
+            hechosBase = new ArrayList<>(coleccion.getHechosConsensuados());
+        } else {
+            hechosBase = new ArrayList<>(coleccion.getHechos());
+        }
 
+        List<Hecho> hechosVisibles = hechosBase.stream()
+            .filter(Hecho::esVisible)
+            .toList();
+
+        List<Hecho> hechosFiltrados = aplicarFiltros(
+            hechosVisibles, categoria, fechaReporteDesde, fechaReporteHasta,
+            fechaAcontecimientoDesde, fechaAcontecimientoHasta, ubicacion, fuente);
+
+        long total = hechosFiltrados.size();
         int start = page * size;
-        int end = Math.min(start + size, todosLosHechos.size());
+        int end = Math.min(start + size, hechosFiltrados.size());
 
-        if (start >= todosLosHechos.size()) {
+        if (start >= hechosFiltrados.size()) {
             PageResponse<HechoDTO> emptyResponse = new PageResponse<>(
                     new ArrayList<>(),
                     page,
@@ -171,11 +258,12 @@ public class ColeccionesService {
             return ResponseEntity.ok(emptyResponse);
         }
 
-        List<HechoDTO> paginados = todosLosHechos.subList(start, end);
-        boolean hasNext = end < todosLosHechos.size();
+        List<Hecho> hechosPaginados = hechosFiltrados.subList(start, end);
+        List<HechoDTO> hechosDTO = hechoMapper.toDTO(hechosPaginados);
+        boolean hasNext = end < hechosFiltrados.size();
 
         PageResponse<HechoDTO> response = new PageResponse<>(
-                paginados,
+                hechosDTO,
                 page,
                 size,
                 hasNext,
@@ -208,14 +296,40 @@ public class ColeccionesService {
         return ResponseEntity.ok(todasLasColecciones);
     }
 
+    @Transactional(readOnly = true)
     public ResponseEntity<List<ColeccionDTO>> getAllColeccionesLocales() {
 
         List<Coleccion> coleccionesBD = coleccionesRepository.findAll();
         List<ColeccionDTO> dtosBD = coleccionesBD.stream()
-            .map(coleccionMapper::toDTO)
+            .map(coleccion -> {
+                ColeccionDTO dto = coleccionMapper.toDTOWithoutHechos(coleccion);
+                if (coleccion.getCriteriosDePertenencia() != null && !coleccion.getCriteriosDePertenencia().isEmpty()) {
+                    List<Long> fuentesTiempoReal = fuentesService.getFuentesTiempoReal();
+                    List<OrigenHecho> origenesTiempoReal = fuentesService.getOrigenesTiempoReal();
+                    if (coleccion.tieneHechosExternos(fuentesTiempoReal, origenesTiempoReal, fuentesService.getNombresFuentesTiempoReal())) {
+                        int cantidadTotal = calcularCantidadTotalHechos(coleccion);
+                        dto.setCantidadHechos(cantidadTotal);
+                    }
+                }
+                return dto;
+            })
             .toList();
 
         return ResponseEntity.ok(dtosBD);
+    }
+
+    private int calcularCantidadTotalHechos(Coleccion coleccion) {
+        try {
+            ResponseEntity<List<HechoDTO>> respuesta = getHechosColeccionByHandle(
+                coleccion.getHandle().toString(), null, null, null, null, null, null, null, ModoNavegacion.IRRESTRICTA);
+            
+            if (respuesta.getBody() != null) {
+                return respuesta.getBody().size();
+            }
+        } catch (Exception e) {
+        }
+        
+        return coleccion.getHechos() != null ? coleccion.getHechos().size() : 0;
     }
 
     public ResponseEntity<List<ColeccionDTO>> getAllColeccionesExternas() {
@@ -225,6 +339,22 @@ public class ColeccionesService {
             coleccionesExternas = Optional.ofNullable(
                 fuentesService.getAllColecciones().getBody()
             ).orElse(List.of());
+            
+            coleccionesExternas = coleccionesExternas.stream()
+                .map(coleccion -> {
+                    if (coleccion.getCantidadHechos() == null) {
+                        if (coleccion.getHechos() != null) {
+                            coleccion.setCantidadHechos(coleccion.getHechos().size());
+                        } else if (coleccion.getHechosConsensuados() != null) {
+                            coleccion.setCantidadHechos(coleccion.getHechosConsensuados().size());
+                        } else {
+                            coleccion.setCantidadHechos(0);
+                        }
+                    }
+                    return coleccion;
+                })
+                .toList();
+            
             log.info("[ColeccionesService] {} colecciones externas obtenidas en getAllColeccionesExternas", coleccionesExternas.size());
         } catch (Exception e) {
             log.warn("[ColeccionesService] Error al obtener colecciones externas en getAllColeccionesExternas: {}", e.getMessage());
@@ -256,7 +386,6 @@ public class ColeccionesService {
                 ModoNavegacion modoNav = modo != null ? modo : ModoNavegacion.IRRESTRICTA;
                 List<Hecho> hechos;
 
-                // Seleccionar hechos según modo: CURADA usa consensuados, IRRESTRICTA usa todos
                 if (modoNav == ModoNavegacion.CURADA) {
                     hechos = new ArrayList<>(coleccion.getHechosConsensuados().stream()
                         .filter(Hecho::esVisible)
@@ -400,13 +529,10 @@ public class ColeccionesService {
                 }
                 }
 
-                // Aplicar criterios de pertenencia a todos los hechos (locales + externos)
                 todosHechosFiltrados = coleccionTemporal.aplicarCriteriosDePertenencia(todosHechos);
-                // Aplicar algoritmo de consenso sobre los hechos filtrados
                 todosHechosConsensuados = coleccionTemporal.aplicarAlgoritmoConsenso(todosHechosFiltrados, calcularCantidadFuentes());
             }
 
-            // Separar hechos locales (con ID) de externos (sin ID) para persistir solo los locales
             List<Hecho> hechosLocalesFiltrados = coleccionTemporal.separarHechosLocales(todosHechosFiltrados);
             List<Hecho> hechosLocalesConsensuados = coleccionTemporal.separarHechosLocales(todosHechosConsensuados);
 
@@ -421,7 +547,7 @@ public class ColeccionesService {
 
             Coleccion coleccionGuardada = coleccionesRepository.saveAndFlush(coleccion);
 
-            ColeccionDTO respuesta = coleccionMapper.toDTO(coleccionGuardada);
+            ColeccionDTO respuesta = coleccionMapper.toDTOWithoutHechos(coleccionGuardada);
             respuesta.setHechos(hechoMapper.toDTO(todosHechosFiltrados));
             respuesta.setHechosConsensuados(hechoMapper.toDTO(todosHechosConsensuados));
 
@@ -471,7 +597,7 @@ public class ColeccionesService {
                   || (criteriosNode.isArray() && criteriosNode.isEmpty())) {
 
                 coleccion.setCriteriosDePertenencia(new ArrayList<>());
-                cambiaronCriterios = true; // Cambio detectado: ahora no hay criterios
+                cambiaronCriterios = true;
 
               } else if (criteriosNode.isArray()) {
 
@@ -541,6 +667,9 @@ public class ColeccionesService {
             Coleccion coleccionActualizada = coleccionesRepository.save(coleccion);
             log.info("[ColeccionesService] Colección {} actualizada exitosamente", handle);
 
+            coleccionActualizada.getHechos().size();
+            coleccionActualizada.getHechosConsensuados().size();
+            
             return ResponseEntity.ok(coleccionMapper.toDTO(coleccionActualizada));
 
         } catch (IllegalArgumentException e) {
@@ -560,7 +689,6 @@ public class ColeccionesService {
             return;
         }
 
-        // Obtener todos los hechos locales visibles y aplicar criterios de pertenencia
         List<Hecho> hechosLocalesVisibles = hechosRepository.findAll().stream()
             .filter(Hecho::esVisible)
             .toList();
@@ -643,11 +771,9 @@ public class ColeccionesService {
                     h.getCategoria().getNombre() != null &&
                     h.getCategoria().getNombre().toLowerCase().contains(categoria.toLowerCase()))
                 .toList());
-            log.debug("[aplicarFiltros] Categoría '{}': {} -> {} hechos", categoria, iniciales, resultado.size());
             iniciales = resultado.size();
         }
 
-        // Filtro de ubicación (solo por provincia)
         if (ubicacion != null && !ubicacion.trim().isEmpty()) {
             String provinciaNombre = ubicacion.trim();
             resultado = new ArrayList<>(resultado.stream()
@@ -662,8 +788,6 @@ public class ColeccionesService {
             resultado = new ArrayList<>(resultado.stream()
                 .filter(h -> !h.getFechaDeCarga().toLocalDate().isBefore(fechaReporteDesde))
                 .toList());
-            log.debug("[aplicarFiltros] Fecha reporte desde {}: {} -> {} hechos",
-                fechaReporteDesde, iniciales, resultado.size());
             iniciales = resultado.size();
         }
 
@@ -685,8 +809,6 @@ public class ColeccionesService {
             resultado = new ArrayList<>(resultado.stream()
                 .filter(h -> !h.getFechaDeAcontecimiento().isAfter(fechaAcontecimientoHasta))
                 .toList());
-            log.debug("[aplicarFiltros] Fecha acontecimiento hasta {}: {} -> {} hechos",
-                fechaAcontecimientoHasta, iniciales, resultado.size());
         }
 
         if (fuente != null && !fuente.trim().isEmpty()) {
@@ -702,6 +824,7 @@ public class ColeccionesService {
         return fuentesService.cantidadDeFuentes();
     }
 
+    @Transactional(readOnly = true)
     public PageResponse<ColeccionDTO> getPaginatedColecciones(int page, int size) {
         long startTime = System.currentTimeMillis();
         
@@ -719,7 +842,6 @@ public class ColeccionesService {
         }
         log.info("[ColeccionesService] Obteniendo colecciones paginadas - page: {}, size: {}", page, size);
 
-        // Contar colecciones locales sin cargar todas
         long totalLocales = coleccionesRepository.count();
         
         List<ColeccionDTO> resultado = new ArrayList<>();
@@ -728,12 +850,10 @@ public class ColeccionesService {
         boolean hasNextExternas = false;
         int needed = size;
 
-        // Determinar si necesitamos colecciones locales, externas, o ambas
         boolean necesitaLocales = start < totalLocales;
         int offsetExterno = 0;
 
         if (necesitaLocales) {
-            // Obtener colecciones locales paginadas
             int endLocal = (int) Math.min(start + size, totalLocales);
             int pageLocal = start / size;
             int sizeLocal = endLocal - start;
@@ -742,10 +862,20 @@ public class ColeccionesService {
             Page<Coleccion> coleccionesPage = coleccionesRepository.findAll(pageable);
             
             List<ColeccionDTO> coleccionesLocales = coleccionesPage.getContent().stream()
-                .map(coleccionMapper::toDTO)
+                .map(coleccion -> {
+                    ColeccionDTO dto = coleccionMapper.toDTOWithoutHechos(coleccion);
+                    if (coleccion.getCriteriosDePertenencia() != null && !coleccion.getCriteriosDePertenencia().isEmpty()) {
+                        List<Long> fuentesTiempoReal = fuentesService.getFuentesTiempoReal();
+                        List<OrigenHecho> origenesTiempoReal = fuentesService.getOrigenesTiempoReal();
+                        if (coleccion.tieneHechosExternos(fuentesTiempoReal, origenesTiempoReal, fuentesService.getNombresFuentesTiempoReal())) {
+                            int cantidadTotal = calcularCantidadTotalHechos(coleccion);
+                            dto.setCantidadHechos(cantidadTotal);
+                        }
+                    }
+                    return dto;
+                })
                 .toList();
             
-            // Ajustar si hay más registros de los necesarios
             int fromIndex = start % size;
             int toIndex = Math.min(fromIndex + needed, coleccionesLocales.size());
             if (fromIndex < coleccionesLocales.size()) {
@@ -753,11 +883,9 @@ public class ColeccionesService {
                 needed = size - resultado.size();
             }
         } else {
-            // La página está más allá de las colecciones locales
             offsetExterno = (int) (start - totalLocales);
         }
 
-        // Si aún necesitamos más colecciones, obtener de fuentes externas usando paginación
         if (needed > 0) {
             try {
                 PageResponse<ColeccionDTO> externasPaginated = getAllColeccionesExternasPaginated(offsetExterno, needed);
@@ -772,7 +900,6 @@ public class ColeccionesService {
             }
         }
 
-        // Calcular hasNext: si hay más locales después de esta página O si hay más externas
         boolean hasNextLocales = necesitaLocales && (start + size < totalLocales);
         boolean hasNext = hasNextLocales || hasNextExternas || 
                          (!necesitaLocales && resultado.size() == size && hasNextExternas);
@@ -792,10 +919,6 @@ public class ColeccionesService {
         );
     }
     
-    /**
-     * Obtiene colecciones externas usando paginación cuando está disponible
-     * Retorna null si no hay fuentes que soporten paginación
-     */
     private PageResponse<ColeccionDTO> getAllColeccionesExternasPaginated(int offset, int size) {
         try {
             List<PageResponse<ColeccionDTO>> respuestasPaginadas = new ArrayList<>();
@@ -810,8 +933,6 @@ public class ColeccionesService {
                             respuestasPaginadas.add(respuesta.getBody());
                         }
                     } catch (Exception e) {
-                        log.debug("[ColeccionesService] Fuente {} no soporta paginación o error: {}", 
-                            fuente.getNombre(), e.getMessage());
                     }
                 }
             }
@@ -822,7 +943,21 @@ public class ColeccionesService {
                 boolean hasNext = false;
                 
                 for (PageResponse<ColeccionDTO> resp : respuestasPaginadas) {
-                    todas.addAll(resp.getContent());
+                    List<ColeccionDTO> coleccionesConCantidad = resp.getContent().stream()
+                        .map(coleccion -> {
+                            if (coleccion.getCantidadHechos() == null) {
+                                if (coleccion.getHechos() != null) {
+                                    coleccion.setCantidadHechos(coleccion.getHechos().size());
+                                } else if (coleccion.getHechosConsensuados() != null) {
+                                    coleccion.setCantidadHechos(coleccion.getHechosConsensuados().size());
+                                } else {
+                                    coleccion.setCantidadHechos(0);
+                                }
+                            }
+                            return coleccion;
+                        })
+                        .toList();
+                    todas.addAll(coleccionesConCantidad);
                     total += resp.getTotalElements();
                     hasNext = hasNext || resp.isHasNext();
                 }

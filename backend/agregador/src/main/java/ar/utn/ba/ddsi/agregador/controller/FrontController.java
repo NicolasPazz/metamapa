@@ -10,11 +10,13 @@ import ar.utn.ba.ddsi.agregador.service.CategoriasService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -132,10 +134,10 @@ public class FrontController {
                     obtenerHechosNuevos, recalcularCriterios, recalcularConsenso);
             return ResponseEntity.ok(resultado);
         } catch (Exception e) {
-            Map<String, Object> errorResult = new java.util.HashMap<>();
+            Map<String, Object> errorResult = new HashMap<>();
             errorResult.put("exito", false);
             errorResult.put("error", e.getMessage());
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
         }
     }
 }
