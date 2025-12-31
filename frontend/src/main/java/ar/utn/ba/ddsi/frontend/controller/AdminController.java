@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static org.hibernate.internal.util.collections.ArrayHelper.forEach;
+
 @Controller
 @RequiredArgsConstructor
 @Slf4j
@@ -87,6 +89,19 @@ public class AdminController {
         } else {
             model.addAttribute("hechosLimit", Collections.emptyList());
         }
+        if (colecciones != null && colecciones.size() > 3) {
+            int endIndex = Math.min(5, colecciones.size());
+            model.addAttribute("coleccionesLimit", colecciones.subList(3, endIndex));
+        } else {
+            model.addAttribute("coleccionesLimit", Collections.emptyList());
+        }
+        if (solicitudes != null && solicitudes.size() > 3) {
+            int endIndex = Math.min(5, solicitudes.size());
+            model.addAttribute("solicitudesLimit", solicitudes.subList(3, endIndex));
+        } else {
+            model.addAttribute("solicitudesLimit", Collections.emptyList());
+        }
+
         model.addAttribute("colecciones", colecciones);
         model.addAttribute("hechos", hechos);
         model.addAttribute("solicitudes", solicitudes);
@@ -128,7 +143,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/crear-coleccion")
-    public String crearColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, Model model, HttpServletRequest request) {
+    public String crearColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, Model model, HttpServletRequest request, RedirectAttributes redirectAttributes) {
         if (coleccionDTO.getCriterios() == null) {
             coleccionDTO.setCriterios(new java.util.ArrayList<>());
         }
@@ -144,16 +159,16 @@ public class AdminController {
         }
         try {
             adminService.crearColeccion(coleccionDTO);
-            model.addAttribute("mensaje", "Colección creada correctamente.");
+            redirectAttributes.addFlashAttribute("success", "Colección creada correctamente.");
         } catch (Exception e) {
             log.error("[AdminController] ERROR - Error al crear colección: {}", e.getMessage(), e);
-            model.addAttribute("mensaje", "Error: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/actualizar-coleccion")
-    public String actualizarColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, @RequestParam("handle") String handle, Model model) {
+    public String actualizarColeccion(@Valid @ModelAttribute CrearColeccionDTO coleccionDTO, @RequestParam("handle") String handle, Model model, RedirectAttributes redirectAttributes) {
         log.info("[AdminController] - POST - /admin/actualizar-coleccion - handle: {}, titulo: {}, descripcion: {}, criterios: {}, algoritmoConsenso: {}, fuenteId: {}",
                 handle, coleccionDTO.getTitulo(), coleccionDTO.getDescripcion(), coleccionDTO.getCriterios(),
                 coleccionDTO.getAlgoritmoConsenso(), coleccionDTO.getFuenteId());
@@ -163,9 +178,9 @@ public class AdminController {
         }
         try {
             adminService.actualizarColeccion(coleccionDTO, handle);
-            model.addAttribute("mensaje", "Colección actualizada correctamente.");
+            redirectAttributes.addFlashAttribute("success", "Colección actualizada correctamente.");
         } catch (Exception e) {
-            model.addAttribute("mensaje", "Error: " + e.getMessage());
+            redirectAttributes.addFlashAttribute("error", "Error: " + e.getMessage());
         }
         return "redirect:/admin";
     }

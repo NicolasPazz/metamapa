@@ -1,6 +1,9 @@
 <html lang="es" th:replace="~{layout/base :: html}">
 <div th:fragment="contenido">
   <div id="toastContainer" class="toast-container"></div>
+  <div id="loadingOverlay" style="display: none; position: fixed; width: 100%; height: 100%; background-color: rgba(255,255,255,0.8); justify-content: center; align-items: center;">
+    <div class="spinner" style="background-color: rgba(55,55,255,0.3);"></div>
+  </div>
 
   <div class="admin-shell">
     <aside class="admin-sidebar">
@@ -17,10 +20,10 @@
       </nav>
 
       <div class="admin-quick-actions">
-        <form id="form-actualizar-colecciones" method="post" th:action="@{/admin/actualizar-agregador}">
+        <form id="form-actualizar-colecciones" method="post" th:action="@{/admin/actualizar-agregador}" onsubmit="showLoader()">
           <button type="submit" class="btn-block primary"><i class="bi bi-arrow-clockwise"></i> Actualizar colecciones</button>
         </form>
-        <form id="form-actualizar-estadisticas" method="post" th:action="@{/admin/actualizar-estadisticas}">
+        <form id="form-actualizar-estadisticas" method="post" th:action="@{/admin/actualizar-estadisticas}" onsubmit="showLoader()">
           <button type="submit" class="btn-block secondary"><i class="bi bi-bar-chart-fill"></i> Actualizar estadísticas</button>
         </form>
       </div>
@@ -41,9 +44,11 @@
             <h3 th:text="${coleccion.titulo}"></h3>
             <p class="muted">
               <span th:text="${mapFuentes.get(coleccion.fuenteId)}">Nombre Fuente</span>
-              <span th:if="${mapFuentes.get(coleccion.fuenteId) == null}" class="pill pill-warn">Sin fuente</span>
+              <span th:if="${mapFuentes.get(coleccion.fuenteId) == null}" class="pill pill-warn">Sin fuente externa</span>
             </p>
-            <p th:text="${'Algoritmo de consenso: ' + coleccion.algoritmoConsenso}"></p>
+            <p th:if="${coleccion.algoritmoConsenso == 'MULTIPLES_MENCIONES'}" th:text="${'Algoritmo de consenso: Múltiples menciones'}"></p>
+            <p th:if="${coleccion.algoritmoConsenso == 'MAYORIA_SIMPLE'}" th:text="${'Algoritmo de consenso: Mayoría simple'}"></p>
+            <p th:if="${coleccion.algoritmoConsenso == 'ABSOLUTA'}" th:text="${'Algoritmo de consenso: Absoluta'}"></p>
             <button class="btn btn-edit"
                     th:data-handle="${coleccion.handle}"
                     th:data-titulo="${coleccion.titulo}"
@@ -113,7 +118,8 @@
 
   <div id="nueva-coleccion" class="panel">
     <h3>Crear Nueva Colección</h3>
-    <form method="post" th:action="@{/admin/crear-coleccion}" id="main-form">
+    <form method="post" th:action="@{/admin/crear-coleccion}" id="main-form" onsubmit="showLoader()">
+
       <label for="nombre">Nombre <span class="required-indicator">*</span></label>
       <input name="titulo" type="text" id="nombre" required>
 
@@ -222,8 +228,8 @@
       <ul id="visual-list" class="list-clean"></ul>
       <div id="hidden-inputs-container"></div>
 
-      <label for="consenso">Algoritmo Consenso <span class="required-indicator">*</span></label>
-      <select name="algoritmoConsenso" id="consenso" required>
+      <label for="consenso">Algoritmo de Consenso <span class="required-indicator">*</span></label>
+      <select name="algoritmoConsenso" id="consenso" required class="form-control">
         <option value="MAYORIA_SIMPLE">Mayoría Simple</option>
         <option value="MULTIPLES_MENCIONES">Múltiples Menciones</option>
         <option value="ABSOLUTA">Absoluta</option>
@@ -234,11 +240,313 @@
         <a href="#" class="close" style="margin-left:10px;" aria-label="Cancelar creación de colección" title="Cancelar">Cancelar</a>
       </div>
     </form>
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.conditional-section').forEach(div => {
+          if (div.style.display === 'none' || window.getComputedStyle(div).display === 'none') {
+            div.querySelectorAll('[required]').forEach(field => {
+              field.removeAttribute('required');
+              field.setAttribute('data-was-required', 'true');
+            });
+          }
+        });
+        
+        const form = document.getElementById('main-form');
+        if (form) {
+          form.addEventListener('submit', function() {
+            document.querySelectorAll('.conditional-section').forEach(div => {
+              const isVisible = div.style.display !== 'none' && window.getComputedStyle(div).display !== 'none';
+              if (!isVisible) {
+                div.querySelectorAll('[required]').forEach(field => {
+                  field.removeAttribute('required');
+                  field.setAttribute('data-was-required', 'true');
+                });
+              }
+            });
+          });
+        }
+      });
+    </script>
+    <script>
+      let contadorCriterios = 0;
+
+      function mostrarTipoLugar() {
+        const tipoLugar = document.getElementById("input-tipo-lugar");
+        if (!tipoLugar) return;
+        
+        const tipoLugarValue = tipoLugar.value;
+        const provinciaDiv = document.getElementById("lugar-provincia");
+        const coordenadasDiv = document.getElementById("lugar-coordenadas");
+
+        if (!provinciaDiv || !coordenadasDiv) return;
+
+        provinciaDiv.style.display = 'none';
+        coordenadasDiv.style.display = 'none';
+
+        provinciaDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+          field.removeAttribute('required');
+        });
+        coordenadasDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+          field.removeAttribute('required');
+        });
+
+        if (tipoLugarValue === 'provincia') {
+          provinciaDiv.style.display = 'block';
+          provinciaDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+            field.setAttribute('required', '');
+          });
+        } else if (tipoLugarValue === 'coordenadas') {
+          coordenadasDiv.style.display = 'block';
+          coordenadasDiv.querySelectorAll('[data-was-required="true"]').forEach(field => {
+            field.setAttribute('required', '');
+          });
+        }
+      }
+
+      function mostrarOpciones() {
+        const criterio = document.getElementById("selector-criterio").value;
+
+        document.querySelectorAll('.conditional-section').forEach(div => {
+          div.style.display = 'none';
+          div.querySelectorAll('[required]').forEach(field => {
+            field.removeAttribute('required');
+            if (!field.hasAttribute('data-was-required')) {
+              field.setAttribute('data-was-required', 'true');
+            }
+          });
+        });
+
+        if (criterio === 'fecha') {
+          const section = document.getElementById('opcion-fecha');
+          section.style.display = 'block';
+        }
+        if (criterio === 'lugar') {
+          const section = document.getElementById('opcion-lugar');
+          section.style.display = 'block';
+          const tipoLugarSelect = document.getElementById('input-tipo-lugar');
+          if (tipoLugarSelect) {
+            tipoLugarSelect.value = '';
+            mostrarTipoLugar();
+          }
+        }
+        if (criterio === 'igualdad') {
+          const section = document.getElementById('opcion-igualdad');
+          section.style.display = 'block';
+          section.querySelectorAll('[data-was-required="true"]').forEach(field => {
+            field.setAttribute('required', '');
+          });
+        }
+        if (criterio === 'origen') {
+          document.getElementById('opcion-origen').style.display = 'block';
+        }
+        if (criterio === 'fuente') {
+          document.getElementById('opcion-fuente').style.display = 'block';
+        }
+      }
+
+      function agregarCriterioALista() {
+        const tipo = document.getElementById("selector-criterio").value;
+        if (!tipo) {
+          showToast("Seleccione un tipo de criterio.", "error");
+          document.getElementById("selector-criterio").focus();
+          return;
+        }
+
+        const container = document.getElementById("hidden-inputs-container");
+        const visualList = document.getElementById("visual-list");
+        let descripcion = "";
+
+        if (tipo === "fecha") {
+          const tipoFecha = document.getElementById("input-tipo-fecha").value;
+          const ini = document.getElementById("input-fecha-inicio");
+          const fin = document.getElementById("input-fecha-fin");
+
+          if (!ini.value && !fin.value) {
+            showToast("Debe completar al menos una fecha (desde o hasta).", "error");
+            ini.focus();
+            return;
+          }
+
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "fecha");
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipoFecha`, tipoFecha);
+          
+          if (ini.value) {
+            createHiddenInput(container, `criterios[${contadorCriterios}].fechaInicial`, ini.value);
+          }
+          if (fin.value) {
+            createHiddenInput(container, `criterios[${contadorCriterios}].fechaFinal`, fin.value);
+          }
+
+          let fechaDesc = "";
+          if (ini.value && fin.value) {
+            fechaDesc = `${ini.value} al ${fin.value}`;
+          } else if (ini.value) {
+            fechaDesc = `desde ${ini.value}`;
+          } else {
+            fechaDesc = `hasta ${fin.value}`;
+          }
+          
+          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> <b>Fecha</b> (${tipoFecha}): ${fechaDesc}`;
+        }
+
+        else if (tipo === "lugar") {
+          const tipoLugar = document.getElementById("input-tipo-lugar").value;
+
+          if (!tipoLugar || tipoLugar === "") {
+            showToast("Seleccione un tipo de búsqueda (Provincia o Coordenadas).", "error");
+            document.getElementById("input-tipo-lugar").focus();
+            return;
+          }
+
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "lugar");
+
+          if (tipoLugar === "provincia") {
+            const provinciaSelect = document.getElementById("input-provincia");
+            if (!provinciaSelect.value || provinciaSelect.value === "") {
+              showToast("Seleccione una provincia.", "error");
+              provinciaSelect.focus();
+              return;
+            }
+            createHiddenInput(container, `criterios[${contadorCriterios}].provincia`, provinciaSelect.value);
+            const provinciaNombre = provinciaSelect.options[provinciaSelect.selectedIndex].text;
+            descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${provinciaNombre}`;
+          } else if (tipoLugar === "coordenadas") {
+            const lat = document.getElementById("input-lat");
+            const lng = document.getElementById("input-lng");
+            const radio = document.getElementById("input-radio");
+
+            if (!lat.value || !lng.value || !radio.value) {
+              showToast("Complete latitud, longitud y radio.", "error");
+              if (!lat.value) lat.focus();
+              else if (!lng.value) lng.focus();
+              else if (!radio.value) radio.focus();
+              return;
+            }
+
+            const latNum = parseFloat(lat.value);
+            const lngNum = parseFloat(lng.value);
+            const radioNum = parseFloat(radio.value);
+
+            if (isNaN(latNum) || latNum < -90 || latNum > 90) {
+              showToast("La latitud debe estar entre -90 y 90.", "error");
+              lat.focus();
+              return;
+            }
+
+            if (isNaN(lngNum) || lngNum < -180 || lngNum > 180) {
+              showToast("La longitud debe estar entre -180 y 180.", "error");
+              lng.focus();
+              return;
+            }
+
+            if (isNaN(radioNum) || radioNum <= 0) {
+              showToast("El radio debe ser mayor a 0.", "error");
+              radio.focus();
+              return;
+            }
+
+            createHiddenInput(container, `criterios[${contadorCriterios}].lat`, lat.value);
+            createHiddenInput(container, `criterios[${contadorCriterios}].lng`, lng.value);
+            createHiddenInput(container, `criterios[${contadorCriterios}].radio`, radio.value);
+
+            descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> <b>Lugar</b>: ${lat.value}, ${lng.value} (radio: ${radio.value} km)`;
+          }
+        }
+
+        else if (tipo === "igualdad") {
+          const campo = document.getElementById("input-igualdad-campo").value;
+          const valor = document.getElementById("input-igualdad-valor");
+
+          if (!valor.value || valor.value.trim() === "") {
+            showToast("Escriba un valor para comparar.", "error");
+            valor.focus();
+            return;
+          }
+
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "igualdad");
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipoDeDato`, campo);
+          createHiddenInput(container, `criterios[${contadorCriterios}].cadenaAComparar`, valor.value.trim());
+
+          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><line x1="5" y1="12" x2="19" y2="12"></line></svg> <b>Igualdad</b>: ${campo} = "${valor.value.trim()}"`;
+        }
+
+        else if (tipo === "origen") {
+          const origen = document.getElementById("input-origen-valor").value;
+
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "origen");
+          createHiddenInput(container, `criterios[${contadorCriterios}].origen`, origen);
+
+          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> <b>Origen</b>: ${origen}`;
+        }
+
+        else if (tipo === "fuente") {
+          const checkboxes = document.querySelectorAll('.fuente-checkbox:checked');
+          
+          if (checkboxes.length === 0) {
+            showToast("Seleccione al menos una fuente.", "error");
+            document.getElementById("fuentes-checkbox-container").scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            return;
+          }
+
+          createHiddenInput(container, `criterios[${contadorCriterios}].tipo`, "fuente");
+
+          const nombresFuentes = [];
+          Array.from(checkboxes).forEach((checkbox) => {
+            const fuenteId = checkbox.getAttribute('data-id');
+            const fuenteNombre = checkbox.value;
+            if (fuenteId) {
+              createHiddenInput(container, `criterios[${contadorCriterios}].fuentes`, fuenteId);
+              nombresFuentes.push(fuenteNombre);
+            }
+          });
+
+          const nombresTexto = nombresFuentes.join(", ");
+          descripcion = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> <b>Fuentes</b>: ${nombresTexto}`;
+        }
+
+        const li = document.createElement("li");
+        li.innerHTML = descripcion;
+        li.style.borderBottom = "1px solid #ccc";
+        li.style.padding = "5px 0";
+        visualList.appendChild(li);
+
+        contadorCriterios++;
+
+        document.querySelectorAll('#input-igualdad-valor, #input-lat, #input-lng, #input-radio, #input-fecha-inicio, #input-fecha-fin').forEach(i => i.value = '');
+        if(document.getElementById("input-provincia")) {
+          document.getElementById("input-provincia").value = "";
+        }
+        if(document.getElementById("input-tipo-lugar")) {
+          document.getElementById("input-tipo-lugar").value = "";
+          mostrarTipoLugar();
+        }
+        document.getElementById("selector-criterio").value = "";
+        mostrarOpciones();
+
+        document.querySelectorAll('.fuente-checkbox').forEach(cb => cb.checked = false);
+      }
+
+      function createHiddenInput(parent, name, value) {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = name;
+        input.value = value;
+        parent.appendChild(input);
+      }
+
+      function showLoader() {
+        document.getElementById('loadingOverlay').style.display = "flex";
+      }
+    </script>
+    <a href="#" 
+       class="close" 
+       aria-label="Cerrar panel de nueva colección"
+       title="Cerrar">Cerrar</a>
   </div>
 
   <div id="editar-coleccion" class="panel">
     <h3>Editar Colección</h3>
-    <form method="post" th:action="@{/admin/actualizar-coleccion}">
+    <form method="post" th:action="@{/admin/actualizar-coleccion}" onsubmit="showLoader()">
 
       <input type="hidden" name="handle" id="edit-handle">
 
@@ -253,7 +561,12 @@
 
         <label for="edit-selector-criterio">Criterio:</label>
         <select id="edit-selector-criterio" onchange="mostrarOpcionesEdit()">
-          <option value="categoria">Categoría</option>
+          <option value="">-- Seleccionar --</option>
+          <option value="fecha">Fecha</option>
+          <option value="lugar">Lugar</option>
+          <option value="igualdad">Igualdad</option>
+          <option value="origen">Origen</option>
+          <option value="fuente">Fuente</option>
         </select>
 
         <div id="edit-opcion-fecha" class="conditional-section-edit" style="display:none;">
@@ -318,7 +631,7 @@
 
       <div id="edit-hidden-inputs-container"></div>
 
-      <label for="edit-consenso">Algoritmo Consenso <span class="required-indicator">*</span></label>
+      <label>Algoritmo de Consenso <span class="required-indicator">*</span></label>
       <select name="algoritmoConsenso" id="edit-consenso" required>
         <option value="MAYORIA_SIMPLE">Mayoría Simple</option>
         <option value="MULTIPLES_MENCIONES">Múltiples Menciones</option>
@@ -331,7 +644,8 @@
            class="close"
            style="margin-left:10px;"
            aria-label="Cancelar edición de colección"
-           title="Cancelar">Cancelar</a>
+           title="Cerrar"
+           onclick="cerrarPanelEdicion(event)">Cancelar</a>
       </div>
     </form>
   </div>
@@ -596,21 +910,21 @@
         createHiddenInput(container, `criterios[${i}].tipoFecha`, tipoFecha);
         createHiddenInput(container, `criterios[${i}].fechaInicial`, fechaIni);
         createHiddenInput(container, `criterios[${i}].fechaFinal`, fechaFin);
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg" class="icon-inline"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Fecha (${tipoFecha}): ${fechaIni} - ${fechaFin}`;
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> Fecha (${tipoFecha}): ${fechaIni} - ${fechaFin}`;
       }
       else if (tipo === "lugar") {
         createHiddenInput(container, `criterios[${i}].lat`, lat);
         createHiddenInput(container, `criterios[${i}].lng`, lng);
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg" class="icon-inline"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Lugar: ${lat}, ${lng}`;
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg> Lugar: ${lat}, ${lng}`;
       }
       else if (tipo === "igualdad") {
         createHiddenInput(container, `criterios[${i}].tipoDeDato`, tipoDato);
         createHiddenInput(container, `criterios[${i}].cadenaAComparar`, cadena);
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg" class="icon-inline"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Igualdad: ${tipoDato} = ${cadena}`;
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><line x1="5" y1="12" x2="19" y2="12"></line></svg> Igualdad: ${tipoDato} = ${cadena}`;
       }
       else if (tipo === "origen") {
         createHiddenInput(container, `criterios[${i}].origen`, origen);
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg" class="icon-inline"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> Origen: ${origen}`;
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path><line x1="7" y1="7" x2="7.01" y2="7"></line></svg> Origen: ${origen}`;
       }
       else if (tipo === "fuente" && fuenteIds) {
         const idsArray = Array.isArray(fuenteIds) ? fuenteIds : [fuenteIds];
@@ -627,7 +941,7 @@
           }
         });
 
-        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg" class="icon-inline"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Fuentes: ${names.join(", ")}`;
+        desc = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg> Fuentes: ${names.join(", ")}`;
       }
 
       const li = document.createElement("li");
@@ -646,142 +960,147 @@
       parent.appendChild(input);
     }
 
+    function cerrarPanelEdicion(event) {
+        if (event) event.preventDefault();
+        document.getElementById("editar-coleccion").style.right = "-100%";
+    }
+
     // Desplazamiento suave teniendo en cuenta el header fijo
     function scrollToSectionWithOffset(hash) {
-      const header = document.querySelector('header, .site-header, .main-header');
-      const offset = header ? header.offsetHeight : 0;
-      const target = document.querySelector(hash);
-      if (target) {
-        const top = target.getBoundingClientRect().top + window.pageYOffset - offset - 10; // 10px extra margen
-        window.scrollTo({ top, behavior: 'smooth' });
-      }
+        const header = document.querySelector('header, .site-header, .main-header');
+        const offset = header ? header.offsetHeight : 0;
+        const target = document.querySelector(hash);
+        if (target) {
+            const top = target.getBoundingClientRect().top + window.pageYOffset - offset - 10; // 10px extra margen
+            window.scrollTo({ top, behavior: 'smooth' });
+        }
     }
 
     // Intercepta clicks en admin-nav para usar el scroll custom
     const adminNav = document.querySelector('.admin-nav');
     if (adminNav) {
-      adminNav.addEventListener('click', function(e) {
-        const link = e.target.closest('a[href^="#"]');
-        if (link) {
-          e.preventDefault();
-          const hash = link.getAttribute('href');
-          if (hash && document.querySelector(hash)) {
-            history.replaceState(null, '', hash);
-            scrollToSectionWithOffset(hash);
-          }
-        }
-      });
+        adminNav.addEventListener('click', function(e) {
+            const link = e.target.closest('a[href^="#"]');
+            if (link) {
+                e.preventDefault();
+                const hash = link.getAttribute('href');
+                if (hash && document.querySelector(hash)) {
+                    history.replaceState(null, '', hash);
+                    scrollToSectionWithOffset(hash);
+                }
+            }
+        });
     }
 
     // Si hay hash al cargar, hacer scroll con offset
     window.addEventListener('DOMContentLoaded', function() {
-      // Initialize: remove required from all hidden conditional sections
-      document.querySelectorAll('.conditional-section').forEach(section => {
-        const isVisible = section.style.display !== 'none' && 
-                        window.getComputedStyle(section).display !== 'none';
-        if (!isVisible) {
-          section.querySelectorAll('input[required], select[required]').forEach(input => {
-            input.removeAttribute('required');
-            if (!input.hasAttribute('data-was-required')) {
-              input.setAttribute('data-was-required', 'true');
-            }
-          });
-        }
-      });
-
-      if (window.location.hash && document.querySelector(window.location.hash)) {
-        setTimeout(() => scrollToSectionWithOffset(window.location.hash), 100);
-      }
-
-      // Manejar formulario de crear colección
-      const mainForm = document.getElementById('main-form');
-      if (mainForm) {
-        mainForm.addEventListener('submit', function(e) {
-          // Remove required from all hidden conditional sections before validation
-          document.querySelectorAll('.conditional-section').forEach(section => {
-            const isVisible = section.style.display !== 'none' && 
-                            window.getComputedStyle(section).display !== 'none';
-
+        // Initialize: remove required from all hidden conditional sections
+        document.querySelectorAll('.conditional-section').forEach(section => {
+            const isVisible = section.style.display !== 'none' &&
+                window.getComputedStyle(section).display !== 'none';
             if (!isVisible) {
-              section.querySelectorAll('input[required], select[required]').forEach(input => {
-                input.removeAttribute('required');
-                if (!input.hasAttribute('data-was-required')) {
-                  input.setAttribute('data-was-required', 'true');
+                section.querySelectorAll('input[required], select[required]').forEach(input => {
+                    input.removeAttribute('required');
+                    if (!input.hasAttribute('data-was-required')) {
+                        input.setAttribute('data-was-required', 'true');
+                    }
+                });
+            }
+        });
+
+        if (window.location.hash && document.querySelector(window.location.hash)) {
+            setTimeout(() => scrollToSectionWithOffset(window.location.hash), 100);
+        }
+
+        // Manejar formulario de crear colección
+        const mainForm = document.getElementById('main-form');
+        if (mainForm) {
+            mainForm.addEventListener('submit', function(e) {
+                // Remove required from all hidden conditional sections before validation
+                document.querySelectorAll('.conditional-section').forEach(section => {
+                    const isVisible = section.style.display !== 'none' &&
+                        window.getComputedStyle(section).display !== 'none';
+
+                    if (!isVisible) {
+                        section.querySelectorAll('input[required], select[required]').forEach(input => {
+                            input.removeAttribute('required');
+                            if (!input.hasAttribute('data-was-required')) {
+                                input.setAttribute('data-was-required', 'true');
+                            }
+                        });
+                    }
+                });
+            });
+        }
+
+        // Manejar formulario de actualizar colecciones
+        const formActualizarColecciones = document.getElementById('form-actualizar-colecciones');
+        if (formActualizarColecciones) {
+            formActualizarColecciones.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const button = this.querySelector('button[type="submit"]');
+                const originalText = button.innerHTML;
+
+                try {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Actualizando...';
+
+                    const response = await safeFetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    }, true); // skipErrorRedirect = true para manejar errores manualmente
+
+                    if (response.ok) {
+                        showToast('Colecciones actualizadas correctamente', 'success');
+                    } else {
+                        throw new Error('Error al actualizar colecciones');
+                    }
+                } catch (error) {
+                    console.error('Error al actualizar colecciones:', error);
+                    showToast('Error al actualizar colecciones', 'error');
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
                 }
-              });
-            }
-          });
-        });
-      }
+            });
+        }
 
-      // Manejar formulario de actualizar colecciones
-      const formActualizarColecciones = document.getElementById('form-actualizar-colecciones');
-      if (formActualizarColecciones) {
-        formActualizarColecciones.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          const formData = new FormData(this);
-          const button = this.querySelector('button[type="submit"]');
-          const originalText = button.innerHTML;
-          
-          try {
-            button.disabled = true;
-            button.innerHTML = '<i class="bi bi-hourglass-split"></i> Actualizando...';
-            
-            const response = await safeFetch(this.action, {
-              method: 'POST',
-              body: formData
-            }, true); // skipErrorRedirect = true para manejar errores manualmente
-            
-            if (response.ok) {
-              showToast('Colecciones actualizadas correctamente', 'success');
-            } else {
-              throw new Error('Error al actualizar colecciones');
-            }
-          } catch (error) {
-            console.error('Error al actualizar colecciones:', error);
-            showToast('Error al actualizar colecciones', 'error');
-          } finally {
-            button.disabled = false;
-            button.innerHTML = originalText;
-          }
-        });
-      }
+        // Manejar formulario de actualizar estadísticas
+        const formActualizarEstadisticas = document.getElementById('form-actualizar-estadisticas');
+        if (formActualizarEstadisticas) {
+            formActualizarEstadisticas.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+                const button = this.querySelector('button[type="submit"]');
+                const originalText = button.innerHTML;
 
-      // Manejar formulario de actualizar estadísticas
-      const formActualizarEstadisticas = document.getElementById('form-actualizar-estadisticas');
-      if (formActualizarEstadisticas) {
-        formActualizarEstadisticas.addEventListener('submit', async function(e) {
-          e.preventDefault();
-          const formData = new FormData(this);
-          const button = this.querySelector('button[type="submit"]');
-          const originalText = button.innerHTML;
-          
-          try {
-            button.disabled = true;
-            button.innerHTML = '<i class="bi bi-hourglass-split"></i> Actualizando...';
-            
-            const response = await safeFetch(this.action, {
-              method: 'POST',
-              body: formData
-            }, true); // skipErrorRedirect = true para manejar errores manualmente
-            
-            if (response.ok) {
-              showToast('Estadísticas actualizadas correctamente', 'success');
-            } else {
-              throw new Error('Error al actualizar estadísticas');
-            }
-          } catch (error) {
-            console.error('Error al actualizar estadísticas:', error);
-            showToast('Error al actualizar estadísticas', 'error');
-          } finally {
-            button.disabled = false;
-            button.innerHTML = originalText;
-          }
-        });
-      }
+                try {
+                    button.disabled = true;
+                    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Actualizando...';
+
+                    const response = await safeFetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    }, true); // skipErrorRedirect = true para manejar errores manualmente
+
+                    if (response.ok) {
+                        showToast('Estadísticas actualizadas correctamente', 'success');
+                    } else {
+                        throw new Error('Error al actualizar estadísticas');
+                    }
+                } catch (error) {
+                    console.error('Error al actualizar estadísticas:', error);
+                    showToast('Error al actualizar estadísticas', 'error');
+                } finally {
+                    button.disabled = false;
+                    button.innerHTML = originalText;
+                }
+            });
+        }
     });
   </script>
 </div>
-
+</html>
 
 
