@@ -106,23 +106,8 @@
             overflow: hidden;
         }
 
-        .multimedia-preview {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+        .solicitud-multimedia-container {
             margin-top: 0.75rem;
-        }
-
-        .multimedia-badge {
-            background: #e7f3ff;
-            border: 1px solid #b3d9ff;
-            border-radius: 6px;
-            padding: 0.375rem 0.75rem;
-            font-size: 0.8rem;
-            color: #004085;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.375rem;
         }
 
         .solicitud-id {
@@ -567,11 +552,9 @@
                 </div>
 
                 <div th:if="${sol.contenidoMultimedia != null && !sol.contenidoMultimedia.isEmpty()}"
-                     class="multimedia-preview">
-                    <div th:each="media : ${sol.contenidoMultimedia}" class="multimedia-badge">
-                        <i class="bi bi-paperclip"></i>
-                        <span th:text="${media.pathArchivo != null ? media.pathArchivo : 'Archivo'}"></span>
-                    </div>
+                     class="solicitud-multimedia-container"
+                     th:id="'multimedia-solicitud-' + ${sol.id}"
+                     th:attr="data-solicitud-id=${sol.id}">
                 </div>
             </div>
 
@@ -599,9 +582,30 @@
         </div>
     </div>
 
+    <script th:src="@{/js/carousel.js}"></script>
+
     <script th:inline="javascript">
         /*<![CDATA[*/
         document.addEventListener('DOMContentLoaded', function() {
+            const dinamicaBaseUrl = /*[[${dinamicaBaseUrl}]]*/ '';
+            if (dinamicaBaseUrl && typeof window.getDinamicaApiBaseUrl !== 'function') {
+                window.getDinamicaApiBaseUrl = () => dinamicaBaseUrl;
+            }
+
+            const solicitudesCargaData = /*[[${solicitudesCarga}]]*/ [];
+            function renderizarCarouselsCarga() {
+                if (typeof renderMultimediaCarousel !== 'function') return;
+                solicitudesCargaData.forEach(function(solicitud) {
+                    const multimedia = solicitud.contenidoMultimedia || [];
+                    if (!solicitud.id || !multimedia || multimedia.length === 0) return;
+                    const containerId = 'multimedia-solicitud-' + solicitud.id;
+                    const container = document.getElementById(containerId);
+                    if (!container) return;
+                    const carouselId = 'carousel-solicitud-' + solicitud.id;
+                    container.innerHTML = renderMultimediaCarousel(multimedia, carouselId, true);
+                });
+            }
+
             // Manejar botones de aceptar con PATCH
             document.querySelectorAll('.btn-aceptar').forEach(function(btn) {
                 btn.addEventListener('click', async function() {
@@ -665,6 +669,8 @@
                     }
                 });
             });
+
+            renderizarCarouselsCarga();
         });
         /*]]>*/
     </script>

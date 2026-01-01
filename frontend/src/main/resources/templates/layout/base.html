@@ -125,6 +125,13 @@
                    aria-label="Ver colecciones">Colecciones</a>
             </nav>
             <nav class="nav-buttons" role="navigation" aria-label="Acceso de usuario">
+                <a sec:authorize="hasRole('ADMIN')"
+                   th:if="${#httpServletRequest == null || (#httpServletRequest != null && !#strings.contains(#httpServletRequest.requestURI, '/admin'))}"
+                   th:href="@{/admin}"
+                   class="btn primary"
+                   aria-label="Panel de administración">
+                    <i class="bi bi-shield-fill-check me-1" aria-hidden="true"></i> Admin
+                </a>
                 <a sec:authorize="!isAuthenticated()"
                    th:href="@{/login}"
                    class="btn secondary"

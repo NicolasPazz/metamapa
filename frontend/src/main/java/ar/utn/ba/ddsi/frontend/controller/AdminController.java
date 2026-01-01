@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -33,6 +34,8 @@ public class AdminController {
     private final ObjectMapper objectMapper;
     private final FuenteService fuenteService;
     private final EstadisticasService estadisticasService;
+    @Value("${app.api.dinamica.base-url:http://localhost:8081/api}")
+    private String dinamicaBaseUrl;
 
     @GetMapping("/admin")
     public String mostrarMenu(Model model, HttpServletRequest request) {
@@ -73,6 +76,7 @@ public class AdminController {
         model.addAttribute("nombresFuentes", nombresFuentes);
         model.addAttribute("mapFuentes", mapFuentes);
         model.addAttribute("objectMapper", objectMapper);
+        model.addAttribute("dinamicaBaseUrl", dinamicaBaseUrl);
         return "admin/admin";
     }
 
@@ -184,6 +188,7 @@ public class AdminController {
 
             model.addAttribute("solicitudes", solicitudesFiltradas);
             model.addAttribute("isAdmin", true); // Marcar como admin para mostrar botones de acción
+            model.addAttribute("dinamicaBaseUrl", dinamicaBaseUrl);
             log.info("[AdminController] - Se encontraron {} solicitudes pendientes (de {} totales)", 
                 solicitudesFiltradas.size(), solicitudes.size());
         } catch (Exception e) {
@@ -191,6 +196,7 @@ public class AdminController {
             redirectAttributes.addFlashAttribute("error", "Error al cargar las solicitudes: " + e.getMessage());
             model.addAttribute("solicitudes", Collections.emptyList());
             model.addAttribute("isAdmin", true);
+            model.addAttribute("dinamicaBaseUrl", dinamicaBaseUrl);
         }
 
         return "admin/solicitudes";
@@ -245,6 +251,7 @@ public class AdminController {
             }
             model.addAttribute("solicitud", solicitud);
             model.addAttribute("esAceptarConModificaciones", true);
+            model.addAttribute("dinamicaBaseUrl", dinamicaBaseUrl);
             return "admin/editar_solicitud";
         } catch (Exception e) {
             log.error("[AdminController] - Error al obtener solicitud {}: {}", id, e.getMessage(), e);

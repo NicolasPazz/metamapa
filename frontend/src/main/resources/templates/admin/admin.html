@@ -1510,7 +1510,7 @@
                     <tbody>
                         <tr>
                             <td>${estadisticas.estadisticaSpam ? (estadisticas.estadisticaSpam.totalSolicitudes || estadisticas.estadisticaSpam.total_solicitudes || 0) : 0}</td>
-                            <td>${estadisticas.estadisticaSpam ? (estadisticas.estadisticaSpam.solicitudesSpam || estadisticas.estadisticaSpam.solicitudes_spam || 0) : 0}</td>
+                            <td>${estadisticas.estadisticaSpam ? (estadisticas.estadisticaSpam.total_solicitudes_spam || estadisticas.estadisticaSpam.solicitudesSpam || estadisticas.estadisticaSpam.solicitudes_spam || 0) : 0}</td>
                             <td><span class="badge-percentage">${estadisticas.estadisticaSpam ? ((estadisticas.estadisticaSpam.porcentajeSpam || estadisticas.estadisticaSpam.porcentaje_spam || 0).toFixed(1)) : '0.0'}</span></td>
                         </tr>
                     </tbody>

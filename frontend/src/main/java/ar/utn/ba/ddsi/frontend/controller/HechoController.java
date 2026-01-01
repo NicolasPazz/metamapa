@@ -79,6 +79,7 @@ public class HechoController {
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
         List<String> listaProvincias = hechoService.obtenerProvinciasConHechos();
         List<String> listaFuentes = hechoService.obtenerFuentesConHechos();
+        Long contribuyenteId = solicitudService.obtenerContribuyenteIdDeSesion();
 
         model.addAttribute("hechos", pageResponse.getContent());
         model.addAttribute("currentPage", page);
@@ -91,6 +92,7 @@ public class HechoController {
         model.addAttribute("showColeccionesBtn", true);
         model.addAttribute("showReportarHechoBtn", true);
         model.addAttribute("showMisHechosBtn", true);
+        model.addAttribute("contribuyenteId", contribuyenteId);
         return "hechos/hechosencoleccion";
 
     }
