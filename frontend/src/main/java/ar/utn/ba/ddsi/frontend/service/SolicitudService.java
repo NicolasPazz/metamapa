@@ -360,16 +360,33 @@ public class SolicitudService {
         }
         
         try {
-            log.info("Aceptando solicitud ID: {} con modificaciones, archivos nuevos: {}", 
-                    idSolicitud, formDTO.getArchivos() != null ? formDTO.getArchivos().size() : 0);
+            log.info("Aceptando solicitud ID: {} con modificaciones, archivos nuevos: {}, archivos a eliminar: {}", 
+                    idSolicitud, 
+                    formDTO.getArchivos() != null ? formDTO.getArchivos().size() : 0,
+                    formDTO.getArchivos_a_eliminar() != null ? formDTO.getArchivos_a_eliminar().size() : 0);
             
             // Primero obtenemos la solicitud actual para preservar el multimedia existente
             SolicitudInputDTO solicitudActual = obtenerSolicitudPorId(idSolicitud);
             
-            // Si hay archivos nuevos, necesitamos agregar el multimedia existente al DTO
-            if (formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) {
-                log.info("Modificando solicitud {} con archivos nuevos (preservando {} existentes)", 
-                        idSolicitud, solicitudActual.getContenidoMultimedia() != null ? solicitudActual.getContenidoMultimedia().size() : 0);
+            // Filtrar el multimedia existente eliminando los archivos marcados para eliminar
+            List<ContenidoMultimediaDTO> multimediaFiltrado = solicitudActual.getContenidoMultimedia();
+            if (multimediaFiltrado != null && formDTO.getArchivos_a_eliminar() != null && !formDTO.getArchivos_a_eliminar().isEmpty()) {
+                log.info("Filtrando multimedia: {} archivos existentes, {} marcados para eliminar", 
+                        multimediaFiltrado.size(), formDTO.getArchivos_a_eliminar().size());
+                
+                multimediaFiltrado = multimediaFiltrado.stream()
+                    .filter(item -> !formDTO.getArchivos_a_eliminar().contains(item.getPathArchivo()))
+                    .collect(Collectors.toList());
+                
+                log.info("Multimedia después del filtrado: {} archivos", multimediaFiltrado.size());
+            }
+            
+            // Si hay archivos nuevos o cambios en el multimedia, necesitamos actualizar
+            if ((formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) || 
+                (formDTO.getArchivos_a_eliminar() != null && !formDTO.getArchivos_a_eliminar().isEmpty())) {
+                
+                log.info("Modificando solicitud {} con archivos nuevos (preservando {} existentes después del filtrado)", 
+                        idSolicitud, multimediaFiltrado != null ? multimediaFiltrado.size() : 0);
                 
                 SolicitudModificacionDTO dto = new SolicitudModificacionDTO();
                 dto.setIdContribuyente(formDTO.getContribuyente_id());
@@ -380,14 +397,19 @@ public class SolicitudService {
                 dto.setNuevoLongitud(formDTO.getLongitud());
                 dto.setNuevoFechaDeAcontecimiento(formDTO.getFecha_acontecimiento());
                 
-                // IMPORTANTE: Agregar el multimedia existente al DTO para que no se pierda
-                if (solicitudActual.getContenidoMultimedia() != null && !solicitudActual.getContenidoMultimedia().isEmpty()) {
-                    dto.setNuevoContenidoMultimedia(solicitudActual.getContenidoMultimedia());
-                    log.info("Preservando {} archivos multimedia existentes", solicitudActual.getContenidoMultimedia().size());
+                // IMPORTANTE: Agregar el multimedia filtrado al DTO
+                if (multimediaFiltrado != null && !multimediaFiltrado.isEmpty()) {
+                    dto.setNuevoContenidoMultimedia(multimediaFiltrado);
+                    log.info("Preservando {} archivos multimedia después del filtrado", multimediaFiltrado.size());
                 }
                 
                 // Usar el método multipart que agregará los nuevos archivos a la lista existente
-                enviarModificacionMultipart(idSolicitud, dto, formDTO.getArchivos(), "/solicitudes/");
+                if (formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) {
+                    enviarModificacionMultipart(idSolicitud, dto, formDTO.getArchivos(), "/solicitudes/");
+                } else {
+                    // Si solo se eliminaron archivos pero no se agregaron nuevos, enviar JSON
+                    enviarModificacionJSON(idSolicitud, dto, "/solicitudes/");
+                }
             }
             
             // Luego aceptamos la solicitud con el endpoint de admin

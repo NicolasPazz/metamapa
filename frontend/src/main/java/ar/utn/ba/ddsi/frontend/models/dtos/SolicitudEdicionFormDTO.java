@@ -24,4 +24,7 @@ public class SolicitudEdicionFormDTO {
     private LocalDateTime fecha_acontecimiento;
     
     private List<MultipartFile> archivos;
+    
+    // Lista de nombres de archivos (pathArchivo) que se deben eliminar
+    private List<String> archivos_a_eliminar;
 }

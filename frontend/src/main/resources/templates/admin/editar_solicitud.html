@@ -367,6 +367,76 @@
             text-align: center;
         }
 
+        /* Estilos para la lista de checkboxes de multimedia */
+        .multimedia-list-container {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .multimedia-checkbox-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .multimedia-checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .multimedia-checkbox-item:hover {
+            background: #fff;
+            border-color: #cbd5e0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .multimedia-checkbox-item.selected {
+            background: #fff5f5;
+            border-color: #fc8181;
+        }
+
+        .multimedia-checkbox-item input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #e53e3e;
+        }
+
+        .multimedia-checkbox-item .thumbnail {
+            width: 60px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 2px solid #e2e8f0;
+        }
+
+        .multimedia-checkbox-item .filename {
+            flex: 1;
+            font-size: 0.9rem;
+            color: #2d3748;
+            word-break: break-word;
+        }
+
+        .multimedia-checkbox-item .delete-icon {
+            color: #e53e3e;
+            font-size: 1.25rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .multimedia-checkbox-item.selected .delete-icon {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .form-body {
                 padding: 1.5rem;
@@ -521,12 +591,28 @@
                                         <i class="bi bi-images text-info"></i>
                                         Fotos de la Solicitud
                                     </label>
+                                    
+                                    <!-- Carrusel de visualización -->
                                     <div id="multimedia-existente-container" 
                                          class="multimedia-existente-wrapper"
                                          th:attr="data-multimedia=${solicitud.contenidoMultimedia != null ? #strings.escapeXml(solicitud.contenidoMultimedia.toString()) : ''}">
                                     </div>
-                                    <div class="form-text">
+                                    <div class="form-text mb-3">
                                         <i class="bi bi-info-circle"></i> Estas son las fotos adjuntas a la solicitud. Haz clic en una imagen para verla en tamaño completo.
+                                    </div>
+                                    
+                                    <!-- Lista de imágenes con checkboxes para eliminar -->
+                                    <div class="multimedia-list-container mt-3">
+                                        <label class="form-label">
+                                            <i class="bi bi-trash text-danger"></i>
+                                            Seleccionar Imágenes a Eliminar
+                                        </label>
+                                        <div id="multimedia-checkbox-list" class="multimedia-checkbox-list">
+                                            <!-- Se llenará dinámicamente con JavaScript -->
+                                        </div>
+                                        <div class="form-text">
+                                            <i class="bi bi-info-circle"></i> Marca las imágenes que deseas eliminar de la solicitud. Solo se conservarán las imágenes sin marcar más las nuevas que agregues.
+                                        </div>
                                     </div>
                                 </div>
 
@@ -721,6 +807,75 @@
             }
         }
         
+        // Función para renderizar la lista de checkboxes de imágenes
+        function renderImageCheckboxList(multimedia) {
+            // Filtrar solo imágenes
+            const imagenes = multimedia.filter(item => {
+                let tipo = item.tipoContenido || item.tipo;
+                if (tipo && typeof tipo === 'object') {
+                    tipo = tipo.name || tipo.toString();
+                }
+                return (tipo || '').toString().toUpperCase() === 'IMAGEN';
+            });
+            
+            if (imagenes.length === 0) {
+                return '<p class="text-muted text-center">No hay imágenes disponibles</p>';
+            }
+            
+            // Obtener URL base de dinámica
+            let apiBaseUrl;
+            if (typeof getDinamicaApiBaseUrl === 'function') {
+                apiBaseUrl = getDinamicaApiBaseUrl();
+            } else {
+                apiBaseUrl = window.location.protocol + '//localhost:8081';
+            }
+            
+            const checkboxList = document.getElementById('multimedia-checkbox-list');
+            checkboxList.innerHTML = '';
+            
+            imagenes.forEach((item, index) => {
+                const path = item.pathArchivo || item.path || '';
+                const fileName = path.split('/').pop() || path;
+                let fileUrl;
+                
+                if (path.startsWith('http')) {
+                    fileUrl = path;
+                } else {
+                    fileUrl = apiBaseUrl + '/multimedia/' + encodeURIComponent(path);
+                }
+                
+                const checkboxItem = document.createElement('div');
+                checkboxItem.className = 'multimedia-checkbox-item';
+                checkboxItem.innerHTML = `
+                    <input type="checkbox" 
+                           id="img-delete-${index}" 
+                           name="archivos_a_eliminar" 
+                           value="${path}"
+                           onchange="toggleCheckboxItem(this)">
+                    <img src="${fileUrl}" 
+                         alt="${fileName}" 
+                         class="thumbnail"
+                         onerror="this.style.display='none'">
+                    <label for="img-delete-${index}" class="filename" style="cursor: pointer;">
+                        <i class="bi bi-file-image me-2"></i>${fileName}
+                    </label>
+                    <i class="bi bi-trash delete-icon"></i>
+                `;
+                
+                checkboxList.appendChild(checkboxItem);
+            });
+        }
+        
+        // Función para alternar el estilo del item cuando se marca/desmarca
+        function toggleCheckboxItem(checkbox) {
+            const item = checkbox.closest('.multimedia-checkbox-item');
+            if (checkbox.checked) {
+                item.classList.add('selected');
+            } else {
+                item.classList.remove('selected');
+            }
+        }
+        
         // Configurar fecha máxima para el campo de fecha (en zona local)
         document.addEventListener('DOMContentLoaded', function() {
             // Debug: verificar datos de solicitud
@@ -739,6 +894,9 @@
                     const carouselHtml = renderSimplePhotoCarousel(multimedia, carouselId);
                     console.log('HTML del carousel generado');
                     container.innerHTML = carouselHtml;
+                    
+                    // Renderizar lista de checkboxes
+                    renderImageCheckboxList(multimedia);
                 } else {
                     console.error('Container no disponible');
                 }
@@ -848,8 +1006,21 @@
             const esAceptar = form.getAttribute('data-es-aceptar') === 'true';
             const url = esAceptar ? '/solicitudes/' + solicitudId + '/aceptar-con-modificaciones' : '/solicitudes/' + solicitudId;
             
+            // Recolectar los checkboxes marcados (archivos a eliminar)
+            const checkboxes = document.querySelectorAll('input[name="archivos_a_eliminar"]:checked');
+            const archivosAEliminar = Array.from(checkboxes).map(cb => cb.value);
+            
+            // Eliminar los checkboxes del FormData (ya que los vamos a agregar manualmente)
+            formData.delete('archivos_a_eliminar');
+            
+            // Agregar cada archivo a eliminar como un parámetro separado
+            archivosAEliminar.forEach(path => {
+                formData.append('archivos_a_eliminar', path);
+            });
+            
             // Debug: verificar archivos en el FormData
             console.log('Archivos en el input:', fileInput.files);
+            console.log('Archivos a eliminar:', archivosAEliminar);
             console.log('Contenido del FormData:');
             for (let pair of formData.entries()) {
                 console.log(pair[0] + ':', pair[1]);
