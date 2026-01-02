@@ -224,6 +224,157 @@
             resize: vertical;
         }
 
+        /* Estilos para el visor de multimedia existente */
+        .multimedia-existente-wrapper {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .multimedia-carousel {
+            position: relative;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background: #f9f9f9;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .carousel-slides {
+            position: relative;
+            width: 100%;
+            height: 400px;
+            overflow: hidden;
+        }
+
+        .carousel-slide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.4s ease-in-out;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .carousel-slide.active {
+            opacity: 1;
+            z-index: 1;
+        }
+
+        .carousel-item-image {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            position: relative;
+            border-radius: 8px;
+        }
+
+        .carousel-item-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+        }
+
+        .carousel-item-image img:hover {
+            transform: scale(1.02);
+        }
+
+        .carousel-item-video {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            border-radius: 8px;
+        }
+
+        .carousel-item-video video {
+            max-width: 100%;
+            max-height: 100%;
+            border-radius: 8px;
+        }
+
+        .carousel-item-audio {
+            width: 100%;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #f9f9f9;
+        }
+
+        .carousel-item-audio audio {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 2rem;
+            color: #333;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .carousel-btn:hover {
+            background: #fff;
+            transform: translateY(-50%) scale(1.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .carousel-prev {
+            left: 15px;
+        }
+
+        .carousel-next {
+            right: 15px;
+        }
+
+        .carousel-error {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            color: #666;
+            padding: 40px;
+            text-align: center;
+        }
 
         @media (max-width: 768px) {
             .form-body {
@@ -232,6 +383,16 @@
             
             .form-header {
                 padding: 1.5rem;
+            }
+
+            .carousel-slides {
+                height: 300px;
+            }
+
+            .carousel-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1.5rem;
             }
         }
     </style>
@@ -359,6 +520,20 @@
                                     </div>
                                 </div>
 
+                                <div class="form-section" th:if="${solicitud.contenidoMultimedia != null && !solicitud.contenidoMultimedia.isEmpty()}">
+                                    <label class="form-label">
+                                        <i class="bi bi-images text-info"></i>
+                                        Evidencia Multimedia Existente
+                                    </label>
+                                    <div id="multimedia-existente-container" 
+                                         class="multimedia-existente-wrapper"
+                                         th:attr="data-multimedia=${solicitud.contenidoMultimedia != null ? #strings.escapeXml(solicitud.contenidoMultimedia.toString()) : ''}">
+                                    </div>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> Estas son las imágenes y videos actuales de la solicitud. Haz clic en una imagen para verla en tamaño completo.
+                                    </div>
+                                </div>
+
                                 <div class="form-section">
                                     <label for="fotos" class="form-label">
                                         <i class="bi bi-image text-warning"></i>
@@ -406,9 +581,49 @@
         </div>
     </div>
 
+    <script th:src="@{/js/carousel.js}"></script>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        // Configurar URL base de dinámica
+        const dinamicaBaseUrl = /*[[${dinamicaBaseUrl}]]*/ '';
+        if (dinamicaBaseUrl && typeof window.getDinamicaApiBaseUrl !== 'function') {
+            window.getDinamicaApiBaseUrl = () => dinamicaBaseUrl;
+        }
+
+        // Datos de la solicitud con multimedia
+        const solicitudData = /*[[${solicitud}]]*/ null;
+        /*]]>*/
+    </script>
+
     <script>
         // Configurar fecha máxima para el campo de fecha (en zona local)
         document.addEventListener('DOMContentLoaded', function() {
+            // Debug: verificar datos de solicitud
+            console.log('Datos de solicitud:', solicitudData);
+            
+            // Renderizar carousel de multimedia existente
+            // Verificar tanto contenidoMultimedia como multimedia por compatibilidad
+            const multimedia = solicitudData?.contenidoMultimedia || solicitudData?.multimedia;
+            console.log('Multimedia encontrado:', multimedia);
+            
+            if (multimedia && multimedia.length > 0) {
+                const container = document.getElementById('multimedia-existente-container');
+                console.log('Container encontrado:', container);
+                console.log('Función renderMultimediaCarousel disponible:', typeof renderMultimediaCarousel);
+                
+                if (container && typeof renderMultimediaCarousel === 'function') {
+                    const carouselId = 'carousel-multimedia-existente';
+                    const carouselHtml = renderMultimediaCarousel(multimedia, carouselId, true);
+                    console.log('HTML del carousel generado:', carouselHtml);
+                    container.innerHTML = carouselHtml;
+                } else {
+                    console.error('Container o función renderMultimediaCarousel no disponible');
+                }
+            } else {
+                console.log('No hay multimedia para mostrar');
+            }
+            
             // Inicializar textarea de descripción
             const descripcionTextarea = document.getElementById('descripcion');
             if (descripcionTextarea) {
@@ -510,6 +725,13 @@
             const solicitudId = form.getAttribute('data-id');
             const esAceptar = form.getAttribute('data-es-aceptar') === 'true';
             const url = esAceptar ? '/solicitudes/' + solicitudId + '/aceptar-con-modificaciones' : '/solicitudes/' + solicitudId;
+            
+            // Debug: verificar archivos en el FormData
+            console.log('Archivos en el input:', fileInput.files);
+            console.log('Contenido del FormData:');
+            for (let pair of formData.entries()) {
+                console.log(pair[0] + ':', pair[1]);
+            }
             
             // Convertir fecha de zona local del navegador a UTC antes de enviar
             const fechaAcontecimientoInput = document.getElementById('fechaAcontecimiento');

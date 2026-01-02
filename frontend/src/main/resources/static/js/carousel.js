@@ -48,7 +48,7 @@ function renderMultimediaCarousel(multimedia, carouselId, showControls = true) {
   
   // Botón anterior
   if (showControls && items.length > 1) {
-    html += '<button class="carousel-btn carousel-prev" onclick="carouselPrev(\'' + carouselId + '\')" aria-label="Anterior">‹</button>';
+    html += '<button type="button" class="carousel-btn carousel-prev" onclick="carouselPrev(\'' + carouselId + '\')" aria-label="Anterior">‹</button>';
   }
   
   // Contenedor de slides
@@ -62,7 +62,7 @@ function renderMultimediaCarousel(multimedia, carouselId, showControls = true) {
   
   // Botón siguiente
   if (showControls && items.length > 1) {
-    html += '<button class="carousel-btn carousel-next" onclick="carouselNext(\'' + carouselId + '\')" aria-label="Siguiente">›</button>';
+    html += '<button type="button" class="carousel-btn carousel-next" onclick="carouselNext(\'' + carouselId + '\')" aria-label="Siguiente">›</button>';
   }
   html += '</div>'; // carousel-container
   html += '</div>'; // multimedia-carousel
