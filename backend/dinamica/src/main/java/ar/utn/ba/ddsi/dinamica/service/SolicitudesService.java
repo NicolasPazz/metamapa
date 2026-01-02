@@ -110,7 +110,16 @@ public class SolicitudesService {
         throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + archivosNoVacios + " archivos.");
       }
       
+      // Crear lista para los nuevos archivos
       List<ContenidoMultimediaInputDTO> multimediaList = new ArrayList<>();
+      
+      // Si el DTO ya tiene multimedia (existente), agregarlo primero
+      if (inputDTO.getNuevoContenidoMultimedia() != null) {
+        multimediaList.addAll(inputDTO.getNuevoContenidoMultimedia());
+        log.info("Preservando {} archivos multimedia existentes", inputDTO.getNuevoContenidoMultimedia().size());
+      }
+      
+      // Agregar los nuevos archivos
       for (MultipartFile archivo : archivos) {
         if (!archivo.isEmpty()) {
           String nombreArchivoGuardado = multimediaStorageService.guardarArchivo(archivo);
@@ -121,6 +130,8 @@ public class SolicitudesService {
           multimediaList.add(multimediaDTO);
         }
       }
+      
+      log.info("Total de archivos multimedia después de agregar nuevos: {}", multimediaList.size());
       inputDTO.setNuevoContenidoMultimedia(multimediaList);
     }
     

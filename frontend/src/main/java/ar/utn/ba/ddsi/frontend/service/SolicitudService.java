@@ -359,14 +359,40 @@ public class SolicitudService {
             throw new RuntimeException("No hay token de acceso disponible");
         }
         
-        Map<String, Object> adminDTO = construirMapAdminDTO(formDTO, EstadoSolicitud.ACEPTADO_MODIFICADO);
-        
         try {
-            log.info("Aceptando solicitud ID: {} con modificaciones", idSolicitud);
+            log.info("Aceptando solicitud ID: {} con modificaciones, archivos nuevos: {}", 
+                    idSolicitud, formDTO.getArchivos() != null ? formDTO.getArchivos().size() : 0);
             
-            // El backend AdminSolicitudesController solo acepta JSON
-            // Si hay archivos nuevos, necesitarían ser procesados primero
-            // Por ahora, enviamos solo JSON (los archivos existentes se mantienen)
+            // Primero obtenemos la solicitud actual para preservar el multimedia existente
+            SolicitudInputDTO solicitudActual = obtenerSolicitudPorId(idSolicitud);
+            
+            // Si hay archivos nuevos, necesitamos agregar el multimedia existente al DTO
+            if (formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) {
+                log.info("Modificando solicitud {} con archivos nuevos (preservando {} existentes)", 
+                        idSolicitud, solicitudActual.getContenidoMultimedia() != null ? solicitudActual.getContenidoMultimedia().size() : 0);
+                
+                SolicitudModificacionDTO dto = new SolicitudModificacionDTO();
+                dto.setIdContribuyente(formDTO.getContribuyente_id());
+                dto.setNuevoTitulo(formDTO.getTitulo());
+                dto.setNuevoDescripcion(formDTO.getDescripcion());
+                dto.setNuevoNombreCategoria(formDTO.getCategoria());
+                dto.setNuevoLatitud(formDTO.getLatitud());
+                dto.setNuevoLongitud(formDTO.getLongitud());
+                dto.setNuevoFechaDeAcontecimiento(formDTO.getFecha_acontecimiento());
+                
+                // IMPORTANTE: Agregar el multimedia existente al DTO para que no se pierda
+                if (solicitudActual.getContenidoMultimedia() != null && !solicitudActual.getContenidoMultimedia().isEmpty()) {
+                    dto.setNuevoContenidoMultimedia(solicitudActual.getContenidoMultimedia());
+                    log.info("Preservando {} archivos multimedia existentes", solicitudActual.getContenidoMultimedia().size());
+                }
+                
+                // Usar el método multipart que agregará los nuevos archivos a la lista existente
+                enviarModificacionMultipart(idSolicitud, dto, formDTO.getArchivos(), "/solicitudes/");
+            }
+            
+            // Luego aceptamos la solicitud con el endpoint de admin
+            Map<String, Object> adminDTO = construirMapAdminDTO(formDTO, EstadoSolicitud.ACEPTADO_MODIFICADO);
+            
             webClient2.patch()
                     .uri("/admin/solicitudes/" + idSolicitud)
                     .header("Authorization", "Bearer " + accessToken)
@@ -452,6 +478,11 @@ public class SolicitudService {
       private void enviarModificacionMultipart(Long idSolicitud, SolicitudModificacionDTO dto,
           List<MultipartFile> archivos, String uriBase) {
         try {
+          String accessToken = getAccessTokenFromSession();
+          if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+          }
+          
           String solicitudJson = objectMapper.writeValueAsString(dto);
 
           MultipartBodyBuilder builder = new MultipartBodyBuilder();
@@ -463,9 +494,10 @@ public class SolicitudService {
             }
           }
 
-          log.info("Enviando PATCH a {}{} (MULTIPART)", uriBase, idSolicitud);
+          log.info("Enviando PATCH a {}{} (MULTIPART) con {} archivos", uriBase, idSolicitud, archivos.size());
           webClient2.patch()
               .uri(uriBase + idSolicitud)
+              .header("Authorization", "Bearer " + accessToken)
               .contentType(MediaType.MULTIPART_FORM_DATA)
               .body(BodyInserters.fromMultipartData(builder.build()))
               .retrieve()
