@@ -370,7 +370,8 @@ public class SolicitudService {
             
             // Filtrar el multimedia existente eliminando los archivos marcados para eliminar
             List<ContenidoMultimediaDTO> multimediaFiltrado = solicitudActual.getContenidoMultimedia();
-            if (multimediaFiltrado != null && formDTO.getArchivos_a_eliminar() != null && !formDTO.getArchivos_a_eliminar().isEmpty()) {
+            boolean hayArchivosAEliminar = formDTO.getArchivos_a_eliminar() != null && !formDTO.getArchivos_a_eliminar().isEmpty();
+            if (multimediaFiltrado != null && hayArchivosAEliminar) {
                 log.info("Filtrando multimedia: {} archivos existentes, {} marcados para eliminar", 
                         multimediaFiltrado.size(), formDTO.getArchivos_a_eliminar().size());
                 
@@ -382,8 +383,7 @@ public class SolicitudService {
             }
             
             // Si hay archivos nuevos o cambios en el multimedia, necesitamos actualizar
-            if ((formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) || 
-                (formDTO.getArchivos_a_eliminar() != null && !formDTO.getArchivos_a_eliminar().isEmpty())) {
+            if ((formDTO.getArchivos() != null && !formDTO.getArchivos().isEmpty()) || hayArchivosAEliminar) {
                 
                 log.info("Modificando solicitud {} con archivos nuevos (preservando {} existentes después del filtrado)", 
                         idSolicitud, multimediaFiltrado != null ? multimediaFiltrado.size() : 0);
@@ -397,10 +397,15 @@ public class SolicitudService {
                 dto.setNuevoLongitud(formDTO.getLongitud());
                 dto.setNuevoFechaDeAcontecimiento(formDTO.getFecha_acontecimiento());
                 
-                // IMPORTANTE: Agregar el multimedia filtrado al DTO
-                if (multimediaFiltrado != null && !multimediaFiltrado.isEmpty()) {
+                // IMPORTANTE: Agregar el multimedia filtrado al DTO.
+                // - Si se eliminaron todos, enviar lista vacía para que el backend borre el multimedia.
+                // - Si no había multimedia previo, enviar lista vacía solo si se solicitó eliminar algo.
+                if (multimediaFiltrado != null) {
                     dto.setNuevoContenidoMultimedia(multimediaFiltrado);
                     log.info("Preservando {} archivos multimedia después del filtrado", multimediaFiltrado.size());
+                } else if (hayArchivosAEliminar) {
+                    dto.setNuevoContenidoMultimedia(Collections.emptyList());
+                    log.info("No había multimedia previo; se envía lista vacía por eliminación");
                 }
                 
                 // Usar el método multipart que agregará los nuevos archivos a la lista existente
