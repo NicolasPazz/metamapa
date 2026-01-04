@@ -52,7 +52,7 @@
              th:id="'multimedia-solicitud-' + ${solicitud.id}"
              th:attr="data-solicitud-id=${solicitud.id}">
         </div>
-        <div class="editar-btn-container">
+        <div class="editar-btn-container" th:if="${solicitud.estado == T(ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud).PENDIENTE}">
           <button 
             th:data-solicitud-id="${solicitud.id}"
             th:data-fecha-carga="${solicitud.fechaDeCargaSolicitud != null ? solicitud.fechaDeCargaSolicitud.toString() : ''}"
@@ -270,6 +270,35 @@
       
       solicitudIdElement.value = solicitud.id;
       
+      // Completar campos con los datos actuales de la solicitud
+      const tituloInput = document.getElementById('edit_titulo');
+      if (tituloInput) tituloInput.value = solicitud.titulo || '';
+
+      const descripcionInput = document.getElementById('edit_descripcion');
+      if (descripcionInput) descripcionInput.value = solicitud.descripcion || '';
+
+      const categoriaInput = document.getElementById('edit_categoria');
+      if (categoriaInput) categoriaInput.value = solicitud.nombreCategoria || '';
+
+      const latitudInput = document.getElementById('edit_latitud');
+      if (latitudInput) latitudInput.value = solicitud.latitud ?? '';
+
+      const longitudInput = document.getElementById('edit_longitud');
+      if (longitudInput) longitudInput.value = solicitud.longitud ?? '';
+
+      const fechaAcontecimientoInput = document.getElementById('edit_fecha_acontecimiento');
+      if (fechaAcontecimientoInput && solicitud.fechaDeAcontecimiento) {
+        if (typeof convertUTCToLocal === 'function') {
+          const fechaLocal = convertUTCToLocal(solicitud.fechaDeAcontecimiento);
+          if (fechaLocal) {
+            fechaAcontecimientoInput.value = fechaLocal;
+          }
+        } else {
+          // Fallback: tomar los primeros 16 caracteres (yyyy-MM-ddTHH:mm)
+          fechaAcontecimientoInput.value = solicitud.fechaDeAcontecimiento.toString().substring(0, 16);
+        }
+      }
+
       // Guardar el estado anterior y el idHechoAgregador para usar después de la edición
       document.getElementById('solicitud_id').setAttribute('data-estado-anterior', solicitud.estado || '');
       document.getElementById('solicitud_id').setAttribute('data-hecho-agregador-id', solicitud.idHechoAgregador || '');
@@ -566,41 +595,13 @@
     // showToast está definido en common.js
 
     // Función para ver hecho desde agregador
-    async function verHecho(button) {
+    function verHecho(button) {
       const hechoId = button.getAttribute('data-hecho-id');
       if (!hechoId) {
         showToast('Error: No se pudo obtener el ID del hecho.', 'error');
         return;
       }
-
-      try {
-        // Obtener el hecho desde agregador
-        const apiBaseUrl = getApiBaseUrl();
-        const response = await safeFetch(apiBaseUrl + '/hechos');
-        if (!response.ok) {
-          // Redirigir a página de error si no es 404 (que se maneja localmente)
-          if (response.status !== 404) {
-            redirectToErrorPage(response.status);
-            return;
-          }
-          throw new Error('Error al obtener hechos');
-        }
-        const hechos = await response.json();
-        const hecho = hechos.find(h => h.id != null && Number(h.id) === Number(hechoId));
-        
-        if (!hecho) {
-          showToast('No se encontró el hecho.', 'error');
-          return;
-        }
-
-        // Abrir el panel con los datos del hecho usando función reutilizable
-        openHechoDetailPanel(hecho);
-      } catch (error) {
-        console.error('Error al obtener el hecho:', error);
-        showToast('Error al cargar el hecho: ' + error.message, 'error');
-        // Si es un error de red, redirigir a error 500
-        redirectToErrorPage(500);
-      }
+      window.location.href = '/hechos#hecho' + hechoId;
     }
 
     // Función para abrir el panel de detalles (usa función reutilizable)
