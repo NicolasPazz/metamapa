@@ -1694,12 +1694,14 @@
                             method: 'POST',
                             body: formData,
                             signal: controller.signal,
-                            credentials: 'same-origin'
+                            credentials: 'same-origin',
+                            redirect: 'manual' // Evitar seguimiento automático de redirecciones para prevenir mixed-content
                         });
 
                         clearTimeout(timeoutId);
 
-                        if (response.ok) {
+                        // 302 Found es esperado cuando el servidor redirige después de un POST exitoso
+                        if (response.ok || response.status === 302) {
                             try {
                                 const result = await response.json();
                                 const mensaje = result.mensaje || 'Colecciones actualizadas correctamente';
@@ -1759,13 +1761,14 @@
                             method: 'POST',
                             body: formData,
                             signal: controller.signal,
-                            credentials: 'same-origin'
+                            credentials: 'same-origin',
+                            redirect: 'manual' // Evitar seguimiento automático de redirecciones para prevenir mixed-content
                         });
 
                         clearTimeout(timeoutId);
 
-                        if (response.ok) {
-                            const responseText = await response.text();
+                        // 302 Found es esperado cuando el servidor redirige después de un POST exitoso
+                        if (response.ok || response.status === 302) {
                             showToast('Estadísticas recalculadas correctamente.', 'success', 5000);
                             // Recargar la página después de un delay para mostrar estadísticas actualizadas
                             setTimeout(() => {
