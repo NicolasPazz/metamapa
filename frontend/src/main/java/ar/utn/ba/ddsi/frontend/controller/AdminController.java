@@ -372,13 +372,6 @@ public class AdminController {
     @ResponseBody
     public EstadisticasCompletasDTO obtenerEstadisticasApi() {
         log.info("[AdminController] - GET - /admin/api/estadisticas");
-        // #region agent log
-        try {
-            java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-            fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminController.java:303\",\"message\":\"obtenerEstadisticasApi - entrada\",\"data\":{},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-            fw.close();
-        } catch (Exception e) {}
-        // #endregion
         try {
             EstadisticasCompletasDTO estadisticas = estadisticasService.obtenerEstadisticas();
             if (estadisticas.getDistribucionGeograficaColecciones() != null) {
@@ -393,24 +386,9 @@ public class AdminController {
                 estadisticas.getDistribucionTemporalCategorias()
                     .sort(Comparator.comparing(CategoriaHoraDTO::getCategoriaNombre));
             }
-            // #region agent log
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-                fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminController.java:320\",\"message\":\"obtenerEstadisticasApi - exito\",\"data\":{},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-                fw.close();
-            } catch (Exception ex) {}
-            // #endregion
             return estadisticas;
         } catch (Exception e) {
             log.warn("Error al obtener estadísticas para el panel admin: {}", e.getMessage());
-            // #region agent log
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-                String errorMsg = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"").replace("\n", "\\n") : "null";
-                fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminController.java:323\",\"message\":\"obtenerEstadisticasApi - error capturado\",\"data\":{\"error\":\"" + e.getClass().getName() + "\",\"message\":\"" + errorMsg + "\"},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-                fw.close();
-            } catch (Exception ex) {}
-            // #endregion
             return EstadisticasCompletasDTO.builder()
                 .distribucionGeograficaColecciones(Collections.emptyList())
                 .concentracionGeograficaCategorias(Collections.emptyList())

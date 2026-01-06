@@ -1691,8 +1691,6 @@
                             ? new URL(this.action).pathname 
                             : this.action;
                         
-                        console.log('[DEBUG] Actualizar colecciones - Enviando petición a:', actionPath);
-                        
                         const response = await fetch(actionPath, {
                             method: 'POST',
                             body: formData,
@@ -1706,68 +1704,44 @@
 
                         clearTimeout(timeoutId);
 
-                        console.log('[DEBUG] Actualizar colecciones - Respuesta recibida:', {
-                            status: response.status,
-                            statusText: response.statusText,
-                            ok: response.ok,
-                            url: response.url,
-                            redirected: response.redirected,
-                            type: response.type
-                        });
-
                         // Si la respuesta es OK (200), intentar leer JSON
                         if (response.ok) {
                             try {
                                 const result = await response.json();
-                                console.log('[DEBUG] Actualizar colecciones - Respuesta JSON:', result);
                                 const mensaje = result.mensaje || 'Colecciones actualizadas correctamente';
                                 const tiempoTotal = result.tiempoTotalMs ? ` (${Math.round(result.tiempoTotalMs / 1000)}s)` : '';
                                 showToast(mensaje + tiempoTotal, 'success', 5000);
                             } catch (e) {
-                                console.warn('[DEBUG] Actualizar colecciones - No se pudo parsear JSON, tratando como éxito:', e);
                                 showToast('Colecciones actualizadas correctamente.', 'success', 5000);
                             }
                         } else if (response.status === 302) {
                             // 302 Found es esperado cuando el servidor redirige (fallback para peticiones no-AJAX)
-                            console.log('[DEBUG] Actualizar colecciones - Redirección 302 recibida, tratando como éxito');
                             showToast('Colecciones actualizadas correctamente.', 'success', 5000);
                         } else {
-                            console.error('[DEBUG] Actualizar colecciones - Error en respuesta:', response.status);
                             // Intentar leer el body como JSON primero, luego como text
                             let errorMessage = 'Error al actualizar colecciones';
                             try {
                                 const errorResult = await response.json();
                                 errorMessage = errorResult.error || errorResult.mensaje || errorMessage;
-                                console.error('[DEBUG] Actualizar colecciones - Error JSON:', errorResult);
                             } catch (e) {
                                 try {
                                     const errorText = await response.text();
                                     errorMessage = errorText || errorMessage;
-                                    console.error('[DEBUG] Actualizar colecciones - Error text:', errorText);
                                 } catch (e2) {
-                                    console.error('[DEBUG] Actualizar colecciones - No se pudo leer error:', e2);
+                                    // No se pudo leer el error, usar mensaje genérico
                                 }
                             }
                             throw new Error(errorMessage);
                         }
                     } catch (fetchError) {
                         clearTimeout(timeoutId);
-                        console.error('[DEBUG] Actualizar colecciones - Error en fetch:', {
-                            name: fetchError.name,
-                            message: fetchError.message,
-                            stack: fetchError.stack
-                        });
                         if (fetchError.name === 'AbortError') {
                             throw new Error('La operación está tomando más tiempo del esperado. Por favor, espere unos minutos y verifique el estado.');
                         }
                         throw fetchError;
                     }
                 } catch (error) {
-                    console.error('[DEBUG] Error al actualizar colecciones:', {
-                        name: error.name,
-                        message: error.message,
-                        stack: error.stack
-                    });
+                    console.error('Error al actualizar colecciones:', error);
                     showToast(error.message || 'Error al actualizar colecciones.', 'error', 5000);
                 } finally {
                     hideLoader();
@@ -1802,8 +1776,6 @@
                             ? new URL(this.action).pathname 
                             : this.action;
                         
-                        console.log('[DEBUG] Actualizar estadísticas - Enviando petición a:', actionPath);
-                        
                         const response = await fetch(actionPath, {
                             method: 'POST',
                             body: formData,
@@ -1817,29 +1789,17 @@
 
                         clearTimeout(timeoutId);
 
-                        console.log('[DEBUG] Actualizar estadísticas - Respuesta recibida:', {
-                            status: response.status,
-                            statusText: response.statusText,
-                            ok: response.ok,
-                            url: response.url,
-                            redirected: response.redirected,
-                            type: response.type
-                        });
-
                         // Si la respuesta es OK (200), intentar leer JSON
                         if (response.ok) {
                             try {
                                 const result = await response.json();
-                                console.log('[DEBUG] Actualizar estadísticas - Respuesta JSON:', result);
                                 const mensaje = result.mensaje || 'Estadísticas recalculadas correctamente.';
                                 showToast(mensaje, 'success', 5000);
                                 // Recargar la página después de un delay para mostrar estadísticas actualizadas
                                 setTimeout(() => {
-                                    console.log('[DEBUG] Actualizar estadísticas - Recargando página');
                                     window.location.reload();
                                 }, 2000);
                             } catch (e) {
-                                console.warn('[DEBUG] Actualizar estadísticas - No se pudo parsear JSON, tratando como éxito:', e);
                                 showToast('Estadísticas recalculadas correctamente.', 'success', 5000);
                                 setTimeout(() => {
                                     window.location.reload();
@@ -1847,48 +1807,35 @@
                             }
                         } else if (response.status === 302) {
                             // 302 Found es esperado cuando el servidor redirige (fallback para peticiones no-AJAX)
-                            console.log('[DEBUG] Actualizar estadísticas - Redirección 302 recibida, tratando como éxito');
                             showToast('Estadísticas recalculadas correctamente.', 'success', 5000);
                             setTimeout(() => {
                                 window.location.reload();
                             }, 2000);
                         } else {
-                            console.error('[DEBUG] Actualizar estadísticas - Error en respuesta:', response.status);
                             // Intentar leer el body como JSON primero, luego como text
                             let errorMessage = 'Error al recalcular estadísticas';
                             try {
                                 const errorResult = await response.json();
                                 errorMessage = errorResult.error || errorResult.mensaje || errorMessage;
-                                console.error('[DEBUG] Actualizar estadísticas - Error JSON:', errorResult);
                             } catch (e) {
                                 try {
                                     const errorText = await response.text();
                                     errorMessage = errorText || errorMessage;
-                                    console.error('[DEBUG] Actualizar estadísticas - Error text:', errorText);
                                 } catch (e2) {
-                                    console.error('[DEBUG] Actualizar estadísticas - No se pudo leer error:', e2);
+                                    // No se pudo leer el error, usar mensaje genérico
                                 }
                             }
                             throw new Error(errorMessage);
                         }
                     } catch (fetchError) {
                         clearTimeout(timeoutId);
-                        console.error('[DEBUG] Actualizar estadísticas - Error en fetch:', {
-                            name: fetchError.name,
-                            message: fetchError.message,
-                            stack: fetchError.stack
-                        });
                         if (fetchError.name === 'AbortError') {
                             throw new Error('La operación está tomando más tiempo del esperado (más de 3 minutos). Por favor, espere unos minutos y verifique el estado.');
                         }
                         throw fetchError;
                     }
                 } catch (error) {
-                    console.error('[DEBUG] Error al actualizar estadísticas:', {
-                        name: error.name,
-                        message: error.message,
-                        stack: error.stack
-                    });
+                    console.error('Error al actualizar estadísticas:', error);
                     showToast(error.message || 'Error al recalcular estadísticas.', 'error', 5000);
                 } finally {
                     hideLoader();
