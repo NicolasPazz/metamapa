@@ -1685,10 +1685,16 @@
                     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
                     try {
-                        const response = await fetch(this.action, {
+                        // Usar ruta relativa directamente para evitar problemas de mixed-content
+                        // this.action puede contener URL absoluta con HTTP, causando mixed-content
+                        const actionPath = this.action.startsWith('http') 
+                            ? new URL(this.action).pathname 
+                            : this.action;
+                        const response = await fetch(actionPath, {
                             method: 'POST',
                             body: formData,
-                            signal: controller.signal
+                            signal: controller.signal,
+                            credentials: 'same-origin'
                         });
 
                         clearTimeout(timeoutId);
@@ -1744,10 +1750,16 @@
                     const timeoutId = setTimeout(() => controller.abort(), 180000);
 
                     try {
-                        const response = await fetch(this.action, {
+                        // Usar ruta relativa directamente para evitar problemas de mixed-content
+                        // this.action puede contener URL absoluta con HTTP, causando mixed-content
+                        const actionPath = this.action.startsWith('http') 
+                            ? new URL(this.action).pathname 
+                            : this.action;
+                        const response = await fetch(actionPath, {
                             method: 'POST',
                             body: formData,
-                            signal: controller.signal
+                            signal: controller.signal,
+                            credentials: 'same-origin'
                         });
 
                         clearTimeout(timeoutId);
