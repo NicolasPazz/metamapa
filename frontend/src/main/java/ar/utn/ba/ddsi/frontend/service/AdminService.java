@@ -29,6 +29,13 @@ public class AdminService {
                        @Value("${app.api.estatica.base-url:http://localhost:8082/api}") String estaticaBaseUrl,
                         @Value("${app.api.estadistica.base-url:http://localhost:8085/api/estadisticas}") String estadisticaBaseUrl
                         ) {
+        // #region agent log
+        try {
+            java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
+            fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminService.java:31\",\"message\":\"AdminService constructor - estadisticaBaseUrl configurada\",\"data\":{\"estadisticaBaseUrl\":\"" + estadisticaBaseUrl.replace("\"", "\\\"") + "\",\"agregadorBaseUrl\":\"" + agregadorBaseUrl.replace("\"", "\\\"") + "\",\"estaticaBaseUrl\":\"" + estaticaBaseUrl.replace("\"", "\\\"") + "\"},\"timestamp\":" + System.currentTimeMillis() + "}\n");
+            fw.close();
+        } catch (Exception e) {}
+        // #endregion
         this.webClientAgregador = builder.baseUrl(agregadorBaseUrl + "/admin").build();
         this.webClientAgregadorBase = builder.baseUrl(agregadorBaseUrl).build();
         this.webClientEstatica = builder.baseUrl(estaticaBaseUrl).build();
@@ -182,11 +189,37 @@ public class AdminService {
     }
 
     public void actualizarEstadisticas() {
-        webClientEstadistica.post()
-                .uri("/recalcular")
-                .retrieve()
-                .bodyToMono(Void.class)
-                .block();
+        // #region agent log
+        try {
+            java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
+            fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminService.java:184\",\"message\":\"actualizarEstadisticas - antes de llamar\",\"data\":{},\"timestamp\":" + System.currentTimeMillis() + "}\n");
+            fw.close();
+        } catch (Exception e) {}
+        // #endregion
+        try {
+            webClientEstadistica.post()
+                    .uri("/recalcular")
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+            // #region agent log
+            try {
+                java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
+                fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminService.java:191\",\"message\":\"actualizarEstadisticas - exito\",\"data\":{},\"timestamp\":" + System.currentTimeMillis() + "}\n");
+                fw.close();
+            } catch (Exception e) {}
+            // #endregion
+        } catch (Exception e) {
+            // #region agent log
+            try {
+                java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
+                String errorMsg = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"").replace("\n", "\\n") : "null";
+                fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminService.java:195\",\"message\":\"actualizarEstadisticas - error\",\"data\":{\"error\":\"" + e.getClass().getName() + "\",\"message\":\"" + errorMsg + "\"},\"timestamp\":" + System.currentTimeMillis() + "}\n");
+                fw.close();
+            } catch (Exception ex) {}
+            // #endregion
+            throw e;
+        }
 
     }
 
