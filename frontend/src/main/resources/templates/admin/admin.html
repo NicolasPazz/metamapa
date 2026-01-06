@@ -1702,17 +1702,29 @@
 
                         // 302 Found es esperado cuando el servidor redirige después de un POST exitoso
                         if (response.ok || response.status === 302) {
-                            try {
-                                const result = await response.json();
-                                const mensaje = result.mensaje || 'Colecciones actualizadas correctamente';
-                                const tiempoTotal = result.tiempoTotalMs ? ` (${Math.round(result.tiempoTotalMs / 1000)}s)` : '';
-                                showToast(mensaje + tiempoTotal, 'success', 5000);
-                            } catch (e) {
-                                // Si no es JSON, mostrar mensaje genérico
+                            // Si es 302, no intentar leer el body (las redirecciones no tienen body)
+                            if (response.status === 302) {
                                 showToast('Colecciones actualizadas correctamente.', 'success', 5000);
+                            } else {
+                                // Solo intentar leer JSON si la respuesta es OK (200)
+                                try {
+                                    const result = await response.json();
+                                    const mensaje = result.mensaje || 'Colecciones actualizadas correctamente';
+                                    const tiempoTotal = result.tiempoTotalMs ? ` (${Math.round(result.tiempoTotalMs / 1000)}s)` : '';
+                                    showToast(mensaje + tiempoTotal, 'success', 5000);
+                                } catch (e) {
+                                    // Si no es JSON, mostrar mensaje genérico
+                                    showToast('Colecciones actualizadas correctamente.', 'success', 5000);
+                                }
                             }
                         } else {
-                            const errorText = await response.text();
+                            // Solo intentar leer el body si no es una redirección
+                            let errorText = '';
+                            try {
+                                errorText = await response.text();
+                            } catch (e) {
+                                // Si no se puede leer el body, usar mensaje genérico
+                            }
                             throw new Error(errorText || 'Error al actualizar colecciones');
                         }
                     } catch (fetchError) {
@@ -1775,7 +1787,13 @@
                                 window.location.reload();
                             }, 2000);
                         } else {
-                            const errorText = await response.text();
+                            // Solo intentar leer el body si no es una redirección
+                            let errorText = '';
+                            try {
+                                errorText = await response.text();
+                            } catch (e) {
+                                // Si no se puede leer el body, usar mensaje genérico
+                            }
                             throw new Error(errorText || 'Error al recalcular estadísticas');
                         }
                     } catch (fetchError) {
