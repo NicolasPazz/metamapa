@@ -52,17 +52,17 @@ public class ColeccionController {
             Model model,
             @PathVariable String handle,
             @RequestParam(required = false) String ubicacion,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_hasta,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_acontecimiento_hasta,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_acontecimiento_desde,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String fuente,
             @RequestParam(required = false) String modo,
             @RequestParam(defaultValue = "0") int page) {
-        log.info("[ColeccionController] - GET - /colecciones/{}/hechos - handle: {}, ubicacion: {}, fecha_reporte_hasta: {}, fecha_reporte_desde: {}, categoria: {}, fuente: {}, modo: {}, page: {}",
-                handle, handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page);
+        log.info("[ColeccionController] - GET - /colecciones/{}/hechos - handle: {}, ubicacion: {}, fecha_acontecimiento_hasta: {}, fecha_acontecimiento_desde: {}, categoria: {}, fuente: {}, modo: {}, page: {}",
+                handle, handle, ubicacion, fecha_acontecimiento_hasta, fecha_acontecimiento_desde, categoria, fuente, modo, page);
         PageResponse<HechoDTO> pageResponse =
             coleccionService.getHechosColeccionPaginados(
-                handle, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo, page, pageSize);
+                handle, ubicacion, fecha_acontecimiento_hasta, fecha_acontecimiento_desde, categoria, fuente, modo, page, pageSize);
         List<String> listaCategorias = coleccionService.getCategoriasUnicas();
         List<String> listaProvincias = coleccionService.getProvinciasConHechos();
         List<String> listaFuentes = coleccionService.getFuentesConHechos();

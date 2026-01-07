@@ -72,8 +72,21 @@
         html += '<p><strong>Hechos:</strong> ' + cantidadHechos + '</p>';
 
         if (coleccion.fecha_carga) {
-            const fecha = new Date(coleccion.fecha_carga);
-            html += '<p><strong>Fecha de creación:</strong> ' + fecha.toLocaleString('es-AR') + '</p>';
+            // Convertir fecha UTC a hora local
+            let fechaStr = coleccion.fecha_carga;
+            // Si no tiene indicador de zona horaria, asumir UTC
+            if (!fechaStr.includes('Z') && !fechaStr.includes('+') && !fechaStr.includes('-', 10)) {
+                fechaStr = fechaStr + 'Z';
+            }
+            const fecha = new Date(fechaStr);
+            // Formatear en formato dd/MM/yyyy, HH:mm:ss
+            const day = String(fecha.getDate()).padStart(2, '0');
+            const month = String(fecha.getMonth() + 1).padStart(2, '0');
+            const year = fecha.getFullYear();
+            const hours = String(fecha.getHours()).padStart(2, '0');
+            const minutes = String(fecha.getMinutes()).padStart(2, '0');
+            const seconds = String(fecha.getSeconds()).padStart(2, '0');
+            html += '<p><strong>Fecha de creación:</strong> ' + day + '/' + month + '/' + year + ', ' + hours + ':' + minutes + ':' + seconds + '</p>';
         }
 
         html += '<div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">';
