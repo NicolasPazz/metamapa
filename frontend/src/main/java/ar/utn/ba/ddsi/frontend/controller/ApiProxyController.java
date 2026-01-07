@@ -39,7 +39,21 @@ public class ApiProxyController {
             }
             
             SolicitudDTO resultado = solicitudService.crearSolicitud(solicitudDTO);
-            return ResponseEntity.ok(resultado);
+            
+            // Verificar si es spam y devolver mensaje apropiado
+            if (resultado.getSpam() != null && resultado.getSpam()) {
+                log.warn("[ApiProxyController] - Solicitud marcada como spam - ID: {}", resultado.getId());
+                return ResponseEntity.status(400).body("Spam detectado. Tu solicitud ha sido rechazada automáticamente.");
+            }
+            
+            return ResponseEntity.status(201).body(resultado);
+        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+            log.error("[ApiProxyController] - Error del backend al crear solicitud: {} - Status: {}", e.getMessage(), e.getStatusCode());
+            String errorMessage = e.getResponseBodyAsString();
+            if (errorMessage != null && !errorMessage.isEmpty()) {
+                return ResponseEntity.status(e.getStatusCode()).body(errorMessage);
+            }
+            return ResponseEntity.status(e.getStatusCode()).body("Error al crear la solicitud: " + e.getMessage());
         } catch (Exception e) {
             log.error("[ApiProxyController] - Error al crear solicitud: {}", e.getMessage(), e);
             return ResponseEntity.status(500).body("Error al crear la solicitud: " + e.getMessage());
