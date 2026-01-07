@@ -47,20 +47,36 @@ public class HechosService {
     
     // Executor para llamadas asíncronas a fuentes externas
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    @Transactional(readOnly = true)
     public ResponseEntity<List<HechoDTO>> getAll(
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
         LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
         String ubicacion,
         String fuente) {
+        
+        // #region agent log
+        long startTime = System.currentTimeMillis();
+        log.info("[HechosService] getAll - INICIO - categoria: {}, ubicacion: {}, fuente: {}", categoria, ubicacion, fuente);
+        // #endregion
 
         List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,
             fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
             ubicacion, fuente);
+        
+        // #region agent log
+        long queryTime = System.currentTimeMillis();
+        log.info("[HechosService] getAll - QUERY_COMPLETA - tiempo: {}ms, cantidad: {}", queryTime - startTime, hechosLocales.size());
+        // #endregion
 
         List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
+        
+        // #region agent log
+        long mappingTime = System.currentTimeMillis();
+        log.info("[HechosService] getAll - MAPEO_COMPLETO - tiempo: {}ms, total: {}ms", mappingTime - queryTime, mappingTime - startTime);
+        // #endregion
 
         List<HechoDTO> externos = new ArrayList<>();
         try {
