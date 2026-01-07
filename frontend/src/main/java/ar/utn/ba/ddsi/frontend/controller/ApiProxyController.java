@@ -1,14 +1,15 @@
 package ar.utn.ba.ddsi.frontend.controller;
 
-import ar.utn.ba.ddsi.frontend.models.dtos.HechoSimpleDTO;
 import ar.utn.ba.ddsi.frontend.models.dtos.SolicitudDTO;
-import ar.utn.ba.ddsi.frontend.service.SolicitudService;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @RestController
 @RequestMapping("/api")
@@ -16,7 +17,10 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 public class ApiProxyController {
     
-    private final SolicitudService solicitudService;
+    private final WebClient.Builder webClientBuilder;
+    
+    @Value("${app.api.agregador.base-url:http://localhost:8084/api}")
+    private String agregadorBaseUrl;
     
     @PostMapping("/solicitudes")
     public ResponseEntity<?> crearSolicitudEliminacion(@RequestBody SolicitudEliminacionRequest request) {
@@ -24,21 +28,15 @@ public class ApiProxyController {
                 request.getHechoId(), request.getFuenteId(), request.getIdOrigen(), request.getContribuyenteId(), 
                 request.getTextoFundamentos() != null ? request.getTextoFundamentos().length() : 0);
         try {
-            // Convertir el request a SolicitudDTO
-            SolicitudDTO solicitudDTO = new SolicitudDTO();
-            solicitudDTO.setTextoFundamentos(request.getTextoFundamentos());
-            solicitudDTO.setIdContribuyente(request.getContribuyenteId());
-            solicitudDTO.setFuenteId(request.getFuenteId());
-            solicitudDTO.setIdOrigen(request.getIdOrigen());
+            // Enviar directamente al backend con el formato que espera (SolicitudEliminacionInputDTO)
+            WebClient webClient = webClientBuilder.baseUrl(agregadorBaseUrl).build();
             
-            // Si hay hecho_id, crear un HechoSimpleDTO con ese ID
-            if (request.getHechoId() != null) {
-                HechoSimpleDTO hecho = new HechoSimpleDTO();
-                hecho.setId(request.getHechoId());
-                solicitudDTO.setHecho(hecho);
-            }
-            
-            SolicitudDTO resultado = solicitudService.crearSolicitud(solicitudDTO);
+            SolicitudDTO resultado = webClient.post()
+                    .uri("/solicitudes")
+                    .bodyValue(request) // El request ya tiene el formato correcto con @JsonProperty
+                    .retrieve()
+                    .bodyToMono(SolicitudDTO.class)
+                    .block();
             
             // Verificar si es spam y devolver mensaje apropiado
             if (resultado.getSpam() != null && resultado.getSpam()) {
@@ -47,10 +45,10 @@ public class ApiProxyController {
             }
             
             return ResponseEntity.status(201).body(resultado);
-        } catch (org.springframework.web.reactive.function.client.WebClientResponseException e) {
+        } catch (WebClientResponseException e) {
             log.error("[ApiProxyController] - Error del backend al crear solicitud: {} - Status: {}", e.getMessage(), e.getStatusCode());
             String errorMessage = e.getResponseBodyAsString();
-            if (errorMessage != null && !errorMessage.isEmpty()) {
+            if (errorMessage != null && !errorMessage.isEmpty() && !errorMessage.trim().equals("null")) {
                 return ResponseEntity.status(e.getStatusCode()).body(errorMessage);
             }
             return ResponseEntity.status(e.getStatusCode()).body("Error al crear la solicitud: " + e.getMessage());
