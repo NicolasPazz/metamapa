@@ -155,8 +155,6 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     ports:
       - "8086:8086"
-    depends_on:
-      - agregador
     networks:
       - metamapa-network
     restart: unless-stopped
@@ -204,6 +202,8 @@ services:
       dinamica:
         condition: service_healthy
       proxy-ong:
+        condition: service_healthy
+      proxy-metamapa:
         condition: service_healthy
     networks:
       - metamapa-network
@@ -266,7 +266,6 @@ services:
       DINAMICA_URL: http://dinamica:8081
       ESTATICA_URL: http://estatica:8082
       USERS_SERVICE_URL: http://users:8087
-      ESTADISTICA_URL: http://estadistica:8085
       PAGINATION_PAGE_SIZE: ${PAGINATION_PAGE_SIZE}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     # No exponer puerto directamente - nginx sera el punto de entrada
@@ -274,14 +273,6 @@ services:
       - "8080"
     depends_on:
       agregador:
-        condition: service_healthy
-      dinamica:
-        condition: service_healthy
-      estatica:
-        condition: service_healthy
-      users:
-        condition: service_healthy
-      estadistica:
         condition: service_healthy
     networks:
       - metamapa-network
@@ -307,7 +298,7 @@ services:
     entrypoint: "/bin/sh -c 'sleep 30; if [ ! -f /etc/letsencrypt/live/$${CERTBOT_DOMAIN}/fullchain.pem ]; then certbot certonly --webroot --webroot-path=/var/www/certbot --email $${CERTBOT_EMAIL} --agree-tos --no-eff-email -d $${CERTBOT_DOMAIN} || true; fi; trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done;'"
     depends_on:
       nginx:
-        condition: service_started
+        condition: service_healthy
     networks:
       - metamapa-network
     restart: unless-stopped
@@ -335,11 +326,11 @@ services:
       - metamapa-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/ || exit 1"]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 5
-      start_period: 30s
+      retries: 3
+      start_period: 10s
 
 volumes:
   certbot-certs:
@@ -350,4 +341,3 @@ volumes:
 networks:
   metamapa-network:
     driver: bridge
-
