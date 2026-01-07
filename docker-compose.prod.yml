@@ -265,6 +265,7 @@ services:
       AGREGADOR_URL: http://agregador:8084
       DINAMICA_URL: http://dinamica:8081
       ESTATICA_URL: http://estatica:8082
+      ESTADISTICA_URL: http://estadistica:8085
       USERS_SERVICE_URL: http://users:8087
       PAGINATION_PAGE_SIZE: ${PAGINATION_PAGE_SIZE}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
