@@ -2,11 +2,14 @@ package ar.utn.ba.ddsi.frontend.service;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
 import ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud;
+import ar.utn.ba.ddsi.frontend.dto.AuthResponseDTO;
+import ar.utn.ba.ddsi.frontend.dto.RefreshTokenDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -35,14 +38,19 @@ public class SolicitudService {
     final private HechoService hechoService;
     final private WebClient webClient;
     final private WebClient webClient2;
+    final private WebClient authWebClient;
     final private ObjectMapper objectMapper;
+    final private String authServiceUrl;
 
     public SolicitudService(WebClient.Builder builder, HechoService hechoService,
                            @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
                             @Value("${app.api.dinamica.base-url:http://localhost:8081/api}") String dinamicaBaseUrl,
+                            @Value("${app.api.users.base-url:http://localhost:8087/api}") String authServiceUrl,
                             ObjectMapper objectMapper) {
         this.webClient = builder.baseUrl(agregadorBaseUrl).build();
         this.webClient2 = builder.baseUrl(dinamicaBaseUrl).build();
+        this.authWebClient = builder.build();
+        this.authServiceUrl = authServiceUrl;
         this.hechoService = hechoService;
         this.objectMapper = objectMapper;
     }
@@ -71,26 +79,110 @@ public class SolicitudService {
         }
     }
 
+    private String getRefreshTokenFromSession() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpServletRequest request = attributes.getRequest();
+            return (String) request.getSession().getAttribute("refreshToken");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void updateTokensInSession(String accessToken, String refreshToken) {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpServletRequest request = attributes.getRequest();
+            request.getSession().setAttribute("accessToken", accessToken);
+            if (refreshToken != null) {
+                request.getSession().setAttribute("refreshToken", refreshToken);
+            }
+        } catch (Exception e) {
+            log.error("Error al actualizar tokens en sesión: {}", e.getMessage());
+        }
+    }
+
+    private AuthResponseDTO refreshToken(String refreshToken) {
+        try {
+            RefreshTokenDTO refreshRequest = RefreshTokenDTO.builder()
+                    .refreshToken(refreshToken)
+                    .build();
+
+            AuthResponseDTO response = authWebClient
+                    .post()
+                    .uri(authServiceUrl + "/auth/refresh")
+                    .bodyValue(refreshRequest)
+                    .retrieve()
+                    .bodyToMono(AuthResponseDTO.class)
+                    .block();
+
+            if (response == null) {
+                throw new RuntimeException("Error al refrescar token: respuesta nula");
+            }
+            updateTokensInSession(response.getAccessToken(), response.getRefreshToken());
+            log.info("Token refrescado exitosamente");
+            return response;
+        } catch (Exception e) {
+            log.error("Error al refrescar token: {}", e.getMessage());
+            throw new RuntimeException("Error al refrescar token: " + e.getMessage(), e);
+        }
+    }
+
+    private <T> T executeWithTokenRetry(TokenApiCall<T> apiCall) {
+        String accessToken = getAccessTokenFromSession();
+        String refreshToken = getRefreshTokenFromSession();
+
+        if (accessToken == null) {
+            throw new RuntimeException("No hay token de acceso disponible");
+        }
+
+        try {
+            return apiCall.execute(accessToken);
+        } catch (WebClientResponseException e) {
+            if ((e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) && refreshToken != null) {
+                try {
+                    log.info("Token expirado, intentando refrescar...");
+                    AuthResponseDTO newTokens = refreshToken(refreshToken);
+                    
+                    if (newTokens.getAccessToken() == null) {
+                        throw new RuntimeException("Error al refrescar token: respuesta inválida");
+                    }
+                    
+                    log.info("Reintentando petición con nuevo token");
+                    return apiCall.execute(newTokens.getAccessToken());
+                } catch (Exception refreshError) {
+                    log.error("Error al refrescar token y reintentar: {}", refreshError.getMessage());
+                    throw new RuntimeException("Error al refrescar token y reintentar: " + refreshError.getMessage(), refreshError);
+                }
+            }
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error en llamada al API: " + e.getMessage(), e);
+        }
+    }
+
+    @FunctionalInterface
+    private interface TokenApiCall<T> {
+        T execute(String accessToken) throws Exception;
+    }
+
     public List<SolicitudInputDTO> buscarTodasLasSolicitudes() {
         try {
-            String accessToken = getAccessTokenFromSession();
-            if (accessToken == null) {
-                log.error("No hay token de acceso disponible para buscar solicitudes");
-                throw new RuntimeException("No hay token de acceso disponible. Por favor, inicie sesión nuevamente.");
-            }
             log.info("Buscando todas las solicitudes con token disponible");
-            List<SolicitudInputDTO> solicitudes = webClient2.get()
-                    .uri("/admin/solicitudes")
-                    .header("Authorization", "Bearer " + accessToken)
-                    .retrieve()
-                    .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> {
-                        log.error("Error HTTP al buscar solicitudes: {} - {}", response.statusCode(), response.statusCode().value());
-                        return response.bodyToMono(String.class)
-                                .doOnNext(body -> log.error("Cuerpo de respuesta de error: {}", body))
-                                .flatMap(body -> Mono.<RuntimeException>error(new RuntimeException("Error del backend: " + response.statusCode() + " - " + body)));
-                    })
-                    .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {})
-                    .block();
+            List<SolicitudInputDTO> solicitudes = executeWithTokenRetry(accessToken -> {
+                return webClient2.get()
+                        .uri("/admin/solicitudes")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .retrieve()
+                        .onStatus(status -> status.is4xxClientError() || status.is5xxServerError(), response -> {
+                            log.error("Error HTTP al buscar solicitudes: {} - {}", response.statusCode(), response.statusCode().value());
+                            return response.bodyToMono(String.class)
+                                    .doOnNext(body -> log.error("Cuerpo de respuesta de error: {}", body))
+                                    .flatMap(body -> Mono.<RuntimeException>error(new RuntimeException("Error del backend: " + response.statusCode() + " - " + body)));
+                        })
+                        .bodyToMono(new ParameterizedTypeReference<List<SolicitudInputDTO>>() {})
+                        .block();
+            });
             
             if (solicitudes == null) {
                 log.warn("El backend devolvió null para las solicitudes");
@@ -286,28 +378,26 @@ public class SolicitudService {
     }
 
     public void aceptarSolicitud(Long idSolicitud) {
-        String accessToken = getAccessTokenFromSession();
-        if (accessToken == null) {
-            throw new RuntimeException("No hay token de acceso disponible");
-        }
-        
         Map<String, Object> adminDTO = new HashMap<>();
         adminDTO.put("estado", EstadoSolicitud.ACEPTADO.name());
         
         try {
             log.info("Aceptando solicitud ID: {}", idSolicitud);
-            webClient2.patch()
-                    .uri("/admin/solicitudes/" + idSolicitud)
-                    .header("Authorization", "Bearer " + accessToken)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(adminDTO)
-                    .retrieve()
-                    .onStatus(
-                            status -> status.is4xxClientError() || status.is5xxServerError(),
-                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
-                    )
-                    .toBodilessEntity()
-                    .block();
+            executeWithTokenRetry(accessToken -> {
+                webClient2.patch()
+                        .uri("/admin/solicitudes/" + idSolicitud)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(adminDTO)
+                        .retrieve()
+                        .onStatus(
+                                status -> status.is4xxClientError() || status.is5xxServerError(),
+                                response -> response.bodyToMono(String.class).map(RuntimeException::new)
+                        )
+                        .toBodilessEntity()
+                        .block();
+                return null;
+            });
             log.info("Solicitud {} aceptada exitosamente", idSolicitud);
         } catch (WebClientResponseException e) {
             log.error("Error del backend al aceptar solicitud ID: {}, status: {}, body: {}",
@@ -320,28 +410,26 @@ public class SolicitudService {
     }
 
     public void rechazarSolicitud(Long idSolicitud) {
-        String accessToken = getAccessTokenFromSession();
-        if (accessToken == null) {
-            throw new RuntimeException("No hay token de acceso disponible");
-        }
-        
         Map<String, Object> adminDTO = new HashMap<>();
         adminDTO.put("estado", EstadoSolicitud.RECHAZADO.name());
         
         try {
             log.info("Rechazando solicitud ID: {}", idSolicitud);
-            webClient2.patch()
-                    .uri("/admin/solicitudes/" + idSolicitud)
-                    .header("Authorization", "Bearer " + accessToken)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(adminDTO)
-                    .retrieve()
-                    .onStatus(
-                            status -> status.is4xxClientError() || status.is5xxServerError(),
-                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
-                    )
-                    .toBodilessEntity()
-                    .block();
+            executeWithTokenRetry(accessToken -> {
+                webClient2.patch()
+                        .uri("/admin/solicitudes/" + idSolicitud)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(adminDTO)
+                        .retrieve()
+                        .onStatus(
+                                status -> status.is4xxClientError() || status.is5xxServerError(),
+                                response -> response.bodyToMono(String.class).map(RuntimeException::new)
+                        )
+                        .toBodilessEntity()
+                        .block();
+                return null;
+            });
             log.info("Solicitud {} rechazada exitosamente", idSolicitud);
         } catch (WebClientResponseException e) {
             log.error("Error del backend al rechazar solicitud ID: {}, status: {}, body: {}",
@@ -354,11 +442,6 @@ public class SolicitudService {
     }
 
     public void aceptarSolicitudConModificaciones(Long idSolicitud, SolicitudEdicionFormDTO formDTO) {
-        String accessToken = getAccessTokenFromSession();
-        if (accessToken == null) {
-            throw new RuntimeException("No hay token de acceso disponible");
-        }
-        
         try {
             log.info("Aceptando solicitud ID: {} con modificaciones, archivos nuevos: {}, archivos a eliminar: {}", 
                     idSolicitud, 
@@ -420,18 +503,21 @@ public class SolicitudService {
             // Luego aceptamos la solicitud con el endpoint de admin
             Map<String, Object> adminDTO = construirMapAdminDTO(formDTO, EstadoSolicitud.ACEPTADO_MODIFICADO);
             
-            webClient2.patch()
-                    .uri("/admin/solicitudes/" + idSolicitud)
-                    .header("Authorization", "Bearer " + accessToken)
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .bodyValue(adminDTO)
-                    .retrieve()
-                    .onStatus(
-                            status -> status.is4xxClientError() || status.is5xxServerError(),
-                            response -> response.bodyToMono(String.class).map(RuntimeException::new)
-                    )
-                    .toBodilessEntity()
-                    .block();
+            executeWithTokenRetry(accessToken -> {
+                webClient2.patch()
+                        .uri("/admin/solicitudes/" + idSolicitud)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(adminDTO)
+                        .retrieve()
+                        .onStatus(
+                                status -> status.is4xxClientError() || status.is5xxServerError(),
+                                response -> response.bodyToMono(String.class).map(RuntimeException::new)
+                        )
+                        .toBodilessEntity()
+                        .block();
+                return null;
+            });
             
             log.info("Solicitud {} aceptada con modificaciones exitosamente", idSolicitud);
         } catch (WebClientResponseException e) {
@@ -446,17 +532,14 @@ public class SolicitudService {
 
     public SolicitudInputDTO obtenerSolicitudPorId(Long idSolicitud) {
         try {
-            String accessToken = getAccessTokenFromSession();
-            if (accessToken == null) {
-                throw new RuntimeException("No hay token de acceso disponible");
-            }
-            
-            return webClient2.get()
-                    .uri("/solicitudes/" + idSolicitud)
-                    .header("Authorization", "Bearer " + accessToken)
-                    .retrieve()
-                    .bodyToMono(SolicitudInputDTO.class)
-                    .block();
+            return executeWithTokenRetry(accessToken -> {
+                return webClient2.get()
+                        .uri("/solicitudes/" + idSolicitud)
+                        .header("Authorization", "Bearer " + accessToken)
+                        .retrieve()
+                        .bodyToMono(SolicitudInputDTO.class)
+                        .block();
+            });
         } catch (WebClientResponseException e) {
             log.error("Error del backend al obtener solicitud ID: {}, status: {}, body: {}",
                     idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
@@ -505,11 +588,6 @@ public class SolicitudService {
       private void enviarModificacionMultipart(Long idSolicitud, SolicitudModificacionDTO dto,
           List<MultipartFile> archivos, String uriBase) {
         try {
-          String accessToken = getAccessTokenFromSession();
-          if (accessToken == null) {
-            throw new RuntimeException("No hay token de acceso disponible");
-          }
-          
           String solicitudJson = objectMapper.writeValueAsString(dto);
 
           MultipartBodyBuilder builder = new MultipartBodyBuilder();
@@ -522,18 +600,21 @@ public class SolicitudService {
           }
 
           log.info("Enviando PATCH a {}{} (MULTIPART) con {} archivos", uriBase, idSolicitud, archivos.size());
-          webClient2.patch()
-              .uri(uriBase + idSolicitud)
-              .header("Authorization", "Bearer " + accessToken)
-              .contentType(MediaType.MULTIPART_FORM_DATA)
-              .body(BodyInserters.fromMultipartData(builder.build()))
-              .retrieve()
-              .onStatus(
-                  status -> status.is4xxClientError() || status.is5xxServerError(),
-                  response -> response.bodyToMono(String.class).map(RuntimeException::new)
-              )
-              .toBodilessEntity()
-              .block();
+          executeWithTokenRetry(accessToken -> {
+              webClient2.patch()
+                  .uri(uriBase + idSolicitud)
+                  .header("Authorization", "Bearer " + accessToken)
+                  .contentType(MediaType.MULTIPART_FORM_DATA)
+                  .body(BodyInserters.fromMultipartData(builder.build()))
+                  .retrieve()
+                  .onStatus(
+                      status -> status.is4xxClientError() || status.is5xxServerError(),
+                      response -> response.bodyToMono(String.class).map(RuntimeException::new)
+                  )
+                  .toBodilessEntity()
+                  .block();
+              return null;
+          });
         } catch (WebClientResponseException e) {
           log.error("Error del backend al modificar solicitud ID: {} (multipart), status: {}, body: {}",
               idSolicitud, e.getStatusCode().value(), e.getResponseBodyAsString());
