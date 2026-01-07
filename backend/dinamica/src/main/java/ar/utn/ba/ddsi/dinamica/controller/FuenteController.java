@@ -21,9 +21,8 @@ public class FuenteController {
 
   @GetMapping("/nuevos")
   public ResponseEntity<List<HechoOutputDTO>> getAllHechosNuevos() {
-    log.info("GET /api/hechos/nuevos - Solicitando hechos nuevos para agregador");
+    log.info("[FuenteController] - GET - /api/hechos/nuevos");
     List<HechoOutputDTO> hechosNuevos = fuenteService.getAllHechosNuevos();
-    log.info("Retornando {} hechos nuevos", hechosNuevos.size());
     return ResponseEntity.ok(hechosNuevos);
   }
 }

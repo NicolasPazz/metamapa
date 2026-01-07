@@ -43,14 +43,24 @@ public class OngApiAdapter implements IApiExternaAdapter {
   @PostConstruct
   private void inicializar() {
     try {
+      if (email == null || email.isBlank() || password == null || password.isBlank()) {
+        log.warn("Proxy ONG: credenciales no configuradas (PROXY_ONG_EMAIL/PROXY_ONG_PASSWORD). Se omite autenticación y el servicio iniciará en modo degradado.");
+        return;
+      }
       autenticar();
     } catch (Exception e) {
-      throw new ApiLoginException("No se pudo autenticar con el servicio externo", e);
+      // No bloquear el arranque del stack local si la API externa no está disponible.
+      // El servicio podrá iniciar (actuator/health) y el agregador no quedará esperando.
+      log.error("Proxy ONG: no se pudo autenticar con el servicio externo. Se iniciará en modo degradado.", e);
     }
   }
 
   @Override
   public List<Hecho> obtenerTodosLosHechos() {
+    if (this.accessToken == null || this.tokenType == null) {
+      log.warn("Proxy ONG: sin token de autenticación; devolviendo lista vacía de hechos.");
+      return List.of();
+    }
     List<HechoProxyDTO> dtos = obtenerHechosDesdeApi();
     return convertirDtosADominio(dtos);
   }
@@ -80,6 +90,10 @@ public class OngApiAdapter implements IApiExternaAdapter {
           (response != null ? response.getMessage() : "respuesta nula"));
     }
 
+    if (response.getData() == null) {
+      throw new ApiLoginException("Login fallido: respuesta sin datos");
+    }
+
     String localAccessToken = response.getData().getAccess_token();
     String localTokenType = response.getData().getToken_type();
     this.accessToken = localAccessToken;
@@ -88,7 +102,10 @@ public class OngApiAdapter implements IApiExternaAdapter {
   }
 
   private List<HechoProxyDTO> obtenerHechosDesdeApi() {
+    long startTime = System.currentTimeMillis();
+    long timeBeforeFirstPage = System.currentTimeMillis();
     HechoProxyResponseDTO firstPage = obtenerPagina(1);
+    long firstPageTime = System.currentTimeMillis() - timeBeforeFirstPage;
 
     if (firstPage == null || firstPage.getData() == null) {
       return List.of();
@@ -97,8 +114,6 @@ public class OngApiAdapter implements IApiExternaAdapter {
     List<HechoProxyDTO> todos = new ArrayList<>(firstPage.getData());
     Long lastPage = firstPage.getLast_page();
 
-    // En modo desarrollo, limitar a maxPagesDev páginas (solo primera si maxPagesDev=1)
-    // En producción (maxPagesDev=-1 o null), traer todas las páginas
     int maxPageToFetch = (maxPagesDev != null && maxPagesDev > 0) 
         ? Math.min(maxPagesDev, lastPage.intValue())
         : lastPage.intValue();
@@ -108,11 +123,17 @@ public class OngApiAdapter implements IApiExternaAdapter {
     }
 
     for (int page = 2; page <= maxPageToFetch; page++) {
+      long pageStart = System.currentTimeMillis();
       HechoProxyResponseDTO pageResult = obtenerPagina(page);
+      long pageTime = System.currentTimeMillis() - pageStart;
       if (pageResult != null && pageResult.getData() != null) {
         todos.addAll(pageResult.getData());
       }
+      if (page % 10 == 0 || page == maxPageToFetch) {
+        // Log de progreso cada 10 páginas
+      }
     }
+    long totalTime = System.currentTimeMillis() - startTime;
 
     log.info("Se obtuvieron {} hechos de la API externa ({} página(s) procesada(s))", 
         todos.size(), maxPageToFetch);

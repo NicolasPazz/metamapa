@@ -6,4 +6,6 @@ import lombok.Data;
 public class CriterioLugarDTO implements CriterioDTO {
   private Double latitud;
   private Double longitud;
+  private Double radio;
+  private String provincia;
 }

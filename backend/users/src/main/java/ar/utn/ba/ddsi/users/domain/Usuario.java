@@ -25,10 +25,10 @@ public class Usuario {
     private String apellido;
     
     @Column(nullable = false, unique = true)
-    private String mail;
+    private String username;
     
     @Column(nullable = false)
-    private String contrasenia;
+    private String password;
     
     @Enumerated(EnumType.STRING)
     @ElementCollection

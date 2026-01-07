@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMapa - Ingresar</title>
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+  <script th:src="@{/js/common.js}"></script>
+</head>
+<body>
+  <header class="navbar">
+    <a th:href="@{/}" class="logo">
+      <img th:src="@{/images/metamapa-header.svg}" alt="MetaMapa" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+      <span class="logo-text" style="display: none;">MetaMapa</span>
+    </a>
+    <nav class="nav-buttons-center">
+      <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
+      <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
+    </nav>
+    <nav class="nav-buttons">
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
+        <button type="submit" class="btn secondary">Cerrar sesión</button>
+      </form>
+    </nav>
+  </header>
+
+      <section class="login-block">
+        <div class="login-card">
+          <h2>Ingresar</h2>
+          <form th:action="@{/login}" method="post">
+            <label for="username">Usuario <span class="required-indicator">*</span></label>
+            <input type="text" id="username" name="username" placeholder="usuario" required class="form-control">
+
+            <label for="password">Contraseña <span class="required-indicator">*</span></label>
+            <input type="password" id="password" name="password" placeholder="••••••••" required class="form-control">
+
+            <div th:if="${param.error}" style="color: red; margin-top: 1rem;">
+              Usuario o contraseña incorrectos
+            </div>
+            <div th:if="${param.logout}" style="color: green; margin-top: 1rem;">
+              Sesión cerrada correctamente
+            </div>
+
+            <button type="submit" class="btn primary">Ingresar</button>
+          </form>
+          
+          <div class="login-options" style="text-align: center; margin-top: 1rem;">
+            <a th:href="@{/registro}">¿No tenes cuenta? Registrarse</a>
+          </div>
+    </div>
+  </section>
+  
+  <div id="toastContainer" class="toast-container"></div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const successMessage = /*[[${success}]]*/ null;
+      if (successMessage) {
+        showToast('Registro exitoso', 'success');
+      }
+    });
+  </script>
+</body>
+</html>

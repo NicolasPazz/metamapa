@@ -86,7 +86,6 @@ public class ProvinciaService {
             return provinciaOpt.get();
         }
 
-        // Si no existe, crear nueva provincia
         log.info("[ProvinciaService] Creando nueva provincia: {}", nombre);
         Provincia nuevaProvincia = new Provincia(nombre);
         return provinciaRepository.save(nuevaProvincia);

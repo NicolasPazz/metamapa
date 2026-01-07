@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página no encontrada - MetaMapa</title>
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+</head>
+<body>
+  <header class="navbar">
+    <a th:href="@{/}" class="logo">
+      <img th:src="@{/images/metamapa-header.svg}" alt="MetaMapa" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+      <span class="logo-text" style="display: none;">MetaMapa</span>
+    </a>
+    <nav class="nav-buttons-center">
+      <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
+      <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
+    </nav>
+    <nav class="nav-buttons">
+      <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn secondary">Ingresar</a>
+      <a sec:authorize="!isAuthenticated()" th:href="@{/registro}" class="btn primary">Registrarse</a>
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
+        <button type="submit" class="btn secondary">Cerrar sesión</button>
+      </form>
+    </nav>
+  </header>
+
+  <section class="block" style="padding: 4rem 2rem; text-align: center;">
+    <div class="container">
+      <h1 style="color: var(--primary); font-size: 4rem; margin-bottom: 1rem;">404</h1>
+      <h2 style="color: var(--secondary); margin-bottom: 1rem;">Página no encontrada</h2>
+      <p style="font-size: 1.1rem; color: #666; margin-bottom: 2rem; max-width: 600px; margin-left: auto; margin-right: auto;">
+        Lo sentimos, la página que estás buscando no existe o ha sido movida. Por favor, verifica la URL e intenta nuevamente.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a th:href="@{/}" class="btn primary">Volver al inicio</a>
+        <a th:href="@{/hechos}" class="btn secondary">Ver hechos</a>
+      </div>
+    </div>
+  </section>
+</body>
+</html>
+

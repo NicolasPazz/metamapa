@@ -1,0 +1,842 @@
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetaMapa - Hechos</title>
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+</head>
+
+
+<html lang="es" th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+  <section class="hechos-block">
+    <div class="modo-switch-fixed" th:if="${esColeccion != null and esColeccion}">
+      <form method="get" th:action="'/colecciones/' + ${handleColeccion} + '/hechos'" style="margin: 0;">
+        <input type="hidden" name="fecha_acontecimiento_desde" th:value="${param.fecha_acontecimiento_desde}">
+        <input type="hidden" name="fecha_acontecimiento_hasta" th:value="${param.fecha_acontecimiento_hasta}">
+        <input type="hidden" name="ubicacion" th:value="${param.ubicacion}">
+        <input type="hidden" name="categoria" th:value="${param.categoria}">
+        <input type="hidden" name="page" th:value="${param.page}">
+
+        <label class="modo-switch-label">
+          <span class="modo-text">IRRESTRICTA</span>
+          <label class="switch">
+            <input type="checkbox"
+                   id="modoSwitch"
+                   name="modoCheckbox"
+                   th:checked="${param.modo != null and param.modo[0] == 'CURADA'}"
+                   onchange="document.getElementById('modoHidden').value = this.checked ? 'CURADA' : 'IRRESTRICTA'; this.form.submit();">
+            <span class="slider"></span>
+          </label>
+          <span class="modo-text">CURADA</span>
+        </label>
+        <input type="hidden"
+               id="modoHidden"
+               name="modo"
+               th:value="${param.modo != null and param.modo[0] == 'CURADA' ? 'CURADA' : 'IRRESTRICTA'}">
+      </form>
+    </div>
+
+    <form method="get" class="filters" th:action="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}">
+      <input type="hidden" th:if="${esColeccion != null and esColeccion}" name="modo" th:value="${param.modo}">
+
+      <div class="filtro-fecha">
+        <label for="fechaDesde">Desde:</label>
+        <input type="date" id="fechaDesde" name="fecha_acontecimiento_desde" th:value="${param.fecha_acontecimiento_desde != null and param.fecha_acontecimiento_desde[0] != null ? (param.fecha_acontecimiento_desde[0].length() > 10 ? #strings.substring(param.fecha_acontecimiento_desde[0], 0, 10) : param.fecha_acontecimiento_desde[0]) : ''}" min="1900-01-01" max="9999-12-31">
+      </div>
+
+      <div class="filtro-fecha">
+        <label for="fechaHasta">Hasta:</label>
+        <input type="date" id="fechaHasta" name="fecha_acontecimiento_hasta" th:value="${param.fecha_acontecimiento_hasta != null and param.fecha_acontecimiento_hasta[0] != null ? (param.fecha_acontecimiento_hasta[0].length() > 10 ? #strings.substring(param.fecha_acontecimiento_hasta[0], 0, 10) : param.fecha_acontecimiento_hasta[0]) : ''}" min="1900-01-01" max="9999-12-31">
+      </div>
+
+      <label for="ubicacion" style="display: none;">Provincia</label>
+      <select name="ubicacion" id="ubicacion">
+        <option value="">Provincia</option>
+        <option th:each="prov : ${provincias}"
+                th:value="${prov}"
+                th:text="${prov}"
+                th:selected="${param.ubicacion != null and param.ubicacion[0] == prov}">
+        </option>
+      </select>
+
+      <label for="categoria" style="display: none;">Categoría</label>
+      <select name="categoria" id="categoria">
+        <option value="">Categoría</option>
+        <option th:each="cat : ${categorias}"
+                th:value="${cat}"
+                th:text="${cat}"
+                th:selected="${param.categoria != null and param.categoria[0] == cat}">
+        </option>
+      </select>
+
+      <label for="fuente" style="display: none;">Fuente</label>
+      <select name="fuente" id="fuente">
+        <option value="">Fuente</option>
+        <option th:each="fuente : ${fuentes}"
+                th:value="${fuente}"
+                th:text="${fuente}"
+                th:selected="${param.fuente != null and param.fuente[0] == fuente}">
+        </option>
+      </select>
+
+      <button type="submit" class="btn primary">Aplicar Filtros</button>
+
+      <a th:href="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}" class="btn primary">Limpiar</a>
+
+    </form>
+
+    <div style="text-align: right; margin: 20px 0;">
+      <a th:href="${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/mapa' : '/hechos/mapa'}" 
+         class="btn primary">
+        Ver en mapa
+      </a>
+    </div>
+
+    <div class="hechos-grid">
+      <div th:each="hecho, iterStat : ${hechos}" class="hecho-card"
+           th:data-hecho-id="${hecho.id}"
+           th:attr="data-fuente-id=${hecho['fuente_id']}, data-id-origen=${hecho['id_origen']}"
+           th:data-hecho-index="${iterStat.index}"
+           onclick="openHechoDetailPanel(this)"
+           style="cursor: pointer;">
+        <h3 th:text="${hecho.titulo}"></h3>
+        <p th:text="${hecho.descripcion}"></p>
+        
+        <div th:if="${hecho.etiquetas != null and !#lists.isEmpty(hecho.etiquetas)}" 
+             class="etiquetas-preview" 
+             style="margin-top: 10px; margin-bottom: 10px; display: flex; flex-wrap: wrap; gap: 5px;"
+             onclick="event.stopPropagation();">
+          <span th:each="etiqueta : ${hecho.etiquetas}" 
+                class="tag" 
+                style="display: inline-block; background-color: #e3f2fd; color: #1976d2; padding: 4px 8px; border-radius: 12px; font-size: 0.85em; font-weight: 500;"
+                th:text="${etiqueta}">
+          </span>
+        </div>
+        
+        <span class="ver-detalles-link">Ver detalles</span>
+      </div>
+    </div>
+
+    <div class="pagination">
+      <a th:if="${currentPage > 0}"
+         th:href="@{${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}(
+                    page=${currentPage - 1},
+                    fecha_acontecimiento_desde=${param.fecha_acontecimiento_desde},
+                    fecha_acontecimiento_hasta=${param.fecha_acontecimiento_hasta},
+                    ubicacion=${param.ubicacion},
+                    categoria=${param.categoria},
+                    fuente=${param.fuente},
+                    modo=${param.modo})}"
+         class="btn primary">
+        ← Anterior
+      </a>
+
+      <span class="page-indicator">Página <strong th:text="${currentPage + 1}">1</strong></span>
+      <a th:if="${hasNextPage}"
+         th:href="@{${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}(
+                    page=${currentPage + 1},
+                    fecha_acontecimiento_desde=${param.fecha_acontecimiento_desde},
+                    fecha_acontecimiento_hasta=${param.fecha_acontecimiento_hasta},
+                    ubicacion=${param.ubicacion},
+                    categoria=${param.categoria},
+                    fuente=${param.fuente},
+                    modo=${param.modo})}"
+         class="btn primary">
+        Siguiente →
+      </a>
+    </div>
+  </section>
+
+  <div id="hechoDetailPanel" class="side-panel">
+    <div class="panel-header">
+      <h3>Detalles del Hecho</h3>
+      <button class="close-btn" 
+              onclick="closeHechoDetailPanel()" 
+              aria-label="Cerrar panel de detalles"
+              title="Cerrar (Escape)">&times;</button>
+    </div>
+    <div class="panel-content" id="hechoDetailContent">
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="closeHechoDetailPanel()"></div>
+
+  <div id="toastContainer" class="toast-container"></div>
+  <div id="solicitudEdicionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Solicitar Edición de Hecho</h3>
+        <button class="close-btn" 
+                onclick="closeSolicitudEdicionModal()" 
+                aria-label="Cerrar modal de edición"
+                title="Cerrar (Escape)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="solicitudEdicionForm">
+          <input type="hidden" id="edit_hecho_id" name="hecho_id">
+
+          <input type="hidden" id="edit_contribuyente_id" name="contribuyente_id" value="1">
+
+          <div class="row">
+            <div class="col-12 form-group">
+              <label for="edit_titulo">Título</label>
+              <input type="text" id="edit_titulo" class="form-control" style="width: 100%; padding: 8px;">
+            </div>
+          </div>
+
+          <div class="row" style="display: flex; gap: 10px; margin-top: 10px;">
+            <div class="form-group" style="flex: 1;">
+              <label for="edit_categoria">Categoría</label>
+              <select id="edit_categoria" class="form-control" style="width: 100%; padding: 8px;">
+                <option value="">Seleccione...</option>
+                <option th:each="cat : ${categorias}" th:value="${cat}" th:text="${cat}"></option>
+              </select>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label for="edit_fecha">Fecha del suceso</label>
+              <input type="datetime-local" id="edit_fecha" class="form-control" style="width: 100%; padding: 8px;" min="1900-01-01T00:00" max="9999-12-31T23:59">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label>Ubicación</label>
+            <div style="display: flex; gap: 10px;">
+              <div style="flex: 1;">
+                <label for="edit_latitud" class="sr-only">Latitud</label>
+                <input type="number" step="any" id="edit_latitud" placeholder="Latitud" class="form-control" style="padding: 8px;">
+              </div>
+              <div style="flex: 1;">
+                <label for="edit_longitud" class="sr-only">Longitud</label>
+                <input type="number" step="any" id="edit_longitud" placeholder="Longitud" class="form-control" style="padding: 8px;">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label for="edit_descripcion">Descripción</label>
+            <textarea id="edit_descripcion" rows="4" class="form-control" style="width: 100%; padding: 8px;"></textarea>
+          </div>
+
+          <div class="form-group" style="margin-top: 10px;">
+            <label for="edit_multimedia">Agregar nueva evidencia (Fotos/Videos)</label>
+            <input type="file" id="edit_multimedia" multiple accept="image/*,video/*" class="form-control" style="width: 100%;" onchange="validarCantidadArchivos(this, 5)">
+            <small style="color: #666;">Nota: Los archivos seleccionados se agregarán a los existentes. Máximo 5 archivos.</small>
+          </div>
+
+          <div class="modal-actions" style="margin-top: 20px;">
+            <button type="button" class="btn secondary" onclick="closeSolicitudEdicionModal()">Cancelar</button>
+            <button type="submit" class="btn primary" id="submit_edicion" style="background: #fd7e14; color: white; border: none;">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="solicitudEliminacionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Solicitar Eliminación de Hecho</h3>
+        <button class="close-btn" 
+                onclick="closeSolicitudEliminacionModal()" 
+                aria-label="Cerrar modal de solicitud de eliminación"
+                title="Cerrar (Escape)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="solicitudEliminacionForm">
+          <input type="hidden" id="solicitud_hecho_id" name="hecho_id">
+          <input type="hidden" id="solicitud_fuente_id" name="fuente_id">
+          <input type="hidden" id="solicitud_id_origen" name="id_origen">
+          <input type="hidden" id="solicitud_contribuyente_id" name="contribuyente_id" th:value="${contribuyenteId != null ? contribuyenteId : ''}">
+          
+          <div class="form-group">
+            <label for="texto_fundamentos">
+              Justificación <span style="color: #dc3545;" aria-label="Campo obligatorio">*</span>
+            </label>
+            <textarea 
+              id="texto_fundamentos" 
+              name="texto_fundamentos" 
+              rows="8" 
+              required
+              minlength="500"
+              aria-required="true"
+              style="width: 100%; padding: 0.75rem; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; resize: vertical;"></textarea>
+            <div class="char-counter">
+              <span id="char_count" style="color: rgb(220, 53, 69);">0</span> / 500 caracteres mínimos
+            </div>
+            <div id="texto_error" class="error-message" style="display: none;"></div>
+          </div>
+
+          <div class="form-group" style="margin-top: 1rem;">
+            <p style="font-size: 0.9rem; color: #666; font-style: italic;">
+              <strong>Nota:</strong> Esta solicitud será revisada por los administradores. 
+              Si la justificación contiene spam, será rechazada automáticamente.
+            </p>
+          </div>
+
+          <div class="modal-actions">
+            <button type="button" class="btn secondary" onclick="closeSolicitudEliminacionModal()">
+              Cancelar
+            </button>
+            <button type="submit" class="btn primary" id="submit_solicitud" style="background: #dc3545; color: white; border: none;">
+              Enviar Solicitud
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const hechosData = /*[[${hechos}]]*/ [];
+
+    function openHechoDetailPanel(element) {
+      // Usar función reutilizable para buscar el hecho
+      const hecho = findHecho(hechosData, {
+        hechoId: element.dataset.hechoId,
+        fuenteId: element.dataset.fuenteId,
+        idOrigen: element.dataset.idOrigen,
+        hechoIndex: element.dataset.hechoIndex
+      });
+      
+      if (!hecho) return;
+
+      // Usar función reutilizable para renderizar detalles
+      let html = renderHechoDetails(hecho, {
+        showMultimedia: true,
+        showMapButton: true,
+        showTags: true,
+        carouselIdPrefix: 'multimedia-carousel'
+      });
+
+      // Agregar botones de acción específicos de esta página
+      html += '<div style="margin-top: 20px; display: flex; justify-content: center; gap: 15px;">';
+      html += '<button onclick="openSolicitudEliminacionModal(' +
+              (hecho.id ? hecho.id : 'null') + ', ' +
+              (hecho.fuente_id ? hecho.fuente_id : 'null') + ', ' +
+              (hecho.id_origen ? hecho.id_origen : 'null') +
+              ')" class="btn secondary" style="background: #dc3545; color: white; border: none;">';
+      html += 'Solicitar eliminación';
+      html += '</button>';
+      html += '</div>';
+
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+      const content = document.getElementById('hechoDetailContent');
+
+      content.innerHTML = html;
+
+      panel.classList.add('active');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+
+      const urlHash = hecho.id != null ? '#hecho' + hecho.id : 
+                     (hecho.fuente_id != null && hecho.id_origen != null ? 
+                      '#hecho-' + hecho.fuente_id + '-' + hecho.id_origen : '');
+      if (urlHash) {
+        history.pushState(null, '', urlHash);
+      }
+    }
+
+    function closeHechoDetailPanel() {
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+      
+      if (panel) {
+        panel.classList.remove('active');
+      }
+      if (overlay) {
+        overlay.classList.remove('active');
+      }
+      document.body.style.overflow = '';
+      
+      const baseUrl = window.location.pathname + window.location.search;
+      history.pushState(null, '', baseUrl);
+    }
+
+    window.addEventListener('popstate', function() {
+      closeHechoDetailPanel();
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeHechoDetailPanel();
+      }
+    });
+
+    window.addEventListener('load', function() {
+      const hash = window.location.hash;
+      if (hash.startsWith('#hecho')) {
+        const hechoId = hash.replace('#hecho', '');
+        // Buscar el elemento del hecho en el DOM
+        const hechoElement = document.querySelector(`[data-hecho-id="${hechoId}"]`);
+        if (hechoElement) {
+          openHechoDetailPanel(hechoElement);
+        }
+      }
+    });
+
+    // Funciones para el modal de solicitud de eliminación
+    function openSolicitudEliminacionModal(hechoId, fuenteId, idOrigen) {
+      const modal = document.getElementById('solicitudEliminacionModal');
+      const form = document.getElementById('solicitudEliminacionForm');
+      const textoFundamentos = document.getElementById('texto_fundamentos');
+      const charCount = document.getElementById('char_count');
+      const errorDiv = document.getElementById('texto_error');
+      const submitBtn = document.getElementById('submit_solicitud');
+      
+      // Resetear completamente el formulario y estado
+      form.reset();
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      // Resetear botón a estado inicial
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar Solicitud';
+      
+      // Establecer valores ocultos
+      document.getElementById('solicitud_hecho_id').value = hechoId !== 'null' ? hechoId : '';
+      document.getElementById('solicitud_fuente_id').value = fuenteId !== 'null' ? fuenteId : '';
+      document.getElementById('solicitud_id_origen').value = idOrigen !== 'null' ? idOrigen : '';
+      
+      // Actualizar contador de caracteres
+      charCount.textContent = '0';
+      charCount.style.color = '#dc3545';
+      
+      // Mostrar modal
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      // Focus en textarea
+      setTimeout(() => textoFundamentos.focus(), 100);
+    }
+
+    function closeSolicitudEliminacionModal() {
+      const modal = document.getElementById('solicitudEliminacionModal');
+      const form = document.getElementById('solicitudEliminacionForm');
+      const submitBtn = document.getElementById('submit_solicitud');
+      const errorDiv = document.getElementById('texto_error');
+      
+      // Resetear estado antes de cerrar
+      form.reset();
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Enviar Solicitud';
+      errorDiv.style.display = 'none';
+      errorDiv.textContent = '';
+      
+      modal.style.display = 'none';
+      document.body.style.overflow = '';
+    }
+
+    // Contador de caracteres
+    document.addEventListener('DOMContentLoaded', function() {
+      const textoFundamentos = document.getElementById('texto_fundamentos');
+      const charCount = document.getElementById('char_count');
+      
+      if (textoFundamentos && charCount) {
+        textoFundamentos.addEventListener('input', function() {
+          const length = this.value.trim().length;
+          charCount.textContent = length;
+          
+          // Cambiar color según si cumple el mínimo
+          if (length < 500) {
+            charCount.style.color = '#dc3545';
+          } else {
+            charCount.style.color = '#28a745';
+          }
+        });
+      }
+
+      // Manejar envío del formulario
+      const form = document.getElementById('solicitudEliminacionForm');
+      if (form) {
+        form.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const submitBtn = document.getElementById('submit_solicitud');
+          const errorDiv = document.getElementById('texto_error');
+          const textoFundamentos = document.getElementById('texto_fundamentos');
+          const texto = textoFundamentos.value.trim();
+          
+          // Validar longitud mínima
+          if (texto.length < 500) {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'La justificación debe tener al menos 500 caracteres. Actualmente tiene ' + texto.length + ' caracteres.';
+            return;
+          }
+          
+          // Deshabilitar botón durante el envío
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Enviando...';
+          errorDiv.style.display = 'none';
+          
+          // Preparar datos
+          const hechoId = document.getElementById('solicitud_hecho_id').value;
+          const fuenteId = document.getElementById('solicitud_fuente_id').value;
+          const idOrigen = document.getElementById('solicitud_id_origen').value;
+          const contribuyenteIdElement = document.getElementById('solicitud_contribuyente_id');
+          const contribuyenteId = contribuyenteIdElement && contribuyenteIdElement.value ? parseInt(contribuyenteIdElement.value) : null;
+          
+          const solicitudData = {
+            texto_fundamentos: texto,
+            contribuyente_id: contribuyenteId
+          };
+          
+          // Agregar identificadores según corresponda
+          if (hechoId) {
+            solicitudData.hecho_id = parseInt(hechoId);
+          } else if (fuenteId && idOrigen) {
+            solicitudData.fuente_id = parseInt(fuenteId);
+            solicitudData.id_origen = parseInt(idOrigen);
+          }
+          
+          try {
+            // Usar apiFetch si está disponible (que ya maneja la conversión de hostnames de Docker a localhost)
+            let response;
+            if (typeof window.apiFetch === 'function') {
+              response = await window.apiFetch('/solicitudes', {
+                method: 'POST',
+                body: JSON.stringify(solicitudData)
+              });
+            } else if (typeof apiFetch === 'function') {
+              response = await apiFetch('/solicitudes', {
+                method: 'POST',
+                body: JSON.stringify(solicitudData)
+              });
+            } else {
+              // Fallback: usar fetch directo
+              let apiBaseUrl;
+              if (typeof window.getApiBaseUrl === 'function') {
+                apiBaseUrl = window.getApiBaseUrl();
+              } else if (typeof getApiBaseUrl === 'function') {
+                apiBaseUrl = getApiBaseUrl();
+              } else {
+                // Último recurso: detectar producción y usar ruta relativa o localhost
+                const hostname = window.location.hostname;
+                const isProduction = !(hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.16.') || hostname.startsWith('172.17.') || hostname.startsWith('172.18.') || hostname.startsWith('172.19.') || hostname.startsWith('172.20.') || hostname.startsWith('172.21.') || hostname.startsWith('172.22.') || hostname.startsWith('172.23.') || hostname.startsWith('172.24.') || hostname.startsWith('172.25.') || hostname.startsWith('172.26.') || hostname.startsWith('172.27.') || hostname.startsWith('172.28.') || hostname.startsWith('172.29.') || hostname.startsWith('172.30.') || hostname.startsWith('172.31.'));
+                
+                if (isProduction) {
+                  apiBaseUrl = '/api';
+                } else {
+                  const metaTag = document.querySelector('meta[name="api-base-url"]');
+                  if (metaTag) {
+                    apiBaseUrl = metaTag.getAttribute('content');
+                    // Convertir hostnames de Docker a localhost solo en desarrollo
+                    apiBaseUrl = apiBaseUrl.replace(/https?:\/\/[^\/:]+(:\d+)?/, function(match) {
+                      const protocol = match.startsWith('https') ? 'https' : 'http';
+                      const portMatch = match.match(/:(\d+)/);
+                      const port = portMatch ? portMatch[1] : '8084';
+                      return protocol + '://localhost:' + port;
+                    });
+                  } else {
+                    apiBaseUrl = window.location.origin.replace(':8080', ':8084') + '/api';
+                  }
+                }
+              }
+              const url = apiBaseUrl + '/solicitudes';
+              response = await safeFetch(url, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(solicitudData)
+              }, true); // skipErrorRedirect = true para manejar errores de validación localmente
+            }
+            
+            const responseData = await response.text();
+            
+            // Resetear botón siempre (tanto en éxito como en error)
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Solicitud';
+            
+            if (response.ok) {
+              // Éxito - mostrar toast y cerrar modal
+              showToast('Solicitud de eliminación enviada exitosamente. Será revisada por los administradores.', 'success');
+              closeSolicitudEliminacionModal();
+            } else {
+              // Error - mostrar toast y mantener modal abierto
+              const errorMessage = responseData || 'Error al enviar la solicitud. Por favor, intente nuevamente.';
+              showToast(errorMessage, 'error');
+              
+              // Solo mostrar error en el formulario si NO es spam (el toast ya lo muestra)
+              if (!errorMessage.includes('Spam detectado')) {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = errorMessage;
+              }
+              
+              // Para errores que no son de validación (400), redirigir a página de error
+              if (response.status !== 400) {
+                redirectToErrorPage(response.status);
+              }
+            }
+          } catch (error) {
+            // Error de conexión - resetear botón, mostrar toast y mantener modal abierto
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Solicitud';
+            // Si es un error de red, redirigir a error 500
+            redirectToErrorPage(500);
+          }
+        });
+      }
+    });
+
+    // Cerrar modal al hacer click fuera
+    document.addEventListener('DOMContentLoaded', function() {
+      const modal = document.getElementById('solicitudEliminacionModal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            closeSolicitudEliminacionModal();
+          }
+        });
+      }
+    });
+
+    // Cerrar modal con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        const modal = document.getElementById('solicitudEliminacionModal');
+        if (modal && modal.style.display === 'flex') {
+          closeSolicitudEliminacionModal();
+        }
+      }
+    });
+    // --- Lógica de Edición ---
+
+    function solicitarEdicion(hechoId, fuenteId, idOrigen) {
+      let hecho = null;
+
+      if (hechoId && hechoId !== 'null') {
+        hecho = hechosData.find(h => h.id != null && Number(h.id) === Number(hechoId));
+      } else if (fuenteId && fuenteId !== 'null' && idOrigen && idOrigen !== 'null') {
+        hecho = hechosData.find(h =>
+                h.fuente_id != null && Number(h.fuente_id) === Number(fuenteId) &&
+                h.id_origen != null && Number(h.id_origen) === Number(idOrigen)
+        );
+      }
+
+      if (!hecho) {
+        showToast('No se pudo cargar la información del hecho.', 'error');
+        return;
+      }
+
+      if (!hecho.fecha_carga) {
+        showToast('El hecho no tiene fecha de carga registrada.', 'error');
+        return;
+      }
+
+      const fechaCarga = new Date(hecho.fecha_carga);
+      const hoy = new Date();
+
+      const diferenciaTiempo = hoy - fechaCarga;
+      const diferenciaDias = diferenciaTiempo / (1000 * 3600 * 24);
+
+      if (diferenciaDias > 7) {
+        showToast('Solo se puede editar un hecho dentro de los 7 días posteriores a su carga.', 'error');
+        return;
+      }
+
+      openSolicitudEdicionModal(hecho);
+    }
+
+    function openSolicitudEdicionModal(hecho) {
+      const modal = document.getElementById('solicitudEdicionModal');
+
+      // 1. IDs
+      document.getElementById('edit_hecho_id').value = hecho.id || '';
+
+      // 2. Textos Simples
+      document.getElementById('edit_titulo').value = hecho.titulo || '';
+      document.getElementById('edit_descripcion').value = hecho.descripcion || '';
+      document.getElementById('edit_latitud').value = hecho.latitud || '';
+      document.getElementById('edit_longitud').value = hecho.longitud || '';
+      // 3. Categoría
+      const selectCategoria = document.getElementById('edit_categoria');
+      if (hecho.categoria) selectCategoria.value = hecho.categoria;
+
+      if (hecho.fecha_acontecimiento) {
+        // Convertir fecha UTC a zona local del navegador para mostrar en el input
+        let fechaIso = hecho.fecha_acontecimiento.substring(0, 16);
+        document.getElementById('edit_fecha').value = convertUTCToLocal(fechaIso);
+      }
+
+      document.getElementById('edit_multimedia').value = '';
+
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+    }
+
+    // --- LÓGICA DE ENVÍO
+    document.addEventListener('DOMContentLoaded', function() {
+      const formEdicion = document.getElementById('solicitudEdicionForm');
+
+      if (formEdicion) {
+        formEdicion.addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById('submit_edicion');
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Procesando...';
+
+          try {
+            const fileInput = document.getElementById('edit_multimedia');
+            // Validar cantidad de archivos antes de procesar
+            if (fileInput.files.length > 5) {
+              showToast('Solo se pueden cargar hasta 5 archivos. Por favor, selecciona menos archivos.', 'error');
+              submitBtn.disabled = false;
+              submitBtn.textContent = 'Guardar Cambios';
+              return;
+            }
+            const multimediaDTOs = await procesarArchivos(fileInput.files);
+
+            const solicitudData = {
+              contribuyente_id: Number(document.getElementById('edit_contribuyente_id').value) || 1,
+              titulo: document.getElementById('edit_titulo').value,
+              descripcion: document.getElementById('edit_descripcion').value,
+              categoria: document.getElementById('edit_categoria').value,
+              latitud: parseFloat(document.getElementById('edit_latitud').value),
+              longitud: parseFloat(document.getElementById('edit_longitud').value),
+              fecha_acontecimiento: convertLocalToUTC(document.getElementById('edit_fecha').value),
+              multimedia: multimediaDTOs
+            };
+
+            const hechoId = document.getElementById('edit_hecho_id').value;
+            const url = '/api/solicitudes/modificar/' + hechoId;
+            const response = await apiFetch(url, {
+              method: 'POST', //
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(solicitudData)
+            });
+
+            if (response.ok) {
+              showToast('Modificación solicitada correctamente.', 'success');
+              closeSolicitudEdicionModal();
+              closeHechoDetailPanel();
+              // Opcional: Recargar página para ver cambios
+              setTimeout(() => location.reload(), 1500);
+            } else {
+              const text = await response.text();
+              showToast('Error: ' + text, 'error');
+            }
+
+          } catch (error) {
+            showToast('Error: ' + error.message, 'error');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Guardar Cambios';
+          }
+        });
+      }
+    });
+
+
+    function validarCantidadArchivos(input, maxArchivos) {
+      if (input.files.length > maxArchivos) {
+        showToast(`Solo se pueden seleccionar hasta ${maxArchivos} archivos. Se mantendrán solo los primeros ${maxArchivos}.`, 'error');
+        // Crear un nuevo DataTransfer para limitar los archivos
+        const dataTransfer = new DataTransfer();
+        for (let i = 0; i < maxArchivos; i++) {
+          dataTransfer.items.add(input.files[i]);
+        }
+        input.files = dataTransfer.files;
+      }
+    }
+
+    function procesarArchivos(files) {
+      return Promise.all(Array.from(files).map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+
+            const base64String = event.target.result.split(',')[1];
+
+
+            resolve({
+              tipo_contenido: file.type,
+              path_archivo: file.name,
+              contenido_base64: base64String
+            });
+          };
+          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
+        });
+      }));
+    }
+
+    function closeSolicitudEdicionModal() {
+      const modal = document.getElementById('solicitudEdicionModal');
+      const form = document.getElementById('solicitudEdicionForm');
+
+
+      if (modal) {
+        modal.style.display = 'none';
+      }
+
+
+      document.body.style.overflow = '';
+
+
+      if (form) {
+        form.reset();
+      }
+    }
+    // Cerrar modal al hacer click fuera (Overlay)
+    document.getElementById('solicitudEdicionModal').addEventListener('click', function(e) {
+      if (e.target === this) {
+        closeSolicitudEdicionModal();
+      }
+    });
+
+
+
+    // Funciones del carousel básicas ahora están en carousel.js
+    // carouselPrev y carouselNext están disponibles globalmente desde carousel.js
+    
+    // Función específica para manejar indicadores (extiende carouselPrev)
+    function carouselPrevWithIndicators(carouselId) {
+      const carousel = document.getElementById(carouselId);
+      if (!carousel) return;
+      
+      const slides = carousel.querySelectorAll('.carousel-slide');
+      const indicators = carousel.querySelectorAll('.carousel-indicator');
+      let currentIndex = -1;
+      
+      slides.forEach((slide, index) => {
+        if (slide.classList.contains('active')) {
+          currentIndex = index;
+        }
+      });
+      
+      if (currentIndex === -1) return;
+      
+      const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+      
+      // Usar función base de carousel.js
+      carouselPrev(carouselId);
+      
+      // Actualizar indicadores
+      if (indicators.length > 0) {
+        indicators[currentIndex].classList.remove('active');
+        indicators[prevIndex].classList.add('active');
+      }
+    }
+
+    function carouselGoTo(carouselId, index) {
+      const carousel = document.getElementById(carouselId);
+      if (!carousel) return;
+      
+      const slides = carousel.querySelectorAll('.carousel-slide');
+      
+      if (index < 0 || index >= slides.length) return;
+      
+      slides.forEach((slide, i) => {
+        if (i === index) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+    }
+    /*]]>*/
+  </script>
+  </div>

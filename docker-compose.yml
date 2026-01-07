@@ -1,0 +1,359 @@
+# Docker Compose para desarrollo local
+# Usa .env.local para variables de entorno (requerido)
+
+services:
+  # Base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: metamapa-mysql
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-metamapa}
+      MYSQL_DATABASE: metamapa
+      TZ: America/Argentina/Buenos_Aires
+    ports:
+      - "${DB_PORT:-3308}:3306"  # Puerto externo 3308 para evitar conflictos con MySQL de Windows
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 40s
+    networks:
+      - metamapa-network
+    command: --default-authentication-plugin=mysql_native_password --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # Servicio Users
+  users:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/users
+        MODULE_NAME: users
+    container_name: metamapa-users
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      PORT: 8087
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: users
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
+      DB_USE_SSL: "false"
+      DDL_AUTO: ${DDL_AUTO:-update}
+      ADMIN_USERNAME: ${ADMIN_USERNAME:-nicolas}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-paz}
+      SEED_CONTRIB_USERNAME: ${SEED_CONTRIB_USERNAME:-lauri33}
+      SEED_CONTRIB_PASSWORD: ${SEED_CONTRIB_PASSWORD:-asd}
+      SECURITY_ORIGIN_FILTER_ENABLED: "false"
+    ports:
+      - "8087:8087"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8087/actuator/health"]
+      interval: 30s
+      timeout: 15s
+      retries: 5
+      start_period: 180s
+
+  # Servicio Estatica
+  estatica:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/estatica
+        MODULE_NAME: estatica
+    container_name: metamapa-estatica
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      PORT: 8082
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: estatica
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
+      DB_USE_SSL: "false"
+      DDL_AUTO: ${DDL_AUTO:-update}
+      CSV_STORAGE_PATH: /app/data/csv
+      SECURITY_ORIGIN_FILTER_ENABLED: "false"
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./backend/data/csv:/app/data/csv
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+  # Servicio Dinamica
+  dinamica:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/dinamica
+        MODULE_NAME: dinamica
+    container_name: metamapa-dinamica
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      PORT: 8081
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: dinamica
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
+      DB_USE_SSL: "false"
+      DDL_AUTO: ${DDL_AUTO:-update}
+      MULTIMEDIA_STORAGE_PATH: /app/data/multimedia
+      FRONTEND_URL: http://frontend:8080
+      AGREGADOR_URL: http://agregador:8084
+      SECURITY_ORIGIN_FILTER_ENABLED: "false"
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./backend/data/multimedia:/app/data/multimedia
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+  # Servicio Proxy ONG
+  proxy-ong:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/proxy_ong
+        MODULE_NAME: proxy_ong
+    container_name: metamapa-proxy-ong
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      PORT: 8083
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: proxy_ong
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
+      DB_USE_SSL: "false"
+      DDL_AUTO: ${DDL_AUTO:-update}
+      PROXY_ONG_EMAIL: ${PROXY_ONG_EMAIL:-}
+      PROXY_ONG_PASSWORD: ${PROXY_ONG_PASSWORD:-}
+      PROXY_ONG_API_URL: ${PROXY_ONG_API_URL:-http://localhost:9999/api}
+      SECURITY_ORIGIN_FILTER_ENABLED: "false"
+    ports:
+      - "8083:8083"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+  # Servicio Proxy MetaMapa
+  proxy-metamapa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/proxy_metamapa
+        MODULE_NAME: proxy_metamapa
+    container_name: metamapa-proxy-metamapa
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      PORT: 8086
+      SPRING_PROFILES_ACTIVE: dev
+      METAMAPA_EXTERNAL_URL: ${METAMAPA_EXTERNAL_URL:-http://localhost:8080}
+      SECURITY_ORIGIN_FILTER_ENABLED: "false"
+      # METAMAPA_EXTERNAL_URL: URL de otra instancia de MetaMapa (solo para prod-metamapa-external)
+      # Actualmente no se usa - se usa stub en todos los ambientes
+    ports:
+      - "8086:8086"
+    networks:
+      - metamapa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+  # Servicio Agregador
+  agregador:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/agregador
+        MODULE_NAME: agregador
+    container_name: metamapa-agregador
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      PORT: 8084
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: agregador
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
+      DB_USE_SSL: "false"
+      DDL_AUTO: ${DDL_AUTO:-update}
+      MULTIMEDIA_STORAGE_PATH: /app/data/multimedia
+      USERS_SERVICE_URL: http://users:8087
+      ESTATICA_URL: http://estatica:8082
+      DINAMICA_URL: http://dinamica:8081
+      PROXY_ONG_URL: http://proxy-ong:8083
+      PROXY_METAMAPA_URL: http://proxy-metamapa:8086
+      SECURITY_ORIGIN_FILTER_ENABLED: "false"
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./backend/data/multimedia:/app/data/multimedia
+    depends_on:
+      mysql:
+        condition: service_healthy
+      users:
+        condition: service_healthy
+      estatica:
+        condition: service_healthy
+      dinamica:
+        condition: service_healthy
+      proxy-ong:
+        condition: service_healthy
+      proxy-metamapa:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+  # Servicio Estadistica
+  estadistica:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/estadistica
+        MODULE_NAME: estadistica
+    container_name: metamapa-estadistica
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      PORT: 8085
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: estadisticas
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-metamapa}
+      DB_USE_SSL: "false"
+      DDL_AUTO: ${DDL_AUTO:-update}
+      AGREGADOR_URL: http://agregador:8084
+      SECURITY_ORIGIN_FILTER_ENABLED: "false"
+    ports:
+      - "8085:8085"
+    depends_on:
+      mysql:
+        condition: service_healthy
+      agregador:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+  # Servicio Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: frontend
+        MODULE_NAME: frontend
+    container_name: metamapa-frontend
+    init: true
+    env_file:
+      - .env.local
+    environment:
+      PORT: 8080
+      AGREGADOR_URL: http://agregador:8084
+      DINAMICA_URL: http://dinamica:8081
+      ESTATICA_URL: http://estatica:8082
+      USERS_SERVICE_URL: http://users:8087
+      ESTADISTICA_URL: http://estadistica:8085
+      PAGINATION_PAGE_SIZE: ${PAGINATION_PAGE_SIZE:-18}
+    ports:
+      - "8080:8080"
+    depends_on:
+      agregador:
+        condition: service_healthy
+      dinamica:
+        condition: service_healthy
+      estatica:
+        condition: service_healthy
+      users:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 150s
+
+volumes:
+  mysql_data:
+    driver: local
+
+networks:
+  metamapa-network:
+    driver: bridge
+

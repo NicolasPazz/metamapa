@@ -3,6 +3,7 @@ package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
+import ar.utn.ba.ddsi.agregador.dto.PageResponse;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Transient;
@@ -24,7 +25,6 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue("CRON")
 public class FuenteCron extends AFuente {
-
   @Transient
   @Getter
   @Setter
@@ -48,17 +48,20 @@ public class FuenteCron extends AFuente {
   @Transient
   @Override
   public ResponseEntity<List<HechoDTO>> getAllHechosNuevos() {
+    long startTime = System.currentTimeMillis();
     try {
       log.info("🔍 [FuenteCron] Obteniendo hechos nuevos de fuente: {}", getNombre());
       List<HechoDTO> hechos = webClient.get()
-          .uri("/hechos/nuevos")
+          .uri("/api/hechos/nuevos")
           .retrieve()
           .bodyToFlux(HechoDTO.class)
           .collectList()
           .block();
+      long elapsedMs = System.currentTimeMillis() - startTime;
       log.info("✅ [FuenteCron] {} hechos nuevos obtenidos de fuente: {}", hechos != null ? hechos.size() : 0, getNombre());
       return ResponseEntity.ok(hechos != null ? hechos : List.of());
     } catch (Exception e) {
+      long elapsedMs = System.currentTimeMillis() - startTime;
       log.error("❌ [FuenteCron] Error obteniendo hechos de fuente {}: {}", getNombre(), e.getMessage(), e);
       return ResponseEntity.ok(List.of());
     }
@@ -80,5 +83,25 @@ public class FuenteCron extends AFuente {
       String ubicacion,
       String modo) {
     return ResponseEntity.of(Optional.empty());
+  }
+
+  @Transient
+  @Override
+  public ResponseEntity<PageResponse<HechoDTO>> getAllHechosVisiblesPaginated(
+      String categoria, 
+      LocalDate fecha_reporte_desde, 
+      LocalDate fecha_reporte_hasta, 
+      LocalDateTime fecha_acontecimiento_desde, 
+      LocalDateTime fecha_acontecimiento_hasta, 
+      String ubicacion, 
+      int page, 
+      int size) {
+    return ResponseEntity.ok(new PageResponse<>(List.of(), page, size, false, page > 0, 0));
+  }
+
+  @Transient
+  @Override
+  public ResponseEntity<PageResponse<ColeccionDTO>> getAllColeccionesPaginated(int page, int size) {
+    return ResponseEntity.ok(new PageResponse<>(List.of(), page, size, false, page > 0, 0));
   }
 }

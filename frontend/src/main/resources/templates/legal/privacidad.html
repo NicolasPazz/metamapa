@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Política de Privacidad - MetaMapa</title>
+  <link rel="icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+  <link rel="shortcut icon" type="image/x-icon" th:href="@{/images/favicon.ico}">
+  <link rel="stylesheet" th:href="@{/css/landing.css}">
+</head>
+<body>
+  <header class="navbar">
+    <a th:href="@{/}" class="logo">
+      <img th:src="@{/images/metamapa-header.svg}" alt="MetaMapa" class="logo-img" onerror="this.style.display='none'; this.nextElementSibling.style.display='inline';">
+      <span class="logo-text" style="display: none;">MetaMapa</span>
+    </a>
+    <nav class="nav-buttons-center">
+      <a th:href="@{/hechos}" class="btn secondary">Hechos</a>
+      <a th:href="@{/colecciones}" class="btn secondary">Colecciones</a>
+    </nav>
+    <nav class="nav-buttons">
+      <a sec:authorize="!isAuthenticated()" th:href="@{/login}" class="btn secondary">Ingresar</a>
+      <a sec:authorize="!isAuthenticated()" th:href="@{/registro}" class="btn primary">Registrarse</a>
+      <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" style="display: inline;">
+        <button type="submit" class="btn secondary">Cerrar sesión</button>
+      </form>
+    </nav>
+  </header>
+
+  <section class="block">
+    <div class="container">
+      <h1 style="color: var(--primary); text-align: center; margin-bottom: 2rem;">Política de Privacidad</h1>
+
+      <div style="max-width: 900px; margin: 0 auto; text-align: justify;">
+        <h2 style="color: var(--secondary); margin-top: 2rem;">1. Introducción</h2>
+        <p>
+          En MetaMapa, nos comprometemos a proteger la privacidad y seguridad de nuestros usuarios.
+          Esta política describe cómo recopilamos, usamos y protegemos su información personal.
+        </p>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">2. Información que Recopilamos</h2>
+        <p>
+          MetaMapa puede recopilar los siguientes tipos de información:
+        </p>
+        <ul style="margin-left: 2rem; line-height: 1.8;">
+          <li><strong>Información de cuenta:</strong> Email, nombre de usuario</li>
+          <li><strong>Información de ubicación:</strong> Datos geográficos asociados a los hechos reportados</li>
+          <li><strong>Contenido publicado:</strong> Textos, imágenes y datos vinculados a reportes</li>
+          <li><strong>Datos técnicos:</strong> Dirección IP, tipo de navegador, páginas visitadas</li>
+        </ul>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">3. Anonimato y Protección de Identidad</h2>
+        <p>
+          MetaMapa está diseñado para proteger la identidad de sus usuarios:
+        </p>
+        <ul style="margin-left: 2rem; line-height: 1.8;">
+          <li>Los reportes pueden realizarse de forma anónima</li>
+          <li>No compartimos información personal con terceros sin consentimiento</li>
+          <li>Implementamos medidas de seguridad para proteger sus datos</li>
+          <li>Los datos sensibles se cifran y almacenan de forma segura</li>
+        </ul>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">4. Uso de la Información</h2>
+        <p>
+          Utilizamos la información recopilada para:
+        </p>
+        <ul style="margin-left: 2rem; line-height: 1.8;">
+          <li>Proporcionar y mejorar nuestros servicios</li>
+          <li>Verificar y moderar contenido</li>
+          <li>Generar estadísticas y análisis agregados</li>
+          <li>Comunicarnos con los usuarios cuando sea necesario</li>
+          <li>Cumplir con obligaciones legales</li>
+        </ul>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">5. Compartir Información</h2>
+        <p>
+          No vendemos, alquilamos ni compartimos su información personal con terceros,
+          excepto en las siguientes circunstancias:
+        </p>
+        <ul style="margin-left: 2rem; line-height: 1.8;">
+          <li>Con su consentimiento explícito</li>
+          <li>Para cumplir con requisitos legales o responder a procesos legales</li>
+          <li>Para proteger los derechos, propiedad o seguridad de MetaMapa y sus usuarios</li>
+        </ul>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">6. Cookies y Tecnologías Similares</h2>
+        <p>
+          Utilizamos cookies y tecnologías similares para mejorar la experiencia del usuario,
+          analizar el tráfico y personalizar el contenido. Puede configurar su navegador para
+          rechazar cookies, aunque esto puede afectar algunas funcionalidades.
+        </p>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">7. Seguridad de Datos</h2>
+        <p>
+          Implementamos medidas técnicas y organizativas apropiadas para proteger su información
+          contra acceso no autorizado, alteración, divulgación o destrucción. Sin embargo,
+          ningún método de transmisión por Internet es 100% seguro.
+        </p>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">8. Derechos del Usuario</h2>
+        <p>
+          Usted tiene derecho a:
+        </p>
+        <ul style="margin-left: 2rem; line-height: 1.8;">
+          <li>Acceder a su información personal</li>
+          <li>Rectificar datos inexactos</li>
+          <li>Solicitar la eliminación de sus datos</li>
+          <li>Oponerse al procesamiento de sus datos</li>
+          <li>Solicitar la portabilidad de sus datos</li>
+        </ul>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">9. Cambios a esta Política</h2>
+        <p>
+          Nos reservamos el derecho de actualizar esta política de privacidad en cualquier momento.
+          Los cambios significativos serán notificados a través de la plataforma.
+        </p>
+
+        <h2 style="color: var(--secondary); margin-top: 2rem;">10. Modificaciones</h2>
+        <p>
+          Nos reservamos el derecho de modificar esta política de privacidad en cualquier momento.
+          Las modificaciones entrarán en vigor desde su publicación en esta página.
+        </p>
+
+        <p style="margin-top: 2rem; text-align: center;">
+          <a th:href="@{/}" class="btn primary">Volver al inicio</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="block legal">
+    <div class="container">
+      <h2>Información Legal y Privacidad</h2>
+      <p>
+        MetaMapa protege la identidad de quienes utilizan la plataforma. 
+        Todos los datos son tratados de manera segura y transparente. 
+      </p>
+      <p>
+        © 2025 MetaMapa. Todos los derechos reservados.<br>
+        <a th:href="@{/terminos}" class="footer-link">Términos de uso</a> ·
+        <a th:href="@{/privacidad}" class="footer-link">Política de privacidad</a>
+      </p>
+    </div>
+  </section>
+</body>
+</html>
+

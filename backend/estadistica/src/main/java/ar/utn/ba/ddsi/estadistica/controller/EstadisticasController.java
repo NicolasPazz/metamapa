@@ -24,34 +24,29 @@ public class EstadisticasController {
 
   @GetMapping
   public ResponseEntity<EstadisticasCompletasDTO> obtenerEstadisticas() {
-    log.info("📊 [EstadisticasController] GET /api/estadisticas");
-
+    log.info("[EstadisticasController] - GET - /api/estadisticas");
     try {
       EstadisticasCompletasDTO estadisticas = estadisticasService.obtenerEstadisticasCompletas();
       return ResponseEntity.ok(estadisticas);
     } catch (Exception e) {
-      log.error("❌ [EstadisticasController] Error al obtener estadísticas: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
   @GetMapping("/solicitudes-spam")
   public ResponseEntity<SpamDTO> obtenerEstadisticasSpam() {
-    log.info("🔍 [EstadisticasController] GET /api/estadisticas/solicitudes-spam");
-
+    log.info("[EstadisticasController] - GET - /api/estadisticas/solicitudes-spam");
     try {
       SpamDTO resultado = estadisticasService.obtenerEstadisticasSpam();
       return ResponseEntity.ok(resultado);
     } catch (Exception e) {
-      log.error("❌ [EstadisticasController] Error al obtener estadísticas de spam: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
     }
   }
 
   @GetMapping("/export/csv")
   public ResponseEntity<String> exportarEstadisticasCSV() {
-    log.info("📄 [EstadisticasController] GET /api/estadisticas/export/csv");
-
+    log.info("[EstadisticasController] - GET - /api/estadisticas/export/csv");
     try {
       String csv = csvExportService.exportarEstadisticasACSV();
 
@@ -63,7 +58,6 @@ public class EstadisticasController {
           .headers(headers)
           .body(csv);
     } catch (Exception e) {
-      log.error("❌ [EstadisticasController] Error al exportar CSV: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body("Error al generar CSV: " + e.getMessage());
     }
@@ -71,13 +65,11 @@ public class EstadisticasController {
 
   @PostMapping("/recalcular")
   public ResponseEntity<String> recalcularEstadisticas() {
-    log.info("🔄 [EstadisticasController] POST /api/estadisticas/recalcular");
-
+    log.info("[EstadisticasController] - POST - /api/estadisticas/recalcular");
     try {
       estadisticasService.recalcularTodasLasEstadisticas();
       return ResponseEntity.ok("Estadísticas recalculadas exitosamente");
     } catch (Exception e) {
-      log.error("❌ [EstadisticasController] Error al recalcular estadísticas: {}", e.getMessage(), e);
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
           .body("Error al recalcular estadísticas: " + e.getMessage());
     }

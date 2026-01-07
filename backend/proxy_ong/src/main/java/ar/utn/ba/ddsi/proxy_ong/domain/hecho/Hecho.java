@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.LocalDateTime;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -12,6 +13,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
 @Table(name = "hecho")
 public class Hecho {
@@ -39,16 +41,4 @@ public class Hecho {
 
   @Column(name = "ultima_modificacion")
   private LocalDateTime ultimaModificacion;
-
-  public Hecho(Long id, String titulo, String descripcion, String categoria, Double latitud, Double longitud, LocalDateTime fechaDeAcontecimiento, LocalDateTime fechaDeCarga, LocalDateTime ultimaModificacion) {
-    this.id = id;
-    this.titulo = titulo;
-    this.descripcion = descripcion;
-    this.categoria = categoria;
-    this.latitud = latitud;
-    this.longitud = longitud;
-    this.fechaDeAcontecimiento = fechaDeAcontecimiento;
-    this.fechaDeCarga = fechaDeCarga;
-    this.ultimaModificacion = ultimaModificacion;
-  }
 }

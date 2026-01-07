@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -68,6 +69,51 @@ public class FuentesService {
 
     log.info("[FuentesService] {} hechos visibles combinados desde todas las fuentes.",
         resultados.size());
+
+    return ResponseEntity.ok(filtrarBlacklist(resultados));
+  }
+
+  public ResponseEntity<List<HechoDTO>> getAllHechosVisiblesAsync(
+      String categoria,
+      LocalDate fechaReporteDesde, LocalDate fechaReporteHasta,
+      LocalDateTime fechaAcontecimientoDesde, LocalDateTime fechaAcontecimientoHasta,
+      String ubicacion) {
+
+    long startTime = System.currentTimeMillis();
+
+    // Ejecutar llamadas en paralelo usando CompletableFuture con el pool común de ForkJoinPool
+    List<CompletableFuture<List<HechoDTO>>> futures = fuentes.stream()
+        .map(fuente -> CompletableFuture.supplyAsync(() -> {
+          try {
+            Long idFuente = fuente.getId();
+            List<HechoDTO> hechos = Optional.ofNullable(
+                fuente.getAllHechosVisibles(
+                    categoria,
+                    fechaReporteDesde, fechaReporteHasta,
+                    fechaAcontecimientoDesde, fechaAcontecimientoHasta,
+                    ubicacion
+                ).getBody()
+            ).orElse(List.of());
+
+            hechos.forEach(h -> normalizarHecho(h, idFuente));
+            return hechos;
+          } catch (Exception e) {
+            log.warn("[FuentesService] Error obteniendo hechos de fuente {}: {}", 
+                fuente.getNombre(), e.getMessage());
+            return new ArrayList<HechoDTO>();
+          }
+        }))
+        .collect(Collectors.toList());
+
+    // Esperar todas las respuestas y combinar resultados
+    List<HechoDTO> resultados = futures.stream()
+        .map(CompletableFuture::join)
+        .flatMap(List::stream)
+        .collect(Collectors.toList());
+
+    long totalTime = System.currentTimeMillis();
+    log.info("[FuentesService] {} hechos visibles combinados desde {} fuentes en {}ms (paralelo).",
+        resultados.size(), fuentes.size(), totalTime - startTime);
 
     return ResponseEntity.ok(filtrarBlacklist(resultados));
   }
@@ -203,31 +249,33 @@ public class FuentesService {
         .collect(Collectors.toList());
   }
 
+  public List<AFuente> getFuentes() {
+    return new ArrayList<>(fuentes); // Retornar copia para evitar modificaciones externas
+  }
+
 
   private void normalizarHecho(HechoDTO h, Long idFuente) {
-    // Normalizar ID: hechos externos usan idOrigen, no ID (que es para hechos locales)
     if (h.getId() == null) {
       log.warn("Hecho sin id recibido desde fuente {}", idFuente);
     } else {
       h.setIdOrigen(h.getId()); // Preservar ID original como idOrigen
-      h.setId(null); // Limpiar ID para evitar conflictos con hechos locales
+      h.setId(null);
     }
 
-    // Asignar fuente y nombre de fuente
     h.setFuenteId(idFuente);
     AFuente fuente = getFuenteById(idFuente);
     if (fuente != null) {
       h.setNombreFuente(fuente.getNombre());
     }
 
-    // Calcular provincia si no está asignada (usando coordenadas)
     if (h.getProvincia() == null && h.getLatitud() != null && h.getLongitud() != null) {
       Provincia provincia =
           provinciaService.obtenerProvinciaPorCoordenadas(h.getLatitud(), h.getLongitud());
-      h.setProvincia(provincia.getNombre());
+      if (provincia != null) {
+        h.setProvincia(provincia.getNombre());
+      }
     }
 
-    // Aplicar valores por defecto para campos opcionales
     if (h.getEstado() == null) {
       h.setEstado(EstadoHecho.VISIBLE);
     }
@@ -253,7 +301,6 @@ public class FuentesService {
     }
     c.setFuenteId(idFuente);
 
-    // Aplicar defaults para atributos que otras fuentes pueden no proveer
     if (c.getCriteriosDePertenencia() == null) {
       log.debug("Colección de fuente {} sin criterio de pertenencia", idFuente);
     }
@@ -265,7 +312,6 @@ public class FuentesService {
     if (c.getHechos() == null) {
       c.setHechos(new ArrayList<>());
     } else {
-      // Normalizar cada hecho dentro de la colección
       c.getHechos().forEach(h -> normalizarHecho(h, idFuente));
     }
 

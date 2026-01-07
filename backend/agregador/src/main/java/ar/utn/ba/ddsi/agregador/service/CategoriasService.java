@@ -2,26 +2,37 @@ package ar.utn.ba.ddsi.agregador.service;
 
 import ar.utn.ba.ddsi.agregador.domain.hecho.Categoria;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
+import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
 import ar.utn.ba.ddsi.agregador.repositorie.ICategoriaRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class CategoriasService {
 
   private final ICategoriaRepository categoriaRepository;
+  private final FuentesService fuentesService;
 
+  public CategoriasService(ICategoriaRepository categoriaRepository, @Lazy FuentesService fuentesService) {
+    this.categoriaRepository = categoriaRepository;
+    this.fuentesService = fuentesService;
+  }
+
+  @CacheEvict(value = "categorias", allEntries = true)
   public void persistirCategoriasDesdeHechos(List<Hecho> hechos) {
     if (hechos == null || hechos.isEmpty()) {
       return;
@@ -133,16 +144,51 @@ public class CategoriasService {
     }
   }
 
+  @Cacheable(value = "categorias", unless = "#result == null || #result.getBody().isEmpty()")
   public ResponseEntity<List<String>> getAllCategoriasNombres() {
-    log.info("[CategoriasService] Obteniendo todas las categorías");
+    log.info("[CategoriasService] Obteniendo todas las categorías (sin cache)");
 
-    List<String> nombres = categoriaRepository.findAll().stream()
-        .map(Categoria::getNombre)
-        .filter(Objects::nonNull)
+    // Obtener categorías de la BD local
+    Set<String> categoriasSet = new HashSet<>(
+        categoriaRepository.findAll().stream()
+            .map(Categoria::getNombre)
+            .filter(Objects::nonNull)
+            .collect(Collectors.toSet())
+    );
+
+    // Obtener categorías de hechos externos (tiempo real)
+    try {
+      ResponseEntity<List<HechoDTO>> respuestaExternos = fuentesService.getAllHechosVisibles(
+          null, null, null, null, null, null);
+      List<HechoDTO> hechosExternos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
+      
+      // Extraer categorías de hechos externos
+      hechosExternos.stream()
+          .map(HechoDTO::getCategoria)
+          .filter(Objects::nonNull)
+          .filter(cat -> !cat.trim().isEmpty())
+          .map(String::trim)
+          .forEach(categoriasSet::add);
+      
+      log.debug("[CategoriasService] Se encontraron {} categorías de hechos externos", 
+          hechosExternos.stream()
+              .map(HechoDTO::getCategoria)
+              .filter(Objects::nonNull)
+              .distinct()
+              .count());
+    } catch (Exception e) {
+      log.warn("[CategoriasService] Error al obtener categorías de hechos externos: {}", e.getMessage());
+    }
+
+    List<String> nombres = categoriasSet.stream()
         .sorted()
         .toList();
 
-    log.debug("[CategoriasService] Se encontraron {} categorías", nombres.size());
+    long categoriasLocales = categoriaRepository.count();
+    
+    log.debug("[CategoriasService] Total de categorías encontradas: {} ({} en BD + categorías de hechos externos)", 
+        nombres.size(), 
+        categoriasLocales);
     return ResponseEntity.ok(nombres);
   }
 }

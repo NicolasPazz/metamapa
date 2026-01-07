@@ -19,6 +19,7 @@ public class HechosController {
 
   @GetMapping("/nuevos")
   public ResponseEntity<List<HechoOutputDTO>> getHechosNuevos() {
+    log.info("[HechosController] - GET - /api/hechos/nuevos");
     List<HechoOutputDTO> hechosPendientes = hechosService.obtenerHechosNuevos();
     return ResponseEntity.ok(hechosPendientes);
   }

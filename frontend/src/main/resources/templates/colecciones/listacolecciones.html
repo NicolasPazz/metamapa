@@ -1,0 +1,138 @@
+<html lang="es" th:replace="~{layout/base :: html}">
+  <div th:fragment="contenido">
+    <section class="colecciones-block">
+      <h2>Colecciones</h2>
+
+      <div th:if="${#lists.isEmpty(colecciones)}">No hay colecciones disponibles.</div>
+
+      <div th:if="${!#lists.isEmpty(colecciones) and colecciones != null}" class="colecciones-grid">
+        <div th:each="coleccion : ${colecciones}" class="coleccion-card"
+             th:data-coleccion-handle="${coleccion.handle}"
+             onclick="openColeccionDetailPanel(this.dataset.coleccionHandle)"
+             style="cursor: pointer;">
+          <h3 th:text="${coleccion.titulo}"></h3>
+          <p th:text="${coleccion.descripcion}"></p>
+          <span class="ver-detalles-link">Ver detalles</span>
+        </div>
+      </div>
+
+      <div class="pagination">
+        <a th:if="${currentPage > 0}"
+           th:href="'/colecciones?page=' + (currentPage - 1)"
+           class="btn primary">
+          ← Anterior
+        </a>
+
+        <span class="page-indicator">Página <strong th:text="${currentPage + 1}">1</strong></span>
+        <a th:if="${hasNextPage}"
+           th:href="'/colecciones?page=' + (currentPage + 1)"
+           class="btn primary">
+          Siguiente →
+        </a>
+      </div>
+    </section>
+
+    <div id="coleccionDetailPanel" class="side-panel">
+      <div class="panel-header">
+        <h3>Detalles de la Colección</h3>
+        <button class="close-btn" 
+                onclick="closeColeccionDetailPanel()" 
+                aria-label="Cerrar panel de colección"
+                title="Cerrar (Escape)">&times;</button>
+      </div>
+      <div class="panel-content" id="coleccionDetailContent">
+      </div>
+    </div>
+
+    <div id="overlay" class="overlay" onclick="closeColeccionDetailPanel()"></div>
+
+    <script th:inline="javascript">
+      /*<![CDATA[*/
+      const coleccionesData = /*[[${colecciones}]]*/ [];
+
+      function openColeccionDetailPanel(handle) {
+        const coleccion = coleccionesData.find(c => c.handle === handle);
+        if (!coleccion) return;
+
+        const panel = document.getElementById('coleccionDetailPanel');
+        const overlay = document.getElementById('overlay');
+        const content = document.getElementById('coleccionDetailContent');
+
+        let html = '<h2>' + coleccion.titulo + '</h2>';
+
+        if (coleccion.descripcion) {
+          html += '<p><strong>Descripción:</strong> ' + coleccion.descripcion + '</p>';
+        }
+
+        // Usar cantidad_hechos si está disponible (colecciones locales sin hechos cargados)
+        // o hechos.length si los hechos están cargados (colecciones externas)
+        const cantidadHechos = coleccion.cantidad_hechos !== undefined 
+          ? coleccion.cantidad_hechos 
+          : (coleccion.hechos ? coleccion.hechos.length : 0);
+        html += '<p><strong>Hechos:</strong> ' + cantidadHechos + '</p>';
+
+        if (coleccion.fecha_carga) {
+            // Convertir fecha UTC a hora local
+            let fechaStr = coleccion.fecha_carga;
+            // Si no tiene indicador de zona horaria, asumir UTC
+            if (!fechaStr.includes('Z') && !fechaStr.includes('+') && !fechaStr.includes('-', 10)) {
+                fechaStr = fechaStr + 'Z';
+            }
+            const fecha = new Date(fechaStr);
+            // Formatear en formato dd/MM/yyyy, HH:mm:ss
+            const day = String(fecha.getDate()).padStart(2, '0');
+            const month = String(fecha.getMonth() + 1).padStart(2, '0');
+            const year = fecha.getFullYear();
+            const hours = String(fecha.getHours()).padStart(2, '0');
+            const minutes = String(fecha.getMinutes()).padStart(2, '0');
+            const seconds = String(fecha.getSeconds()).padStart(2, '0');
+            html += '<p><strong>Fecha de creación:</strong> ' + day + '/' + month + '/' + year + ', ' + hours + ':' + minutes + ':' + seconds + '</p>';
+        }
+
+        html += '<div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">';
+        html += '<a href="/colecciones/' + coleccion.handle + '/hechos" class="btn primary">Ver todos los hechos</a>';
+        html += '<a href="/colecciones/' + coleccion.handle + '/mapa" class="btn primary">Ver en mapa</a>';
+        html += '</div>';
+
+        content.innerHTML = html;
+
+        panel.classList.add('active');
+        overlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+
+        history.pushState(null, '', '#coleccion' + handle);
+      }
+
+      function closeColeccionDetailPanel() {
+        const panel = document.getElementById('coleccionDetailPanel');
+        const overlay = document.getElementById('overlay');
+
+        panel.classList.remove('active');
+        overlay.classList.remove('active');
+        document.body.style.overflow = '';
+
+        const baseUrl = window.location.pathname;
+        history.pushState(null, '', baseUrl);
+      }
+
+      window.addEventListener('popstate', function() {
+        closeColeccionDetailPanel();
+      });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeColeccionDetailPanel();
+        }
+      });
+
+      window.addEventListener('load', function() {
+        const hash = window.location.hash;
+        if (hash.startsWith('#coleccion')) {
+          const handle = hash.replace('#coleccion', '');
+          openColeccionDetailPanel(handle);
+        }
+      });
+      /*]]>*/
+    </script>
+  </div>
+</html>

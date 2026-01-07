@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es" th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"/>
+  <style>
+    #map {
+      height: calc(100vh - 80px);
+      width: 100%;
+    }
+    /* Sobrescribir estilos por defecto de Leaflet para el popup */
+    .leaflet-popup-content-wrapper {
+      overflow: visible !important;
+    }
+    .leaflet-popup-content {
+      margin: 13px 19px;
+      overflow: visible !important;
+      max-height: none !important;
+    }
+    .popup-content {
+      max-width: 400px;
+      overflow: visible;
+    }
+    .popup-content h3 {
+      margin: 0 0 15px 0;
+      font-size: 1.2em;
+      color: #333;
+      border-bottom: 2px solid #007bff;
+      padding-bottom: 8px;
+    }
+    .popup-content p {
+      margin: 8px 0;
+      font-size: 0.9em;
+      line-height: 1.4;
+    }
+    .popup-content strong {
+      color: #555;
+      font-weight: 600;
+    }
+    .popup-content .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+    .popup-content .tag {
+      background: #e0e0e0;
+      padding: 3px 8px;
+      border-radius: 3px;
+      font-size: 0.85em;
+    }
+    .popup-content button {
+      margin-top: 15px;
+      padding: 0.6rem 1.2rem;
+      border: none;
+      border-radius: 5px;
+      background: var(--primary, #007bff);
+      color: white;
+      cursor: pointer;
+      font-size: 0.9em;
+      width: 100%;
+    }
+    .popup-content button:hover {
+      opacity: 0.9;
+    }
+    .floating-back-button {
+      position: fixed;
+      top: 100px;
+      right: 20px;
+      z-index: 1000;
+    }
+    /* Estilos del carrusel para el popup del mapa */
+    .popup-content .multimedia-carousel {
+      margin-top: 10px;
+      position: relative;
+    }
+    .popup-content .carousel-container {
+      position: relative;
+      width: 100%;
+      max-width: 350px;
+      margin: 0 auto;
+      background: #f9f9f9;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .popup-content .carousel-slides {
+      position: relative;
+      width: 100%;
+      height: 200px;
+      overflow: hidden;
+    }
+    .popup-content .carousel-slide {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transition: opacity 0.3s ease-in-out;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+    }
+    .popup-content .carousel-slide.active {
+      opacity: 1;
+      z-index: 1;
+    }
+    .popup-content .carousel-item-image {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+      position: relative;
+    }
+    .popup-content .carousel-item-image img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .popup-content .carousel-item-video {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #000;
+    }
+    .popup-content .carousel-item-video video {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 4px;
+    }
+    .popup-content .carousel-item-audio {
+      width: 100%;
+      padding: 20px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: #f9f9f9;
+    }
+    .popup-content .carousel-item-audio audio {
+      width: 100%;
+      max-width: 300px;
+    }
+    .popup-content .carousel-btn {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 18px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s;
+    }
+    .popup-content .carousel-btn:hover {
+      background: rgba(0, 0, 0, 0.7);
+    }
+    .popup-content .carousel-prev {
+      left: 10px;
+    }
+    .popup-content .carousel-next {
+      right: 10px;
+    }
+    /* Estilos para reducir el tamaño de los marcadores */
+    .leaflet-marker-icon {
+      width: 20px !important;
+      height: 30px !important;
+      margin-left: -10px !important;
+      margin-top: -30px !important;
+      min-height: auto !important;
+      min-width: auto !important;
+    }
+  </style>
+
+  <div class="floating-back-button">
+    <a href="javascript:history.back()" class="btn primary">Volver</a>
+  </div>
+
+  <div id="map"></div>
+  <div id="no-hechos-message" style="display: none; text-align: center; padding: 20px; margin-top: 20px;">
+    <p>No hay hechos con ubicación geográfica para mostrar en el mapa.</p>
+    <a th:href="@{/hechos}" class="btn primary">Volver a Hechos</a>
+  </div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+  <script th:inline="javascript">
+    /*<![CDATA[*/
+    const hechos = /*[[${hechos}]]*/ [];
+    const centrarEnHecho = /*[[${centrarEnHecho}]]*/ false;
+    const hechoId = /*[[${hechoId}]]*/ null;
+    const fuenteId = /*[[${fuenteId}]]*/ null;
+    const idOrigen = /*[[${idOrigen}]]*/ null;
+    const handleColeccion = /*[[${handleColeccion}]]*/ null;
+
+    // Filtrar hechos que tienen coordenadas válidas
+    const hechosConCoordenadas = hechos.filter(hecho => 
+      hecho.latitud != null && 
+      hecho.longitud != null && 
+      !isNaN(hecho.latitud) && 
+      !isNaN(hecho.longitud) &&
+      hecho.latitud >= -90 && hecho.latitud <= 90 &&
+      hecho.longitud >= -180 && hecho.longitud <= 180
+    );
+
+    // Inicializar mapa
+    let map;
+    let markers = [];
+
+    if (centrarEnHecho && hechosConCoordenadas.length > 0) {
+      // Centrar en un hecho específico
+      const hecho = hechosConCoordenadas[0];
+      map = L.map('map', { zoomControl: false }).setView([hecho.latitud, hecho.longitud], 13);
+    } else if (hechosConCoordenadas.length > 0) {
+      // Calcular el centro de todos los hechos
+      const bounds = L.latLngBounds(
+        hechosConCoordenadas.map(h => [h.latitud, h.longitud])
+      );
+      map = L.map('map', { zoomControl: false }).fitBounds(bounds);
+    } else {
+      // Vista por defecto (Argentina)
+      map = L.map('map', { zoomControl: false }).setView([-34.6, -58.4], 5);
+    }
+
+    // Agregar capa de OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(map);
+
+    // Crear grupo de clusters para mejor rendimiento con muchos marcadores
+    const markersCluster = L.markerClusterGroup({
+      chunkedLoading: true,
+      chunkInterval: 200,
+      chunkDelay: 50,
+      maxClusterRadius: 50,
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true
+    });
+
+    // Función para construir el contenido del popup (usa función reutilizable)
+    function construirPopupContent(hecho) {
+      let popupContent = '<div class="popup-content">';
+      // Usar función reutilizable para renderizar detalles
+      popupContent += renderHechoDetails(hecho, {
+        showMultimedia: true,
+        showMapButton: false, // No mostrar botón de mapa en popup
+        showTags: true,
+        carouselIdPrefix: 'popup-carousel'
+      });
+
+      popupContent += '</div>';
+      return popupContent;
+    }
+
+    // Crear icono personalizado más pequeño
+    const smallIcon = L.icon({
+      iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+      iconSize: [20, 30],
+      iconAnchor: [10, 30],
+      popupAnchor: [0, -30]
+    });
+
+    // Agregar marcadores al cluster group
+    hechosConCoordenadas.forEach(hecho => {
+      const marker = L.marker([hecho.latitud, hecho.longitud], { icon: smallIcon });
+      const popupContent = construirPopupContent(hecho);
+      marker.bindPopup(popupContent);
+      markersCluster.addLayer(marker);
+      markers.push(marker);
+    });
+
+    // Agregar el cluster group al mapa
+    map.addLayer(markersCluster);
+
+    // Si hay un solo hecho, abrir su popup automáticamente
+    if (centrarEnHecho && hechosConCoordenadas.length === 1 && markers.length > 0) {
+      markers[0].openPopup();
+    }
+
+    // Ajustar el zoom si hay muchos marcadores
+    if (hechosConCoordenadas.length > 1 && !centrarEnHecho) {
+      const group = new L.featureGroup(markers);
+      map.fitBounds(group.getBounds().pad(0.1));
+    }
+
+    // Mostrar mensaje si no hay hechos con coordenadas
+    if (hechosConCoordenadas.length === 0) {
+      document.getElementById('no-hechos-message').style.display = 'block';
+      document.getElementById('map').style.display = 'none';
+    }
+
+    // Funciones del carrusel (reutilizadas desde hechosencoleccion.html)
+    function carouselPrev(carouselId) {
+      const carousel = document.getElementById(carouselId);
+      if (!carousel) return;
+      const slides = carousel.querySelectorAll('.carousel-slide');
+      let currentIndex = 0;
+      slides.forEach((slide, index) => {
+        if (slide.classList.contains('active')) {
+          currentIndex = index;
+        }
+      });
+      const prevIndex = (currentIndex - 1 + slides.length) % slides.length;
+      slides[currentIndex].classList.remove('active');
+      slides[prevIndex].classList.add('active');
+    }
+
+    function carouselNext(carouselId) {
+      const carousel = document.getElementById(carouselId);
+      if (!carousel) return;
+      const slides = carousel.querySelectorAll('.carousel-slide');
+      let currentIndex = 0;
+      slides.forEach((slide, index) => {
+        if (slide.classList.contains('active')) {
+          currentIndex = index;
+        }
+      });
+      const nextIndex = (currentIndex + 1) % slides.length;
+      slides[currentIndex].classList.remove('active');
+      slides[nextIndex].classList.add('active');
+    }
+
+    function carouselGoTo(carouselId, index) {
+      const carousel = document.getElementById(carouselId);
+      if (!carousel) return;
+      const slides = carousel.querySelectorAll('.carousel-slide');
+      slides.forEach((slide, i) => {
+        if (i === index) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+    }
+    /*]]>*/
+  </script>
+</div>
+</html>

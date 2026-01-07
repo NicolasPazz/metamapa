@@ -5,8 +5,10 @@ import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudHechoInputContribuyente
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarAdminInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.input.SolicitudModificarUserInputDTO;
 import ar.utn.ba.ddsi.dinamica.domain.dto.output.SolicitudOutputDTO;
+import ar.utn.ba.ddsi.dinamica.domain.dto.output.HechoAgregadorDTO;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.ContenidoMultimedia;
 import ar.utn.ba.ddsi.dinamica.domain.hecho.TipoContenido;
+import ar.utn.ba.ddsi.dinamica.domain.repositorie.IHechosRepository;
 import ar.utn.ba.ddsi.dinamica.domain.repositorie.ISolicitudesRepository;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.EstadoSolicitud;
 import ar.utn.ba.ddsi.dinamica.domain.solicitud.SolicitudHecho;
@@ -21,30 +23,44 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class SolicitudesService {
   private final ISolicitudesRepository solicitudesRepository;
+  private final IHechosRepository hechosRepository;
   private final FuenteService fuenteService;
   private final MultimediaStorageService multimediaStorageService;
   private final ObjectMapper objectMapper;
+  private final WebClient webClientAgregador;
 
   public List<SolicitudOutputDTO> buscarTodas() {
-    log.debug("Buscando todas las solicitudes");
     List<SolicitudHecho> solicitudes = solicitudesRepository.findAll();
-    log.info("Se encontraron {} solicitudes", solicitudes.size());
-
     return solicitudes.stream()
-        .map(SolicitudHecho::toOutputDTO)
+        .map(s -> agregarIdHecho(s.toOutputDTO(), s.getId()))
+        .toList();
+  }
+
+  public List<SolicitudOutputDTO> buscarPendientes() {
+    List<SolicitudHecho> solicitudes = solicitudesRepository.findAll();
+    return solicitudes.stream()
+        .filter(s -> s.getEstado() == EstadoSolicitud.PENDIENTE)
+        .map(s -> agregarIdHecho(s.toOutputDTO(), s.getId()))
+        .toList();
+  }
+
+  public List<SolicitudOutputDTO> buscarPorContribuyente(Long idContribuyente) {
+    List<SolicitudHecho> solicitudes = solicitudesRepository.findByIdContribuyente(idContribuyente);
+    return solicitudes.stream()
+        .map(s -> agregarIdHecho(s.toOutputDTO(), s.getId()))
         .toList();
   }
 
   @Transactional
   public SolicitudHecho recibirSolicitudContribuyente(SolicitudHechoInputContribuyenteDTO input) {
-    log.info("Recibiendo nueva solicitud de contribuyente ID: {}", input.getIdContribuyente());
-
     SolicitudHecho solicitud = SolicitudHecho.builder()
         .idContribuyente(input.getIdContribuyente())
         .titulo(input.getTitulo())
@@ -58,11 +74,14 @@ public class SolicitudesService {
         .transiciones(new ArrayList<>())
         .build();
 
-    // Validaciones de dominio
     solicitud.validarCoordenadas();
     solicitud.validarFechaNoFutura();
 
     if (input.getMultimedia() != null && !input.getMultimedia().isEmpty()) {
+      if (input.getMultimedia().size() > 5) {
+        throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + input.getMultimedia().size() + " archivos.");
+      }
+      
       List<ContenidoMultimedia> multimedia = input.getMultimedia().stream()
           .map(dto -> dto.toContenidoMultimedia(solicitud))
           .toList();
@@ -70,34 +89,93 @@ public class SolicitudesService {
     }
 
     solicitud.cambiarEstado(EstadoSolicitud.PENDIENTE);
-
-    SolicitudHecho solicitudGuardada = solicitudesRepository.save(solicitud);
-
-    log.info("Solicitud creada con ID: {} - Contribuyente: {} ({})",
-        solicitudGuardada.getId(),
-        solicitudGuardada.getIdContribuyente(),
-        solicitudGuardada.esAnonimo() ? "Anónimo" : "Registrado");
-
-    return solicitudGuardada;
+    return solicitudesRepository.save(solicitud);
   }
 
   public SolicitudOutputDTO obtenerSolicitud(Long id) {
-    log.debug("Obteniendo solicitud con ID: {}", id);
-
     SolicitudHecho solicitud = solicitudesRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Solicitud no encontrada con ID: " + id));
 
-    return solicitud.toOutputDTO();
+    return agregarIdHecho(solicitud.toOutputDTO(), id);
+  }
+
+  @Transactional
+  public SolicitudOutputDTO modificarSolicitudConMultipart(
+      Long id, String solicitudJson, List<MultipartFile> archivos) throws IOException {
+    SolicitudModificarUserInputDTO inputDTO = parseJsonToModificarDTO(solicitudJson);
+    
+    if (archivos != null && !archivos.isEmpty()) {
+      long archivosNoVacios = archivos.stream().filter(archivo -> !archivo.isEmpty()).count();
+      if (archivosNoVacios > 5) {
+        throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + archivosNoVacios + " archivos.");
+      }
+      
+      // Crear lista para los nuevos archivos
+      List<ContenidoMultimediaInputDTO> multimediaList = new ArrayList<>();
+      
+      // Si el DTO ya tiene multimedia (existente), agregarlo primero
+      if (inputDTO.getNuevoContenidoMultimedia() != null) {
+        multimediaList.addAll(inputDTO.getNuevoContenidoMultimedia());
+        log.info("Preservando {} archivos multimedia existentes", inputDTO.getNuevoContenidoMultimedia().size());
+      }
+      
+      // Agregar los nuevos archivos
+      for (MultipartFile archivo : archivos) {
+        if (!archivo.isEmpty()) {
+          String nombreArchivoGuardado = multimediaStorageService.guardarArchivo(archivo);
+          TipoContenido tipo = determinarTipoContenido(archivo.getContentType(), archivo.getOriginalFilename());
+          ContenidoMultimediaInputDTO multimediaDTO = new ContenidoMultimediaInputDTO();
+          multimediaDTO.setPathArchivo(nombreArchivoGuardado);
+          multimediaDTO.setTipoContenido(tipo);
+          multimediaList.add(multimediaDTO);
+        }
+      }
+      
+      log.info("Total de archivos multimedia después de agregar nuevos: {}", multimediaList.size());
+      inputDTO.setNuevoContenidoMultimedia(multimediaList);
+    }
+    
+    return modificarSolicitud(id, inputDTO);
+  }
+
+  private SolicitudModificarUserInputDTO parseJsonToModificarDTO(String solicitudJson) throws IOException {
+    try {
+      return objectMapper.readValue(solicitudJson, SolicitudModificarUserInputDTO.class);
+    } catch (com.fasterxml.jackson.core.JsonProcessingException e) {
+      log.error("Error parseando JSON de solicitud modificación: {}", e.getMessage(), e);
+      throw new IOException("Error parseando JSON de solicitud: " + e.getMessage(), e);
+    }
   }
 
   @Transactional
   public SolicitudOutputDTO modificarSolicitud(Long id, SolicitudModificarUserInputDTO inputDTO) {
-    log.info("Modificando solicitud ID: {} por contribuyente ID: {}", id, inputDTO.getIdContribuyente());
-
     SolicitudHecho solicitud = solicitudesRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Solicitud no encontrada con ID: " + id));
 
     solicitud.validarModificacionPorUsuario(inputDTO.getIdContribuyente());
+
+    EstadoSolicitud estadoAnterior = solicitud.getEstado();
+
+    if (estadoAnterior == EstadoSolicitud.ACEPTADO || estadoAnterior == EstadoSolicitud.ACEPTADO_MODIFICADO) {
+      var hechoOpt = hechosRepository.findBySolicitud_Id(id);
+      if (hechoOpt.isPresent()) {
+        var hecho = hechoOpt.get();
+        if (Boolean.TRUE.equals(hecho.getEnviado())) {
+          try {
+            Long idHechoAgregador = buscarIdHechoEnAgregador(1L, hecho.getId());
+            if (idHechoAgregador != null) {
+              ocultarHechoEnAgregador(idHechoAgregador);
+            }
+          } catch (Exception e) {
+            log.error("Error al ocultar hecho en agregador para solicitud ID: {}, hecho ID: {}: {}", 
+                id, hecho.getId(), e.getMessage(), e);
+          }
+        }
+        hechosRepository.delete(hecho);
+      }
+    }
+
+    solicitud.cambiarEstado(EstadoSolicitud.PENDIENTE);
 
     if (inputDTO.getNuevoTitulo() != null) solicitud.setTitulo(inputDTO.getNuevoTitulo());
     if (inputDTO.getNuevoDescripcion() != null) solicitud.setDescripcion(inputDTO.getNuevoDescripcion());
@@ -109,29 +187,54 @@ public class SolicitudesService {
     }
 
     if (inputDTO.getNuevoContenidoMultimedia() != null) {
+      if (inputDTO.getNuevoContenidoMultimedia().size() > 5) {
+        throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + inputDTO.getNuevoContenidoMultimedia().size() + " archivos.");
+      }
+      
       solicitud.getMultimedia().clear();
-      List<ContenidoMultimedia> nuevaMultimedia = inputDTO.getNuevoContenidoMultimedia().stream()
-          .map(dto -> dto.toContenidoMultimedia(solicitud))
-          .toList();
+      List<ContenidoMultimedia> nuevaMultimedia = new ArrayList<>();
+      for (var dto : inputDTO.getNuevoContenidoMultimedia()) {
+        if (dto.getContenidoBase64() != null && !dto.getContenidoBase64().isEmpty()) {
+          try {
+            String nombreArchivoGuardado = multimediaStorageService.guardarArchivoDesdeBase64(
+                dto.getContenidoBase64(),
+                dto.getPathArchivo(),
+                dto.getTipoContenido() != null ? dto.getTipoContenido().name() : null
+            );
+            dto.setPathArchivo(nombreArchivoGuardado);
+          } catch (IOException e) {
+            log.error("Error guardando archivo multimedia desde base64 para solicitud ID {}: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Error guardando archivo multimedia: " + e.getMessage(), e);
+          } catch (Exception e) {
+            log.error("Error inesperado guardando archivo multimedia desde base64 para solicitud ID {}: {}", id, e.getMessage(), e);
+            throw new RuntimeException("Error guardando archivo multimedia: " + e.getMessage(), e);
+          }
+        }
+        nuevaMultimedia.add(dto.toContenidoMultimedia(solicitud));
+      }
       solicitud.getMultimedia().addAll(nuevaMultimedia);
     }
 
+    LocalDateTime fechaDeCargaOriginal = solicitud.getFechaDeCargaSolicitud();
     SolicitudHecho solicitudActualizada = solicitudesRepository.save(solicitud);
-    log.info("Solicitud ID: {} modificada exitosamente", id);
+    
+    if (solicitudActualizada.getFechaDeCargaSolicitud() != null && 
+        fechaDeCargaOriginal != null &&
+        !solicitudActualizada.getFechaDeCargaSolicitud().equals(fechaDeCargaOriginal)) {
+      log.warn("ADVERTENCIA: fechaDeCargaSolicitud fue modificada durante save. Restaurando valor original.");
+      solicitudActualizada.setFechaDeCargaSolicitud(fechaDeCargaOriginal);
+      solicitudActualizada = solicitudesRepository.save(solicitudActualizada);
+    }
 
-    return solicitudActualizada.toOutputDTO();
+    return agregarIdHecho(solicitudActualizada.toOutputDTO(), id);
   }
 
   @Transactional
   public SolicitudOutputDTO revisionSolicitud(Long id, SolicitudModificarAdminInputDTO inputDTO) {
-    log.info("Revisión administrativa de solicitud ID: {}", id);
-
     SolicitudHecho solicitud = solicitudesRepository.findById(id)
         .orElseThrow(() -> new EntityNotFoundException("Solicitud no encontrada con ID: " + id));
-
-    if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
-      throw new IllegalStateException("Solo se pueden revisar solicitudes en estado PENDIENTE");
-    }
+    
+    LocalDateTime fechaDeCargaOriginal = solicitud.getFechaDeCargaSolicitud();
 
     if (inputDTO.getNuevoTitulo() != null) solicitud.setTitulo(inputDTO.getNuevoTitulo());
     if (inputDTO.getNuevoDescripcion() != null) solicitud.setDescripcion(inputDTO.getNuevoDescripcion());
@@ -151,37 +254,41 @@ public class SolicitudesService {
     }
 
     EstadoSolicitud nuevoEstado = inputDTO.getNuevoEstadoSolicitud();
-    log.info("Cambiando estado de solicitud ID: {} a {}", id, nuevoEstado);
     solicitud.cambiarEstado(nuevoEstado);
-
     SolicitudHecho solicitudActualizada = solicitudesRepository.save(solicitud);
+    
+    if (solicitudActualizada.getFechaDeCargaSolicitud() != null && 
+        fechaDeCargaOriginal != null &&
+        !solicitudActualizada.getFechaDeCargaSolicitud().equals(fechaDeCargaOriginal)) {
+      log.warn("ADVERTENCIA: fechaDeCargaSolicitud fue modificada durante save en revisión. Restaurando valor original.");
+      solicitudActualizada.setFechaDeCargaSolicitud(fechaDeCargaOriginal);
+      solicitudActualizada = solicitudesRepository.save(solicitudActualizada);
+    }
 
     if (solicitud.getEstado() == EstadoSolicitud.ACEPTADO ||
         solicitud.getEstado() == EstadoSolicitud.ACEPTADO_MODIFICADO) {
-      log.info("Creando hecho para solicitud aceptada ID: {}", id);
       fuenteService.crearHechoDesdeSolicitud(solicitudActualizada);
     }
-
-    log.info("Revisión completada para solicitud ID: {}", id);
-    return solicitudActualizada.toOutputDTO();
+    return agregarIdHecho(solicitudActualizada.toOutputDTO(), id);
   }
 
   @Transactional
   public SolicitudHecho recibirSolicitudContribuyenteConMultipart(
       String solicitudJson,
       List<MultipartFile> archivos) throws IOException {
-    
     SolicitudHechoInputContribuyenteDTO input = parseJsonToDTO(solicitudJson);
     
-    // Procesar archivos multimedia: guardar físicamente y determinar tipo de contenido
     if (archivos != null && !archivos.isEmpty()) {
+      long archivosNoVacios = archivos.stream().filter(archivo -> !archivo.isEmpty()).count();
+      if (archivosNoVacios > 5) {
+        throw new IllegalArgumentException("Solo se pueden cargar hasta 5 archivos. Se recibieron " + archivosNoVacios + " archivos.");
+      }
+      
       List<ContenidoMultimediaInputDTO> multimediaList = new ArrayList<>();
       
       for (MultipartFile archivo : archivos) {
         if (!archivo.isEmpty()) {
-          // Guardar archivo en disco compartido (valida formato y retorna nombre único)
           String nombreArchivoGuardado = multimediaStorageService.guardarArchivo(archivo);
-          // Inferir tipo de contenido desde MIME type o extensión
           TipoContenido tipo = determinarTipoContenido(archivo.getContentType(), archivo.getOriginalFilename());
           
           ContenidoMultimediaInputDTO multimediaDTO = new ContenidoMultimediaInputDTO();
@@ -208,7 +315,6 @@ public class SolicitudesService {
   }
 
   private TipoContenido determinarTipoContenido(String contentType, String nombreArchivo) {
-    // Primero intentar inferir desde MIME type (más confiable)
     if (contentType != null) {
       TipoContenido resultado = switch (contentType) {
         case "image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp" -> TipoContenido.IMAGEN;
@@ -222,7 +328,6 @@ public class SolicitudesService {
 
     }
     
-    // Fallback: inferir por extensión del archivo si MIME type no está disponible
     if (nombreArchivo != null && nombreArchivo.contains(".")) {
       String extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".") + 1).toLowerCase();
       TipoContenido resultado = switch (extension) {
@@ -239,5 +344,65 @@ public class SolicitudesService {
     throw new IllegalArgumentException("Formato de archivo no permitido. Formatos permitidos: " +
         "Imágenes: jpg, jpeg, png, gif, webp | Videos: mp4, webm | Audio: mp3, wav, ogg");
   }
+
+  private SolicitudOutputDTO agregarIdHecho(SolicitudOutputDTO dto, Long solicitudId) {
+    try {
+      var hechoOpt = hechosRepository.findBySolicitud_Id(solicitudId);
+      if (hechoOpt.isPresent()) {
+        var hecho = hechoOpt.get();
+        dto.setIdHecho(hecho.getId());
+        dto.setHechoEnviado(hecho.getEnviado());
+      }
+    } catch (Exception e) {
+      log.debug("No se pudo obtener el hecho asociado a la solicitud {}: {}", solicitudId, e.getMessage());
+    }
+    return dto;
+  }
+
+  private Long buscarIdHechoEnAgregador(Long fuenteId, Long idOrigen) {
+    try {
+      List<HechoAgregadorDTO> hechos = webClientAgregador.get()
+          .uri(uriBuilder -> uriBuilder
+              .path("/hechos")
+              .queryParam("fuente", "Fuente Dinámica")
+              .build())
+          .retrieve()
+          .bodyToFlux(HechoAgregadorDTO.class)
+          .collectList()
+          .block();
+
+      if (hechos != null && !hechos.isEmpty()) {
+        return hechos.stream()
+            .filter(h -> h.getFuenteId() != null && h.getFuenteId().equals(fuenteId) &&
+                        h.getIdOrigen() != null && h.getIdOrigen().equals(idOrigen))
+            .map(HechoAgregadorDTO::getId)
+            .findFirst()
+            .orElse(null);
+      }
+      return null;
+    } catch (Exception e) {
+      log.error("Error al buscar hecho en agregador para fuente_id={}, id_origen={}: {}", 
+          fuenteId, idOrigen, e.getMessage(), e);
+      return null;
+    }
+  }
+
+  private void ocultarHechoEnAgregador(Long idHechoAgregador) {
+    try {
+      webClientAgregador.patch()
+          .uri("/hechos/{id}/ocultar", idHechoAgregador)
+          .retrieve()
+          .bodyToMono(String.class)
+          .block();
+      log.info("Hecho {} ocultado exitosamente en agregador", idHechoAgregador);
+    } catch (WebClientResponseException e) {
+      log.error("Error del agregador al ocultar hecho {}: {}", idHechoAgregador, e.getResponseBodyAsString());
+      throw new RuntimeException("Error al ocultar hecho en agregador: " + e.getResponseBodyAsString(), e);
+    } catch (Exception e) {
+      log.error("Error al ocultar hecho {} en agregador: {}", idHechoAgregador, e.getMessage(), e);
+      throw new RuntimeException("Error al ocultar hecho en agregador: " + e.getMessage(), e);
+    }
+  }
+
 }
 

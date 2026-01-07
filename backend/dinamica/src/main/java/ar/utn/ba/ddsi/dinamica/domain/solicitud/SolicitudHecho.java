@@ -99,15 +99,11 @@ public class SolicitudHecho {
   }
 
   public void validarModificacionPorUsuario(Long idContribuyenteQueModifica) {
-    if (this.estado != EstadoSolicitud.PENDIENTE) {
-      throw new IllegalStateException("Solo se pueden modificar solicitudes en estado PENDIENTE");
-    }
-
     if (this.esAnonimo()) {
       throw new IllegalStateException("Las solicitudes anónimas no pueden ser modificadas");
     }
 
-    if (!this.idContribuyente.equals(idContribuyenteQueModifica)) {
+    if (idContribuyenteQueModifica == null || !idContribuyente.equals(idContribuyenteQueModifica)) {
       throw new IllegalArgumentException("No está autorizado para modificar esta solicitud");
     }
 
@@ -144,7 +140,7 @@ public class SolicitudHecho {
     dto.setLatitud(this.getLatitud());
     dto.setLongitud(this.getLongitud());
     dto.setFechaDeAcontecimiento(this.getFechaDeAcontecimiento());
-    if (this.getMultimedia() != null && !this.getMultimedia().isEmpty()) {
+    if (!this.getMultimedia().isEmpty()) {
       dto.setContenidoMultimedia(this.getMultimedia().stream()
           .map(ContenidoMultimedia::toOutputDTO)
           .toList());

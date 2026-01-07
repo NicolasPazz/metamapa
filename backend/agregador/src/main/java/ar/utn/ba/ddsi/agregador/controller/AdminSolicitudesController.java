@@ -20,7 +20,7 @@ public class AdminSolicitudesController {
 
     @GetMapping
     public ResponseEntity<List<SolicitudEliminacionDTO>> getAllSolicitudes() {
-        log.info("[AdminSolicitudesController] GET /api/admin/solicitudes");
+        log.info("[AdminSolicitudesController] - GET - /api/admin/solicitudes");
         return solicitudesService.getAll();
     }
 
@@ -28,7 +28,8 @@ public class AdminSolicitudesController {
     public ResponseEntity<?> actualizarEstadoSolicitud(
             @PathVariable Long id,
             @RequestBody SolicitudEliminacionDTO dto) {
-        log.info("[AdminSolicitudesController] PATCH /api/admin/solicitudes/{}", id);
+        log.info("[AdminSolicitudesController] - PATCH - /api/admin/solicitudes/{} - id: {}, hecho: {}, textoFundamentos: {}, fecha: {}, estado: {}, contribuyenteId: {}, spam: {}, fuenteId: {}, idOrigen: {}",
+                id, dto.getId(), dto.getHecho() != null ? dto.getHecho().getId() : null, dto.getTextoFundamentos(), dto.getFecha(), dto.getEstado(), dto.getContribuyenteId(), dto.getSpam(), dto.getFuenteId(), dto.getIdOrigen());
         return solicitudesService.actualizarEstado(id, dto);
     }
 }

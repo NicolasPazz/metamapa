@@ -23,17 +23,17 @@ public class MultimediaController {
 
     @GetMapping("/{nombreArchivo:.+}")
     public ResponseEntity<Resource> obtenerArchivo(@PathVariable String nombreArchivo) {
+        log.info("[MultimediaController] - GET - /api/multimedia/{} - nombreArchivo: {}", nombreArchivo, nombreArchivo);
         try {
             Resource archivo = storageService.cargarArchivo(nombreArchivo);
-            
             String contentType = determinarContentType(nombreArchivo);
-            
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + nombreArchivo + "\"")
                     .body(archivo);
+        } catch (IllegalArgumentException | SecurityException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
         } catch (IOException e) {
-            log.error("Error al cargar archivo: {}", nombreArchivo, e);
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
@@ -43,8 +43,6 @@ public class MultimediaController {
         if (nombreArchivo.contains(".")) {
             extension = nombreArchivo.substring(nombreArchivo.lastIndexOf(".")).toLowerCase();
         }
-        
-        // Solo formatos permitidos según especificación
         return switch (extension) {
             case ".jpg", ".jpeg" -> "image/jpeg";
             case ".png" -> "image/png";

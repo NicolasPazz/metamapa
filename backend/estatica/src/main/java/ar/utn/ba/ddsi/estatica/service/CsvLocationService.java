@@ -24,7 +24,15 @@ public class CsvLocationService {
   private String csvStoragePath;
 
   public InputStream abrirArchivo(String nombreArchivo) throws IOException {
+    validarNombreArchivo(nombreArchivo);
+    
     Path rutaArchivo = obtenerDirectorio().resolve(nombreArchivo);
+    
+    Path directorioBase = obtenerDirectorio().toAbsolutePath().normalize();
+    Path archivoNormalizado = rutaArchivo.toAbsolutePath().normalize();
+    if (!archivoNormalizado.startsWith(directorioBase)) {
+      throw new SecurityException("Intento de acceso a archivo fuera del directorio permitido: " + nombreArchivo);
+    }
 
     if (!Files.exists(rutaArchivo)) {
       throw new FileNotFoundException("Archivo no encontrado: " + nombreArchivo);
@@ -57,13 +65,36 @@ public class CsvLocationService {
   }
 
   public void guardarArchivo(String nombreArchivo, InputStream contenido) throws IOException {
+    validarNombreArchivo(nombreArchivo);
+    
     Path directorio = obtenerDirectorio();
     Files.createDirectories(directorio);
 
     Path destino = directorio.resolve(nombreArchivo);
+    
+    Path directorioBase = directorio.toAbsolutePath().normalize();
+    Path destinoNormalizado = destino.toAbsolutePath().normalize();
+    if (!destinoNormalizado.startsWith(directorioBase)) {
+      throw new SecurityException("Intento de guardar archivo fuera del directorio permitido: " + nombreArchivo);
+    }
+    
     Files.copy(contenido, destino, StandardCopyOption.REPLACE_EXISTING);
 
     log.info("Archivo guardado: {}", nombreArchivo);
+  }
+
+  private void validarNombreArchivo(String nombreArchivo) {
+    if (nombreArchivo == null || nombreArchivo.trim().isEmpty()) {
+      throw new IllegalArgumentException("El nombre del archivo no puede estar vacío");
+    }
+    
+    if (nombreArchivo.contains("..") || nombreArchivo.contains("/") || nombreArchivo.contains("\\")) {
+      throw new SecurityException("Nombre de archivo inválido: contiene caracteres no permitidos");
+    }
+    
+    if (!nombreArchivo.matches("^[a-zA-Z0-9._-]+\\.csv$")) {
+      throw new IllegalArgumentException("Nombre de archivo inválido: solo se permiten caracteres alfanuméricos, puntos, guiones y guiones bajos, y debe terminar en .csv");
+    }
   }
 
   private Path obtenerDirectorio() {

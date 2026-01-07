@@ -51,6 +51,7 @@ public class CsvProcessingService {
       log.info("Archivo procesado: {} ({} hechos)", archivo.getNombre(), contador[0]);
     } catch (Exception e) {
       log.error("Error procesando archivo '{}': {}", archivo.getNombre(), e.getMessage(), e);
+      throw new RuntimeException("Error al procesar el archivo: " + archivo.getNombre(), e);
     }
   }
 

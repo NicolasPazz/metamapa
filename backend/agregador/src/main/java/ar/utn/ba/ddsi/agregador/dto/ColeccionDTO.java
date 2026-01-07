@@ -31,4 +31,7 @@ public class ColeccionDTO {
 
   @JsonProperty("id_origen")
   private UUID idOrigen;
+
+  @JsonProperty("cantidad_hechos")
+  private Integer cantidadHechos;
 }

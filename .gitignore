@@ -1,66 +1,146 @@
-HELP.md
+# =============================================================================
+# 1. ARCHIVOS DE COMPILACIoN Y BUILD
+# =============================================================================
+
+# Directorios de compilacion Maven
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+**/target/
+!.mvn/wrapper/maven-wrapper.jar
+!.mvn/wrapper/maven-wrapper.properties
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
+# Archivos compilados Java
+**/*.class
 
-### IntelliJ IDEA ###
-.idea
+# Directorios de build genericos
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# =============================================================================
+# 2. ARCHIVOS DE IDEs Y EDITORES
+# =============================================================================
+
+# IntelliJ IDEA
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+# Eclipse / STS
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings/
+.springBeans
+.sts4-cache/
+
+# NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
+# VS Code
 .vscode/
 
-# Ignorar todos los Markdown
-*.md
+# =============================================================================
+# 3. ARCHIVOS DE CONFIGURACIoN Y ENTORNO
+# =============================================================================
 
-# Excepciones
+.env
+.env.local
+.env.prod
+.env.*.local
+!.env*.example
+
+# =============================================================================
+# 4. ARCHIVOS DE DATOS Y CONTENIDO GENERADO POR USUARIOS
+# =============================================================================
+
+backend/data/csv/**
+backend/data/multimedia/**
+!backend/data/
+!backend/data/csv/
+!backend/data/multimedia/
+
+# =============================================================================
+# 5. ARCHIVOS DE DOCUMENTACIoN
+# =============================================================================
+
+**/*.md
 !README.md
-!justificaciones-de-disenio.md
 
-# Archivos multimedia (imágenes, audio, video)
-*.jpg
-*.jpeg
-*.png
-*.gif
-*.webp
-*.bmp
-*.svg
-*.ico
-*.mp3
-*.wav
-*.ogg
-*.aac
-*.flac
-*.m4a
-*.mp4
-*.webm
-*.avi
-*.mov
-*.mkv
-*.flv
-*.wmv
+# =============================================================================
+# 6. ARCHIVOS CSV Y MULTIMEDIA
+# =============================================================================
 
-# Archivos CSV
-*.csv
+**/*.csv
+**/*.jpg
+**/*.jpeg
+**/*.png
+**/*.gif
+**/*.webp
+**/*.bmp
+**/*.svg
+**/*.ico
+**/*.mp3
+**/*.wav
+**/*.ogg
+**/*.aac
+**/*.flac
+**/*.m4a
+**/*.mp4
+**/*.webm
+**/*.avi
+**/*.mov
+**/*.mkv
+**/*.flv
+**/*.wmv
+
+# =============================================================================
+# 8. ARCHIVOS TEMPORALES Y LOGS
+# =============================================================================
+
+**/*.log
+**/*.tmp
+**/*.temp
+*.swp
+*.swo
+*~
+
+# =============================================================================
+# 9. ARCHIVOS DEL SISTEMA OPERATIVO
+# =============================================================================
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+ehthumbs.db
+Thumbs.db
+desktop.ini
+
+# =============================================================================
+# 10. DEPENDENCIAS Y MoDULOS EXTERNOS
+# =============================================================================
+
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =============================================================================
+# 11. EXCLUSIONES DE LAS REGLAS ANTERIORES
+# =============================================================================
+
+!entregables/**
+!**/resources/**
+!**/.gitkeep
+!**/*.config
+!**/*.properties

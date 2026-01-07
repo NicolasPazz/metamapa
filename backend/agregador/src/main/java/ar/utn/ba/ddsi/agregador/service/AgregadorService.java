@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 @Slf4j
@@ -24,6 +25,7 @@ public class AgregadorService {
   private final HechoMapper hechoMapper;
   private final ProvinciaService provinciaService;
   private final ColeccionesService coleccionesService;
+  private final CacheManager cacheManager;
 
   public void actualizarHechos() {
     try {
@@ -56,6 +58,15 @@ public class AgregadorService {
       categoriasService.persistirCategoriasDesdeHechos(hechosNuevos);
       hechosRepository.saveAll(hechosNuevos);
       log.info("[AgregadorService] Se guardaron {} hechos nuevos", hechosNuevos.size());
+
+      // Invalidar caché de primera página cuando se guardan hechos nuevos desde fuentes externas
+      if (cacheManager != null) {
+        var cache = cacheManager.getCache("hechosPrimeraPagina");
+        if (cache != null) {
+          cache.clear();
+          log.debug("[AgregadorService] Caché de primera página invalidada después de guardar {} hechos nuevos", hechosNuevos.size());
+        }
+      }
 
     } catch (Exception e) {
       log.error("[AgregadorService] Error al actualizar hechos: {}", e.getMessage(), e);

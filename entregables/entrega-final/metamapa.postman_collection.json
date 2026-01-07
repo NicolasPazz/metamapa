@@ -1558,6 +1558,90 @@
 					"response": []
 				},
 				{
+					"name": "Get Solicitudes by Contribuyente Dinamica",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes/contribuyente/:idContribuyente",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes",
+								"contribuyente",
+								":idContribuyente"
+							],
+							"variable": [
+								{
+									"key": "idContribuyente",
+									"value": "123"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Aceptar Solicitud Dinamica",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes/:id/aceptar",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes",
+								":id",
+								"aceptar"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Rechazar Solicitud Dinamica",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{dinamicaBaseURL}}/solicitudes/:id/rechazar",
+							"host": [
+								"{{dinamicaBaseURL}}"
+							],
+							"path": [
+								"solicitudes",
+								":id",
+								"rechazar"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Create Solicitud Dinamica Multipart",
 					"request": {
 						"auth": {

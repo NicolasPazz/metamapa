@@ -1,0 +1,345 @@
+# Docker Compose para Produccion en EC2 con RDS
+# Usa .env.prod para variables de entorno
+
+services:
+  # Servicio Users
+  users:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/users
+        MODULE_NAME: users
+    container_name: metamapa-users
+    init: true
+    environment:
+      PORT: 8087
+      DB_HOST: ${RDS_HOST}
+      DB_PORT: ${RDS_PORT}
+      DB_NAME: users
+      DB_USERNAME: ${RDS_USERNAME}
+      DB_PASSWORD: ${RDS_PASSWORD}
+      DB_USE_SSL: ${DB_USE_SSL}
+      DDL_AUTO: ${DDL_AUTO}
+      ADMIN_USERNAME: ${ADMIN_USERNAME}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD}
+    ports:
+      - "8087:8087"
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8087/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio Estatica
+  estatica:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/estatica
+        MODULE_NAME: estatica
+    container_name: metamapa-estatica
+    init: true
+    environment:
+      PORT: 8082
+      DB_HOST: ${RDS_HOST}
+      DB_PORT: ${RDS_PORT}
+      DB_NAME: estatica
+      DB_USERNAME: ${RDS_USERNAME}
+      DB_PASSWORD: ${RDS_PASSWORD}
+      DB_USE_SSL: ${DB_USE_SSL}
+      DDL_AUTO: ${DDL_AUTO}
+      CSV_STORAGE_PATH: /app/data/csv
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./backend/data/csv:/app/data/csv
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8082/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio Dinamica
+  dinamica:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/dinamica
+        MODULE_NAME: dinamica
+    container_name: metamapa-dinamica
+    init: true
+    environment:
+      PORT: 8081
+      DB_HOST: ${RDS_HOST}
+      DB_PORT: ${RDS_PORT}
+      DB_NAME: dinamica
+      DB_USERNAME: ${RDS_USERNAME}
+      DB_PASSWORD: ${RDS_PASSWORD}
+      DB_USE_SSL: ${DB_USE_SSL}
+      DDL_AUTO: ${DDL_AUTO}
+      MULTIMEDIA_STORAGE_PATH: /app/data/multimedia
+      FRONTEND_URL: ${FRONTEND_URL}
+      AGREGADOR_URL: http://agregador:8084
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./backend/data/multimedia:/app/data/multimedia
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8081/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio Proxy ONG
+  proxy-ong:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/proxy_ong
+        MODULE_NAME: proxy_ong
+    container_name: metamapa-proxy-ong
+    init: true
+    environment:
+      PORT: 8083
+      DB_HOST: ${RDS_HOST}
+      DB_PORT: ${RDS_PORT}
+      DB_NAME: proxy_ong
+      DB_USERNAME: ${RDS_USERNAME}
+      DB_PASSWORD: ${RDS_PASSWORD}
+      DB_USE_SSL: ${DB_USE_SSL}
+      DDL_AUTO: ${DDL_AUTO}
+      PROXY_ONG_EMAIL: ${PROXY_ONG_EMAIL}
+      PROXY_ONG_PASSWORD: ${PROXY_ONG_PASSWORD}
+      PROXY_ONG_API_URL: ${PROXY_ONG_API_URL}
+    ports:
+      - "8083:8083"
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8083/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio Proxy MetaMapa
+  proxy-metamapa:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/proxy_metamapa
+        MODULE_NAME: proxy_metamapa
+    container_name: metamapa-proxy-metamapa
+    init: true
+    environment:
+      PORT: 8086
+      AGREGADOR_URL: http://agregador:8084
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    ports:
+      - "8086:8086"
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8086/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio Agregador
+  agregador:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/agregador
+        MODULE_NAME: agregador
+    container_name: metamapa-agregador
+    init: true
+    environment:
+      PORT: 8084
+      DB_HOST: ${RDS_HOST}
+      DB_PORT: ${RDS_PORT}
+      DB_NAME: agregador
+      DB_USERNAME: ${RDS_USERNAME}
+      DB_PASSWORD: ${RDS_PASSWORD}
+      DB_USE_SSL: ${DB_USE_SSL}
+      DDL_AUTO: ${DDL_AUTO}
+      MULTIMEDIA_STORAGE_PATH: /app/data/multimedia
+      USERS_SERVICE_URL: http://users:8087
+      ESTATICA_URL: http://estatica:8082
+      DINAMICA_URL: http://dinamica:8081
+      PROXY_ONG_URL: http://proxy-ong:8083
+      PROXY_METAMAPA_URL: http://proxy-metamapa:8086
+    ports:
+      - "8084:8084"
+    volumes:
+      - ./backend/data/multimedia:/app/data/multimedia
+    depends_on:
+      users:
+        condition: service_healthy
+      estatica:
+        condition: service_healthy
+      dinamica:
+        condition: service_healthy
+      proxy-ong:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8084/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio Estadistica
+  estadistica:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: backend/estadistica
+        MODULE_NAME: estadistica
+    container_name: metamapa-estadistica
+    init: true
+    environment:
+      PORT: 8085
+      DB_HOST: ${RDS_HOST}
+      DB_PORT: ${RDS_PORT}
+      DB_NAME: estadisticas
+      DB_USERNAME: ${RDS_USERNAME}
+      DB_PASSWORD: ${RDS_PASSWORD}
+      DB_USE_SSL: ${DB_USE_SSL}
+      DDL_AUTO: ${DDL_AUTO}
+      AGREGADOR_URL: http://agregador:8084
+    ports:
+      - "8085:8085"
+    depends_on:
+      agregador:
+        condition: service_healthy
+      proxy-metamapa:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8085/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio Frontend
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        MODULE_PATH: frontend
+        MODULE_NAME: frontend
+    container_name: metamapa-frontend
+    init: true
+    environment:
+      PORT: 8080
+      AGREGADOR_URL: http://agregador:8084
+      DINAMICA_URL: http://dinamica:8081
+      ESTATICA_URL: http://estatica:8082
+      ESTADISTICA_URL: http://estadistica:8085
+      USERS_SERVICE_URL: http://users:8087
+      PAGINATION_PAGE_SIZE: ${PAGINATION_PAGE_SIZE}
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
+    expose:
+      - "8080"
+    depends_on:
+      agregador:
+        condition: service_healthy
+      proxy-metamapa:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Servicio Certbot (Let's Encrypt)
+  certbot:
+    image: certbot/certbot:latest
+    container_name: metamapa-certbot
+    init: true
+    environment:
+      CERTBOT_EMAIL: ${CERTBOT_EMAIL}
+      CERTBOT_DOMAIN: ${CERTBOT_DOMAIN:-metamapa-dds.ddns.net}
+    volumes:
+      - certbot-certs:/etc/letsencrypt
+      - certbot-www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'sleep 30; if [ ! -f /etc/letsencrypt/live/$${CERTBOT_DOMAIN}/fullchain.pem ]; then certbot certonly --webroot --webroot-path=/var/www/certbot --email $${CERTBOT_EMAIL} --agree-tos --no-eff-email -d $${CERTBOT_DOMAIN} || true; fi; trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done;'"
+    depends_on:
+      nginx:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+
+  # Servicio Nginx (Reverse Proxy con HTTPS)
+  nginx:
+    image: nginx:alpine
+    container_name: metamapa-nginx
+    init: true
+    environment:
+      CERTBOT_DOMAIN: ${CERTBOT_DOMAIN:-metamapa-dds.ddns.net}
+    ports:
+      - "80:80"   # HTTP
+      - "443:443" # HTTPS
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf.template:ro
+      - ./nginx/docker-entrypoint.sh:/docker-entrypoint.sh:ro
+      - certbot-certs:/etc/letsencrypt:ro
+      - certbot-www:/var/www/certbot:ro
+    entrypoint: ["/bin/sh", "/docker-entrypoint.sh"]
+    depends_on:
+      frontend:
+        condition: service_healthy
+    networks:
+      - metamapa-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  certbot-certs:
+    driver: local
+  certbot-www:
+    driver: local
+
+networks:
+  metamapa-network:
+    driver: bridge

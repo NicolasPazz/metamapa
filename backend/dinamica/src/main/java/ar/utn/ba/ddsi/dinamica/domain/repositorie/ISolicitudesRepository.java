@@ -8,4 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface ISolicitudesRepository extends JpaRepository<SolicitudHecho, Long> {
   @EntityGraph(attributePaths = "multimedia")
   List<SolicitudHecho> findAll();
+  
+  @EntityGraph(attributePaths = "multimedia")
+  List<SolicitudHecho> findByIdContribuyente(Long idContribuyente);
 }

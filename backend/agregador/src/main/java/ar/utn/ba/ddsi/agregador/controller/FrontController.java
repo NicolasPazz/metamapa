@@ -10,11 +10,13 @@ import ar.utn.ba.ddsi.agregador.service.CategoriasService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -42,7 +44,8 @@ public class FrontController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
 
-        log.info("[FrontController] GET /api/front/hechos - page: {}, size: {}", page, size);
+        log.info("[FrontController] - GET - /api/front/hechos - categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}, fuente: {}, page: {}, size: {}",
+                categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente, page, size);
 
         PageResponse<HechoDTO> response = hechosService.getPaginatedHechos(
                 categoria, fecha_reporte_desde, fecha_reporte_hasta,
@@ -57,7 +60,7 @@ public class FrontController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
 
-        log.info("[FrontController] GET /api/front/colecciones - page: {}, size: {}", page, size);
+        log.info("[FrontController] - GET - /api/front/colecciones - page: {}, size: {}", page, size);
 
         PageResponse<ColeccionDTO> response = coleccionesService.getPaginatedColecciones(page, size);
 
@@ -78,7 +81,8 @@ public class FrontController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "100") int size) {
 
-        log.info("[FrontController] GET /api/front/colecciones/{}/hechos - page: {}, size: {}", handle, page, size);
+        log.info("[FrontController] - GET - /api/front/colecciones/{}/hechos - handle: {}, categoria: {}, fecha_reporte_desde: {}, fecha_reporte_hasta: {}, fecha_acontecimiento_desde: {}, fecha_acontecimiento_hasta: {}, ubicacion: {}, fuente: {}, modo: {}, page: {}, size: {}",
+                handle, handle, categoria, fecha_reporte_desde, fecha_reporte_hasta, fecha_acontecimiento_desde, fecha_acontecimiento_hasta, ubicacion, fuente, modo, page, size);
 
         return coleccionesService.getHechosColeccionPaginated(
                 handle, ubicacion, fecha_reporte_desde, fecha_reporte_hasta,
@@ -88,31 +92,31 @@ public class FrontController {
 
     @GetMapping("/hecho-reciente")
     public ResponseEntity<HechoDTO> getHechoReciente() {
-        log.info("[FrontController] GET /api/front/hecho-reciente");
+        log.info("[FrontController] - GET - /api/front/hecho-reciente");
         return hechosService.getOneHechoReciente();
     }
 
     @GetMapping("/coleccion-reciente")
     public ResponseEntity<ColeccionDTO> getColeccionReciente() {
-        log.info("[FrontController] GET /api/front/coleccion-reciente");
+        log.info("[FrontController] - GET - /api/front/coleccion-reciente");
         return coleccionesService.getOneColeccion();
     }
 
     @GetMapping("/categorias")
     public ResponseEntity<List<String>> getCategorias() {
-        log.info("[FrontController] GET /api/front/categorias");
+        log.info("[FrontController] - GET - /api/front/categorias");
         return categoriasService.getAllCategoriasNombres();
     }
 
     @GetMapping("/provincias")
     public ResponseEntity<List<String>> getProvincias() {
-        log.info("[FrontController] GET /api/front/provincias");
+        log.info("[FrontController] - GET - /api/front/provincias");
         return hechosService.getProvinciasConHechos();
     }
 
     @GetMapping("/fuentes")
     public ResponseEntity<List<String>> getFuentes() {
-        log.info("[FrontController] GET /api/front/fuentes");
+        log.info("[FrontController] - GET - /api/front/fuentes");
         return hechosService.getFuentesConHechos();
     }
 
@@ -122,7 +126,7 @@ public class FrontController {
             @RequestParam(required = false, defaultValue = "true") boolean recalcularCriterios,
             @RequestParam(required = false, defaultValue = "true") boolean recalcularConsenso) {
         
-        log.info("[FrontController] POST /api/front/ejecutar-scheduler - obtenerHechosNuevos: {}, recalcularCriterios: {}, recalcularConsenso: {}", 
+        log.info("[FrontController] - POST - /api/front/ejecutar-scheduler - obtenerHechosNuevos: {}, recalcularCriterios: {}, recalcularConsenso: {}", 
                 obtenerHechosNuevos, recalcularCriterios, recalcularConsenso);
         
         try {
@@ -130,11 +134,10 @@ public class FrontController {
                     obtenerHechosNuevos, recalcularCriterios, recalcularConsenso);
             return ResponseEntity.ok(resultado);
         } catch (Exception e) {
-            log.error("[FrontController] ❌ Error al ejecutar scheduler: {}", e.getMessage(), e);
-            Map<String, Object> errorResult = new java.util.HashMap<>();
+            Map<String, Object> errorResult = new HashMap<>();
             errorResult.put("exito", false);
             errorResult.put("error", e.getMessage());
-            return ResponseEntity.status(org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
         }
     }
 }

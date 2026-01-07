@@ -2,6 +2,7 @@ package ar.utn.ba.ddsi.agregador.domain.fuente.impl;
 
 import ar.utn.ba.ddsi.agregador.dto.ColeccionDTO;
 import ar.utn.ba.ddsi.agregador.dto.HechoDTO;
+import ar.utn.ba.ddsi.agregador.dto.PageResponse;
 import ar.utn.ba.ddsi.agregador.domain.fuente.AFuente;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -11,11 +12,16 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -24,7 +30,6 @@ import java.util.UUID;
 @Entity
 @DiscriminatorValue("TIEMPO_REAL")
 public class FuenteTiempoReal extends AFuente {
-
   @Transient
   @Getter
   @Setter
@@ -42,16 +47,36 @@ public class FuenteTiempoReal extends AFuente {
       LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
       LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion) {
+    // Construir query string manualmente para evitar problemas con UriBuilder y hosts con guiones bajos
+    StringBuilder queryBuilder = new StringBuilder("/api/hechos");
+    boolean firstParam = true;
+    if (categoria != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(URLEncoder.encode(categoria, StandardCharsets.UTF_8));
+      firstParam = false;
+    }
+    if (fecha_reporte_desde != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_desde=").append(fecha_reporte_desde);
+      firstParam = false;
+    }
+    if (fecha_reporte_hasta != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_hasta=").append(fecha_reporte_hasta);
+      firstParam = false;
+    }
+    if (fecha_acontecimiento_desde != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_desde=").append(fecha_acontecimiento_desde);
+      firstParam = false;
+    }
+    if (fecha_acontecimiento_hasta != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_hasta=").append(fecha_acontecimiento_hasta);
+      firstParam = false;
+    }
+    if (ubicacion != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(URLEncoder.encode(ubicacion, StandardCharsets.UTF_8));
+      firstParam = false;
+    }
+    
     List<HechoDTO> hechos = webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path("/hechos")
-            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
-            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
-            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
-            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
-            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
-            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
-            .build())
+        .uri(queryBuilder.toString())
         .retrieve()
         .bodyToFlux(HechoDTO.class)
         .collectList()
@@ -70,8 +95,14 @@ public class FuenteTiempoReal extends AFuente {
   public ResponseEntity<List<ColeccionDTO>> getAllColecciones() {
     try {
       log.info("Obteniendo colecciones de fuente tiempo real: {}", getNombre());
-      List<ColeccionDTO> colecciones = getWebClient().get()
-          .uri("/colecciones")
+      
+      if (webClient == null) {
+        log.error("WebClient no está inicializado para fuente: {}", getNombre());
+        return ResponseEntity.ok(List.of());
+      }
+      
+      List<ColeccionDTO> colecciones = webClient.get()
+          .uri("/api/colecciones")
           .retrieve()
           .bodyToFlux(ColeccionDTO.class)
           .collectList()
@@ -93,22 +124,147 @@ public class FuenteTiempoReal extends AFuente {
       LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
       String ubicacion,
       String modo) {
+    // Construir query string manualmente para evitar problemas con UriBuilder y hosts con guiones bajos
+    StringBuilder queryBuilder = new StringBuilder(String.format("/colecciones/%s/hechos", handle));
+    boolean firstParam = true;
+    if (categoria != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(URLEncoder.encode(categoria, StandardCharsets.UTF_8));
+      firstParam = false;
+    }
+    if (fecha_reporte_desde != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_desde=").append(fecha_reporte_desde);
+      firstParam = false;
+    }
+    if (fecha_reporte_hasta != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_hasta=").append(fecha_reporte_hasta);
+      firstParam = false;
+    }
+    if (fecha_acontecimiento_desde != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_desde=").append(fecha_acontecimiento_desde);
+      firstParam = false;
+    }
+    if (fecha_acontecimiento_hasta != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_hasta=").append(fecha_acontecimiento_hasta);
+      firstParam = false;
+    }
+    if (ubicacion != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(URLEncoder.encode(ubicacion, StandardCharsets.UTF_8));
+      firstParam = false;
+    }
+    if (modo != null) {
+      queryBuilder.append(firstParam ? "?" : "&").append("modo=").append(URLEncoder.encode(modo, StandardCharsets.UTF_8));
+    }
+    
     List<HechoDTO> hechos = webClient.get()
-        .uri(uriBuilder -> uriBuilder
-            .path(String.format("/colecciones/%s/hechos", handle))
-            .queryParamIfPresent("categoria", Optional.ofNullable(categoria))
-            .queryParamIfPresent("fecha_reporte_desde", Optional.ofNullable(fecha_reporte_desde))
-            .queryParamIfPresent("fecha_reporte_hasta", Optional.ofNullable(fecha_reporte_hasta))
-            .queryParamIfPresent("fecha_acontecimiento_desde", Optional.ofNullable(fecha_acontecimiento_desde))
-            .queryParamIfPresent("fecha_acontecimiento_hasta", Optional.ofNullable(fecha_acontecimiento_hasta))
-            .queryParamIfPresent("ubicacion", Optional.ofNullable(ubicacion))
-            .queryParamIfPresent("modo", Optional.ofNullable(modo))
-            .build(handle))
+        .uri(queryBuilder.toString())
         .retrieve()
         .bodyToFlux(HechoDTO.class)
         .collectList()
         .block();
 
     return ResponseEntity.ok(hechos);
+  }
+
+  @Transient
+  @Override
+  public ResponseEntity<PageResponse<HechoDTO>> getAllHechosVisiblesPaginated(
+      String categoria,
+      LocalDate fecha_reporte_desde,
+      LocalDate fecha_reporte_hasta,
+      LocalDateTime fecha_acontecimiento_desde,
+      LocalDateTime fecha_acontecimiento_hasta,
+      String ubicacion,
+      int page,
+      int size) {
+    try {
+      log.debug("Obteniendo hechos paginados de fuente tiempo real: {} (page: {}, size: {})", getNombre(), page, size);
+      
+      if (webClient == null) {
+        log.error("WebClient no está inicializado para fuente: {}", getNombre());
+        return ResponseEntity.ok(new PageResponse<>(new ArrayList<>(), page, size, false, page > 0, 0));
+      }
+
+      StringBuilder queryBuilder = new StringBuilder("/api/hechos");
+      boolean firstParam = true;
+      if (categoria != null) {
+        queryBuilder.append(firstParam ? "?" : "&").append("categoria=").append(URLEncoder.encode(categoria, StandardCharsets.UTF_8));
+        firstParam = false;
+      }
+      if (fecha_reporte_desde != null) {
+        queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_desde=").append(fecha_reporte_desde);
+        firstParam = false;
+      }
+      if (fecha_reporte_hasta != null) {
+        queryBuilder.append(firstParam ? "?" : "&").append("fecha_reporte_hasta=").append(fecha_reporte_hasta);
+        firstParam = false;
+      }
+      if (fecha_acontecimiento_desde != null) {
+        queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_desde=").append(fecha_acontecimiento_desde);
+        firstParam = false;
+      }
+      if (fecha_acontecimiento_hasta != null) {
+        queryBuilder.append(firstParam ? "?" : "&").append("fecha_acontecimiento_hasta=").append(fecha_acontecimiento_hasta);
+        firstParam = false;
+      }
+      if (ubicacion != null) {
+        queryBuilder.append(firstParam ? "?" : "&").append("ubicacion=").append(URLEncoder.encode(ubicacion, StandardCharsets.UTF_8));
+        firstParam = false;
+      }
+      queryBuilder.append(firstParam ? "?" : "&").append("page=").append(page);
+      queryBuilder.append("&").append("size=").append(size);
+
+      PageResponse<HechoDTO> pageResponse = webClient.get()
+          .uri(queryBuilder.toString())
+          .retrieve()
+          .bodyToMono(new ParameterizedTypeReference<PageResponse<HechoDTO>>() {})
+          .block();
+
+      if (pageResponse == null) {
+        return ResponseEntity.ok(new PageResponse<>(new ArrayList<>(), page, size, false, page > 0, 0));
+      }
+
+      log.debug("Hechos paginados obtenidos: {} de {} totales", 
+          pageResponse.getContent() != null ? pageResponse.getContent().size() : 0, 
+          pageResponse.getTotalElements());
+      return ResponseEntity.ok(pageResponse);
+    } catch (Exception e) {
+      log.error("Error obteniendo hechos paginados de fuente {}: {}", getNombre(), e.getMessage(), e);
+      return ResponseEntity.ok(new PageResponse<>(new ArrayList<>(), page, size, false, page > 0, 0));
+    }
+  }
+
+  @Transient
+  @Override
+  public ResponseEntity<PageResponse<ColeccionDTO>> getAllColeccionesPaginated(
+      int page,
+      int size) {
+    try {
+      log.debug("Obteniendo colecciones paginadas de fuente tiempo real: {} (page: {}, size: {})", getNombre(), page, size);
+      
+      if (webClient == null) {
+        log.error("WebClient no está inicializado para fuente: {}", getNombre());
+        return ResponseEntity.ok(new PageResponse<>(new ArrayList<>(), page, size, false, page > 0, 0));
+      }
+
+      String uri = String.format("/api/colecciones?page=%d&size=%d", page, size);
+
+      PageResponse<ColeccionDTO> pageResponse = webClient.get()
+          .uri(uri)
+          .retrieve()
+          .bodyToMono(new ParameterizedTypeReference<PageResponse<ColeccionDTO>>() {})
+          .block();
+
+      if (pageResponse == null) {
+        return ResponseEntity.ok(new PageResponse<>(new ArrayList<>(), page, size, false, page > 0, 0));
+      }
+
+      log.debug("Colecciones paginadas obtenidas: {} de {} totales", 
+          pageResponse.getContent() != null ? pageResponse.getContent().size() : 0, 
+          pageResponse.getTotalElements());
+      return ResponseEntity.ok(pageResponse);
+    } catch (Exception e) {
+      log.error("Error obteniendo colecciones paginadas de fuente {}: {}", getNombre(), e.getMessage(), e);
+      return ResponseEntity.ok(new PageResponse<>(new ArrayList<>(), page, size, false, page > 0, 0));
+    }
   }
 }

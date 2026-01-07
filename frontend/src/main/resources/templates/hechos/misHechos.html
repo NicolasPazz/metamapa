@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" th:replace="~{layout/base :: html}">
+<div th:fragment="contenido">
+  <section class="hechos-block">
+    <h2>Mis Hechos</h2>
+
+    <div th:if="${#lists.isEmpty(solicitudes)}" class="empty-state">
+      <p>No has creado ninguna solicitud aún.</p>
+      <a th:href="@{/hechos/nuevo}" class="btn primary">Crear primera solicitud</a>
+    </div>
+
+    <div th:if="${!#lists.isEmpty(solicitudes)}" class="solicitudes-list">
+      <div th:each="solicitud : ${solicitudes}" class="solicitud-card">
+        <h3 th:text="${solicitud.titulo}">Título</h3>
+        <p class="solicitud-descripcion" th:text="${solicitud.descripcion}">Descripción</p>
+        <div class="solicitud-info">
+          <span class="info-item">
+            <strong>Estado:</strong> 
+            <span th:text="${solicitud.estado}">PENDIENTE</span>
+          </span>
+          <span class="info-item" th:if="${solicitud.nombreCategoria}">
+            <strong>Categoría:</strong> 
+            <span th:text="${solicitud.nombreCategoria}">-</span>
+          </span>
+          <span class="info-item" th:if="${solicitud.latitud != null && solicitud.longitud != null}">
+            <strong>Ubicación:</strong> 
+            <span th:text="${#numbers.formatDecimal(solicitud.latitud, 1, 4)} + ', ' + ${#numbers.formatDecimal(solicitud.longitud, 1, 4)}">-</span>
+          </span>
+          <span class="info-item">
+            <strong>Fecha de carga:</strong> 
+            <span class="date-display" th:attr="data-utc-date=${solicitud.fechaDeCargaSolicitud != null ? solicitud.fechaDeCargaSolicitud.toString() : ''}" th:text="${#temporals.format(solicitud.fechaDeCargaSolicitud, 'dd/MM/yyyy HH:mm')}">01/01/2024 12:00</span>
+          </span>
+          <span class="info-item" th:if="${solicitud.fechaDeAcontecimiento}">
+            <strong>Fecha de acontecimiento:</strong> 
+            <span class="date-display" th:attr="data-utc-date=${solicitud.fechaDeAcontecimiento.toString()}" th:text="${#temporals.format(solicitud.fechaDeAcontecimiento, 'dd/MM/yyyy HH:mm')}">01/01/2024</span>
+          </span>
+          <span class="info-item" th:if="${solicitud.idHecho != null}">
+            <strong>ID Hecho:</strong> 
+            <span th:text="${solicitud.idHecho}">-</span>
+          </span>
+          <span class="info-item" th:if="${solicitud.idHechoAgregador != null}">
+            <strong>ID Hecho Agregador:</strong> 
+            <span th:text="${solicitud.idHechoAgregador}">-</span>
+          </span>
+          <span class="info-item" th:if="${solicitud.hechoEnviado != null}">
+            <strong>Hecho enviado:</strong> 
+            <span th:text="${solicitud.hechoEnviado ? 'Sí' : 'No'}">-</span>
+          </span>
+        </div>
+        <div th:if="${solicitud.contenidoMultimedia != null && !#lists.isEmpty(solicitud.contenidoMultimedia)}" 
+             class="solicitud-multimedia-container" 
+             th:id="'multimedia-solicitud-' + ${solicitud.id}"
+             th:attr="data-solicitud-id=${solicitud.id}">
+        </div>
+        <div class="editar-btn-container" th:if="${solicitud.estado == T(ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud).PENDIENTE}">
+          <button 
+            th:data-solicitud-id="${solicitud.id}"
+            th:data-fecha-carga="${solicitud.fechaDeCargaSolicitud != null ? solicitud.fechaDeCargaSolicitud.toString() : ''}"
+            th:data-dias-restantes="${solicitud.diasRestantesEdicion}"
+            onclick="editarSolicitud(this);"
+            class="btn secondary editar-btn"
+            aria-label="Editar solicitud"
+            title="Editar solicitud">
+            Editar
+          </button>
+          <div class="plazo-info" 
+               th:if="${solicitud.diasRestantesEdicion != null}"
+               th:attr="data-dias=${solicitud.diasRestantesEdicion}">
+            <span class="plazo-text" 
+                  th:if="${solicitud.diasRestantesEdicion > 0}">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+              </svg>
+              <span th:text="${solicitud.diasRestantesEdicion == 1 ? 'Queda 1 día para editar' : 'Quedan ' + solicitud.diasRestantesEdicion + ' días para editar'}"></span>
+            </span>
+            <span class="plazo-text plazo-expirado" 
+                  th:if="${solicitud.diasRestantesEdicion <= 0}"
+                  th:text="'Plazo de edición expirado'">
+            </span>
+          </div>
+        </div>
+        <button 
+          th:if="${(solicitud.estado == T(ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud).ACEPTADO || solicitud.estado == T(ar.utn.ba.ddsi.frontend.models.dtos.EstadoSolicitud).ACEPTADO_MODIFICADO) && solicitud.hechoEnviado == true && solicitud.idHechoAgregador != null}"
+          th:data-hecho-id="${solicitud.idHechoAgregador}"
+          onclick="verHecho(this)"
+          class="btn primary ver-hecho-btn">
+          Ver hecho
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <div id="edicionModal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Editar Solicitud</h3>
+        <button class="close-btn" 
+                onclick="cerrarModalEdicion()" 
+                aria-label="Cerrar modal de edición"
+                title="Cerrar (Escape)">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="formEdicionSolicitud">
+          <input type="hidden" id="solicitud_id" name="solicitud_id">
+          <input type="hidden" id="contribuyente_id" name="contribuyente_id" th:value="${contribuyenteId}">
+
+          <div class="form-notice" style="background-color: #e3f2fd; border-left: 4px solid #2196f3; padding: 1rem; margin-bottom: 1.5rem; border-radius: 4px;" role="alert">
+            <p style="margin: 0; color: #1976d2; font-size: 0.9rem;">
+              <strong>Nota:</strong> Al editar la solicitud, volverá a ser revisada por un administrador. Solo se modificarán los campos que completes.
+            </p>
+            <p id="plazo-edicion-notice" style="margin: 0.5rem 0 0 0; color: #1976d2; font-size: 0.85rem; font-weight: bold;">
+              <span id="dias-restantes-text"></span>
+            </p>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_titulo">Título</label>
+            <input type="text" id="edit_titulo" name="titulo" class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="edit_descripcion">Descripción</label>
+            <textarea id="edit_descripcion" name="descripcion" class="form-control" rows="4"></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_categoria">Categoría</label>
+            <input type="text" id="edit_categoria" name="categoria" class="form-control">
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit_latitud">Latitud</label>
+              <input type="number" id="edit_latitud" name="latitud" step="0.000001" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="edit_longitud">Longitud</label>
+              <input type="number" id="edit_longitud" name="longitud" step="0.000001" class="form-control">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="edit_fecha_acontecimiento">Fecha de Acontecimiento</label>
+            <input type="datetime-local" id="edit_fecha_acontecimiento" name="fecha_acontecimiento" class="form-control" min="1900-01-01T00:00" max="9999-12-31T23:59" oninput="validarFechaAcontecimiento(this)">
+          </div>
+
+          <div class="form-group">
+            <label for="edit_multimedia">Multimedia</label>
+            <input type="file" id="edit_multimedia" name="multimedia" multiple accept="image/*,video/*" onchange="validarCantidadArchivos(this, 5)">
+            <small class="form-text">Puedes seleccionar hasta 5 archivos</small>
+          </div>
+
+          <div class="form-actions">
+            <button type="button" onclick="cerrarModalEdicion()" class="btn secondary">Cancelar</button>
+            <button type="button" id="submit_edicion" onclick="enviarFormularioEdicion()" class="btn primary">Guardar Cambios</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="hechoDetailPanel" class="side-panel">
+    <div class="panel-header">
+      <h3>Detalles del Hecho</h3>
+      <button class="close-btn" 
+              onclick="closeHechoDetailPanel()" 
+              aria-label="Cerrar panel de detalles"
+              title="Cerrar (Escape)">&times;</button>
+    </div>
+    <div class="panel-content" id="hechoDetailContent">
+    </div>
+  </div>
+
+  <div id="overlay" class="overlay" onclick="closeHechoDetailPanel()"></div>
+
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script th:inline="javascript">
+    const solicitudesData = /*[[${solicitudes}]]*/ [];
+
+    // Función para renderizar carousels de multimedia
+    function renderizarCarouselsMultimedia() {
+      solicitudesData.forEach(function(solicitud, index) {
+        // Verificar tanto contenidoMultimedia como multimedia (por compatibilidad)
+        const multimedia = solicitud.contenidoMultimedia || solicitud.multimedia;
+        
+        if (multimedia && multimedia.length > 0 && solicitud.id) {
+          const containerId = 'multimedia-solicitud-' + solicitud.id;
+          const container = document.getElementById(containerId);
+          
+          if (container && typeof renderMultimediaCarousel === 'function') {
+            const carouselId = 'carousel-solicitud-' + solicitud.id;
+            const carouselHtml = renderMultimediaCarousel(multimedia, carouselId, true);
+            container.innerHTML = carouselHtml;
+          }
+        }
+      });
+    }
+
+    function editarSolicitud(button) {
+      const solicitudId = button.getAttribute('data-solicitud-id');
+      const fechaCarga = button.getAttribute('data-fecha-carga');
+      const diasRestantes = button.getAttribute('data-dias-restantes');
+      
+      // Validar que pasaron <= 7 días
+      if (fechaCarga) {
+        const fechaCargaDate = new Date(fechaCarga);
+        const hoy = new Date();
+        // Normalizar ambas fechas a medianoche para calcular días completos
+        const hoyNormalizado = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+        const fechaCargaNormalizada = new Date(fechaCargaDate.getFullYear(), fechaCargaDate.getMonth(), fechaCargaDate.getDate());
+        const diferenciaTiempo = hoyNormalizado - fechaCargaNormalizada;
+        const diferenciaDias = diferenciaTiempo / (1000 * 3600 * 24);
+        // Calcular días restantes: 7 días completos menos los días que ya pasaron
+        const diasRestantesCalculados = Math.max(0, Math.floor(7 - diferenciaDias));
+        
+        if (diferenciaDias > 7) {
+          showToast('Solo se puede editar una solicitud dentro de los 7 días posteriores a su creación. El plazo ha expirado.', 'error');
+          // Mostrar mensaje visual en el botón
+          const container = button.closest('.editar-btn-container');
+          if (container) {
+            const plazoInfo = container.querySelector('.plazo-info');
+            if (plazoInfo) {
+              plazoInfo.innerHTML = '<span class="plazo-text plazo-expirado"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Plazo de edición expirado</span>';
+              plazoInfo.style.display = 'block';
+            }
+          }
+          button.disabled = true;
+          button.classList.add('btn-disabled');
+          button.setAttribute('aria-disabled', 'true');
+          return;
+        }
+        
+        // Mostrar días restantes si no están visibles
+        const container = button.closest('.editar-btn-container');
+        if (container) {
+          const plazoInfo = container.querySelector('.plazo-info');
+          if (plazoInfo) {
+            if (diasRestantesCalculados > 0) {
+              const mensajeDias = diasRestantesCalculados === 1 
+                ? 'Queda 1 día para editar' 
+                : 'Quedan ' + diasRestantesCalculados + ' días para editar';
+              plazoInfo.innerHTML = '<span class="plazo-text"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>' + mensajeDias + '</span>';
+            } else {
+              plazoInfo.innerHTML = '<span class="plazo-text plazo-expirado"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: inline-block; vertical-align: middle; margin-right: 4px;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Último día para editar</span>';
+            }
+            plazoInfo.style.display = 'block';
+          }
+        }
+      }
+
+      // Buscar la solicitud en los datos (convertir a número para comparar)
+      const solicitudIdNum = solicitudId ? Number(solicitudId) : null;
+      const solicitud = solicitudesData.find(s => s.id != null && Number(s.id) === solicitudIdNum);
+      
+      if (!solicitud) {
+        console.error('No se encontró la solicitud con ID:', solicitudId, 'en solicitudesData:', solicitudesData);
+        showToast('No se pudo cargar la información de la solicitud.', 'error');
+        return;
+      }
+
+      // Solo establecer el ID de la solicitud, los campos quedan vacíos
+      const solicitudIdElement = document.getElementById('solicitud_id');
+      
+      if (!solicitudIdElement) {
+        console.error('No se encontró el elemento solicitud_id');
+        return;
+      }
+      
+      solicitudIdElement.value = solicitud.id;
+      
+      // Completar campos con los datos actuales de la solicitud
+      const tituloInput = document.getElementById('edit_titulo');
+      if (tituloInput) tituloInput.value = solicitud.titulo || '';
+
+      const descripcionInput = document.getElementById('edit_descripcion');
+      if (descripcionInput) descripcionInput.value = solicitud.descripcion || '';
+
+      const categoriaInput = document.getElementById('edit_categoria');
+      if (categoriaInput) categoriaInput.value = solicitud.nombreCategoria || '';
+
+      const latitudInput = document.getElementById('edit_latitud');
+      if (latitudInput) latitudInput.value = solicitud.latitud ?? '';
+
+      const longitudInput = document.getElementById('edit_longitud');
+      if (longitudInput) longitudInput.value = solicitud.longitud ?? '';
+
+      const fechaAcontecimientoInput = document.getElementById('edit_fecha_acontecimiento');
+      if (fechaAcontecimientoInput && solicitud.fechaDeAcontecimiento) {
+        if (typeof convertUTCToLocal === 'function') {
+          const fechaLocal = convertUTCToLocal(solicitud.fechaDeAcontecimiento);
+          if (fechaLocal) {
+            fechaAcontecimientoInput.value = fechaLocal;
+          }
+        } else {
+          // Fallback: tomar los primeros 16 caracteres (yyyy-MM-ddTHH:mm)
+          fechaAcontecimientoInput.value = solicitud.fechaDeAcontecimiento.toString().substring(0, 16);
+        }
+      }
+
+      // Guardar el estado anterior y el idHechoAgregador para usar después de la edición
+      document.getElementById('solicitud_id').setAttribute('data-estado-anterior', solicitud.estado || '');
+      document.getElementById('solicitud_id').setAttribute('data-hecho-agregador-id', solicitud.idHechoAgregador || '');
+
+      // Mostrar información del plazo en el modal
+      const fechaCargaDateModal = new Date(fechaCarga);
+      const hoyModal = new Date();
+      // Normalizar ambas fechas a medianoche para calcular días completos
+      const hoyModalNormalizado = new Date(hoyModal.getFullYear(), hoyModal.getMonth(), hoyModal.getDate());
+      const fechaCargaModalNormalizada = new Date(fechaCargaDateModal.getFullYear(), fechaCargaDateModal.getMonth(), fechaCargaDateModal.getDate());
+      const diferenciaTiempoModal = hoyModalNormalizado - fechaCargaModalNormalizada;
+      const diferenciaDiasModal = diferenciaTiempoModal / (1000 * 3600 * 24);
+      // Calcular días restantes: 7 días completos menos los días que ya pasaron
+      const diasRestantesModal = Math.max(0, Math.floor(7 - diferenciaDiasModal));
+      
+      // Mostrar modal primero para asegurar que los elementos existan
+      const modal = document.getElementById('edicionModal');
+      
+      if (!modal) {
+        console.error('No se encontró el modal edicionModal');
+        return;
+      }
+      
+      modal.style.display = 'flex';
+      document.body.style.overflow = 'hidden';
+      
+      // Ocultar el elemento de plazo de edición
+      const plazoNotice = document.getElementById('plazo-edicion-notice');
+      if (plazoNotice) {
+        plazoNotice.style.display = 'none';
+      }
+      
+      // Enfocar el primer campo del formulario
+      setTimeout(() => {
+        const firstInput = document.querySelector('#edicionModal input[type="text"]');
+        if (firstInput) firstInput.focus();
+      }, 100);
+    }
+
+    function cerrarModalEdicion() {
+      document.getElementById('edicionModal').style.display = 'none';
+      document.body.style.overflow = '';
+      document.getElementById('formEdicionSolicitud').reset();
+    }
+
+    // Función para enviar el formulario de edición
+    async function enviarFormularioEdicion() {
+      const submitBtn = document.getElementById('submit_edicion');
+      if (!submitBtn) {
+        return;
+      }
+      
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '<span class="spinner"></span> Guardando...';
+      submitBtn.setAttribute('aria-busy', 'true');
+
+      try {
+        const solicitudId = document.getElementById('solicitud_id').value;
+        const contribuyenteId = document.getElementById('contribuyente_id').value;
+
+        if (!solicitudId) {
+          showToast('Error: No se pudo obtener el ID de la solicitud.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Guardar Cambios';
+          submitBtn.removeAttribute('aria-busy');
+          return;
+        }
+
+        if (!contribuyenteId) {
+          showToast('Error: No se pudo obtener el ID del contribuyente.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Guardar Cambios';
+          submitBtn.removeAttribute('aria-busy');
+          return;
+        }
+
+        // Construir FormData igual que en la creación
+        const formData = new FormData();
+        formData.set('contribuyente_id', contribuyenteId);
+
+        const titulo = document.getElementById('edit_titulo').value.trim();
+        if (titulo) formData.set('titulo', titulo);
+
+        const descripcion = document.getElementById('edit_descripcion').value.trim();
+        if (descripcion) formData.set('descripcion', descripcion);
+
+        const categoria = document.getElementById('edit_categoria').value.trim();
+        if (categoria) formData.set('categoria', categoria);
+
+        const latitud = document.getElementById('edit_latitud').value;
+        if (latitud && latitud !== '') formData.set('latitud', latitud);
+
+        const longitud = document.getElementById('edit_longitud').value;
+        if (longitud && longitud !== '') formData.set('longitud', longitud);
+
+        const fechaAcontecimiento = document.getElementById('edit_fecha_acontecimiento').value;
+        if (fechaAcontecimiento) {
+          // Validar que la fecha tenga el formato correcto (YYYY-MM-DDTHH:mm)
+          const fechaRegex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}$/;
+          if (!fechaRegex.test(fechaAcontecimiento)) {
+            showToast('La fecha debe tener el formato correcto (año de 4 dígitos).', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Guardar Cambios';
+            submitBtn.removeAttribute('aria-busy');
+            return;
+          }
+          // Convertir fecha de zona local del navegador a UTC antes de enviar
+          const fechaUTC = convertLocalToUTC(fechaAcontecimiento);
+          formData.set('fecha_acontecimiento', fechaUTC);
+        }
+
+        // Agregar archivos multimedia directamente al FormData (igual que en la creación)
+        const fileInput = document.getElementById('edit_multimedia');
+        if (fileInput && fileInput.files.length > 0) {
+          // Validar cantidad de archivos antes de enviar
+          if (fileInput.files.length > 5) {
+            showToast('Solo se pueden cargar hasta 5 archivos. Por favor, selecciona menos archivos.', 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Guardar Cambios';
+            submitBtn.removeAttribute('aria-busy');
+            return;
+          }
+          for (let i = 0; i < fileInput.files.length; i++) {
+            formData.append('archivos', fileInput.files[i]);
+          }
+        }
+
+        // Verificar que al menos un campo además del contribuyente_id esté presente
+        const camposModificados = Array.from(formData.keys()).filter(key => key !== 'contribuyente_id' && key !== 'archivos');
+        if (camposModificados.length === 0 && (!fileInput || fileInput.files.length === 0)) {
+          showToast('Debes completar al menos un campo para modificar la solicitud.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Guardar Cambios';
+          submitBtn.removeAttribute('aria-busy');
+          return;
+        }
+
+        try {
+          const response = await safeFetch('/solicitudes/' + solicitudId, {
+            method: 'PATCH',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+          }, true); // skipErrorRedirect = true para manejar errores de validación localmente
+
+          if (response.ok) {
+            // Obtener el estado anterior y el idHechoAgregador
+            const estadoAnterior = document.getElementById('solicitud_id').getAttribute('data-estado-anterior');
+            const idHechoAgregador = document.getElementById('solicitud_id').getAttribute('data-hecho-agregador-id');
+            
+            // Si la solicitud estaba en ACEPTADO o ACEPTADO_MODIFICADO y tiene idHechoAgregador, ocultarlo
+            if ((estadoAnterior === 'ACEPTADO' || estadoAnterior === 'ACEPTADO_MODIFICADO') && idHechoAgregador) {
+              try {
+                const apiBaseUrl = getApiBaseUrl();
+                const hideResponse = await safeFetch(apiBaseUrl + '/hechos/' + idHechoAgregador + '/ocultar', {
+                  method: 'PATCH'
+                });
+              } catch (error) {
+                console.error('Error al ocultar hecho en agregador:', error);
+                // No redirigir aquí ya que es una operación secundaria
+              }
+            }
+            
+            await showToast('Solicitud actualizada correctamente.', 'success');
+            cerrarModalEdicion();
+            setTimeout(() => location.reload(), 1500);
+          } else {
+            const text = await response.text();
+            console.error('Error del servidor:', text);
+            showToast('Error: ' + text, 'error');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = 'Guardar Cambios';
+            submitBtn.removeAttribute('aria-busy');
+            
+            // Para errores que no son de validación (400), redirigir a página de error
+            if (response.status !== 400) {
+              redirectToErrorPage(response.status);
+            }
+          }
+        } catch (error) {
+          console.error('Error de conexión:', error);
+          showToast('Error de conexión: ' + error.message, 'error');
+          submitBtn.disabled = false;
+          submitBtn.innerHTML = 'Guardar Cambios';
+          submitBtn.removeAttribute('aria-busy');
+          // Si es un error de red, redirigir a error 500
+          redirectToErrorPage(500);
+        }
+      } catch (error) {
+        console.error('Error al procesar la solicitud:', error);
+        showToast('Error: ' + (error.message || 'Error desconocido'), 'error');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = 'Guardar Cambios';
+        submitBtn.removeAttribute('aria-busy');
+      }
+    }
+
+    // Cerrar modal al hacer click fuera
+    document.addEventListener('DOMContentLoaded', function() {
+      // Renderizar carousels de multimedia
+      renderizarCarouselsMultimedia();
+      
+      // Convertir todas las fechas mostradas de UTC a zona local del navegador
+      document.querySelectorAll('.date-display[data-utc-date]').forEach(function(element) {
+        const utcDate = element.getAttribute('data-utc-date');
+        if (utcDate) {
+          const localDate = formatDateInLocalTimezone(utcDate, 'dd/MM/yyyy HH:mm');
+          if (localDate) {
+            element.textContent = localDate;
+          }
+        }
+      });
+
+      const modal = document.getElementById('edicionModal');
+      if (modal) {
+        modal.addEventListener('click', function(e) {
+          if (e.target === modal) {
+            cerrarModalEdicion();
+          }
+        });
+      }
+
+      // Cerrar modal con Escape
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          const modal = document.getElementById('edicionModal');
+          if (modal && modal.style.display === 'flex') {
+            cerrarModalEdicion();
+          }
+        }
+      });
+    });
+
+    function procesarArchivos(files) {
+      return Promise.all(Array.from(files).map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = (event) => {
+            const base64String = event.target.result.split(',')[1];
+            // Mapear el tipo MIME al enum TipoContenido que espera el backend
+            let tipoContenido = 'IMAGEN'; // Por defecto
+            if (file.type.startsWith('image/')) {
+              tipoContenido = 'IMAGEN';
+            } else if (file.type.startsWith('video/')) {
+              tipoContenido = 'VIDEO';
+            } else if (file.type.startsWith('audio/')) {
+              tipoContenido = 'AUDIO';
+            }
+            resolve({
+              tipo: tipoContenido,
+              path: file.name,
+              contenido_base64: base64String
+            });
+          };
+          reader.onerror = (error) => reject(error);
+          reader.readAsDataURL(file);
+        });
+      }));
+    }
+
+    function validarFechaAcontecimiento(input) {
+      const valor = input.value;
+      if (valor) {
+        // Validar que el año tenga exactamente 4 dígitos
+        const partes = valor.split('T');
+        if (partes.length > 0) {
+          const fecha = partes[0];
+          const año = fecha.split('-')[0];
+          if (año && año.length !== 4) {
+            input.setCustomValidity('El año debe tener 4 dígitos');
+            input.reportValidity();
+          } else {
+            input.setCustomValidity('');
+          }
+        }
+      } else {
+        input.setCustomValidity('');
+      }
+    }
+
+    function validarCantidadArchivos(input, maxArchivos) {
+      if (input.files.length > maxArchivos) {
+        showToast(`Solo se pueden seleccionar hasta ${maxArchivos} archivos. Se mantendrán solo los primeros ${maxArchivos}.`, 'error');
+        // Crear un nuevo DataTransfer para limitar los archivos
+        const dataTransfer = new DataTransfer();
+        for (let i = 0; i < maxArchivos; i++) {
+          dataTransfer.items.add(input.files[i]);
+        }
+        input.files = dataTransfer.files;
+      }
+    }
+
+    // showToast está definido en common.js
+
+    // Función para ver hecho desde agregador
+    function verHecho(button) {
+      const hechoId = button.getAttribute('data-hecho-id');
+      if (!hechoId) {
+        showToast('Error: No se pudo obtener el ID del hecho.', 'error');
+        return;
+      }
+      window.location.href = '/hechos#hecho' + hechoId;
+    }
+
+    // Función para abrir el panel de detalles (usa función reutilizable)
+    function openHechoDetailPanel(hecho) {
+      // Usar la función reutilizable de hechos.js
+      window.openHechoDetailPanel(hecho, 'hechoDetailPanel', 'hechoDetailContent', 'overlay');
+    }
+
+    function closeHechoDetailPanel() {
+      const panel = document.getElementById('hechoDetailPanel');
+      const overlay = document.getElementById('overlay');
+
+      panel.classList.remove('active');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeHechoDetailPanel();
+      }
+    });
+
+    // Funciones del carousel ahora están en carousel.js
+    // carouselPrev y carouselNext están disponibles globalmente desde carousel.js
+  </script>
+</div>
+</html>
