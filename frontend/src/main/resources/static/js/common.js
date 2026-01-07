@@ -54,10 +54,6 @@ function obtenerUbicacionUsuario(onSuccess, onError) {
 }
 
 function getApiBaseUrl() {
-  // #region agent log
-  try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:56',message:'getApiBaseUrl entry',data:{currentOrigin:window.location.origin,currentHost:window.location.host},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});}}catch(e){}
-  // #endregion
-  
   // Detectar si estamos en producción (dominio público, no localhost ni IP privada)
   const isProduction = function() {
     const hostname = window.location.hostname;
@@ -69,15 +65,8 @@ function getApiBaseUrl() {
     return true;
   }();
   
-  // #region agent log
-  try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:65',message:'production detection',data:{isProduction:isProduction,hostname:window.location.hostname},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H3'})}).catch(()=>{});}}catch(e){}
-  // #endregion
-  
   // En producción, usar ruta relativa para que nginx enrute correctamente
   if (isProduction) {
-  // #region agent log
-  try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:70',message:'using relative path for production',data:{apiBaseUrl:'/api'},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H3'})}).catch(()=>{});}}catch(e){}
-  // #endregion
     return '/api';
   }
   
@@ -86,9 +75,6 @@ function getApiBaseUrl() {
   let apiBaseUrl;
   if (metaTag) {
     apiBaseUrl = metaTag.getAttribute('content');
-    // #region agent log
-    try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:78',message:'meta tag found (dev)',data:{metaUrl:apiBaseUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});}}catch(e){}
-    // #endregion
   } else {
     // Fallback: usar configuración del servidor o asumir agregador en puerto 8084
     const origin = window.location.origin;
@@ -98,9 +84,6 @@ function getApiBaseUrl() {
     } else {
       apiBaseUrl = origin + ':8084/api';
     }
-    // #region agent log
-    try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:86',message:'fallback url constructed (dev)',data:{fallbackUrl:apiBaseUrl},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});}}catch(e){}
-    // #endregion
   }
   
   const originalUrl = apiBaseUrl;
@@ -113,10 +96,6 @@ function getApiBaseUrl() {
     const port = portMatch ? portMatch[1] : '8084';
     return protocol + '://localhost:' + port;
   });
-  
-  // #region agent log
-  try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:95',message:'url after localhost conversion (dev)',data:{originalUrl:originalUrl,finalUrl:apiBaseUrl,isLocalhost:apiBaseUrl.includes('localhost')},timestamp:Date.now(),sessionId:'debug-session',runId:'post-fix',hypothesisId:'H1'})}).catch(()=>{});}}catch(e){}
-  // #endregion
   
   return apiBaseUrl;
 }
@@ -174,15 +153,8 @@ function redirectToErrorPage(status) {
 }
 
 async function safeFetch(url, options = {}, skipErrorRedirect = false) {
-  // #region agent log
-  try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:122',message:'safeFetch called',data:{url:url,currentOrigin:window.location.origin,method:options.method||'GET',skipErrorRedirect:skipErrorRedirect},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});}}catch(e){}
-  // #endregion
   try {
     const response = await fetch(url, options);
-    
-    // #region agent log
-    try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:124',message:'safeFetch response received',data:{url:url,status:response.status,ok:response.ok,statusText:response.statusText},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});}}catch(e){}
-    // #endregion
     
     // Si la respuesta no es exitosa y no debemos saltar la redirección
     if (!response.ok && !skipErrorRedirect) {
@@ -191,9 +163,6 @@ async function safeFetch(url, options = {}, skipErrorRedirect = false) {
       // No redirigir para errores 400 (bad request) ya que suelen ser errores de validación
       // que se manejan en el contexto específico, a menos que sea explícitamente solicitado
       if (status !== 400 && status !== 401) {
-        // #region agent log
-        try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:132',message:'safeFetch redirecting to error page',data:{status:status,url:url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});}}catch(e){}
-        // #endregion
         redirectToErrorPage(status);
         return response;
       }
@@ -202,9 +171,6 @@ async function safeFetch(url, options = {}, skipErrorRedirect = false) {
     return response;
   } catch (error) {
     console.error('Error en petición fetch:', error);
-    // #region agent log
-    try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:140',message:'safeFetch error caught',data:{url:url,errorName:error.name,errorMessage:error.message,errorStack:error.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});}}catch(e){}
-    // #endregion
     // Para errores de red o conexión, redirigir a error genérico
     if (!skipErrorRedirect) {
       redirectToErrorPage(500);
@@ -216,10 +182,6 @@ async function safeFetch(url, options = {}, skipErrorRedirect = false) {
 async function apiFetch(endpoint, options = {}) {
   const baseUrl = getApiBaseUrl();
   const url = baseUrl + endpoint;
-  
-  // #region agent log
-  try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:151',message:'apiFetch called',data:{endpoint:endpoint,baseUrl:baseUrl,finalUrl:url,currentOrigin:window.location.origin,method:options.method||'GET'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});}}catch(e){}
-  // #endregion
   
   const defaultOptions = {
     headers: {
@@ -239,10 +201,6 @@ async function apiFetch(endpoint, options = {}) {
   try {
     const response = await fetch(url, mergedOptions);
     
-    // #region agent log
-    try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:169',message:'fetch response received',data:{url:url,status:response.status,ok:response.ok,statusText:response.statusText},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});}}catch(e){}
-    // #endregion
-    
     // Si la respuesta no es exitosa y no es un error de validación (400 con mensaje específico),
     // redirigir a la página de error correspondiente
     if (!response.ok) {
@@ -251,9 +209,6 @@ async function apiFetch(endpoint, options = {}) {
       // No redirigir para errores 400 (bad request) ya que suelen ser errores de validación
       // que se manejan en el contexto específico
       if (status !== 400 && status !== 401) {
-        // #region agent log
-        try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:178',message:'redirecting to error page',data:{status:status,url:url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H2'})}).catch(()=>{});}}catch(e){}
-        // #endregion
         redirectToErrorPage(status);
         // Retornar la respuesta para que el código que llama pueda manejarla si es necesario
         return response;
@@ -263,9 +218,6 @@ async function apiFetch(endpoint, options = {}) {
     return response;
   } catch (error) {
     console.error('Error en petición API:', error);
-    // #region agent log
-    try{const h=window.location.hostname;if(h==='localhost'||h==='127.0.0.1'){fetch('http://127.0.0.1:7242/ingest/5ddc6da1-1429-48c5-ae62-39f9647c5a94',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'common.js:187',message:'fetch error caught',data:{url:url,errorName:error.name,errorMessage:error.message,errorStack:error.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'H5'})}).catch(()=>{});}}catch(e){}
-    // #endregion
     // Para errores de red o conexión, redirigir a error genérico
     redirectToErrorPage(500);
     throw error;

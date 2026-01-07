@@ -14,7 +14,7 @@ services:
     init: true
     environment:
       PORT: 8087
-      DB_HOST: ${RDS_HOST}  # Endpoint de RDS
+      DB_HOST: ${RDS_HOST}
       DB_PORT: ${RDS_PORT}
       DB_NAME: users
       DB_USERNAME: ${RDS_USERNAME}
@@ -203,8 +203,6 @@ services:
         condition: service_healthy
       proxy-ong:
         condition: service_healthy
-      proxy-metamapa:
-        condition: service_healthy
     networks:
       - metamapa-network
     restart: unless-stopped
@@ -240,6 +238,8 @@ services:
     depends_on:
       agregador:
         condition: service_healthy
+      proxy-metamapa:
+        condition: service_healthy
     networks:
       - metamapa-network
     restart: unless-stopped
@@ -268,11 +268,12 @@ services:
       USERS_SERVICE_URL: http://users:8087
       PAGINATION_PAGE_SIZE: ${PAGINATION_PAGE_SIZE}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-    # No exponer puerto directamente - nginx sera el punto de entrada
     expose:
       - "8080"
     depends_on:
       agregador:
+        condition: service_healthy
+      proxy-metamapa:
         condition: service_healthy
     networks:
       - metamapa-network

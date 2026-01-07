@@ -727,26 +727,11 @@ public class ColeccionesService {
 
     @Transactional(readOnly = false)
     public void actualizarHechosSegunConsenso() {
-        // #region agent log
-        long startTime = System.currentTimeMillis();
-        log.info("[ColeccionesService] actualizarHechosSegunConsenso - INICIO");
-        // #endregion
-        
         List<Coleccion> colecciones = coleccionesRepository.findAll();
         final int cantidadFuentes = calcularCantidadFuentes();
 
-        // #region agent log
-        long beforeFindAll = System.currentTimeMillis();
-        log.info("[ColeccionesService] actualizarHechosSegunConsenso - ANTES_FINDALL - tiempo: {}ms", beforeFindAll - startTime);
-        // #endregion
-
         // Optimización: usar query directa en lugar de findAll() + filter en memoria
         List<Hecho> hechosLocalesVisibles = hechosRepository.findByEstado(EstadoHecho.VISIBLE);
-        
-        // #region agent log
-        long afterFindAll = System.currentTimeMillis();
-        log.info("[ColeccionesService] actualizarHechosSegunConsenso - DESPUES_FINDALL - tiempo: {}ms, cantidad: {}", afterFindAll - beforeFindAll, hechosLocalesVisibles.size());
-        // #endregion
 
         for (Coleccion coleccion : colecciones) {
             coleccion.recalcularHechos(hechosLocalesVisibles, cantidadFuentes);

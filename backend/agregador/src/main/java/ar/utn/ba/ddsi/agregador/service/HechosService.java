@@ -55,28 +55,13 @@ public class HechosService {
         String ubicacion,
         String fuente) {
         
-        // #region agent log
-        long startTime = System.currentTimeMillis();
-        log.info("[HechosService] getAll - INICIO - categoria: {}, ubicacion: {}, fuente: {}", categoria, ubicacion, fuente);
-        // #endregion
-
         List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,
             fecha_acontecimiento_desde, fecha_acontecimiento_hasta,
             ubicacion, fuente);
-        
-        // #region agent log
-        long queryTime = System.currentTimeMillis();
-        log.info("[HechosService] getAll - QUERY_COMPLETA - tiempo: {}ms, cantidad: {}", queryTime - startTime, hechosLocales.size());
-        // #endregion
 
         List<HechoDTO> locales = hechoMapper.toDTO(hechosLocales);
-        
-        // #region agent log
-        long mappingTime = System.currentTimeMillis();
-        log.info("[HechosService] getAll - MAPEO_COMPLETO - tiempo: {}ms, total: {}ms", mappingTime - queryTime, mappingTime - startTime);
-        // #endregion
 
         List<HechoDTO> externos = new ArrayList<>();
         try {
