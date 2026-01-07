@@ -47,13 +47,14 @@ public class HechosService {
     
     // Executor para llamadas asíncronas a fuentes externas
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+    @Transactional(readOnly = true)
     public ResponseEntity<List<HechoDTO>> getAll(
         String categoria,
         LocalDate fecha_reporte_desde, LocalDate fecha_reporte_hasta,
         LocalDateTime fecha_acontecimiento_desde, LocalDateTime fecha_acontecimiento_hasta,
         String ubicacion,
         String fuente) {
-
+        
         List<Hecho> hechosLocales = hechosRepository.findByFiltersConUbicacion(
             categoria,
             fecha_reporte_desde, fecha_reporte_hasta,

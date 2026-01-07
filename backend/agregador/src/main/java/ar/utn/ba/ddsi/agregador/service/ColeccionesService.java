@@ -17,6 +17,7 @@ import ar.utn.ba.ddsi.agregador.dto.PageResponse;
 import ar.utn.ba.ddsi.agregador.dto.mapper.ColeccionMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.CriterioMapper;
 import ar.utn.ba.ddsi.agregador.dto.mapper.HechoMapper;
+import ar.utn.ba.ddsi.agregador.domain.hecho.EstadoHecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.Hecho;
 import ar.utn.ba.ddsi.agregador.domain.hecho.OrigenHecho;
 import ar.utn.ba.ddsi.agregador.repositorie.IColeccionesRepository;
@@ -507,9 +508,8 @@ public class ColeccionesService {
                 todosHechosFiltrados = new ArrayList<>();
                 todosHechosConsensuados = new ArrayList<>();
             } else {
-                List<Hecho> hechosLocalesVisibles = hechosRepository.findAll().stream()
-                    .filter(Hecho::esVisible)
-                    .toList();
+                // Optimización: usar query directa en lugar de findAll() + filter en memoria
+                List<Hecho> hechosLocalesVisibles = hechosRepository.findByEstado(EstadoHecho.VISIBLE);
 
                 List<Hecho> todosHechos = new ArrayList<>(hechosLocalesVisibles);
 
@@ -689,9 +689,8 @@ public class ColeccionesService {
             return;
         }
 
-        List<Hecho> hechosLocalesVisibles = hechosRepository.findAll().stream()
-            .filter(Hecho::esVisible)
-            .toList();
+        // Optimización: usar query directa en lugar de findAll() + filter en memoria
+        List<Hecho> hechosLocalesVisibles = hechosRepository.findByEstado(EstadoHecho.VISIBLE);
 
         List<Hecho> hechosFiltrados = coleccion.aplicarCriteriosDePertenencia(hechosLocalesVisibles);
         coleccion.setHechos(new ArrayList<>(hechosFiltrados));
@@ -726,14 +725,13 @@ public class ColeccionesService {
         }
     }
 
-    @Transactional
+    @Transactional(readOnly = false)
     public void actualizarHechosSegunConsenso() {
         List<Coleccion> colecciones = coleccionesRepository.findAll();
         final int cantidadFuentes = calcularCantidadFuentes();
 
-        List<Hecho> hechosLocalesVisibles = hechosRepository.findAll().stream()
-            .filter(Hecho::esVisible)
-            .toList();
+        // Optimización: usar query directa en lugar de findAll() + filter en memoria
+        List<Hecho> hechosLocalesVisibles = hechosRepository.findByEstado(EstadoHecho.VISIBLE);
 
         for (Coleccion coleccion : colecciones) {
             coleccion.recalcularHechos(hechosLocalesVisibles, cantidadFuentes);

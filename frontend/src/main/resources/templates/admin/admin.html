@@ -1685,14 +1685,26 @@
                     const timeoutId = setTimeout(() => controller.abort(), 120000);
 
                     try {
-                        const response = await fetch(this.action, {
+                        // Usar ruta relativa directamente para evitar problemas de mixed-content
+                        // this.action puede contener URL absoluta con HTTP, causando mixed-content
+                        const actionPath = this.action.startsWith('http') 
+                            ? new URL(this.action).pathname 
+                            : this.action;
+                        
+                        const response = await fetch(actionPath, {
                             method: 'POST',
                             body: formData,
-                            signal: controller.signal
+                            signal: controller.signal,
+                            credentials: 'same-origin',
+                            headers: {
+                                'Accept': 'application/json'
+                            },
+                            redirect: 'manual' // Evitar seguimiento automático de redirecciones para prevenir mixed-content
                         });
 
                         clearTimeout(timeoutId);
 
+                        // Si la respuesta es OK (200), intentar leer JSON
                         if (response.ok) {
                             try {
                                 const result = await response.json();
@@ -1700,12 +1712,26 @@
                                 const tiempoTotal = result.tiempoTotalMs ? ` (${Math.round(result.tiempoTotalMs / 1000)}s)` : '';
                                 showToast(mensaje + tiempoTotal, 'success', 5000);
                             } catch (e) {
-                                // Si no es JSON, mostrar mensaje genérico
                                 showToast('Colecciones actualizadas correctamente.', 'success', 5000);
                             }
+                        } else if (response.status === 302) {
+                            // 302 Found es esperado cuando el servidor redirige (fallback para peticiones no-AJAX)
+                            showToast('Colecciones actualizadas correctamente.', 'success', 5000);
                         } else {
-                            const errorText = await response.text();
-                            throw new Error(errorText || 'Error al actualizar colecciones');
+                            // Intentar leer el body como JSON primero, luego como text
+                            let errorMessage = 'Error al actualizar colecciones';
+                            try {
+                                const errorResult = await response.json();
+                                errorMessage = errorResult.error || errorResult.mensaje || errorMessage;
+                            } catch (e) {
+                                try {
+                                    const errorText = await response.text();
+                                    errorMessage = errorText || errorMessage;
+                                } catch (e2) {
+                                    // No se pudo leer el error, usar mensaje genérico
+                                }
+                            }
+                            throw new Error(errorMessage);
                         }
                     } catch (fetchError) {
                         clearTimeout(timeoutId);
@@ -1744,24 +1770,62 @@
                     const timeoutId = setTimeout(() => controller.abort(), 180000);
 
                     try {
-                        const response = await fetch(this.action, {
+                        // Usar ruta relativa directamente para evitar problemas de mixed-content
+                        // this.action puede contener URL absoluta con HTTP, causando mixed-content
+                        const actionPath = this.action.startsWith('http') 
+                            ? new URL(this.action).pathname 
+                            : this.action;
+                        
+                        const response = await fetch(actionPath, {
                             method: 'POST',
                             body: formData,
-                            signal: controller.signal
+                            signal: controller.signal,
+                            credentials: 'same-origin',
+                            headers: {
+                                'Accept': 'application/json'
+                            },
+                            redirect: 'manual' // Evitar seguimiento automático de redirecciones para prevenir mixed-content
                         });
 
                         clearTimeout(timeoutId);
 
+                        // Si la respuesta es OK (200), intentar leer JSON
                         if (response.ok) {
-                            const responseText = await response.text();
+                            try {
+                                const result = await response.json();
+                                const mensaje = result.mensaje || 'Estadísticas recalculadas correctamente.';
+                                showToast(mensaje, 'success', 5000);
+                                // Recargar la página después de un delay para mostrar estadísticas actualizadas
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                            } catch (e) {
+                                showToast('Estadísticas recalculadas correctamente.', 'success', 5000);
+                                setTimeout(() => {
+                                    window.location.reload();
+                                }, 2000);
+                            }
+                        } else if (response.status === 302) {
+                            // 302 Found es esperado cuando el servidor redirige (fallback para peticiones no-AJAX)
                             showToast('Estadísticas recalculadas correctamente.', 'success', 5000);
-                            // Recargar la página después de un delay para mostrar estadísticas actualizadas
                             setTimeout(() => {
                                 window.location.reload();
                             }, 2000);
                         } else {
-                            const errorText = await response.text();
-                            throw new Error(errorText || 'Error al recalcular estadísticas');
+                            // Intentar leer el body como JSON primero, luego como text
+                            let errorMessage = 'Error al recalcular estadísticas';
+                            try {
+                                const errorResult = await response.json();
+                                errorMessage = errorResult.error || errorResult.mensaje || errorMessage;
+                            } catch (e) {
+                                try {
+                                    const errorText = await response.text();
+                                    errorMessage = errorText || errorMessage;
+                                } catch (e2) {
+                                    // No se pudo leer el error, usar mensaje genérico
+                                }
+                            }
+                            throw new Error(errorMessage);
                         }
                     } catch (fetchError) {
                         clearTimeout(timeoutId);

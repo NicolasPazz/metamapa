@@ -65,17 +65,17 @@ public class HechoController {
     @GetMapping
     public String listarHechos(Model model,
             @RequestParam(required = false) String ubicacion,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_hasta,
-            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_reporte_desde,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_acontecimiento_hasta,
+            @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate fecha_acontecimiento_desde,
             @RequestParam(required = false) String categoria,
             @RequestParam(required = false) String fuente,
             @RequestParam(required = false) String modo_navegacion,
             @RequestParam(defaultValue = "0") int page)
     {
-        log.info("[HechoController] - GET - /hechos - ubicacion: {}, fecha_reporte_hasta: {}, fecha_reporte_desde: {}, categoria: {}, fuente: {}, modo_navegacion: {}, page: {}",
-                ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, modo_navegacion, page);
+        log.info("[HechoController] - GET - /hechos - ubicacion: {}, fecha_acontecimiento_hasta: {}, fecha_acontecimiento_desde: {}, categoria: {}, fuente: {}, modo_navegacion: {}, page: {}",
+                ubicacion, fecha_acontecimiento_hasta, fecha_acontecimiento_desde, categoria, fuente, modo_navegacion, page);
         PageResponse<HechoDTO> pageResponse = hechoService.getAllHechosPaginados(
-            null, ubicacion, fecha_reporte_hasta, fecha_reporte_desde, categoria, fuente, page, pageSize);
+            null, ubicacion, fecha_acontecimiento_hasta, fecha_acontecimiento_desde, categoria, fuente, page, pageSize);
         List<String> listaCategorias = hechoService.obtenerCategoriasUnicas();
         List<String> listaProvincias = hechoService.obtenerProvinciasConHechos();
         List<String> listaFuentes = hechoService.obtenerFuentesConHechos();

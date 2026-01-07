@@ -148,8 +148,8 @@ public class ColeccionService {
     public PageResponse<HechoDTO> getHechosColeccionPaginados(
             String handle,
             String ubicacion,
-            LocalDate fecha_hasta,
-            LocalDate fecha_desde,
+            LocalDate fecha_acontecimiento_hasta,
+            LocalDate fecha_acontecimiento_desde,
             String categoria,
             String fuente,
             String modo,
@@ -169,11 +169,15 @@ public class ColeccionService {
                         if (fuente != null && !fuente.isEmpty()) {
                             uriBuilder.queryParam("fuente", fuente);
                         }
-                        if (fecha_desde != null) {
-                            uriBuilder.queryParam("fecha_reporte_desde", fecha_desde.format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                        if (fecha_acontecimiento_desde != null) {
+                            // Convertir LocalDate a LocalDateTime (inicio del día) para fecha_acontecimiento_desde
+                            java.time.LocalDateTime fechaDesdeDateTime = fecha_acontecimiento_desde.atStartOfDay();
+                            uriBuilder.queryParam("fecha_acontecimiento_desde", fechaDesdeDateTime.toString());
                         }
-                        if (fecha_hasta != null) {
-                            uriBuilder.queryParam("fecha_reporte_hasta", fecha_hasta.format(java.time.format.DateTimeFormatter.ofPattern("dd-MM-yyyy")));
+                        if (fecha_acontecimiento_hasta != null) {
+                            // Convertir LocalDate a LocalDateTime (fin del día) para fecha_acontecimiento_hasta
+                            java.time.LocalDateTime fechaHastaDateTime = fecha_acontecimiento_hasta.atTime(23, 59, 59);
+                            uriBuilder.queryParam("fecha_acontecimiento_hasta", fechaHastaDateTime.toString());
                         }
                         if (modo != null && !modo.isEmpty()) {
                             uriBuilder.queryParam("modo", modo);

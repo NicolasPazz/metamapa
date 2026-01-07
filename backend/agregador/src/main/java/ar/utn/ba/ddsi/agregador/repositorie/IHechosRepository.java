@@ -18,7 +18,6 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
 
   @Query("SELECT DISTINCT h FROM Hecho h " +
       "LEFT JOIN FETCH h.provincia " +
-      "LEFT JOIN FETCH h.multimedia " +
       "WHERE " +
       "h.estado = 'VISIBLE' AND " +  // Filtrar solo hechos VISIBLES
       "(:categoria IS NULL OR h.categoria.nombre = :categoria) AND " +
@@ -132,4 +131,7 @@ public interface IHechosRepository extends JpaRepository<Hecho, Long> {
   @Query("SELECT COUNT(h) > 0 FROM Hecho h " +
          "WHERE h.estado = 'VISIBLE' AND h.nombreFuente = :nombreFuente")
   boolean existsByNombreFuenteAndEstadoVisible(@Param("nombreFuente") String nombreFuente);
+
+  @Query("SELECT h FROM Hecho h WHERE h.estado = :estado")
+  List<Hecho> findByEstado(@Param("estado") EstadoHecho estado);
 }

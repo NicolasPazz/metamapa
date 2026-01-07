@@ -17,7 +17,7 @@ configure_nginx() {
         sed -i '/^[[:space:]]*# Servidor HTTPS/,/^[[:space:]]*}[[:space:]]*$/{
             s/^\([[:space:]]*\)# \(.*\)/\1\2/
         }' /etc/nginx/nginx.conf
-        
+
         sed -i "s|# REDIRECT_TO_HTTPS|return 301 https://\$server_name\$request_uri;|" /etc/nginx/nginx.conf
         sed -i "s|metamapa-dds.ddns.net|${DOMAIN}|g" /etc/nginx/nginx.conf
         echo "✓ Certificados SSL detectados para ${DOMAIN}: redirección HTTP->HTTPS habilitada"
@@ -38,7 +38,7 @@ configure_nginx() {
                 }
             }
         }' /etc/nginx/nginx.conf
-        
+
         echo "⚠ Certificados SSL no detectados para ${DOMAIN}: sirviendo HTTP (certbot los obtendrá automáticamente)"
         return 1
     fi
@@ -63,7 +63,7 @@ reload_nginx() {
 # Monitorear certificados (idempotente: solo recarga si cambian)
 while kill -0 $NGINX_PID 2>/dev/null; do
     sleep 10
-    
+
     if [ -f "$CERT_PATH" ]; then
         if [ $HAD_CERTS -ne 0 ]; then
             echo "✓ Certificados SSL detectados por primera vez, recargando nginx..."
@@ -82,4 +82,3 @@ while kill -0 $NGINX_PID 2>/dev/null; do
 done
 
 wait $NGINX_PID
-

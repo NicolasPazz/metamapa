@@ -14,7 +14,7 @@ services:
     init: true
     environment:
       PORT: 8087
-      DB_HOST: ${RDS_HOST}  # Endpoint de RDS
+      DB_HOST: ${RDS_HOST}
       DB_PORT: ${RDS_PORT}
       DB_NAME: users
       DB_USERNAME: ${RDS_USERNAME}
@@ -155,8 +155,6 @@ services:
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
     ports:
       - "8086:8086"
-    depends_on:
-      - agregador
     networks:
       - metamapa-network
     restart: unless-stopped
@@ -240,6 +238,8 @@ services:
     depends_on:
       agregador:
         condition: service_healthy
+      proxy-metamapa:
+        condition: service_healthy
     networks:
       - metamapa-network
     restart: unless-stopped
@@ -265,23 +265,16 @@ services:
       AGREGADOR_URL: http://agregador:8084
       DINAMICA_URL: http://dinamica:8081
       ESTATICA_URL: http://estatica:8082
-      USERS_SERVICE_URL: http://users:8087
       ESTADISTICA_URL: http://estadistica:8085
+      USERS_SERVICE_URL: http://users:8087
       PAGINATION_PAGE_SIZE: ${PAGINATION_PAGE_SIZE}
       SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE}
-    # No exponer puerto directamente - nginx sera el punto de entrada
     expose:
       - "8080"
     depends_on:
       agregador:
         condition: service_healthy
-      dinamica:
-        condition: service_healthy
-      estatica:
-        condition: service_healthy
-      users:
-        condition: service_healthy
-      estadistica:
+      proxy-metamapa:
         condition: service_healthy
     networks:
       - metamapa-network
@@ -307,7 +300,7 @@ services:
     entrypoint: "/bin/sh -c 'sleep 30; if [ ! -f /etc/letsencrypt/live/$${CERTBOT_DOMAIN}/fullchain.pem ]; then certbot certonly --webroot --webroot-path=/var/www/certbot --email $${CERTBOT_EMAIL} --agree-tos --no-eff-email -d $${CERTBOT_DOMAIN} || true; fi; trap exit TERM; while :; do certbot renew --quiet; sleep 12h & wait $${!}; done;'"
     depends_on:
       nginx:
-        condition: service_started
+        condition: service_healthy
     networks:
       - metamapa-network
     restart: unless-stopped
@@ -350,4 +343,3 @@ volumes:
 networks:
   metamapa-network:
     driver: bridge
-

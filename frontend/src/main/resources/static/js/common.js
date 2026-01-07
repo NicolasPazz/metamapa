@@ -54,6 +54,23 @@ function obtenerUbicacionUsuario(onSuccess, onError) {
 }
 
 function getApiBaseUrl() {
+  // Detectar si estamos en producción (dominio público, no localhost ni IP privada)
+  const isProduction = function() {
+    const hostname = window.location.hostname;
+    // Si es localhost o IP privada, estamos en desarrollo
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.16.') || hostname.startsWith('172.17.') || hostname.startsWith('172.18.') || hostname.startsWith('172.19.') || hostname.startsWith('172.20.') || hostname.startsWith('172.21.') || hostname.startsWith('172.22.') || hostname.startsWith('172.23.') || hostname.startsWith('172.24.') || hostname.startsWith('172.25.') || hostname.startsWith('172.26.') || hostname.startsWith('172.27.') || hostname.startsWith('172.28.') || hostname.startsWith('172.29.') || hostname.startsWith('172.30.') || hostname.startsWith('172.31.')) {
+      return false;
+    }
+    // Si tiene un dominio público (no es IP), estamos en producción
+    return true;
+  }();
+  
+  // En producción, usar ruta relativa para que nginx enrute correctamente
+  if (isProduction) {
+    return '/api';
+  }
+  
+  // En desarrollo local, mantener comportamiento original
   const metaTag = document.querySelector('meta[name="api-base-url"]');
   let apiBaseUrl;
   if (metaTag) {
@@ -69,6 +86,7 @@ function getApiBaseUrl() {
     }
   }
   
+  const originalUrl = apiBaseUrl;
   // Reemplazar hosts internos de Docker por localhost para acceso desde navegador
   // Esto es necesario porque los hostnames de Docker no son accesibles desde el navegador
   apiBaseUrl = apiBaseUrl.replace(/https?:\/\/[^\/:]+(:\d+)?/, function(match) {
@@ -83,6 +101,21 @@ function getApiBaseUrl() {
 }
 
 function getDinamicaApiBaseUrl() {
+  // Detectar si estamos en producción
+  const isProduction = function() {
+    const hostname = window.location.hostname;
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.16.') || hostname.startsWith('172.17.') || hostname.startsWith('172.18.') || hostname.startsWith('172.19.') || hostname.startsWith('172.20.') || hostname.startsWith('172.21.') || hostname.startsWith('172.22.') || hostname.startsWith('172.23.') || hostname.startsWith('172.24.') || hostname.startsWith('172.25.') || hostname.startsWith('172.26.') || hostname.startsWith('172.27.') || hostname.startsWith('172.28.') || hostname.startsWith('172.29.') || hostname.startsWith('172.30.') || hostname.startsWith('172.31.')) {
+      return false;
+    }
+    return true;
+  }();
+  
+  // En producción, usar ruta relativa (nginx enruta /api/ al frontend que luego lo reenvía)
+  if (isProduction) {
+    return '/api';
+  }
+  
+  // En desarrollo, mantener comportamiento original
   const apiBaseUrl = getApiBaseUrl();
   // Cambiar puerto de 8084 (agregador) a 8081 (dinámica)
   let dinamicaUrl = apiBaseUrl.replace(':8084', ':8081');

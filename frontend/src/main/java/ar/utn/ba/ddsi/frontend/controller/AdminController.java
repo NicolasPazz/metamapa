@@ -19,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -286,42 +287,91 @@ public class AdminController {
     }
 
     @PostMapping("/admin/actualizar-agregador")
-    public String actualizarAgregador(RedirectAttributes redirectAttributes) {
+    public ResponseEntity<?> actualizarAgregador(RedirectAttributes redirectAttributes, HttpServletRequest request) {
       log.info("[AdminController] - POST - /admin/actualizar-agregador");
       try {
         adminService.ejecutarSchedulerAgregador();
+        // Si es una petición AJAX/fetch, devolver JSON en lugar de redirect
+        String acceptHeader = request.getHeader("Accept");
+        boolean isAjaxRequest = request.getHeader("X-Requested-With") != null 
+            || (acceptHeader != null && acceptHeader.contains("application/json"))
+            || request.getHeader("Content-Type") != null;
+        
+        if (isAjaxRequest) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("mensaje", "Agregador actualizado correctamente!");
+            return ResponseEntity.ok().body(response);
+        }
+        
         redirectAttributes.addFlashAttribute("success", "Agregador actualizado correctamente!");
+        return ResponseEntity.status(HttpStatus.FOUND).location(java.net.URI.create("/admin")).build();
       } catch (Exception e) {
         log.error("Error al ejecutar scheduler del agregador", e);
+        
+        // Si es una petición AJAX/fetch, devolver JSON en lugar de redirect
+        String acceptHeader = request.getHeader("Accept");
+        boolean isAjaxRequest = request.getHeader("X-Requested-With") != null 
+            || (acceptHeader != null && acceptHeader.contains("application/json"))
+            || request.getHeader("Content-Type") != null;
+        
+        if (isAjaxRequest) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Error al actualizar agregador: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+        
         redirectAttributes.addFlashAttribute("error", "Error al actualizar agregador: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.FOUND).location(java.net.URI.create("/admin")).build();
       }
-      return "redirect:/admin";
     }
 
     @PostMapping("/admin/actualizar-estadisticas")
-    public String actualizarEstadisticas(RedirectAttributes redirectAttributes) {
+    public ResponseEntity<?> actualizarEstadisticas(RedirectAttributes redirectAttributes, HttpServletRequest request) {
       log.info("[AdminController] - POST - /admin/actualizar-estadisticas");
       try {
         adminService.actualizarEstadisticas();
+        // Si es una petición AJAX/fetch, devolver JSON en lugar de redirect
+        String acceptHeader = request.getHeader("Accept");
+        boolean isAjaxRequest = request.getHeader("X-Requested-With") != null 
+            || (acceptHeader != null && acceptHeader.contains("application/json"))
+            || request.getHeader("Content-Type") != null;
+        
+        if (isAjaxRequest) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("mensaje", "Estadísticas actualizadas correctamente!");
+            return ResponseEntity.ok().body(response);
+        }
+        
         redirectAttributes.addFlashAttribute("success", "Estadísticas actualizadas correctamente!");
+        return ResponseEntity.status(HttpStatus.FOUND).location(java.net.URI.create("/admin")).build();
       } catch (Exception e) {
         log.error("Error al actualizar estadísticas", e);
+        
+        // Si es una petición AJAX/fetch, devolver JSON en lugar de redirect
+        String acceptHeader = request.getHeader("Accept");
+        boolean isAjaxRequest = request.getHeader("X-Requested-With") != null 
+            || (acceptHeader != null && acceptHeader.contains("application/json"))
+            || request.getHeader("Content-Type") != null;
+        
+        if (isAjaxRequest) {
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", false);
+            response.put("error", "Error al actualizar estadísticas: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+        
         redirectAttributes.addFlashAttribute("error", "Error al actualizar estadísticas: " + e.getMessage());
+        return ResponseEntity.status(HttpStatus.FOUND).location(java.net.URI.create("/admin")).build();
       }
-      return "redirect:/admin";
     }
 
     @GetMapping("/admin/api/estadisticas")
     @ResponseBody
     public EstadisticasCompletasDTO obtenerEstadisticasApi() {
         log.info("[AdminController] - GET - /admin/api/estadisticas");
-        // #region agent log
-        try {
-            java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-            fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminController.java:303\",\"message\":\"obtenerEstadisticasApi - entrada\",\"data\":{},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-            fw.close();
-        } catch (Exception e) {}
-        // #endregion
         try {
             EstadisticasCompletasDTO estadisticas = estadisticasService.obtenerEstadisticas();
             if (estadisticas.getDistribucionGeograficaColecciones() != null) {
@@ -336,24 +386,9 @@ public class AdminController {
                 estadisticas.getDistribucionTemporalCategorias()
                     .sort(Comparator.comparing(CategoriaHoraDTO::getCategoriaNombre));
             }
-            // #region agent log
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-                fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminController.java:320\",\"message\":\"obtenerEstadisticasApi - exito\",\"data\":{},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-                fw.close();
-            } catch (Exception ex) {}
-            // #endregion
             return estadisticas;
         } catch (Exception e) {
             log.warn("Error al obtener estadísticas para el panel admin: {}", e.getMessage());
-            // #region agent log
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-                String errorMsg = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"").replace("\n", "\\n") : "null";
-                fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminController.java:323\",\"message\":\"obtenerEstadisticasApi - error capturado\",\"data\":{\"error\":\"" + e.getClass().getName() + "\",\"message\":\"" + errorMsg + "\"},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-                fw.close();
-            } catch (Exception ex) {}
-            // #endregion
             return EstadisticasCompletasDTO.builder()
                 .distribucionGeograficaColecciones(Collections.emptyList())
                 .concentracionGeograficaCategorias(Collections.emptyList())
@@ -362,6 +397,16 @@ public class AdminController {
                 .estadisticaSpam(null)
                 .build();
         }
+    }
+    
+    private boolean isAjaxRequest(HttpServletRequest request) {
+        String requestedWith = request.getHeader("X-Requested-With");
+        String accept = request.getHeader("Accept");
+        String contentType = request.getHeader("Content-Type");
+        // Detectar peticiones AJAX/fetch por headers comunes
+        return "XMLHttpRequest".equals(requestedWith) 
+            || (accept != null && accept.contains("application/json"))
+            || (contentType != null && contentType.contains("multipart/form-data") && requestedWith == null);
     }
 }
 

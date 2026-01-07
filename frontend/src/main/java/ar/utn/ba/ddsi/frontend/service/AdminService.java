@@ -1,8 +1,11 @@
 package ar.utn.ba.ddsi.frontend.service;
 
 import ar.utn.ba.ddsi.frontend.models.dtos.*;
+import ar.utn.ba.ddsi.frontend.dto.AuthResponseDTO;
+import ar.utn.ba.ddsi.frontend.dto.RefreshTokenDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.client.MultipartBodyBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,23 +26,21 @@ public class AdminService {
     private final WebClient webClientEstatica;
     private final WebClient webClientAgregadorBase;
     private final WebClient webClientEstadistica;
+    private final WebClient authWebClient;
+    private final String authServiceUrl;
 
     public AdminService(WebClient.Builder builder,
                        @Value("${app.api.agregador.base-url:http://localhost:8084/api}") String agregadorBaseUrl,
                        @Value("${app.api.estatica.base-url:http://localhost:8082/api}") String estaticaBaseUrl,
-                        @Value("${app.api.estadistica.base-url:http://localhost:8085/api/estadisticas}") String estadisticaBaseUrl
+                        @Value("${app.api.estadistica.base-url:http://localhost:8085/api/estadisticas}") String estadisticaBaseUrl,
+                        @Value("${app.api.users.base-url:http://localhost:8087/api}") String authServiceUrl
                         ) {
-        // #region agent log
-        try {
-            java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-            fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminService.java:31\",\"message\":\"AdminService constructor - estadisticaBaseUrl configurada\",\"data\":{\"estadisticaBaseUrl\":\"" + estadisticaBaseUrl.replace("\"", "\\\"") + "\",\"agregadorBaseUrl\":\"" + agregadorBaseUrl.replace("\"", "\\\"") + "\",\"estaticaBaseUrl\":\"" + estaticaBaseUrl.replace("\"", "\\\"") + "\"},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-            fw.close();
-        } catch (Exception e) {}
-        // #endregion
         this.webClientAgregador = builder.baseUrl(agregadorBaseUrl + "/admin").build();
         this.webClientAgregadorBase = builder.baseUrl(agregadorBaseUrl).build();
         this.webClientEstatica = builder.baseUrl(estaticaBaseUrl).build();
         this.webClientEstadistica = builder.baseUrl(estadisticaBaseUrl).build();
+        this.authWebClient = builder.build();
+        this.authServiceUrl = authServiceUrl;
     }
 
     private String getAccessTokenFromSession() {
@@ -52,26 +53,106 @@ public class AdminService {
         }
     }
 
-    public List<SolicitudDTO> getAllSolicitudes() {
+    private String getRefreshTokenFromSession() {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpServletRequest request = attributes.getRequest();
+            return (String) request.getSession().getAttribute("refreshToken");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private void updateTokensInSession(String accessToken, String refreshToken) {
+        try {
+            ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+            HttpServletRequest request = attributes.getRequest();
+            request.getSession().setAttribute("accessToken", accessToken);
+            if (refreshToken != null) {
+                request.getSession().setAttribute("refreshToken", refreshToken);
+            }
+        } catch (Exception e) {
+            log.error("[AdminService] Error al actualizar tokens en sesión: {}", e.getMessage());
+        }
+    }
+
+    private AuthResponseDTO refreshToken(String refreshToken) {
+        try {
+            RefreshTokenDTO refreshRequest = RefreshTokenDTO.builder()
+                    .refreshToken(refreshToken)
+                    .build();
+
+            AuthResponseDTO response = authWebClient
+                    .post()
+                    .uri(authServiceUrl + "/auth/refresh")
+                    .bodyValue(refreshRequest)
+                    .retrieve()
+                    .bodyToMono(AuthResponseDTO.class)
+                    .block();
+
+            if (response == null) {
+                throw new RuntimeException("Error al refrescar token: respuesta nula");
+            }
+            updateTokensInSession(response.getAccessToken(), response.getRefreshToken());
+            log.info("[AdminService] Token refrescado exitosamente");
+            return response;
+        } catch (Exception e) {
+            log.error("[AdminService] Error al refrescar token: {}", e.getMessage());
+            throw new RuntimeException("Error al refrescar token: " + e.getMessage(), e);
+        }
+    }
+
+    private <T> T executeWithTokenRetry(TokenApiCall<T> apiCall) {
         String accessToken = getAccessTokenFromSession();
+        String refreshToken = getRefreshTokenFromSession();
+
         if (accessToken == null) {
             throw new RuntimeException("No hay token de acceso disponible");
         }
-        return webClientAgregador.get()
-                .uri("/solicitudes")
-                .header("Authorization", "Bearer " + accessToken)
-                .retrieve()
-                .bodyToFlux(SolicitudDTO.class)
-                .collectList()
-                .block();
+
+        try {
+            return apiCall.execute(accessToken);
+        } catch (WebClientResponseException e) {
+            if ((e.getStatusCode() == HttpStatus.UNAUTHORIZED || e.getStatusCode() == HttpStatus.FORBIDDEN) && refreshToken != null) {
+                try {
+                    log.info("[AdminService] Token expirado, intentando refrescar...");
+                    AuthResponseDTO newTokens = refreshToken(refreshToken);
+                    
+                    if (newTokens.getAccessToken() == null) {
+                        throw new RuntimeException("Error al refrescar token: respuesta inválida");
+                    }
+                    
+                    log.info("[AdminService] Reintentando petición con nuevo token");
+                    return apiCall.execute(newTokens.getAccessToken());
+                } catch (Exception refreshError) {
+                    log.error("[AdminService] Error al refrescar token y reintentar: {}", refreshError.getMessage());
+                    throw new RuntimeException("Error al refrescar token y reintentar: " + refreshError.getMessage(), refreshError);
+                }
+            }
+            throw e;
+        } catch (Exception e) {
+            throw new RuntimeException("Error en llamada al API: " + e.getMessage(), e);
+        }
+    }
+
+    @FunctionalInterface
+    private interface TokenApiCall<T> {
+        T execute(String accessToken) throws Exception;
+    }
+
+    public List<SolicitudDTO> getAllSolicitudes() {
+        return executeWithTokenRetry(accessToken -> {
+            return webClientAgregador.get()
+                    .uri("/solicitudes")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .retrieve()
+                    .bodyToFlux(SolicitudDTO.class)
+                    .collectList()
+                    .block();
+        });
     }
 
     public void actualizarSolicitud(Long id, String estado) {
-        String accessToken = getAccessTokenFromSession();
-        if (accessToken == null) {
-            throw new RuntimeException("No hay token de acceso disponible");
-        }
-        
         // Enviar el estado como un Map con el valor correcto para el backend agregador
         // El backend espera: ACEPTADA o RECHAZADA
         java.util.Map<String, String> body = new java.util.HashMap<>();
@@ -79,13 +160,15 @@ public class AdminService {
 
         log.info("[AdminService] - Actualizando solicitud {} con estado: {}", id, estado);
         
-        String response = webClientAgregador.patch()
-                .uri("/solicitudes/" + id)
-                .header("Authorization", "Bearer " + accessToken)
-                .bodyValue(body)
-                .retrieve()
-                .bodyToMono(String.class)
-                .block();
+        String response = executeWithTokenRetry(accessToken -> {
+            return webClientAgregador.patch()
+                    .uri("/solicitudes/" + id)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .bodyValue(body)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+        });
         
         log.info("[AdminService] - Respuesta del backend: {}", response);
     }
@@ -106,36 +189,33 @@ public class AdminService {
     }
 
     public void crearColeccion(CrearColeccionDTO dto) {
-        String accessToken = getAccessTokenFromSession();
-        if (accessToken == null) {
-            log.error("[AdminService] ERROR - No hay token de acceso disponible");
-            throw new RuntimeException("No hay token de acceso disponible");
-        }
-        
         try {
-            webClientAgregador
-                    .post()
-                    .uri("/colecciones")
-                    .header("Authorization", "Bearer " + accessToken)
-                    .bodyValue(dto)
-                    .retrieve()
-                    .onStatus(status -> status.isError(), response -> {
-                        log.error("[AdminService] ERROR - Respuesta del backend con error: {}", response.statusCode());
-                        return response.bodyToMono(String.class)
-                                .doOnNext(body -> log.error("[AdminService] ERROR - Cuerpo de respuesta: {}", body))
-                                .flatMap(body -> Mono.error(new RuntimeException("Error del backend: " + response.statusCode() + " - " + body)));
-                    })
-                    .bodyToMono(Void.class)
-                    .doOnSuccess(v -> log.info("[AdminService] Colección creada exitosamente"))
-                    .doOnError(e -> {
-                        if (e instanceof WebClientResponseException) {
-                            WebClientResponseException ex = (WebClientResponseException) e;
-                            log.error("[AdminService] ERROR - Error HTTP {}: {}", ex.getStatusCode(), ex.getResponseBodyAsString());
-                        } else {
-                            log.error("[AdminService] ERROR - Error al crear colección: {}", e.getMessage(), e);
-                        }
-                    })
-                    .block();
+            executeWithTokenRetry(accessToken -> {
+                webClientAgregador
+                        .post()
+                        .uri("/colecciones")
+                        .header("Authorization", "Bearer " + accessToken)
+                        .bodyValue(dto)
+                        .retrieve()
+                        .onStatus(status -> status.isError(), response -> {
+                            log.error("[AdminService] ERROR - Respuesta del backend con error: {}", response.statusCode());
+                            return response.bodyToMono(String.class)
+                                    .doOnNext(body -> log.error("[AdminService] ERROR - Cuerpo de respuesta: {}", body))
+                                    .flatMap(body -> Mono.error(new RuntimeException("Error del backend: " + response.statusCode() + " - " + body)));
+                        })
+                        .bodyToMono(Void.class)
+                        .doOnSuccess(v -> log.info("[AdminService] Colección creada exitosamente"))
+                        .doOnError(e -> {
+                            if (e instanceof WebClientResponseException) {
+                                WebClientResponseException ex = (WebClientResponseException) e;
+                                log.error("[AdminService] ERROR - Error HTTP {}: {}", ex.getStatusCode(), ex.getResponseBodyAsString());
+                            } else {
+                                log.error("[AdminService] ERROR - Error al crear colección: {}", e.getMessage(), e);
+                            }
+                        })
+                        .block();
+                return null;
+            });
         } catch (Exception e) {
             log.error("[AdminService] ERROR - Excepción al crear colección: {}", e.getMessage(), e);
             throw e;
@@ -143,18 +223,16 @@ public class AdminService {
     }
 
     public void actualizarColeccion(CrearColeccionDTO dto, String handle) {
-        String accessToken = getAccessTokenFromSession();
-        if (accessToken == null) {
-            throw new RuntimeException("No hay token de acceso disponible");
-        }
-        
-        webClientAgregador.patch()
-                .uri("/colecciones/" + handle)
-                .header("Authorization", "Bearer " + accessToken)
-                .bodyValue(dto)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .block();
+        executeWithTokenRetry(accessToken -> {
+            webClientAgregador.patch()
+                    .uri("/colecciones/" + handle)
+                    .header("Authorization", "Bearer " + accessToken)
+                    .bodyValue(dto)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+            return null;
+        });
     }
 
     public void agregarEtiquetasAHecho(Long hechoId, List<String> etiquetas) {
@@ -165,19 +243,16 @@ public class AdminService {
             throw new IllegalArgumentException("Debe proporcionar al menos una etiqueta");
         }
 
-        String accessToken = getAccessTokenFromSession();
-        if (accessToken == null) {
-            log.error("[AdminService] ERROR - No hay token de acceso disponible para agregar etiquetas");
-            throw new RuntimeException("No hay token de acceso disponible");
-        }
-
-        webClientAgregador.patch()
-                .uri("/hechos/"+ hechoId + "/etiquetas")
-                .header("Authorization", "Bearer " + accessToken)
-                .bodyValue(etiquetas)
-                .retrieve()
-                .bodyToMono(Void.class)
-                .block();
+        executeWithTokenRetry(accessToken -> {
+            webClientAgregador.patch()
+                    .uri("/hechos/"+ hechoId + "/etiquetas")
+                    .header("Authorization", "Bearer " + accessToken)
+                    .bodyValue(etiquetas)
+                    .retrieve()
+                    .bodyToMono(Void.class)
+                    .block();
+            return null;
+        });
     }
 
     public void ejecutarSchedulerAgregador() {
@@ -189,38 +264,11 @@ public class AdminService {
     }
 
     public void actualizarEstadisticas() {
-        // #region agent log
-        try {
-            java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-            fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminService.java:184\",\"message\":\"actualizarEstadisticas - antes de llamar\",\"data\":{},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-            fw.close();
-        } catch (Exception e) {}
-        // #endregion
-        try {
-            webClientEstadistica.post()
-                    .uri("/recalcular")
-                    .retrieve()
-                    .bodyToMono(Void.class)
-                    .block();
-            // #region agent log
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-                fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminService.java:191\",\"message\":\"actualizarEstadisticas - exito\",\"data\":{},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-                fw.close();
-            } catch (Exception e) {}
-            // #endregion
-        } catch (Exception e) {
-            // #region agent log
-            try {
-                java.io.FileWriter fw = new java.io.FileWriter("d:\\Materias\\DDS\\2025-tpa-mi-no-grupo-10\\.cursor\\debug.log", true);
-                String errorMsg = e.getMessage() != null ? e.getMessage().replace("\"", "\\\"").replace("\n", "\\n") : "null";
-                fw.write("{\"sessionId\":\"debug-session\",\"runId\":\"run1\",\"hypothesisId\":\"A\",\"location\":\"AdminService.java:195\",\"message\":\"actualizarEstadisticas - error\",\"data\":{\"error\":\"" + e.getClass().getName() + "\",\"message\":\"" + errorMsg + "\"},\"timestamp\":" + System.currentTimeMillis() + "}\n");
-                fw.close();
-            } catch (Exception ex) {}
-            // #endregion
-            throw e;
-        }
-
+        webClientEstadistica.post()
+                .uri("/recalcular")
+                .retrieve()
+                .bodyToMono(Void.class)
+                .block();
     }
 
     public String exportarEstadisticasCSV() {

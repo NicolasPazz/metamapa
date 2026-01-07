@@ -26,7 +26,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf
-                        .ignoringRequestMatchers("/hechos/crear", "/hechos/**", "/solicitudes/**")
+                        .ignoringRequestMatchers("/hechos/crear", "/hechos/**", "/solicitudes/**", "/api/**")
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/img/**", "/static/**").permitAll()
@@ -50,6 +50,7 @@ public class SecurityConfig {
                             return "/solicitudes".equals(uri) && "GET".equals(method);
                         }).hasRole("ADMIN")
                         .requestMatchers("/solicitudes", "/solicitudes/**").permitAll()
+                        .requestMatchers("/api/solicitudes").permitAll()
                         .anyRequest().permitAll()
                 )
                 .formLogin(form -> form

@@ -11,8 +11,8 @@
   <section class="hechos-block">
     <div class="modo-switch-fixed" th:if="${esColeccion != null and esColeccion}">
       <form method="get" th:action="'/colecciones/' + ${handleColeccion} + '/hechos'" style="margin: 0;">
-        <input type="hidden" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}">
-        <input type="hidden" name="fecha_reporte_hasta" th:value="${param.fecha_reporte_hasta}">
+        <input type="hidden" name="fecha_acontecimiento_desde" th:value="${param.fecha_acontecimiento_desde}">
+        <input type="hidden" name="fecha_acontecimiento_hasta" th:value="${param.fecha_acontecimiento_hasta}">
         <input type="hidden" name="ubicacion" th:value="${param.ubicacion}">
         <input type="hidden" name="categoria" th:value="${param.categoria}">
         <input type="hidden" name="page" th:value="${param.page}">
@@ -41,12 +41,12 @@
 
       <div class="filtro-fecha">
         <label for="fechaDesde">Desde:</label>
-        <input type="date" id="fechaDesde" name="fecha_reporte_desde" th:value="${param.fecha_reporte_desde}" min="1900-01-01" max="9999-12-31">
+        <input type="date" id="fechaDesde" name="fecha_acontecimiento_desde" th:value="${param.fecha_acontecimiento_desde != null and param.fecha_acontecimiento_desde[0] != null ? (param.fecha_acontecimiento_desde[0].length() > 10 ? #strings.substring(param.fecha_acontecimiento_desde[0], 0, 10) : param.fecha_acontecimiento_desde[0]) : ''}" min="1900-01-01" max="9999-12-31">
       </div>
 
       <div class="filtro-fecha">
         <label for="fechaHasta">Hasta:</label>
-        <input type="date" id="fechaHasta" name="fecha_reporte_hasta" th:value="${param.fecha_reporte_hasta}" min="1900-01-01" max="9999-12-31">
+        <input type="date" id="fechaHasta" name="fecha_acontecimiento_hasta" th:value="${param.fecha_acontecimiento_hasta != null and param.fecha_acontecimiento_hasta[0] != null ? (param.fecha_acontecimiento_hasta[0].length() > 10 ? #strings.substring(param.fecha_acontecimiento_hasta[0], 0, 10) : param.fecha_acontecimiento_hasta[0]) : ''}" min="1900-01-01" max="9999-12-31">
       </div>
 
       <label for="ubicacion" style="display: none;">Provincia</label>
@@ -121,8 +121,8 @@
       <a th:if="${currentPage > 0}"
          th:href="@{${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}(
                     page=${currentPage - 1},
-                    fecha_reporte_desde=${param.fecha_reporte_desde},
-                    fecha_reporte_hasta=${param.fecha_reporte_hasta},
+                    fecha_acontecimiento_desde=${param.fecha_acontecimiento_desde},
+                    fecha_acontecimiento_hasta=${param.fecha_acontecimiento_hasta},
                     ubicacion=${param.ubicacion},
                     categoria=${param.categoria},
                     fuente=${param.fuente},
@@ -135,8 +135,8 @@
       <a th:if="${hasNextPage}"
          th:href="@{${esColeccion != null and esColeccion ? '/colecciones/' + handleColeccion + '/hechos' : '/hechos'}(
                     page=${currentPage + 1},
-                    fecha_reporte_desde=${param.fecha_reporte_desde},
-                    fecha_reporte_hasta=${param.fecha_reporte_hasta},
+                    fecha_acontecimiento_desde=${param.fecha_acontecimiento_desde},
+                    fecha_acontecimiento_hasta=${param.fecha_acontecimiento_hasta},
                     ubicacion=${param.ubicacion},
                     categoria=${param.categoria},
                     fuente=${param.fuente},
@@ -504,25 +504,33 @@
                 body: JSON.stringify(solicitudData)
               });
             } else {
-              // Fallback: usar fetch directo con URL convertida a localhost
+              // Fallback: usar fetch directo
               let apiBaseUrl;
               if (typeof window.getApiBaseUrl === 'function') {
                 apiBaseUrl = window.getApiBaseUrl();
               } else if (typeof getApiBaseUrl === 'function') {
                 apiBaseUrl = getApiBaseUrl();
               } else {
-                const metaTag = document.querySelector('meta[name="api-base-url"]');
-                if (metaTag) {
-                  apiBaseUrl = metaTag.getAttribute('content');
-                  // Convertir hostnames de Docker a localhost
-                  apiBaseUrl = apiBaseUrl.replace(/https?:\/\/[^\/:]+(:\d+)?/, function(match) {
-                    const protocol = match.startsWith('https') ? 'https' : 'http';
-                    const portMatch = match.match(/:(\d+)/);
-                    const port = portMatch ? portMatch[1] : '8084';
-                    return protocol + '://localhost:' + port;
-                  });
+                // Último recurso: detectar producción y usar ruta relativa o localhost
+                const hostname = window.location.hostname;
+                const isProduction = !(hostname === 'localhost' || hostname === '127.0.0.1' || hostname.startsWith('192.168.') || hostname.startsWith('10.') || hostname.startsWith('172.16.') || hostname.startsWith('172.17.') || hostname.startsWith('172.18.') || hostname.startsWith('172.19.') || hostname.startsWith('172.20.') || hostname.startsWith('172.21.') || hostname.startsWith('172.22.') || hostname.startsWith('172.23.') || hostname.startsWith('172.24.') || hostname.startsWith('172.25.') || hostname.startsWith('172.26.') || hostname.startsWith('172.27.') || hostname.startsWith('172.28.') || hostname.startsWith('172.29.') || hostname.startsWith('172.30.') || hostname.startsWith('172.31.'));
+                
+                if (isProduction) {
+                  apiBaseUrl = '/api';
                 } else {
-                  apiBaseUrl = window.location.origin.replace(':8080', ':8084') + '/api';
+                  const metaTag = document.querySelector('meta[name="api-base-url"]');
+                  if (metaTag) {
+                    apiBaseUrl = metaTag.getAttribute('content');
+                    // Convertir hostnames de Docker a localhost solo en desarrollo
+                    apiBaseUrl = apiBaseUrl.replace(/https?:\/\/[^\/:]+(:\d+)?/, function(match) {
+                      const protocol = match.startsWith('https') ? 'https' : 'http';
+                      const portMatch = match.match(/:(\d+)/);
+                      const port = portMatch ? portMatch[1] : '8084';
+                      return protocol + '://localhost:' + port;
+                    });
+                  } else {
+                    apiBaseUrl = window.location.origin.replace(':8080', ':8084') + '/api';
+                  }
                 }
               }
               const url = apiBaseUrl + '/solicitudes';
