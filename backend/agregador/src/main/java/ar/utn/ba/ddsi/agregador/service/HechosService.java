@@ -44,9 +44,9 @@ public class HechosService {
     private final CategoriasService categoriasService;
     private final ProvinciaService provinciaService;
     private final FuentesProperties fuentesProperties;
-    
-    // Executor para llamadas asíncronas a fuentes externas
     private final ExecutorService executorService = Executors.newFixedThreadPool(10);
+
+
     @Transactional(readOnly = true)
     public ResponseEntity<List<HechoDTO>> getAll(
         String categoria,
@@ -73,7 +73,6 @@ public class HechosService {
 
             externos = Optional.ofNullable(respuestaExternos.getBody()).orElse(List.of());
             
-            // Filtrar por fuente si se especificó (por nombre de fuente)
             if (fuente != null && !fuente.trim().isEmpty()) {
                 externos = externos.stream()
                     .filter(h -> h.getNombreFuente() != null && h.getNombreFuente().equals(fuente))

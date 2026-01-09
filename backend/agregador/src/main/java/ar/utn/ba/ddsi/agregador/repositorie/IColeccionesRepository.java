@@ -9,6 +9,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IColeccionesRepository extends JpaRepository<Coleccion, UUID> {
-    // Método paginado para mejor performance
     Page<Coleccion> findAll(Pageable pageable);
 }
