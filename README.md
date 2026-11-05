@@ -52,7 +52,7 @@ Changes made to the project for this:
 - **Internal token between services.** Free Render services can't use a private network, so they call each other through public URLs. Each backend still only accepts requests from private networks, plus requests that carry the shared `X-Internal-Token` header (`INTERNAL_API_TOKEN`). Without that variable, behavior is unchanged.
 - **JVM memory limits** (`JAVA_TOOL_OPTIONS`) and a small connection pool so each service fits in 512 MB.
 
-To deploy a copy: create a TiDB Cloud Starter cluster, create a Blueprint in Render from this repository, then create an environment group `metamapa-db` with `DB_HOST`, `DB_USERNAME` and `DB_PASSWORD` and link it to every service except `metamapa-proxy-metamapa` and `metamapa-frontend`.
+To deploy a copy: create a TiDB Cloud Starter cluster, create an environment group `metamapa-db` in Render with `DB_HOST`, `DB_USERNAME` and `DB_PASSWORD`, then create a Blueprint from this repository. Render asks for the admin credentials and the ONG API settings during setup.
 
 ## Run locally
 

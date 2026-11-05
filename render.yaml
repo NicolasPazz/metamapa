@@ -1,7 +1,7 @@
 # Render Blueprint: despliegue gratuito de MetaMapa (8 web services en el plan free).
 # La base de datos es externa (MySQL compatible, ej. TiDB Cloud Starter). Sus credenciales
-# (DB_HOST, DB_USERNAME, DB_PASSWORD) van en un environment group "metamapa-db" creado
-# desde el dashboard y vinculado a los servicios que usan base de datos. Ver README.
+# (DB_HOST, DB_USERNAME, DB_PASSWORD) van en un environment group "metamapa-db" que hay que
+# crear desde el dashboard ANTES de aplicar el Blueprint. Ver README.
 
 envVarGroups:
   - name: metamapa-shared
@@ -50,6 +50,7 @@ services:
       paths: [backend/users/**, pom.xml, backend/pom.xml, Dockerfile]
     envVars:
       - fromGroup: metamapa-shared
+      - fromGroup: metamapa-db
       - key: MODULE_PATH
         value: backend/users
       - key: MODULE_NAME
@@ -71,6 +72,7 @@ services:
       paths: [backend/estatica/**, pom.xml, backend/pom.xml, Dockerfile]
     envVars:
       - fromGroup: metamapa-shared
+      - fromGroup: metamapa-db
       - key: MODULE_PATH
         value: backend/estatica
       - key: MODULE_NAME
@@ -88,6 +90,7 @@ services:
       paths: [backend/dinamica/**, pom.xml, backend/pom.xml, Dockerfile]
     envVars:
       - fromGroup: metamapa-shared
+      - fromGroup: metamapa-db
       - key: MODULE_PATH
         value: backend/dinamica
       - key: MODULE_NAME
@@ -108,6 +111,7 @@ services:
       paths: [backend/proxy_ong/**, pom.xml, backend/pom.xml, Dockerfile]
     envVars:
       - fromGroup: metamapa-shared
+      - fromGroup: metamapa-db
       - key: MODULE_PATH
         value: backend/proxy_ong
       - key: MODULE_NAME
@@ -146,6 +150,7 @@ services:
       paths: [backend/agregador/**, pom.xml, backend/pom.xml, Dockerfile]
     envVars:
       - fromGroup: metamapa-shared
+      - fromGroup: metamapa-db
       - key: MODULE_PATH
         value: backend/agregador
       - key: MODULE_NAME
@@ -163,6 +168,7 @@ services:
       paths: [backend/estadistica/**, pom.xml, backend/pom.xml, Dockerfile]
     envVars:
       - fromGroup: metamapa-shared
+      - fromGroup: metamapa-db
       - key: MODULE_PATH
         value: backend/estadistica
       - key: MODULE_NAME
