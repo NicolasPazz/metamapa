@@ -22,6 +22,35 @@ public class ApiProxyController {
     @Value("${app.api.agregador.base-url:http://localhost:8084/api}")
     private String agregadorBaseUrl;
     
+    @Value("${app.api.dinamica.base-url:http://localhost:8081/api}")
+    private String dinamicaBaseUrl;
+
+    // En produccion el navegador pide /api/multimedia/** al frontend; se reenvia a dinamica
+    @GetMapping("/multimedia/{nombreArchivo:.+}")
+    public ResponseEntity<byte[]> obtenerMultimedia(@PathVariable String nombreArchivo) {
+        try {
+            ResponseEntity<byte[]> archivo = webClientBuilder.clone()
+                    .baseUrl(dinamicaBaseUrl)
+                    .codecs(c -> c.defaultCodecs().maxInMemorySize(60 * 1024 * 1024))
+                    .build()
+                    .get()
+                    .uri("/multimedia/{nombre}", nombreArchivo)
+                    .retrieve()
+                    .toEntity(byte[].class)
+                    .block();
+            return ResponseEntity.ok()
+                    .headers(h -> {
+                        if (archivo.getHeaders().getContentType() != null) {
+                            h.setContentType(archivo.getHeaders().getContentType());
+                        }
+                        h.setCacheControl("public, max-age=86400");
+                    })
+                    .body(archivo.getBody());
+        } catch (WebClientResponseException e) {
+            return ResponseEntity.status(e.getStatusCode()).build();
+        }
+    }
+
     @PostMapping("/solicitudes")
     public ResponseEntity<?> crearSolicitudEliminacion(@RequestBody SolicitudEliminacionRequest request) {
         log.info("[ApiProxyController] - POST - /api/solicitudes - hechoId: {}, fuenteId: {}, idOrigen: {}, contribuyenteId: {}, textoFundamentos length: {}", 

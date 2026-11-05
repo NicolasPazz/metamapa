@@ -50,6 +50,7 @@ Changes made to the project for this:
 
 - **Files stored in the database.** Render's free services have no persistent disk, and the services no longer share a filesystem. Uploaded multimedia is now stored in `dinamica`'s database (the aggregator fetches it from `dinamica` over HTTP) and uploaded CSV datasets in `estatica`'s database. On TiDB each file is limited to 5 MB.
 - **Internal token between services.** Free Render services can't use a private network, so they call each other through public URLs. Each backend still only accepts requests from private networks, plus requests that carry the shared `X-Internal-Token` header (`INTERNAL_API_TOKEN`). Without that variable, behavior is unchanged.
+- **Multimedia served through the frontend.** In production the browser requests `/api/multimedia/...` from the frontend, which now forwards it to `dinamica` (previously that route had no handler and images didn't load).
 - **JVM memory limits** (`JAVA_TOOL_OPTIONS`) and a small connection pool so each service fits in 512 MB.
 
 To deploy a copy: create a TiDB Cloud Starter cluster, create an environment group `metamapa-db` in Render with `DB_HOST`, `DB_USERNAME` and `DB_PASSWORD`, then create a Blueprint from this repository. Render asks for the admin credentials and the ONG API settings during setup.
