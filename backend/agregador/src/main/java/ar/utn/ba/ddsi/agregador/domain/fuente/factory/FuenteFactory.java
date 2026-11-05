@@ -99,9 +99,16 @@ public class FuenteFactory {
           .responseTimeout(Duration.ofSeconds(responseTimeoutSeconds))  // Timeout de respuesta: 60 segundos
           .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000);  // Timeout de conexión: 3 segundos
       
+      final String urlFuente = url;
+      String internalToken = System.getenv().getOrDefault("INTERNAL_API_TOKEN", "");
+      boolean esServicioInterno = java.util.stream.Stream.of("ESTATICA_URL", "DINAMICA_URL", "PROXY_ONG_URL", "PROXY_METAMAPA_URL")
+          .map(System::getenv)
+          .anyMatch(interna -> mismoOrigen(interna, urlFuente));
       WebClient webClient = WebClient.builder()
           .baseUrl(url)
           .clientConnector(new ReactorClientHttpConnector(httpClient))
+          // El token interno solo se envia a los servicios propios, nunca a fuentes externas
+          .defaultHeaders(h -> { if (esServicioInterno && !internalToken.isBlank()) h.set("X-Internal-Token", internalToken); })
           .build();
       
       log.debug("WebClient construido exitosamente para fuente: {} (con timeout de {}s)", config.getNombre(), responseTimeoutSeconds);
@@ -113,6 +120,23 @@ public class FuenteFactory {
     }
   }
   
+  /** true si ambas URLs tienen el mismo esquema, host y puerto. */
+  private static boolean mismoOrigen(String a, String b) {
+    if (a == null || b == null) {
+      return false;
+    }
+    try {
+      java.net.URI ua = java.net.URI.create(a.trim());
+      java.net.URI ub = java.net.URI.create(b.trim());
+      return ua.getHost() != null
+          && ua.getHost().equalsIgnoreCase(ub.getHost())
+          && String.valueOf(ua.getScheme()).equalsIgnoreCase(String.valueOf(ub.getScheme()))
+          && ua.getPort() == ub.getPort();
+    } catch (IllegalArgumentException e) {
+      return false;
+    }
+  }
+
   private AFuente createFuenteWithWebClient(FuenteConfig config, WebClient webClient, String url) {
 
     Long idAsignado = config.getId();

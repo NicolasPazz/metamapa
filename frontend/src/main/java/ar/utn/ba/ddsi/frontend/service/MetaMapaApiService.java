@@ -25,7 +25,7 @@ public class MetaMapaApiService {
     public MetaMapaApiService(
             WebApiCallerService webApiCallerService,
             @Value("${app.api.users.base-url:http://localhost:8087/api}") String authServiceUrl) {
-        this.webClient = WebClient.builder().build();
+        this.webClient = WebClient.builder().defaultHeaders(ar.utn.ba.ddsi.frontend.config.InternalTokenConfig::agregarToken).build();
         this.webApiCallerService = webApiCallerService;
         this.authServiceUrl = authServiceUrl;
     }

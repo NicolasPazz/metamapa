@@ -12,15 +12,14 @@
         <meta property="og:type" content="website">
         <meta property="og:title" th:content="${titulo} + ' - MetaMapa'">
         <meta property="og:description" content="Plataforma colaborativa para mapear y reportar hechos de interés público">
-        <meta property="og:image" content="https://metamapa-dds.ddns.net/images/open-graph.png">
-        <meta property="og:url" th:if="${#httpServletRequest != null}" th:content="'https://metamapa-dds.ddns.net' + #httpServletRequest.requestURI">
-        <meta property="og:url" th:if="${#httpServletRequest == null}" content="https://metamapa-dds.ddns.net">
+        <meta property="og:image" th:content="${publicUrl ?: ''} + '/images/open-graph.png'">
+        <meta property="og:url" th:content="${publicUrl ?: ''} + ${httpServletRequest?.requestURI ?: '/'}">
         <meta property="og:site_name" content="MetaMapa">
 
         <meta name="twitter:card" content="summary_large_image">
         <meta name="twitter:title" th:content="${titulo} + ' - MetaMapa'">
         <meta name="twitter:description" content="Plataforma colaborativa para mapear y reportar hechos de interés público">
-        <meta name="twitter:image" content="https://metamapa-dds.ddns.net/images/open-graph.png">
+        <meta name="twitter:image" th:content="${publicUrl ?: ''} + '/images/open-graph.png'">
 
         <link th:href="@{/css/landing.css}" rel="stylesheet">
         <script th:src="@{/js/common.js}"></script>

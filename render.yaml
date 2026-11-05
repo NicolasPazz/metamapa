@@ -1,0 +1,188 @@
+# Render Blueprint: despliegue gratuito de MetaMapa (8 web services en el plan free).
+# La base de datos es externa (MySQL compatible, ej. TiDB Cloud Starter). Sus credenciales
+# (DB_HOST, DB_USERNAME, DB_PASSWORD) van en un environment group "metamapa-db" creado
+# desde el dashboard y vinculado a los servicios que usan base de datos. Ver README.
+
+envVarGroups:
+  - name: metamapa-shared
+    envVars:
+      # Token que los servicios envian en X-Internal-Token para llamarse entre si por URL publica
+      - key: INTERNAL_API_TOKEN
+        generateValue: true
+      # 512 MB por instancia en el plan free
+      - key: JAVA_TOOL_OPTIONS
+        value: -Xmx256m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:+UseSerialGC -XX:TieredStopAtLevel=1
+      - key: SPRING_DATASOURCE_HIKARI_MAXIMUM_POOL_SIZE
+        value: "3"
+      - key: DB_PORT
+        value: "4000"
+      - key: DB_USE_SSL
+        value: "true"
+      - key: DDL_AUTO
+        value: update
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: USERS_SERVICE_URL
+        value: https://metamapa-users.onrender.com
+      - key: ESTATICA_URL
+        value: https://metamapa-estatica.onrender.com
+      - key: DINAMICA_URL
+        value: https://metamapa-dinamica.onrender.com
+      - key: PROXY_ONG_URL
+        value: https://metamapa-proxy-ong.onrender.com
+      - key: PROXY_METAMAPA_URL
+        value: https://metamapa-proxy-metamapa.onrender.com
+      - key: AGREGADOR_URL
+        value: https://metamapa-agregador.onrender.com
+      - key: ESTADISTICA_URL
+        value: https://metamapa-estadistica.onrender.com
+      - key: FRONTEND_URL
+        value: https://metamapa-frontend.onrender.com
+
+services:
+  - type: web
+    name: metamapa-users
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths: [backend/users/**, pom.xml, backend/pom.xml, Dockerfile]
+    envVars:
+      - fromGroup: metamapa-shared
+      - key: MODULE_PATH
+        value: backend/users
+      - key: MODULE_NAME
+        value: users
+      - key: DB_NAME
+        value: users
+      - key: ADMIN_USERNAME
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+
+  - type: web
+    name: metamapa-estatica
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths: [backend/estatica/**, pom.xml, backend/pom.xml, Dockerfile]
+    envVars:
+      - fromGroup: metamapa-shared
+      - key: MODULE_PATH
+        value: backend/estatica
+      - key: MODULE_NAME
+        value: estatica
+      - key: DB_NAME
+        value: estatica
+
+  - type: web
+    name: metamapa-dinamica
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths: [backend/dinamica/**, pom.xml, backend/pom.xml, Dockerfile]
+    envVars:
+      - fromGroup: metamapa-shared
+      - key: MODULE_PATH
+        value: backend/dinamica
+      - key: MODULE_NAME
+        value: dinamica
+      - key: DB_NAME
+        value: dinamica
+      # TiDB Cloud Starter limita cada fila a ~6 MB
+      - key: MULTIMEDIA_MAX_FILE_SIZE_MB
+        value: "5"
+
+  - type: web
+    name: metamapa-proxy-ong
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths: [backend/proxy_ong/**, pom.xml, backend/pom.xml, Dockerfile]
+    envVars:
+      - fromGroup: metamapa-shared
+      - key: MODULE_PATH
+        value: backend/proxy_ong
+      - key: MODULE_NAME
+        value: proxy_ong
+      - key: DB_NAME
+        value: proxy_ong
+      - key: PROXY_ONG_API_URL
+        sync: false
+      - key: PROXY_ONG_EMAIL
+        sync: false
+      - key: PROXY_ONG_PASSWORD
+        sync: false
+
+  - type: web
+    name: metamapa-proxy-metamapa
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths: [backend/proxy_metamapa/**, pom.xml, backend/pom.xml, Dockerfile]
+    envVars:
+      - fromGroup: metamapa-shared
+      - key: MODULE_PATH
+        value: backend/proxy_metamapa
+      - key: MODULE_NAME
+        value: proxy_metamapa
+
+  - type: web
+    name: metamapa-agregador
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths: [backend/agregador/**, pom.xml, backend/pom.xml, Dockerfile]
+    envVars:
+      - fromGroup: metamapa-shared
+      - key: MODULE_PATH
+        value: backend/agregador
+      - key: MODULE_NAME
+        value: agregador
+      - key: DB_NAME
+        value: agregador
+
+  - type: web
+    name: metamapa-estadistica
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths: [backend/estadistica/**, pom.xml, backend/pom.xml, Dockerfile]
+    envVars:
+      - fromGroup: metamapa-shared
+      - key: MODULE_PATH
+        value: backend/estadistica
+      - key: MODULE_NAME
+        value: estadistica
+      - key: DB_NAME
+        value: estadisticas
+
+  - type: web
+    name: metamapa-frontend
+    runtime: docker
+    plan: free
+    region: oregon
+    healthCheckPath: /actuator/health
+    buildFilter:
+      paths: [frontend/**, pom.xml, Dockerfile]
+    envVars:
+      - fromGroup: metamapa-shared
+      - key: MODULE_PATH
+        value: frontend
+      - key: MODULE_NAME
+        value: frontend
+      - key: PAGINATION_PAGE_SIZE
+        value: "18"

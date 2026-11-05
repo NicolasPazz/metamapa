@@ -10,8 +10,10 @@ public class WebClientConfig {
     
     @Bean
     public WebClient webClientAgregador(@Value("${agregador.url:http://localhost:8084}/api") String agregadorUrl) {
+        String internalToken = System.getenv().getOrDefault("INTERNAL_API_TOKEN", "");
         return WebClient.builder()
                 .baseUrl(agregadorUrl)
+                .defaultHeaders(h -> { if (!internalToken.isBlank()) h.set("X-Internal-Token", internalToken); })
                 .build();
     }
 }

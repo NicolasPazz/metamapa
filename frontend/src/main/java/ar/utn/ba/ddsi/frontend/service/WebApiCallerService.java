@@ -20,7 +20,7 @@ public class WebApiCallerService {
     private final String authServiceUrl;
 
     public WebApiCallerService(@Value("${app.api.users.base-url:http://localhost:8087/api}") String authServiceUrl) {
-        this.webClient = WebClient.builder().build();
+        this.webClient = WebClient.builder().defaultHeaders(ar.utn.ba.ddsi.frontend.config.InternalTokenConfig::agregarToken).build();
         this.authServiceUrl = authServiceUrl;
     }
 

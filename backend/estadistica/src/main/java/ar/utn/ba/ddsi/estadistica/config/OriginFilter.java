@@ -36,6 +36,12 @@ public class OriginFilter extends OncePerRequestFilter {
             return;
         }
 
+        // Servicios de MetaMapa que se llaman por URL publica (ej. Render) se identifican con un token compartido
+        if (tieneTokenInterno(request)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String remoteAddr = getRemoteAddress(request);
         boolean isAllowed = isAllowedAddress(remoteAddr);
         
@@ -47,6 +53,13 @@ public class OriginFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private boolean tieneTokenInterno(HttpServletRequest request) {
+        String token = System.getenv("INTERNAL_API_TOKEN");
+        String recibido = request.getHeader("X-Internal-Token");
+        return token != null && !token.isBlank() && recibido != null
+            && java.security.MessageDigest.isEqual(token.getBytes(), recibido.getBytes());
     }
 
     private String getRemoteAddress(HttpServletRequest request) {

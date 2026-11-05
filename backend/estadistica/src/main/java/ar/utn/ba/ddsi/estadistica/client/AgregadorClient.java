@@ -16,7 +16,19 @@ import org.springframework.web.client.RestTemplate;
 @Slf4j
 public class AgregadorClient {
 
-  private final RestTemplate restTemplate = new RestTemplate();
+  private final RestTemplate restTemplate = crearRestTemplate();
+
+  private static RestTemplate crearRestTemplate() {
+    RestTemplate template = new RestTemplate();
+    String internalToken = System.getenv().getOrDefault("INTERNAL_API_TOKEN", "");
+    if (!internalToken.isBlank()) {
+      template.getInterceptors().add((request, body, execution) -> {
+        request.getHeaders().set("X-Internal-Token", internalToken);
+        return execution.execute(request, body);
+      });
+    }
+    return template;
+  }
 
   @Value("${agregador.base-url:http://localhost:8084/api}")
   private String baseUrl;
