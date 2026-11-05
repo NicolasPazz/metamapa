@@ -43,7 +43,7 @@ Design patterns used include Factory, Strategy (membership criteria and consensu
 
 After the course ended, the AWS deployment was replaced with free tiers so the project can stay online at no cost and without maintenance:
 
-- **Render (free plan):** each service runs as a free web service, defined in [`render.yaml`](render.yaml). Free services sleep after 15 minutes without traffic, so the first visit after a while takes a few minutes while the services wake up.
+- **Render (free plan):** each service runs as a free web service, defined in [`render.yaml`](render.yaml). Free services sleep after 15 minutes without traffic, so the first visit after a while takes a few minutes while the services wake up. There are deliberately no keep-alive pings (e.g. UptimeRobot): free services share 750 instance-hours per month, and keeping even one service awake all month would use them up and suspend the rest.
 - **TiDB Cloud Starter (free plan):** MySQL-compatible database that replaces RDS. Each service keeps its own schema.
 
 Changes made to the project for this:
