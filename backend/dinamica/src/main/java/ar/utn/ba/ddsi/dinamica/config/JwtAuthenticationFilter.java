@@ -22,7 +22,9 @@ import java.util.Collections;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private static final SecretKey key = Keys.hmacShaKeyFor("metamapa-secret-key-for-jwt-token-generation-should-be-long-enough".getBytes());
+    private static final String SECRET = System.getenv("JWT_SECRET");
+    private static final SecretKey key = Keys.hmacShaKeyFor(
+            (SECRET == null || SECRET.isBlank() ? "metamapa-secret-key-for-jwt-token-generation-should-be-long-enough" : SECRET).getBytes());
     
     @Override
     protected void doFilterInternal(HttpServletRequest request,

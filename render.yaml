@@ -9,6 +9,9 @@ envVarGroups:
       # Token que los servicios envian en X-Internal-Token para llamarse entre si por URL publica
       - key: INTERNAL_API_TOKEN
         generateValue: true
+      # Clave HMAC para firmar y validar los JWT (users, agregador, dinamica)
+      - key: JWT_SECRET
+        generateValue: true
       # 512 MB por instancia en el plan free
       - key: JAVA_TOOL_OPTIONS
         value: -Xmx256m -Xss512k -XX:MaxMetaspaceSize=160m -XX:ReservedCodeCacheSize=48m -XX:+UseSerialGC -XX:TieredStopAtLevel=1

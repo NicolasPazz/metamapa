@@ -24,7 +24,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     // Clave compartida con el servicio users - debe ser la misma en todos los servicios
     // Esta clave coincide con la de JwtUtil en el servicio users
-    private static final SecretKey key = Keys.hmacShaKeyFor("metamapa-secret-key-for-jwt-token-generation-should-be-long-enough".getBytes());
+    private static final String SECRET = System.getenv("JWT_SECRET");
+    private static final SecretKey key = Keys.hmacShaKeyFor(
+            (SECRET == null || SECRET.isBlank() ? "metamapa-secret-key-for-jwt-token-generation-should-be-long-enough" : SECRET).getBytes());
     
     public JwtAuthenticationFilter() {
         log.info("[JwtAuthenticationFilter] Filtro JWT inicializado");
